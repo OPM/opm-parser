@@ -15,31 +15,46 @@
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
-#ifndef PARSER_H
-#define	PARSER_H
 #include <string>
-#include <fstream>
-#include <boost/shared_ptr.hpp>
+#include <stdexcept>
 
-#include "Logger.hpp"
-#include "RawDeck/RawKeyword.hpp"
-#include "RawDeck/RawDeck.hpp"
-
+#include <opm/parser/eclipse/Parser/ParserConst.hpp>
+#include <opm/parser/eclipse/Parser/ParserEnums.hpp>
+#include <opm/parser/eclipse/Parser/ParserRecordSize.hpp>
 
 namespace Opm {
 
-    class Parser {
-    public:
-        Parser();
-        RawDeckPtr parse(const std::string &path);
-        virtual ~Parser();
-    private:
-        //Logger m_logger;
-    };
+
+  ParserRecordSize::ParserRecordSize() {
+    recordSizeType = UNDEFINED;
+    fixedSize = 0;
+  }
+
+
+  ParserRecordSize::ParserRecordSize(size_t fixedSize) {
+    recordSizeType = FIXED;
+    this->fixedSize = fixedSize;
+  }
+
+
+  
+
+  
+  size_t ParserRecordSize::recordSize( ) {
+    if (recordSizeType == FIXED) {
+      return fixedSize;
+    } else
+      throw std::logic_error("Only the FIXED recordSize is supported.\n");
+  }
+  
+
+  
+  ParserRecordSize::~ParserRecordSize() {
     
-    typedef boost::shared_ptr<Parser> ParserPtr;
-} // namespace Opm
-#endif	/* PARSER_H */
+  }
+
+  
+}
 
