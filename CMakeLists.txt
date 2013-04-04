@@ -15,7 +15,6 @@ find_package(Boost 1.45.0 COMPONENTS filesystem date_time system unit_test_frame
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 enable_testing()
-file(COPY testdata DESTINATION ${CMAKE_BINARY_DIR})
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
