@@ -12,6 +12,8 @@ endif (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
+
+# The boost version is not tested, but should be OK according to documentation. Tested with 1.45.0
 find_package(Boost 1.36.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
