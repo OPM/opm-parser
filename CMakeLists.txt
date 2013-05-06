@@ -23,7 +23,6 @@ enable_testing()
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 add_subdirectory(opm/parser/eclipse)
-add_subdirectory(tests)
 
 
 
