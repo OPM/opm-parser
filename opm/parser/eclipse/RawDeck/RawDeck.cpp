@@ -24,128 +24,52 @@
 
 namespace Opm {
 
-  RawDeck::RawDeck(RawParserKWsConstPtr rawParserKWs) {
-    m_rawParserKWs = rawParserKWs;
-  }
-
-  /// Iterate through list of RawKeywords in search for the specified string.
-  /// O(n), not using map or hash because the keywords are not unique, 
-  /// and the order matters. Returns first matching keyword.
-  RawKeywordConstPtr RawDeck::getKeyword(const std::string& keyword) const {
-    for (std::list<RawKeywordConstPtr>::const_iterator it = m_keywords.begin(); it != m_keywords.end(); it++) {
-      if ((*it)->getKeyword() == keyword) {
-        return (*it);
-      }
+    RawDeck::RawDeck(RawParserKWsConstPtr rawParserKWs) {
+        m_rawParserKWs = rawParserKWs;
     }
-    throw std::invalid_argument("Keyword not found, keyword: " + keyword);
-  }
 
-  bool RawDeck::hasKeyword(const std::string& keyword) const {
-    for (std::list<RawKeywordConstPtr>::const_iterator it = m_keywords.begin(); it != m_keywords.end(); it++) {
-       if ((*it)->getKeyword() == keyword) {
-        return true;
-      }
+    void RawDeck::addKeyword(RawKeywordConstPtr keyword) {
+        m_keywords.push_back(keyword);
     }
-    return false;
-  }
 
-  /// The main data reading function, reads one and one keyword into the RawDeck
-  /// If the INCLUDE keyword is found, the specified include file is inline read into the RawDeck.
-  /// The data is read into a keyword, record by record, until the fixed number of records specified
-  /// in the RawParserKW is met, or till a slash on a separate line is found.
-  void RawDeck::readDataIntoDeck(const std::string& path) {
-    boost::filesystem::path dataFolderPath = verifyValidInputPath(path);
-    {
-      std::ifstream inputstream;
-      Logger::info("Initializing from file: " + path);
-      inputstream.open(path.c_str());
+    RawKeywordConstPtr RawDeck::getKeyword(size_t index) const {
+        if (index < m_keywords.size())
+            return m_keywords[index];
+        else
+            throw std::range_error("Index out of range");
+    }
 
-      std::string line;
-      RawKeywordPtr currentRawKeyword;
-      while (std::getline(inputstream, line)) {
-        std::string keywordString;
-        if (currentRawKeyword == NULL) {
-          if (RawKeyword::tryParseKeyword(line, keywordString)) {
-            currentRawKeyword = RawKeywordPtr(new RawKeyword(keywordString));
-            if (isKeywordFinished(currentRawKeyword)) {
-              addKeyword(currentRawKeyword, dataFolderPath);
-              currentRawKeyword.reset();
+    size_t RawDeck::size() const {
+        return m_keywords.size();
+    }
+
+    /// Checks if the current keyword being read is finished, based on the number of records
+    /// specified for the current keyword type in the RawParserKW class.
+
+    bool RawDeck::isKeywordFinished(RawKeywordConstPtr rawKeyword) {
+        if (m_rawParserKWs->keywordExists(rawKeyword->getKeywordName())) {
+            return rawKeyword->size() == m_rawParserKWs->getFixedNumberOfRecords(rawKeyword->getKeywordName());
+        }
+        return false;
+    }
+
+    /// Operator overload to write the content of the RawDeck to an ostream
+    std::ostream& operator<<(std::ostream& os, const RawDeck& deck) {
+        for (size_t i = 0; i < deck.size(); i++) {
+            RawKeywordConstPtr keyword = deck.getKeyword(i);
+            os << keyword->getKeywordName() << "                -- Keyword\n";
+            for (size_t i = 0; i < keyword->size(); i++) {
+                RawRecordConstPtr rawRecord = keyword->getRecord(i);
+                for (size_t j = 0; j < rawRecord->size(); j++) {
+                    os << rawRecord->getItem(j) << " ";
+                }
+                os << " /                -- Data\n";
             }
-          }
-        } else if (currentRawKeyword != NULL && RawKeyword::lineContainsData(line)) {
-          currentRawKeyword->addRawRecordString(line);
-          if (isKeywordFinished(currentRawKeyword)) {
-            addKeyword(currentRawKeyword, dataFolderPath);
-            currentRawKeyword.reset();
-          }
-        } else if (currentRawKeyword != NULL && RawKeyword::lineTerminatesKeyword(line)) {
-          if (!currentRawKeyword->isPartialRecordStringEmpty()) {
-            Logger::error("Reached keyword terminator slash, but there is non-terminated data on current keyword. "
-                    "Adding terminator, but records should be terminated by slash in data file");
-            currentRawKeyword->addRawRecordString(std::string(1,Opm::RawConsts::slash));
-          }
-          addKeyword(currentRawKeyword, dataFolderPath);
-          currentRawKeyword.reset();
+            os << "\n";
         }
-      }
-      inputstream.close();
+        return os;
     }
-  }
 
-  void RawDeck::addKeyword(RawKeywordConstPtr keyword, const boost::filesystem::path& dataFolderPath) {
-    if (keyword->getKeyword() == Opm::RawConsts::include) {
-      std::string includeFileString = keyword->getRecords().front()->getItems().front();
-      boost::filesystem::path pathToIncludedFile(dataFolderPath);
-      pathToIncludedFile /= includeFileString;
-
-      readDataIntoDeck(pathToIncludedFile.string());
-    } else {
-      m_keywords.push_back(keyword);
+    RawDeck::~RawDeck() {
     }
-  }
-
-  boost::filesystem::path RawDeck::verifyValidInputPath(const std::string& inputPath) {
-    Logger::info("Verifying path: " + inputPath);
-    boost::filesystem::path pathToInputFile(inputPath);
-    if (!boost::filesystem::is_regular_file(pathToInputFile)) {
-      Logger::error("Unable to open file with path: " + inputPath);
-      throw std::invalid_argument("Given path is not a valid file-path, path: " + inputPath);
-    }
-    return pathToInputFile.parent_path();
-  }
-
-  unsigned int RawDeck::getNumberOfKeywords() const {
-    return m_keywords.size();
-  }
-
-  /// Checks if the current keyword being read is finished, based on the number of records
-  /// specified for the current keyword type in the RawParserKW class.
-  bool RawDeck::isKeywordFinished(RawKeywordConstPtr rawKeyword) {
-    if (m_rawParserKWs->keywordExists(rawKeyword->getKeyword())) {
-      return rawKeyword->getNumberOfRecords() == m_rawParserKWs->getFixedNumberOfRecords(rawKeyword->getKeyword());
-    }
-    return false;
-  }
-
-  /// Operator overload to write the content of the RawDeck to an ostream
-  std::ostream& operator<<(std::ostream& os, const RawDeck& deck) {
-    for (std::list<RawKeywordConstPtr>::const_iterator keyword = deck.m_keywords.begin(); keyword != deck.m_keywords.end(); keyword++) {
-      os << (*keyword)->getKeyword() << "                -- Keyword\n";
-
-      std::list<RawRecordConstPtr> records = (*keyword)->getRecords();
-      for (std::list<RawRecordConstPtr>::const_iterator record = records.begin(); record != records.end(); record++) {
-        std::vector<std::string> recordItems = (*record)->getItems();
-
-        for (std::vector<std::string>::const_iterator recordItem = recordItems.begin(); recordItem != recordItems.end(); recordItem++) {
-          os << (*recordItem) << " ";
-        }
-        os << " /                -- Data\n";
-      }
-      os << "\n";
-    }
-    return os;
-  }
-
-  RawDeck::~RawDeck() {
-  }
 }

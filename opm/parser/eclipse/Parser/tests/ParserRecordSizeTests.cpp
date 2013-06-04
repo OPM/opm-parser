@@ -21,35 +21,23 @@
 #define BOOST_TEST_MODULE ParserTests
 #include <boost/test/unit_test.hpp>
 
-#include "opm/parser/eclipse/Parser/ParserKW.hpp"
+#include "opm/parser/eclipse/Parser/ParserRecordSize.hpp"
 
 
 using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(Initialize) {
-  BOOST_REQUIRE_NO_THROW(ParserKW parserKW);
-
-  ParserKW parserKW;
-  BOOST_CHECK_EQUAL(parserKW.getName(), "");
+    BOOST_REQUIRE_NO_THROW(ParserRecordSize recordSize);
 }
 
-BOOST_AUTO_TEST_CASE(NamedInit) {
-  std::string keyword("KEYWORD");
-
-  ParserRecordSizeConstPtr recordSize(new ParserRecordSize(100));
-  ParserKW parserKW(keyword, recordSize);
-  BOOST_CHECK_EQUAL(parserKW.getName(), keyword);
+BOOST_AUTO_TEST_CASE(DynamicSize) {
+    ParserRecordSize recordSize;
+    BOOST_CHECK_THROW(recordSize.recordSize(), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE(NameTooLong) {
-  std::string keyword("KEYWORDTOOLONG");
-  ParserRecordSizeConstPtr recordSize(new ParserRecordSize(100));
-  BOOST_CHECK_THROW(ParserKW parserKW(keyword, recordSize), std::invalid_argument);
-}
+BOOST_AUTO_TEST_CASE(FixedSize) {
+    BOOST_REQUIRE_NO_THROW(ParserRecordSize recordSize(100));
+    ParserRecordSize recordSize(100);
 
-BOOST_AUTO_TEST_CASE(MixedCase) {
-  std::string keyword("KeyWord");
-
-  ParserRecordSizeConstPtr recordSize(new ParserRecordSize(100));
-  BOOST_CHECK_THROW(ParserKW parserKW(keyword, recordSize), std::invalid_argument);
+    BOOST_CHECK_EQUAL(recordSize.recordSize(), (size_t) 100);
 }
