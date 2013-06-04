@@ -23,21 +23,29 @@
 #include <boost/shared_ptr.hpp>
 
 #include <opm/parser/eclipse/Parser/ParserRecordSize.hpp>
+#include <opm/parser/eclipse/Parser/ParserRecord.hpp>
+#include <opm/parser/eclipse/Deck/DeckKW.hpp>
+#include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
+
 
 namespace Opm {
 
-  class ParserKW {
-  public:
-    ParserKW();
-    ParserKW(const std::string& name, ParserRecordSizeConstPtr recordSize);
-    ~ParserKW();
-    const std::string& getName() const;
-  private:
-    std::string m_name;
-    ParserRecordSizeConstPtr recordSize;
-  };
-  typedef boost::shared_ptr<ParserKW> ParserKWPtr;
-  typedef boost::shared_ptr<const ParserKW> ParserKWConstPtr;
+    class ParserKW {
+    public:
+        ParserKW(const std::string& name);
+        ParserKW(const std::string& name, ParserRecordSizeConstPtr recordSize);
+        void setRecord(ParserRecordConstPtr record);
+        ParserRecordConstPtr getRecord();
+        const std::string& getName() const;
+        DeckKWPtr parse(RawKeywordConstPtr rawKeyword) const;
+        
+    private:
+        std::string m_name;
+        ParserRecordConstPtr m_record;
+        ParserRecordSizeConstPtr recordSize;
+    };
+    typedef boost::shared_ptr<ParserKW> ParserKWPtr;
+    typedef boost::shared_ptr<const ParserKW> ParserKWConstPtr;
 }
 
 #endif

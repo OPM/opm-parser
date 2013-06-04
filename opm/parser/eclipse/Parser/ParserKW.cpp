@@ -26,28 +26,45 @@
 
 namespace Opm {
 
-  ParserKW::ParserKW() {
-    m_name.assign("");
-  }
+    ParserKW::ParserKW(const std::string& name) {
+        m_name = name;
+    }
 
-  ParserKW::ParserKW(const std::string& name, ParserRecordSizeConstPtr recordSize) {
-    if (name.length() > ParserConst::maxKWLength)
-      throw std::invalid_argument("Given keyword name is too long - max 8 characters.");
+    ParserKW::ParserKW(const std::string& name, ParserRecordSizeConstPtr recordSize) {
+        if (name.length() > ParserConst::maxKWLength)
+            throw std::invalid_argument("Given keyword name is too long - max 8 characters.");
 
-    for (unsigned int i = 0; i < name.length(); i++)
-      if (islower(name[i]))
-        throw std::invalid_argument("Keyword must be all upper case - mixed case not allowed:" + name);
+        for (unsigned int i = 0; i < name.length(); i++)
+            if (islower(name[i]))
+                throw std::invalid_argument("Keyword must be all upper case - mixed case not allowed:" + name);
 
-    m_name.assign(name);
-    this->recordSize = recordSize;
-  }
+        m_name = name;
+        this->recordSize = recordSize;
+    }
 
-  ParserKW::~ParserKW() {
-  }
+    void ParserKW::setRecord(ParserRecordConstPtr record) {
+        m_record = record;
+    }
 
-  const std::string& ParserKW::getName() const {
-    return m_name;
-  }
+    ParserRecordConstPtr ParserKW::getRecord() {
+        return m_record;
+    }
+    
+    const std::string& ParserKW::getName() const {
+        return m_name;
+    }
 
-
+    DeckKWPtr ParserKW::parse(RawKeywordConstPtr rawKeyword) const {
+        DeckKWPtr keyword(new DeckKW(getName()));
+        if (m_record != NULL) {
+            for (size_t i=0; i<rawKeyword->size(); i++) {
+                DeckRecordConstPtr deckRecord = m_record->parse(rawKeyword->getRecord(i));
+                keyword->addRecord(deckRecord);
+            }
+        }
+        else 
+            throw std::logic_error("Unable to parse rawKeyword, because the ParserKW's record is not set!");
+        
+        return keyword;
+    }
 }

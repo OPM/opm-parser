@@ -15,17 +15,22 @@
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 
-#define BOOST_TEST_MODULE ParserTests
-#include <boost/test/unit_test.hpp>
+#ifndef PARSERDOUBLEITEM_HPP
+#define PARSERDOUBLEITEM_HPP
 
-#include "opm/parser/eclipse/Parser/ParserRecordItem.hpp"
+#include <opm/parser/eclipse/Parser/ParserItem.hpp>
+#include <opm/parser/eclipse/Parser/ParserEnums.hpp>
+namespace Opm {
 
-
-using namespace Opm;
-
-BOOST_AUTO_TEST_CASE(Initialize_int) {
-  BOOST_REQUIRE_NO_THROW( ParserRecordItem<int> item );
+    class ParserDoubleItem : public ParserItem {
+    public:
+        ParserDoubleItem(const std::string& itemName, ParserItemSizeEnum sizeType) : ParserItem(itemName, sizeType) {};
+    private:
+    };
 }
+
+#endif  /* PARSERDOUBLEITEM_HPP */
+

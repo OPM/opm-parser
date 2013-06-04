@@ -15,34 +15,11 @@
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
-#ifndef RECORD_ITEM_SIZE_H
-#define RECORD_ITEM_SIZE_H
-
-#include <boost/shared_ptr.hpp>
-
-#include <opm/parser/eclipse/Parser/ParserEnums.hpp>
+#include "ParserStringItem.hpp"
 
 namespace Opm {
 
-  class ItemSize {
-
-  private:
-    ItemSizeEnum m_sizeType;
-    size_t       m_sizeValue;
-    
-  public:
-    ItemSize();
-    ItemSize(int sizeValue);
-    ItemSize(ItemSizeEnum sizeType);
-    ItemSize(ItemSizeEnum sizeType, size_t sizeValue);
-    
-    ItemSizeEnum sizeType() const;
-    size_t sizeValue() const;
-  };
-  typedef boost::shared_ptr<ItemSize> ItemSizePtr;
-  typedef boost::shared_ptr<const ItemSize> ItemSizeConstPtr;
+ 
 }
-
-#endif

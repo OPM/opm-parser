@@ -19,47 +19,51 @@
 
 #ifndef RAWDECK_HPP
 #define RAWDECK_HPP
-#include <list>
+#include <vector>
 #include <ostream>
-#include <map>
 #include <boost/shared_ptr.hpp>
-#include "opm/parser/eclipse/Logger/Logger.hpp"
 #include <boost/filesystem.hpp>
-#include "RawKeyword.hpp"
-#include "RawParserKWs.hpp"
+#include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
+#include <opm/parser/eclipse/RawDeck/RawParserKWs.hpp>
 
 namespace Opm {
 
-  /// Class representing the most high level structure, a deck. The RawDeck holds non parsed
-  /// data, in the form of a list of RawKeywords. The order of the keywords is important, as this
-  /// reflects the order they were read in from the eclipse file. The RawDeck forms the basis of the 
-  /// semantic parsing that comes after the RawDeck has been created from the eclipse file.
-  class RawDeck {
-  public:
+    /// Class representing the most high level structure, a deck. The RawDeck holds non parsed
+    /// data, in the form of a list of RawKeywords. The order of the keywords is important, as this
+    /// reflects the order they were read in from the eclipse file. The RawDeck forms the basis of the 
+    /// semantic parsing that comes after the RawDeck has been created from the eclipse file.
 
-    /// Constructor that requires information about the fixed record length keywords. 
-    /// All relevant keywords with a fixed number of records 
-    /// must be specified through the RawParserKW class. This is to be able to know how the records
-    /// of the keyword is structured.
-    RawDeck(RawParserKWsConstPtr rawParserKWs);
-    
-    RawKeywordConstPtr getKeyword(const std::string& keyword) const;
-    bool hasKeyword(const std::string& keyword) const;
-    void readDataIntoDeck(const std::string& path);
-    unsigned int getNumberOfKeywords() const;
-    friend std::ostream& operator<<(std::ostream& os, const RawDeck& deck);
-    virtual ~RawDeck();
+    class RawDeck {
+    public:
 
-  private:
-    std::list<RawKeywordConstPtr> m_keywords;
-    RawParserKWsConstPtr m_rawParserKWs;
-    void readDataIntoDeck(const std::string& path, std::list<RawKeywordConstPtr>& keywordList);
-    void addKeyword(RawKeywordConstPtr keyword, const boost::filesystem::path& baseDataFolder);
-    bool isKeywordFinished(RawKeywordConstPtr rawKeyword);
-    static boost::filesystem::path verifyValidInputPath(const std::string& inputPath);
-  };
+        /// Constructor that requires information about the fixed record length keywords. 
+        /// All relevant keywords with a fixed number of records 
+        /// must be specified through the RawParserKW class. This is to be able to know how the records
+        /// of the keyword is structured.
 
-  typedef boost::shared_ptr<RawDeck> RawDeckPtr;
+        RawDeck(RawParserKWsConstPtr rawParserKWs);
+        void addKeyword(RawKeywordConstPtr keyword);
+        RawKeywordConstPtr getKeyword(size_t index) const;
+        size_t size() const;
+        
+        // This will move to Parser class when m_rawParserKWs is moved.
+        bool isKeywordFinished(RawKeywordConstPtr rawKeyword);
+      
+        friend std::ostream& operator<<(std::ostream& os, const RawDeck& deck);
+        virtual ~RawDeck();
+
+    private:
+        std::vector<RawKeywordConstPtr> m_keywords;
+        
+        // This variable should be replaced by an equivalent collection of ParserKWs, and put in the Parser class
+        RawParserKWsConstPtr m_rawParserKWs;
+
+        void processIncludeKeyword(RawKeywordConstPtr keyword, const boost::filesystem::path& dataFolderPath);
+        static boost::filesystem::path verifyValidInputPath(const std::string& inputPath);
+    };
+
+    typedef boost::shared_ptr<RawDeck> RawDeckPtr;
+    typedef boost::shared_ptr<const RawDeck> RawDeckConstPtr;
 }
 
 #endif  /* RAWDECK_HPP */

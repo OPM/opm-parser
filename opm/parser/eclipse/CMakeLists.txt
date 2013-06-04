@@ -1,5 +1,8 @@
 add_subdirectory( Logger )
-
+add_subdirectory(Parser/tests)
+add_subdirectory(RawDeck/tests)
+add_subdirectory(Deck/tests)
+add_subdirectory(IntegrationTests)
 
 set( rawdeck_source 
 RawDeck/RawDeck.cpp 
@@ -7,15 +10,31 @@ RawDeck/RawKeyword.cpp
 RawDeck/RawRecord.cpp 
 RawDeck/RawParserKWs.cpp )
 
+set( deck_source
+Deck/Deck.cpp
+Deck/DeckKW.cpp
+Deck/DeckRecord.cpp
+Deck/DeckItem.cpp
+Deck/DeckIntItem.cpp
+Deck/DeckDoubleItem.cpp
+Deck/KeywordContainer.cpp
+)
 
 set( parser_source 
 Parser/ParserRecordSize.cpp 
 Parser/ParserKW.cpp 
 Parser/Parser.cpp 
-Parser/ItemSize.cpp )
+Parser/ParserRecord.cpp
+Parser/ParserItem.cpp
+Parser/ParserIntItem.cpp  
+Parser/ParserBoolItem.cpp  
+Parser/ParserDoubleItem.cpp  
+Parser/ParserStringItem.cpp  
+)
 
 
-add_library(Parser ${rawdeck_source} ${parser_source})
+add_library(Parser ${rawdeck_source} ${parser_source} ${deck_source})
+target_link_libraries(Parser Logger ${Boost_LIBRARIES})
 
 
 
