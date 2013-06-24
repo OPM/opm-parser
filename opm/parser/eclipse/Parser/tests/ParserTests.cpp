@@ -25,11 +25,17 @@
 
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>
-#include <opm/parser/eclipse/Parser/ParserKW.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecordSize.hpp>
 #include <opm/parser/eclipse/RawDeck/RawDeck.hpp>
 
+#include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
+#include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
+
+
 using namespace Opm;
+
+/************************Basic structural tests**********************'*/
 
 BOOST_AUTO_TEST_CASE(Initializing) {
     BOOST_CHECK_NO_THROW(Parser parser);
@@ -37,105 +43,132 @@ BOOST_AUTO_TEST_CASE(Initializing) {
     BOOST_CHECK_NO_THROW(ParserConstPtr parserConstPtr(new Parser()));
 }
 
-BOOST_AUTO_TEST_CASE(ParserAddKW) {
+BOOST_AUTO_TEST_CASE(addKeyword_keyword_doesntfail) {
     Parser parser;
     {
         ParserRecordSizePtr recordSize(new ParserRecordSize(9));
-        ParserKWPtr equilKW(new ParserKW("EQUIL", recordSize));
-
-        parser.addKW(equilKW);
+        ParserKeywordPtr equilKeyword(new ParserKeyword("EQUIL", recordSize));
+        parser.addKeyword(equilKeyword);
     }
 }
 
 BOOST_AUTO_TEST_CASE(hasKeyword_hasKeyword_returnstrue) {
-     ParserPtr parser(new Parser());
-     parser->addKW(ParserKWConstPtr(new ParserKW("FJAS")));
-     BOOST_CHECK(parser->hasKeyword("FJAS"));
-}
-
-
-BOOST_AUTO_TEST_CASE(PrintToOStream_noThrow) {
-    boost::filesystem::path singleKeywordFile("testdata/small.data");
     ParserPtr parser(new Parser());
-    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
-    std::cout << *rawDeck << "\n";
+    parser->addKeyword(ParserKeywordConstPtr(new ParserKeyword("FJAS")));
+    BOOST_CHECK(parser->hasKeyword("FJAS"));
 }
 
-BOOST_AUTO_TEST_CASE(Parse_InvalidInputFile_Throws) {
+
+
+
+/***************** Simple Int parsing ********************************/
+
+ParserKeywordPtr setupParserKeywordInt(std::string name, int numberOfItems) {
+    ParserKeywordPtr parserKeyword(new ParserKeyword(name));
+    ParserRecordPtr parserRecord(new ParserRecord());
+    for (int i = 0; i < numberOfItems; i++) {
+        std::string name = "ITEM_" + boost::lexical_cast<std::string>(i);
+        ParserItemPtr intItem(new ParserIntItem(name, SINGLE));
+        parserRecord->addItem(intItem);
+    }
+
+    parserKeyword->setRecord(parserRecord);
+
+    return parserKeyword;
+}
+
+RawDeckPtr setupRawDeckInt(std::string name, int numberOfRecords, int numberOfItems) {
+    RawParserKeywordsConstPtr rawParserKeywords(new RawParserKeywords());
+    RawDeckPtr rawDeck(new RawDeck(rawParserKeywords));
+
+    RawKeywordPtr rawKeyword(new RawKeyword(name));
+    for (int records = 0; records < numberOfRecords; records++) {
+        for (int i = 0; i < numberOfItems; i++)
+            rawKeyword->addRawRecordString("42 ");
+        rawKeyword->addRawRecordString("/");
+    }
+
+    rawDeck->addKeyword(rawKeyword);
+
+    return rawDeck;
+}
+
+BOOST_AUTO_TEST_CASE(parseFromRawDeck_singleRawSingleIntItem_deckReturned) {
     ParserPtr parser(new Parser());
-    BOOST_CHECK_THROW(parser->readToRawDeck("nonexistingfile.asdf"), std::invalid_argument);
+    parser->addKeyword(setupParserKeywordInt("RANDOM", 1));
+    DeckPtr deck = parser->parseFromRawDeck(setupRawDeckInt("RANDOM", 1, 1));
+
+    BOOST_CHECK(!deck->hasKeyword("ANDOM"));
+
+    BOOST_CHECK(deck->hasKeyword("RANDOM"));
+    BOOST_CHECK_EQUAL(1U, deck->getKeyword("RANDOM")->getRecord(0)->size());
 }
 
-BOOST_AUTO_TEST_CASE(Parse_ValidInputFile_NoThrow) {
-    boost::filesystem::path singleKeywordFile("testdata/small.data");
+BOOST_AUTO_TEST_CASE(parseFromRawDeck_singleRawRecordsSeveralIntItem_deckReturned) {
     ParserPtr parser(new Parser());
+    parser->addKeyword(setupParserKeywordInt("RANDOM", 50));
+    DeckPtr deck = parser->parseFromRawDeck(setupRawDeckInt("RANDOM", 1, 50));
 
-    BOOST_CHECK_NO_THROW(parser->readToRawDeck(singleKeywordFile.string()));
+    BOOST_CHECK(deck->hasKeyword("RANDOM"));
+    BOOST_CHECK_EQUAL(50U, deck->getKeyword("RANDOM")->getRecord(0)->size());
 }
 
-BOOST_AUTO_TEST_CASE(ParseFileWithOneKeyword) {
-
-    boost::filesystem::path singleKeywordFile("testdata/mini.data");
+BOOST_AUTO_TEST_CASE(parseFromRawDeck_severalRawRecordsSeveralIntItem_deckReturned) {
     ParserPtr parser(new Parser());
+    parser->addKeyword(setupParserKeywordInt("RANDOM", 50));
+    DeckPtr deck = parser->parseFromRawDeck(setupRawDeckInt("RANDOM", 10, 50));
 
-    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
-
-    BOOST_CHECK_EQUAL(1U, rawDeck->size());
-    RawKeywordConstPtr rawKeyword = rawDeck->getKeyword(0);
-
-    BOOST_CHECK_EQUAL(1U, rawKeyword->size());
-    RawRecordConstPtr record = rawKeyword->getRecord(rawKeyword->size() - 1);
-
-    const std::string& recordString = record->getRecordString();
-    BOOST_CHECK_EQUAL("'NODIR'  'REVERS'  1  20", recordString);
-
-    BOOST_CHECK_EQUAL(4U, record->size());
-
-    BOOST_CHECK_EQUAL("NODIR", record->getItem(0));
-    BOOST_CHECK_EQUAL("REVERS", record->getItem(1));
-    BOOST_CHECK_EQUAL("1", record->getItem(2));
-    BOOST_CHECK_EQUAL("20", record->getItem(3));
+    BOOST_CHECK(deck->hasKeyword("RANDOM"));
+    BOOST_CHECK_EQUAL(10U, deck->getKeyword("RANDOM")->size());
+    BOOST_CHECK_EQUAL(50U, deck->getKeyword("RANDOM")->getRecord(0)->size());
 }
 
-BOOST_AUTO_TEST_CASE(ParseFileWithFewKeywords) {
-    boost::filesystem::path singleKeywordFile("testdata/small.data");
+/***************** Simple String parsing ********************************/
 
+ParserKeywordPtr setupParserKeywordString(std::string name, int numberOfItems) {
+    ParserKeywordPtr parserKeyword(new ParserKeyword(name));
+    ParserRecordPtr parserRecord(new ParserRecord());
+    for (int i = 0; i < numberOfItems; i++) {
+        std::string name = "ITEM_" + boost::lexical_cast<std::string>(i);
+        ParserItemPtr stringItem(new ParserStringItem(name, SINGLE));
+        parserRecord->addItem(stringItem);
+    }
+
+    parserKeyword->setRecord(parserRecord);
+
+    return parserKeyword;
+}
+
+RawDeckPtr setupRawDeckString(std::string name, int numberOfRecords, int numberOfItems) {
+    RawParserKeywordsConstPtr rawParserKeywords(new RawParserKeywords());
+    RawDeckPtr rawDeck(new RawDeck(rawParserKeywords));
+
+    RawKeywordPtr rawKeyword(new RawKeyword(name));
+    for (int records = 0; records < numberOfRecords; records++) {
+        for (int i = 0; i < numberOfItems; i++) {
+            std::string data = "WELL-" + boost::lexical_cast<std::string>(i);
+            rawKeyword->addRawRecordString(data);
+        }
+        rawKeyword->addRawRecordString("/");
+    }
+
+    rawDeck->addKeyword(rawKeyword);
+
+    return rawDeck;
+}
+
+BOOST_AUTO_TEST_CASE(parseFromRawDeck_singleRawRecordsSingleStringItem_deckReturned) {
     ParserPtr parser(new Parser());
+    parser->addKeyword(setupParserKeywordString("WWCT", 1));
+    DeckPtr deck = parser->parseFromRawDeck(setupRawDeckString("WWCT",1, 1));
 
-    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
-
-    BOOST_CHECK_EQUAL(7U, rawDeck->size());
-
-    RawKeywordConstPtr matchingKeyword = rawDeck->getKeyword(0);
-    BOOST_CHECK_EQUAL("OIL", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(0U, matchingKeyword->size());
-
-    // The two next come in via the include of the include path/readthis.sch file
-    matchingKeyword = rawDeck->getKeyword(1);
-    BOOST_CHECK_EQUAL("GRUPTREE", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(2U, matchingKeyword->size());
-
-    matchingKeyword = rawDeck->getKeyword(2);
-    BOOST_CHECK_EQUAL("WHISTCTL", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
-
-    matchingKeyword = rawDeck->getKeyword(3);
-    BOOST_CHECK_EQUAL("METRIC", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(0U, matchingKeyword->size());
-
-    matchingKeyword = rawDeck->getKeyword(4);
-    BOOST_CHECK_EQUAL("GRIDUNIT", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
-
-    matchingKeyword = rawDeck->getKeyword(5);
-    BOOST_CHECK_EQUAL("RADFIN4", matchingKeyword->getKeywordName());
-    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
-
-    matchingKeyword = rawDeck->getKeyword(6);
-    BOOST_CHECK_EQUAL("ABCDAD", matchingKeyword->getKeywordName());
-
-    BOOST_CHECK_EQUAL(2U, matchingKeyword->size());
+    BOOST_CHECK(deck->hasKeyword("WWCT"));
+    BOOST_CHECK_EQUAL(1U, deck->getKeyword("WWCT")->size());
 }
+
+
+
+
 
 
 
