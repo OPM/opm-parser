@@ -17,27 +17,32 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DECK_HPP
-#define DECK_HPP
+#ifndef DECKSTRINGITEM_HPP
+#define DECKSTRINGITEM_HPP
 
+#include <vector>
+#include <string>
 #include <boost/shared_ptr.hpp>
-#include <opm/parser/eclipse/Deck/KeywordContainer.hpp>
+#include <opm/parser/eclipse/Deck/DeckItem.hpp>
 
 namespace Opm {
 
-    class Deck {
+    class DeckStringItem : public DeckItem {
     public:
-        Deck();
-        bool hasKeyword( const std::string& keyword ) const;
-        void addKeyword( DeckKeywordConstPtr keyword);
-        DeckKeywordConstPtr getKeyword(const std::string& keyword) const;
+        DeckStringItem(std::string name) : DeckItem(name) {}
+        std::string getString(size_t index) const;
 
+        void push_back(std::vector<std::string> data , size_t items);
+        void push_back(std::vector<std::string> data);
+        void push_back(std::string value);
+
+        size_t size() const;
     private:
-        KeywordContainerPtr m_keywords;
+        std::vector<std::string> m_data;
     };
 
-    typedef boost::shared_ptr<Deck> DeckPtr;
-    typedef boost::shared_ptr<const Deck> DeckConstPtr;
+    typedef boost::shared_ptr<DeckStringItem> DeckStringItemPtr;
+    typedef boost::shared_ptr<const DeckStringItem> DeckStringItemConstPtr;
 }
-#endif  /* DECK_HPP */
+#endif  
 

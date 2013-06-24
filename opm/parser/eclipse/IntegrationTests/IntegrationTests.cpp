@@ -26,23 +26,60 @@
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
+#include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
+
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 
 using namespace Opm;
 
+ParserPtr createWWCTParser() {
+    ParserKeywordPtr parserKeyword(new ParserKeyword("WWCT"));
+    {
+        ParserRecordPtr wwctRecord(new ParserRecord());
+        wwctRecord->addItem(ParserStringItemConstPtr(new ParserStringItem("WELL", ALL)));
+        parserKeyword->setRecord(wwctRecord);
+    }
+
+    ParserPtr parser(new Parser());
+    parser->addKeyword(parserKeyword);
+    return parser;
+}
+
+BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckReturned) {
+    boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
+    ParserPtr parser = createWWCTParser();
+
+    BOOST_CHECK_NO_THROW(DeckPtr deck = parser->parse(singleKeywordFile.string()));
+}
+
+BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckHasWWCT) {
+    boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
+    ParserPtr parser = createWWCTParser();
+    DeckPtr deck = parser->parse(singleKeywordFile.string());
+    BOOST_CHECK(deck->hasKeyword("WWCT"));
+}
+
+BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_dataIsCorrect) {
+    boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
+    ParserPtr parser = createWWCTParser();
+    DeckPtr deck = parser->parse(singleKeywordFile.string());
+    BOOST_CHECK_EQUAL("WELL-1", deck->getKeyword("WWCT")->getRecord(0)->get(0)->getString(0));
+    BOOST_CHECK_EQUAL("WELL-2", deck->getKeyword("WWCT")->getRecord(0)->get(0)->getString(1));
+}
+
 ParserPtr createBPRParser() {
-    ParserKWPtr parserKW(new ParserKW("BPR"));
+    ParserKeywordPtr parserKeyword(new ParserKeyword("BPR"));
     {
         ParserRecordPtr bprRecord(new ParserRecord());
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("I", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("J", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("K", SINGLE)));
 
-        parserKW->setRecord(bprRecord);
+        parserKeyword->setRecord(bprRecord);
     }
 
     ParserPtr parser(new Parser());
-    parser->addKW(parserKW);
+    parser->addKeyword(parserKeyword);
     return parser;
 }
 
@@ -68,7 +105,7 @@ BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_dataiscorrect) {
     ParserPtr parser = createBPRParser();
     DeckPtr deck = parser->parse(singleKeywordFile.string());
 
-    DeckKWConstPtr keyword = deck->getKeyword("BPR");
+    DeckKeywordConstPtr keyword = deck->getKeyword("BPR");
     BOOST_CHECK_EQUAL(2U, keyword->size());
 
     DeckRecordConstPtr record1 = keyword->getRecord(0);
@@ -108,4 +145,87 @@ BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_dataiscorrect) {
     K1 = record2->get("K");
     BOOST_CHECK_EQUAL(3, K1->getInt(0));
 
+}
+
+BOOST_AUTO_TEST_CASE(PrintToOStream_noThrow) {
+    boost::filesystem::path singleKeywordFile("testdata/small.data");
+    ParserPtr parser(new Parser());
+    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
+    std::cout << *rawDeck << "\n";
+}
+
+BOOST_AUTO_TEST_CASE(Parse_InvalidInputFile_Throws) {
+    ParserPtr parser(new Parser());
+    BOOST_CHECK_THROW(parser->readToRawDeck("nonexistingfile.asdf"), std::invalid_argument);
+}
+
+BOOST_AUTO_TEST_CASE(Parse_ValidInputFile_NoThrow) {
+    boost::filesystem::path singleKeywordFile("testdata/small.data");
+    ParserPtr parser(new Parser());
+
+    BOOST_CHECK_NO_THROW(parser->readToRawDeck(singleKeywordFile.string()));
+}
+
+BOOST_AUTO_TEST_CASE(ParseFileWithOneKeyword) {
+
+    boost::filesystem::path singleKeywordFile("testdata/mini.data");
+    ParserPtr parser(new Parser());
+
+    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
+
+    BOOST_CHECK_EQUAL(1U, rawDeck->size());
+    RawKeywordConstPtr rawKeyword = rawDeck->getKeyword(0);
+
+    BOOST_CHECK_EQUAL(1U, rawKeyword->size());
+    RawRecordConstPtr record = rawKeyword->getRecord(rawKeyword->size() - 1);
+
+    const std::string& recordString = record->getRecordString();
+    BOOST_CHECK_EQUAL("'NODIR'  'REVERS'  1  20", recordString);
+
+    BOOST_CHECK_EQUAL(4U, record->size());
+
+    BOOST_CHECK_EQUAL("NODIR", record->getItem(0));
+    BOOST_CHECK_EQUAL("REVERS", record->getItem(1));
+    BOOST_CHECK_EQUAL("1", record->getItem(2));
+    BOOST_CHECK_EQUAL("20", record->getItem(3));
+}
+
+BOOST_AUTO_TEST_CASE(ParseFileWithFewKeywords) {
+    boost::filesystem::path singleKeywordFile("testdata/small.data");
+
+    ParserPtr parser(new Parser());
+
+    RawDeckPtr rawDeck = parser->readToRawDeck(singleKeywordFile.string());
+
+    BOOST_CHECK_EQUAL(7U, rawDeck->size());
+
+    RawKeywordConstPtr matchingKeyword = rawDeck->getKeyword(0);
+    BOOST_CHECK_EQUAL("OIL", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(0U, matchingKeyword->size());
+
+    // The two next come in via the include of the include path/readthis.sch file
+    matchingKeyword = rawDeck->getKeyword(1);
+    BOOST_CHECK_EQUAL("GRUPTREE", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(2U, matchingKeyword->size());
+
+    matchingKeyword = rawDeck->getKeyword(2);
+    BOOST_CHECK_EQUAL("WHISTCTL", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
+
+    matchingKeyword = rawDeck->getKeyword(3);
+    BOOST_CHECK_EQUAL("METRIC", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(0U, matchingKeyword->size());
+
+    matchingKeyword = rawDeck->getKeyword(4);
+    BOOST_CHECK_EQUAL("GRIDUNIT", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
+
+    matchingKeyword = rawDeck->getKeyword(5);
+    BOOST_CHECK_EQUAL("RADFIN4", matchingKeyword->getKeywordName());
+    BOOST_CHECK_EQUAL(1U, matchingKeyword->size());
+
+    matchingKeyword = rawDeck->getKeyword(6);
+    BOOST_CHECK_EQUAL("ABCDAD", matchingKeyword->getKeywordName());
+
+    BOOST_CHECK_EQUAL(2U, matchingKeyword->size());
 }

@@ -17,16 +17,16 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define BOOST_TEST_MODULE ParserIntegrationTestsInternalData
+
 #include <stdexcept>
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-#define BOOST_TEST_MODULE ParserTestsInternalData
 #include <boost/test/unit_test.hpp>
 
-
 #include <opm/parser/eclipse/Parser/Parser.hpp>
-#include <opm/parser/eclipse/Parser/ParserKW.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecordSize.hpp>
 #include <opm/parser/eclipse/RawDeck/RawDeck.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
