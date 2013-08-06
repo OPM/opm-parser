@@ -29,6 +29,11 @@ namespace Opm {
         populateDefaultKeywords();
     }
 
+    Parser::Parser(const boost::filesystem::path& jsonFile) {
+        initializeFromJsonFile( jsonFile );
+    }
+
+
     DeckPtr Parser::parse(const std::string &path) {
         RawDeckPtr rawDeck = readToRawDeck(path);
         return parseFromRawDeck(rawDeck);
@@ -49,13 +54,39 @@ namespace Opm {
         return deck;
     }
 
+
     void Parser::addKeyword(ParserKeywordConstPtr parserKeyword) {
         m_parserKeywords.insert(std::make_pair(parserKeyword->getName(), parserKeyword));
     }
 
+    
+    void Parser::initializeFromJsonFile( const boost::filesystem::path& jsonFile ) {
+        Json::JsonObject jsonConfig(jsonFile);
+        if (jsonConfig.has_item("keywords")) {
+            Json::JsonObject jsonKeywords = jsonConfig.get_item("keywords");
+            loadKeywords( jsonKeywords );
+        } else
+            throw std::invalid_argument("Missing \"keywords\" section in config file: " + jsonFile.string());
+    }
+
+
+    void Parser::loadKeywords(const Json::JsonObject& jsonKeywords) {
+        if (jsonKeywords.is_array()) {
+            for (size_t index = 0; index < jsonKeywords.size(); index++) {
+                Json::JsonObject jsonKeyword = jsonKeywords.get_array_item( index );
+                ParserKeywordConstPtr parserKeyword( new ParserKeyword( jsonKeyword ));
+                
+                addKeyword( parserKeyword );
+            }
+        } else
+            throw std::invalid_argument("Input JSON object is not an array");
+    }
+
+
     bool Parser::hasKeyword(const std::string& keyword) const {
         return m_parserKeywords.find(keyword) != m_parserKeywords.end();
     }
+
 
     RawDeckPtr Parser::readToRawDeck(const std::string& path) const {
         RawDeckPtr rawDeck(new RawDeck());

@@ -21,6 +21,7 @@ Deck/KeywordContainer.cpp
 )
 
 set( parser_source 
+Parser/ParserEnums.cpp
 Parser/ParserKeyword.cpp 
 Parser/Parser.cpp 
 Parser/ParserRecord.cpp
@@ -33,7 +34,7 @@ Parser/ParserStringItem.cpp
 
 
 add_library(Parser ${rawdeck_source} ${parser_source} ${deck_source})
-target_link_libraries(Parser Logger ${Boost_LIBRARIES})
+target_link_libraries(Parser opm-json Logger ${Boost_LIBRARIES})
 
 
 

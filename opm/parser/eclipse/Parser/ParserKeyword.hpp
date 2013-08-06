@@ -22,6 +22,8 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
+#include <opm/json/JsonObject.hpp>
+
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
@@ -31,24 +33,25 @@ namespace Opm {
 
     class ParserKeyword {
     public:
+        ParserKeyword(const char * name);
         ParserKeyword(const std::string& name);
         ParserKeyword(const std::string& name, size_t fixedKeywordSize);
-        void setRecord(ParserRecordConstPtr record);
-        ParserRecordConstPtr getRecord();
+        ParserKeyword(const Json::JsonObject& jsonConfig);
+        ParserRecordPtr getRecord();
         const std::string& getName() const;
         size_t getFixedSize() const;
         bool hasFixedSize() const;
-
+        
         DeckKeywordPtr parse(RawKeywordConstPtr rawKeyword) const;
 
     private:
         std::string m_name;
-        ParserRecordConstPtr m_record;
+        ParserRecordPtr m_record;
         enum ParserKeywordSizeEnum m_keywordSizeType;
         size_t m_fixedSize;
         
-        void setKeywordName(const std::string& name);
-
+        void commonInit(const std::string& name);
+        void addItems( const Json::JsonObject& jsonConfig);
     };
     typedef boost::shared_ptr<ParserKeyword> ParserKeywordPtr;
     typedef boost::shared_ptr<const ParserKeyword> ParserKeywordConstPtr;
