@@ -33,15 +33,28 @@ namespace Json {
     public:
         JsonObject(const boost::filesystem::path& jsonFile );
         JsonObject(const std::string& inline_json);
+        JsonObject(const char * inline_json);
         JsonObject(cJSON * root);
         ~JsonObject();
         
         bool has_item(const std::string& key) const;
-        JsonObject get_object(const std::string& key);
-        std::string get_string(const std::string& key);
-        size_t size();
+        JsonObject get_array_item( size_t index ) const;
+        JsonObject get_item(const std::string& key) const;
+
+        std::string get_string(const std::string& key) const;
+        std::string as_string() const;
+        bool is_string( ) const;
+
+        int get_int(const std::string& key) const;
+        bool is_number( ) const;
+        int as_int() const;
+
+        bool is_array( ) const;
+        bool is_object( ) const;
         
+        size_t size() const;
     private:
+        JsonObject get_scalar_object(const std::string& key) const;
         void initialize(const std::string& inline_json);
         cJSON * root;
         bool    owner;

@@ -24,6 +24,8 @@
 #include <fstream>
 #include <boost/shared_ptr.hpp>
 
+#include <opm/json/JsonObject.hpp>
+
 #include <opm/parser/eclipse/Logger/Logger.hpp>
 #include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
 #include <opm/parser/eclipse/RawDeck/RawDeck.hpp>
@@ -39,6 +41,7 @@ namespace Opm {
     class Parser {
     public:
         Parser();
+        Parser(const boost::filesystem::path& jsonFile);
 
         /// The starting point of the parsing process. The supplied file is parsed, and the resulting Deck is returned.
         DeckPtr parse(const std::string &path);
@@ -52,6 +55,9 @@ namespace Opm {
         /// Method to add ParserKeyword instances, these holding type and size information about the keywords and their data.
         void addKeyword(ParserKeywordConstPtr parserKeyword);
         bool hasKeyword(const std::string& keyword) const;
+
+        void initializeFromJsonFile( const boost::filesystem::path& jsonFile );
+        void loadKeywords(const Json::JsonObject& jsonKeywords);
 
     private:
         std::map<std::string, ParserKeywordConstPtr> m_parserKeywords;

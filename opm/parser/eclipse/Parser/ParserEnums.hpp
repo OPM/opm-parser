@@ -30,13 +30,30 @@ namespace Opm {
         FIXED = 1
     };
 
+
+
     enum ParserItemSizeEnum {
         ALL = 0,
         SINGLE = 1,
-        ITEM_BOX = 2
+        BOX = 2
     };
 
 
+
+    enum ParserValueTypeEnum {
+        INT = 0,
+        FLOAT = 1,
+        STRING = 2
+    };
+
+    
+    const std::string ParserItemSizeEnum2String(ParserItemSizeEnum enumValue);
+    const std::string ParserKeywordSizeEnum2String(ParserKeywordSizeEnum enumValue);
+    const std::string ParserValueTypeEnum2String(ParserValueTypeEnum enumValue);
+        
+    ParserItemSizeEnum ParserItemSizeEnumFromString(const std::string& stringValue);
+    ParserKeywordSizeEnum ParserKeywordSizeEnumFromString(const std::string& stringValue);
+    ParserValueTypeEnum ParserValueTypeEnumFromString(const std::string& stringValue);
 }
 
 #endif

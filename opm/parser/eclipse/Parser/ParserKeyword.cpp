@@ -20,41 +20,102 @@
 #include <string>
 #include <stdexcept>
 
+
+#include <opm/json/JsonObject.hpp>
+
 #include <opm/parser/eclipse/Parser/ParserConst.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
+#include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
+#include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
 
 namespace Opm {
 
+
     ParserKeyword::ParserKeyword(const std::string& name) {
-        setKeywordName(name);
+        commonInit(name);
         m_keywordSizeType = UNDEFINED;
     }
 
-    ParserKeyword::ParserKeyword(const std::string& name, size_t fixedKeywordSize) {
 
-        setKeywordName(name);
+    ParserKeyword::ParserKeyword(const char * name) {
+        commonInit(name);
+        m_keywordSizeType = UNDEFINED;
+    }
+
+
+    ParserKeyword::ParserKeyword(const std::string& name, size_t fixedKeywordSize) {
+        commonInit(name);
         m_keywordSizeType = FIXED;
         m_fixedSize = fixedKeywordSize;
     }
+    
+    
+    ParserKeyword::ParserKeyword(const Json::JsonObject& jsonConfig) {
+        if (jsonConfig.has_item("name")) {
+            commonInit(jsonConfig.get_string("name"));
+        } else
+            throw std::invalid_argument("Json object is missing name: property");
 
-    void ParserKeyword::setKeywordName(const std::string& name) {
+        if (jsonConfig.has_item("size")) {
+            m_fixedSize = (size_t) jsonConfig.get_int("size");
+            m_keywordSizeType = FIXED;
+        } else
+            m_keywordSizeType = UNDEFINED;
+
+        if (jsonConfig.has_item("items")) 
+            addItems( jsonConfig );
+    }
+
+    
+    void ParserKeyword::commonInit(const std::string& name) {
         if (name.length() > ParserConst::maxKeywordLength)
             throw std::invalid_argument("Given keyword name is too long - max 8 characters.");
-
+        
         for (unsigned int i = 0; i < name.length(); i++)
             if (islower(name[i]))
                 throw std::invalid_argument("Keyword must be all upper case - mixed case not allowed:" + name);
-
+        
         m_name = name;
+        m_record = ParserRecordPtr(new ParserRecord);
     }
 
-    void ParserKeyword::setRecord(ParserRecordConstPtr record) {
-        m_record = record;
+
+    void ParserKeyword::addItems( const Json::JsonObject& jsonConfig) {
+        const Json::JsonObject itemsConfig = jsonConfig.get_item("items");
+        if (itemsConfig.is_array()) {
+            size_t num_items = itemsConfig.size();
+            for (size_t i=0; i < num_items; i++) {
+                const Json::JsonObject itemConfig = itemsConfig.get_array_item( i );
+                
+                if (itemConfig.has_item("value_type")) {
+                    ParserValueTypeEnum valueType = ParserValueTypeEnumFromString( itemConfig.get_string("value_type") );
+                    switch( valueType ) {
+                    case INT:
+                        {
+                            ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem( itemConfig ));
+                            m_record->addItem( item );
+                        }
+                        break;
+                    case STRING:
+                        {
+                            ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem( itemConfig ));
+                            m_record->addItem( item );
+                        }
+                        break;
+                    default:
+                        throw std::invalid_argument("Not implemented.");
+                    }
+                } else
+                    throw std::invalid_argument("Json config object missing \"value_type\": ... item");            
+            }
+        } else
+            throw std::invalid_argument("The items: object must be an array");            
     }
 
-    ParserRecordConstPtr ParserKeyword::getRecord() {
+    ParserRecordPtr ParserKeyword::getRecord() {
         return m_record;
     }
+
 
     const std::string& ParserKeyword::getName() const {
         return m_name;

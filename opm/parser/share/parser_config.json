@@ -1,0 +1,40 @@
+{"keywords" : 
+[
+   {"name" : "BPR" , "items" : 
+     [{"name": "I" , "size_type" : "SINGLE" , "value_type" : "INT"}, 
+      {"name": "J" , "size_type" : "SINGLE" , "value_type" : "INT"}, 
+      {"name": "K" , "size_type" : "SINGLE" , "value_type" : "INT"}]},
+   {"name" : "GRIDUNIT" , "size" : 1, "items" : [{"name" : "LengthUnit"  , "size_type" : "SINGLE" , "value_type" : "STRING" , "default" : "METRES"}]},
+   {"name" : "INCLUDE"  , "size" : 1, "items" : [{"name" : "IncludeFile" , "size_type" : "SINGLE" , "value_type" : "STRING"}]},
+   {"name" : "RADFIN4", "size" : 1},        
+   {"name" : "DIMENS", "size" : 1 , "items" : 
+     [{"name": "NX" , "size_type" : "SINGLE" , "value_type" : "INT"}, 
+      {"name": "NY" , "size_type" : "SINGLE" , "value_type" : "INT"}, 
+      {"name": "NZ" , "size_type" : "SINGLE" , "value_type" : "INT"}]},
+{"name" : "START", "size" : 1},        
+{"name" : "GRIDOPTS", "size" : 1},        
+{"name" : "ENDSCALE", "size" : 1},        
+{"name" : "EQLOPTS", "size" : 1},        
+{"name" : "TABDIMS", "size" : 1},        
+{"name" : "EQLDIMS", "size" : 1},        
+{"name" : "REGDIMS", "size" : 1},        
+{"name" : "FAULTDIM", "size" : 1},        
+{"name" : "WELLDIMS", "size" : 1},        
+{"name" : "VFPPDIMS", "size" : 1},        
+{"name" : "RPTSCHED", "size" : 1},        
+{"name" : "WHISTCTL", "size" : 1},        
+{"name" : "SUMMARY", "size" : 0},        
+{"name" : "TITLE", "size" : 0},        
+{"name" : "RUNSPEC", "size" : 0},        
+{"name" : "METRIC", "size" : 0},        
+{"name" : "SCHEDULE", "size" : 0},        
+{"name" : "SKIPREST", "size" : 0},        
+{"name" : "NOECHO", "size" : 0},        
+{"name" : "END", "size" : 0},        
+{"name" : "OIL", "size" : 0},        
+{"name" : "GAS", "size" : 0},        
+{"name" : "WATER", "size" : 0},        
+{"name" : "DISGAS", "size" : 0},        
+{"name" : "VAPOIL", "size" : 0}
+]}
+ 
