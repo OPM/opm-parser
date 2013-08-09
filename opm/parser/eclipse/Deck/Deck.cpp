@@ -17,6 +17,8 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <vector>
+
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 
 namespace Opm {
@@ -33,9 +35,18 @@ namespace Opm {
         m_keywords->addKeyword(keyword);
     }
     
-    DeckKeywordConstPtr Deck::getKeyword(const std::string& keyword) const {
-        return m_keywords->getKeyword(keyword);
+    DeckKeywordConstPtr Deck::getKeyword(const std::string& keyword, size_t index) const {
+        return m_keywords->getKeyword(keyword , index);
     }
+    
+    size_t Deck::numKeywords(const std::string& keyword) {
+        return m_keywords->numKeywords( keyword );
+    }
+
+    const std::vector<DeckKeywordConstPtr>& Deck::getKeywordList(const std::string& keyword) {
+        return m_keywords->getKeywordList( keyword );
+    }
+
 
 }
 

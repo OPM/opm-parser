@@ -6,7 +6,7 @@
  */
 
 #ifndef KEYWORDCONTAINER_HPP
-#define	KEYWORDCONTAINER_HPP
+#define KEYWORDCONTAINER_HPP
 
 #include <vector>
 #include <map>
@@ -23,8 +23,9 @@ namespace Opm {
         bool hasKeyword(const std::string& keyword) const;
         size_t size() const;
         void addKeyword(DeckKeywordConstPtr keyword);
-        DeckKeywordConstPtr getKeyword(const std::string& keyword) const;
-
+        DeckKeywordConstPtr getKeyword(const std::string& keyword, size_t index) const;
+        const std::vector<DeckKeywordConstPtr>&  getKeywordList(const std::string& keyword) const;
+        size_t numKeywords(const std::string& keyword) const;
 
     private:
         std::vector<DeckKeywordConstPtr> m_keywordList;
@@ -34,5 +35,5 @@ namespace Opm {
     typedef boost::shared_ptr<const KeywordContainer> KeywordContainerConstPtr;
 }
 
-#endif	/* KEYWORDCONTAINER_HPP */
+#endif  /* KEYWORDCONTAINER_HPP */
 
