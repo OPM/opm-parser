@@ -28,7 +28,6 @@
 
 #include <opm/parser/eclipse/Logger/Logger.hpp>
 #include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
-#include <opm/parser/eclipse/RawDeck/RawDeck.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 
@@ -44,13 +43,7 @@ namespace Opm {
         Parser(const boost::filesystem::path& jsonFile);
 
         /// The starting point of the parsing process. The supplied file is parsed, and the resulting Deck is returned.
-        DeckPtr parse(const std::string &path);
-        
-        /// Function to parse directly from a raw deck
-        DeckPtr parseFromRawDeck(RawDeckConstPtr rawDeck);
-
-        /// Reads an eclipse file and returns a tokenized RawDeck
-        RawDeckPtr readToRawDeck(const std::string& path) const;
+        DeckPtr parse(const std::string &dataFile);
 
         /// Method to add ParserKeyword instances, these holding type and size information about the keywords and their data.
         void addKeyword(ParserKeywordConstPtr parserKeyword);
@@ -61,12 +54,11 @@ namespace Opm {
 
     private:
         std::map<std::string, ParserKeywordConstPtr> m_parserKeywords;
-        void readToRawDeck(RawDeckPtr rawDeck, const std::string& path) const;
-        void processIncludeKeyword(RawDeckPtr rawDeck, RawKeywordConstPtr keyword, const boost::filesystem::path& dataFolderPath) const;
+        bool tryParseKeyword(const DeckConstPtr deck ,  std::ifstream& inputstream , RawKeywordPtr& rawKeyword);
+        void parseFile(DeckPtr deck , const std::string &file) ;
         boost::filesystem::path verifyValidInputPath(const std::string& inputPath) const;
         void populateDefaultKeywords();
-        bool isFixedLenghtKeywordFinished(RawKeywordConstPtr rawKeyword) const;
-
+        RawKeywordPtr newRawKeyword(const DeckConstPtr deck , const std::string& keywordString);
 
     };
 
