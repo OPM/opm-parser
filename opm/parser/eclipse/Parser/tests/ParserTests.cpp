@@ -138,19 +138,6 @@ BOOST_AUTO_TEST_CASE(inititalizeFromFile_missing_keywords_throw) {
 }
 
 
-
-
-/*
-BOOST_AUTO_TEST_CASE(createWithValidJsonFileArgument) {
-    boost::filesystem::path jsonFile("testdata/json/example1.json");
-    BOOST_CHECK_NO_THROW( Parser(jsonFile) );
-}
-*/
-
-
-
-
-
 /***************** Simple Int parsing ********************************/
 
 ParserKeywordPtr setupParserKeywordInt(std::string name, int numberOfItems) {
