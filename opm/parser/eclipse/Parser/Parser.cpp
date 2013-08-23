@@ -29,7 +29,6 @@
 namespace Opm {
 
     Parser::Parser() {
-        populateDefaultKeywords();
     }
 
     Parser::Parser(const boost::filesystem::path& jsonFile) {
@@ -45,6 +44,12 @@ namespace Opm {
         parseFile(deck, dataFile, strictParsing);
         return deck;
     }
+
+
+    size_t Parser::size() const {
+        return m_parserKeywords.size();
+    }
+
 
     void Parser::parseFile(DeckPtr deck, const std::string &file, bool parseStrict) {
         std::ifstream inputstream;
@@ -104,6 +109,7 @@ namespace Opm {
         } else
             throw std::invalid_argument("Input JSON object is not an array");
     }
+
 
     bool Parser::hasKeyword(const std::string& keyword) const {
         return m_parserKeywords.find(keyword) != m_parserKeywords.end();
@@ -172,6 +178,40 @@ namespace Opm {
         }
         return pathToInputFile.parent_path();
     }
+
+    bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
+
+        try {
+            Json::JsonObject jsonKeyword(configFile);
+            ParserKeywordConstPtr parserKeyword( new ParserKeyword( jsonKeyword ));
+            addKeyword( parserKeyword );
+            return true;
+        } catch (...) {
+            return false;
+        }
+
+    }
+
+
+    void Parser::loadKeywordsFromDirectory(const boost::filesystem::path& directory, bool recursive, bool onlyALLCAPS8) {
+        if (!boost::filesystem::exists(directory))
+            throw std::invalid_argument("Directory: " + directory.string() + " does not exist.");
+        else {
+            boost::filesystem::directory_iterator end;
+            for (boost::filesystem::directory_iterator iter(directory) ; iter != end; iter++) {
+                if (is_directory(*iter)) {
+                    if (recursive)
+                        loadKeywordsFromDirectory(*iter , recursive , onlyALLCAPS8);
+                } else {
+                    if (ParserKeyword::validName( iter->path().filename()) || !onlyALLCAPS8 ) {
+                        if (!loadKeywordFromFile(*iter))
+                            std::cerr << "** Warning: failed to load keyword from file:" << iter->path() << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    
 
     void Parser::populateDefaultKeywords() {
         addKeyword(ParserKeywordConstPtr(new ParserKeyword("GRIDUNIT", 1)));
