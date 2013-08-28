@@ -2,9 +2,10 @@ cmake_minimum_required (VERSION 2.6)
 project (OPMParser CXX)
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CMAKE_BUILD_TYPE "debug")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -pg -Wall -fopenmp -ggdb")
+option( INCLUDE_STATOIL_TESTS  "Include the tests which need proprietary Statoil data" OFF)
 
 if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
    set (Boost_NO_SYSTEM_PATHS TRUE)
