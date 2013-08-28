@@ -18,7 +18,7 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 # The boost version is not tested, but should be OK according to documentation. Tested with 1.45.0
 find_package(Boost 1.36.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
 
-
+include(cmake/Modules/UseMultiArch.cmake)
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 enable_testing()
@@ -26,7 +26,7 @@ enable_testing()
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 add_subdirectory(opm/json)
-add_subdirectory(opm/parser/eclipse)
+add_subdirectory(opm/parser)
 
 file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
 
