@@ -15,10 +15,11 @@ set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
-# The boost version is not tested, but should be OK according to documentation. Tested with 1.45.0
-find_package(Boost 1.36.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
-
 include(cmake/Modules/UseMultiArch.cmake)
+
+# Requires BOOST filesystem version 3, thus 1.44 is necessary.
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
+find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 enable_testing()
