@@ -2,9 +2,10 @@ cmake_minimum_required (VERSION 2.6)
 project (OPMParser CXX)
 
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 SET(CMAKE_BUILD_TYPE "debug")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -pg -Wall -fopenmp -ggdb")
+option( INCLUDE_STATOIL_TESTS  "Include the tests which need proprietary Statoil data" OFF)
 
 if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
    set (Boost_NO_SYSTEM_PATHS TRUE)
@@ -14,10 +15,11 @@ set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
+include(cmake/Modules/UseMultiArch.cmake)
+
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
-
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 enable_testing()
@@ -25,7 +27,7 @@ enable_testing()
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
 add_subdirectory(opm/json)
-add_subdirectory(opm/parser/eclipse)
+add_subdirectory(opm/parser)
 
 file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
 
