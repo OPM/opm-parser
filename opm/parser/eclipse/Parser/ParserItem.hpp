@@ -42,18 +42,20 @@ namespace Opm {
     ParserItem(const Json::JsonObject& jsonConfig);
     
     virtual DeckItemConstPtr scan(RawRecordPtr rawRecord) const = 0;
-    
     const std::string& name() const;
     ParserItemSizeEnum sizeType() const;
 
     static int defaultInt();
     static std::string defaultString();
     static double defaultDouble();
+    virtual bool equal(const ParserItem& other) const;
+    virtual void inlineNew(std::ostream& os) const {}
 
     virtual ~ParserItem() {
     }
     
   protected:
+    bool m_defaultSet;
 
 #include <opm/parser/eclipse/Parser/ParserItemTemplate.hpp>
 

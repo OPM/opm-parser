@@ -64,4 +64,28 @@ namespace Opm {
 
         return deckRecord;
     }
+
+    bool ParserRecord::equal(const ParserRecord& other) const {
+        bool equal = true;
+        if (size() == other.size()) {
+           size_t itemIndex = 0;
+           while (true) {
+               if (itemIndex == size())
+                   break;
+               {
+                   ParserItemConstPtr item = get(itemIndex);
+                   ParserItemConstPtr otherItem = other.get(itemIndex);
+                   
+                   if (!item->equal(*otherItem)) {
+                       equal = false;
+                       break;
+                   }
+               }
+               itemIndex++;
+            }
+        } else
+            equal = false;
+        return equal;
+    }
+
 }
