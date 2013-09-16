@@ -31,7 +31,20 @@ Parser/ParserIntItem.cpp
 Parser/ParserBoolItem.cpp  
 Parser/ParserDoubleItem.cpp  
 Parser/ParserStringItem.cpp  
+${PROJECT_BINARY_DIR}/generated-source/DefaultKeywordList.cpp
 )
+
+set( build_parser_source 
+Parser/ParserEnums.cpp
+Parser/ParserKeyword.cpp 
+Parser/ParserRecord.cpp
+Parser/ParserItem.cpp
+Parser/ParserIntItem.cpp  
+Parser/ParserBoolItem.cpp  
+Parser/ParserDoubleItem.cpp  
+Parser/ParserStringItem.cpp  
+)
+
 
 set( HEADER_FILES
 RawDeck/RawConsts.hpp 
@@ -59,12 +72,25 @@ Parser/ParserStringItem.hpp
 Parser/ParserItemTemplate.hpp
 )
 
+add_library(buildParser ${rawdeck_source} ${build_parser_source} ${deck_source})
+target_link_libraries(buildParser opm-json Logger ${Boost_LIBRARIES})
+
+#-----------------------------------------------------------------
+
+add_executable( createDefaultKeywordList Parser/createDefaultKeywordList.cpp )
+target_link_libraries( createDefaultKeywordList buildParser opm-json Logger ${Boost_LIBRARIES} )
+
+add_custom_command( OUTPUT ${PROJECT_BINARY_DIR}/generated-source/DefaultKeywordList.cpp
+                    COMMAND createDefaultKeywordList ${PROJECT_SOURCE_DIR}/opm/parser/share/keywords ${PROJECT_BINARY_DIR}/generated-source/DefaultKeywordList.cpp
+                    DEPENDS createDefaultKeywordList )
 
 
-
+#-----------------------------------------------------------------
 
 add_library(Parser ${rawdeck_source} ${parser_source} ${deck_source})
 target_link_libraries(Parser opm-json Logger ${Boost_LIBRARIES})
+
+
 
 install( TARGETS Parser DESTINATION ${CMAKE_INSTALL_LIBDIR} )
 install( FILES ${HEADER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/opm/parser/eclipse)

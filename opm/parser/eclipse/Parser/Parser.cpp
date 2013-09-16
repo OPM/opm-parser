@@ -28,11 +28,9 @@
 
 namespace Opm {
 
-    Parser::Parser() {
-    }
-
-    Parser::Parser(const boost::filesystem::path& jsonFile) {
-        initializeFromJsonFile(jsonFile);
+    Parser::Parser(bool addDefault) {
+        if (addDefault)
+            addDefaultKeywords();
     }
 
     DeckPtr Parser::parse(const std::string &dataFile) const {
@@ -120,14 +118,6 @@ namespace Opm {
             throw std::invalid_argument("Failed to open file: " + file.string());
     }
 
-    void Parser::initializeFromJsonFile(const boost::filesystem::path& jsonFile) {
-        Json::JsonObject jsonConfig(jsonFile);
-        if (jsonConfig.has_item("keywords")) {
-            Json::JsonObject jsonKeywords = jsonConfig.get_item("keywords");
-            loadKeywords(jsonKeywords);
-        } else
-            throw std::invalid_argument("Missing \"keywords\" section in config file: " + jsonFile.string());
-    }
 
     void Parser::loadKeywords(const Json::JsonObject& jsonKeywords) {
         if (jsonKeywords.is_array()) {
@@ -195,7 +185,6 @@ namespace Opm {
         return false;
     }
 
-
     bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
 
         try {
@@ -203,11 +192,12 @@ namespace Opm {
             ParserKeywordConstPtr parserKeyword(new ParserKeyword(jsonKeyword));
             addKeyword(parserKeyword);
             return true;
-        } catch (...) {
+        } 
+        catch (...) {
             return false;
         }
-
     }
+
 
     void Parser::loadKeywordsFromDirectory(const boost::filesystem::path& directory, bool recursive, bool onlyALLCAPS8) {
         if (!boost::filesystem::exists(directory))

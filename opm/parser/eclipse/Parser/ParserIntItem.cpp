@@ -33,11 +33,15 @@ namespace Opm {
 
     ParserIntItem::ParserIntItem(const std::string& itemName, ParserItemSizeEnum sizeType, int defaultValue) : ParserItem(itemName, sizeType) {
         m_default = defaultValue;
+        m_defaultSet = true;
     }
 
-    ParserIntItem::ParserIntItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig) {
-        if (jsonConfig.has_item("default"))
+    ParserIntItem::ParserIntItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig)
+    {
+        if (jsonConfig.has_item("default")) {
             m_default = jsonConfig.get_int("default");
+            m_defaultSet = true;
+        }
         else
             m_default = defaultInt();
     }
@@ -60,5 +64,22 @@ namespace Opm {
             pushBackToRecord(rawRecord, intsPreparedForDeckItem, defaultActive);
         }
         return deckItem;
+    }
+
+
+    bool ParserIntItem::equal(const ParserIntItem& other) const
+    {
+        if (ParserItem::equal(other) && (getDefault() == other.getDefault()))
+            return true;
+        else
+            return false;
+    }
+
+
+  void ParserIntItem::inlineNew(std::ostream& os) const {
+        os << "new ParserIntItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        if (m_defaultSet)
+            os << "," << getDefault();
+        os << ")";
     }
 }
