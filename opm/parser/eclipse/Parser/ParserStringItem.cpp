@@ -24,24 +24,40 @@
 
 namespace Opm {
 
+    ParserStringItem::ParserStringItem(const std::string& itemName) : ParserItem(itemName) {
+        m_default = defaultString();
+    }
+
+
     ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType) : ParserItem(itemName, sizeType) {
         m_default = defaultString();
     }
 
-    ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType, std::string defaultValue) : ParserItem(itemName, sizeType) {
+    ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType, const std::string& defaultValue) : ParserItem(itemName, sizeType) {
+        setDefault(defaultValue);
+    }
+
+
+    ParserStringItem::ParserStringItem(const std::string& itemName, const std::string& defaultValue) : ParserItem(itemName) {
+        setDefault(defaultValue);
+    }
+
+
+    ParserStringItem::ParserStringItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig) {
+        if (jsonConfig.has_item("default")) 
+            setDefault( jsonConfig.get_string("default") );
+        else
+            m_default = defaultString();
+    }
+
+
+
+    void ParserStringItem::setDefault(const std::string& defaultValue) {
         m_default = defaultValue;
         m_defaultSet = true;
     }
 
-    ParserStringItem::ParserStringItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig) {
-        if (jsonConfig.has_item("default"))
-            {
-                m_default = jsonConfig.get_string("default");
-                m_defaultSet = true;
-            }
-        else
-            m_default = defaultString();
-    }
+
 
     /// Scans the rawRecords data according to the ParserItems definition.
     /// returns a DeckItem object.
