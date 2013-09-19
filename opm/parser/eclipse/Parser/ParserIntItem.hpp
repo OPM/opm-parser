@@ -33,13 +33,17 @@ namespace Opm {
 
     class ParserIntItem : public ParserItem {
     public:
+        ParserIntItem(const std::string& itemName);
         ParserIntItem(const std::string& itemName, ParserItemSizeEnum sizeType);
+        ParserIntItem(const std::string& itemName, int defaultValue);
         ParserIntItem(const std::string& itemName, ParserItemSizeEnum sizeType, int defaultValue);
         ParserIntItem( const Json::JsonObject& jsonConfig);
 
         DeckItemConstPtr scan(RawRecordPtr rawRecord) const;
         bool equal(const ParserIntItem& other) const;
         void inlineNew(std::ostream& os) const;
+        
+        void setDefault(int defaultValue);
         int getDefault() const {
             return m_default;
         }

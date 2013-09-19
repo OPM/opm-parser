@@ -27,23 +27,33 @@
 
 namespace Opm {
 
+    ParserIntItem::ParserIntItem(const std::string& itemName) : ParserItem(itemName) {
+        m_default = defaultInt();
+    }
+
     ParserIntItem::ParserIntItem(const std::string& itemName, ParserItemSizeEnum sizeType) : ParserItem(itemName, sizeType) {
         m_default = defaultInt();
     }
 
+    ParserIntItem::ParserIntItem(const std::string& itemName, int defaultValue) : ParserItem(itemName) {
+        setDefault(defaultValue);
+    }
+
     ParserIntItem::ParserIntItem(const std::string& itemName, ParserItemSizeEnum sizeType, int defaultValue) : ParserItem(itemName, sizeType) {
-        m_default = defaultValue;
-        m_defaultSet = true;
+        setDefault(defaultValue);
     }
 
     ParserIntItem::ParserIntItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig)
     {
-        if (jsonConfig.has_item("default")) {
-            m_default = jsonConfig.get_int("default");
-            m_defaultSet = true;
-        }
+        if (jsonConfig.has_item("default")) 
+            setDefault( jsonConfig.get_int("default") );
         else
             m_default = defaultInt();
+    }
+
+    void ParserIntItem::setDefault(int defaultValue) {
+        m_default = defaultValue;
+        m_defaultSet = true;
     }
 
     /// Scans the rawRecords data according to the ParserItems definition.
