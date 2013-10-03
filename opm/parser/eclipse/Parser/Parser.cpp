@@ -83,6 +83,7 @@ namespace Opm {
 
 
     void Parser::parseFile(DeckPtr deck, const boost::filesystem::path& file, const boost::filesystem::path& rootPath, bool parseStrict) const {
+        bool verbose = false;
         std::ifstream inputstream;
         inputstream.open(file.string().c_str());
 
@@ -98,8 +99,14 @@ namespace Opm {
                     if (includeFile.is_relative())
                         includeFile = rootPath / includeFile;
 
+                    if (verbose)
+                        std::cout << rawKeyword->getKeywordName() << "  " << includeFile << std::endl;
+
                     parseFile(deck, includeFile, rootPath , parseStrict);
                 } else {
+                    if (verbose)
+                        std::cout << rawKeyword->getKeywordName() << std::endl;
+
                     if (hasKeyword(rawKeyword->getKeywordName())) {
                         ParserKeywordConstPtr parserKeyword = m_parserKeywords.at(rawKeyword->getKeywordName());
                         DeckKeywordConstPtr deckKeyword = parserKeyword->parse(rawKeyword);
@@ -133,7 +140,7 @@ namespace Opm {
     RawKeywordPtr Parser::createRawKeyword(const DeckConstPtr deck, const std::string& keywordString, bool strictParsing) const {
         if (hasKeyword(keywordString)) {
             ParserKeywordConstPtr parserKeyword = m_parserKeywords.find(keywordString)->second;
-            if (parserKeyword->getSizeType() == UNDEFINED)
+            if (parserKeyword->getSizeType() == SLASH_TERMINATED)
                 return RawKeywordPtr(new RawKeyword(keywordString));
             else {
                 size_t targetSize;
@@ -150,7 +157,7 @@ namespace Opm {
                     }
                     targetSize = sizeDefinitionItem->getInt(0);
                 }
-                return RawKeywordPtr(new RawKeyword(keywordString, targetSize));
+                return RawKeywordPtr(new RawKeyword(keywordString, targetSize , parserKeyword->isTableCollection()));
             }
         } else {
             if (strictParsing) {

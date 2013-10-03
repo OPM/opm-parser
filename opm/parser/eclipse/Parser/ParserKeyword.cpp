@@ -44,18 +44,22 @@ namespace Opm {
     }
 
 
+    ParserKeyword::ParserKeyword(const std::string& name ,  const std::string& sizeKeyword , const std::string& sizeItem,  bool isTableCollection) {
+        commonInit(name);
+        m_isTableCollection = isTableCollection;
+        initSizeKeyword(sizeKeyword , sizeItem);
+    }
+
     ParserKeyword::ParserKeyword(const std::string& name, size_t fixedKeywordSize) {
         commonInit(name);
         m_keywordSizeType = FIXED;
         m_fixedSize = fixedKeywordSize;
     }
     
-    
-    ParserKeyword::ParserKeyword(const std::string& name , const std::string& sizeKeyword , const std::string& sizeItem) {
-        commonInit(name);
-        initSizeKeyword( sizeKeyword , sizeItem );
-    }
 
+    bool ParserKeyword::isTableCollection() const {
+        return m_isTableCollection;
+    }
 
     void ParserKeyword::initSize( const Json::JsonObject& jsonConfig ) {
         // The number of record has been set explicitly with the size: keyword
@@ -65,15 +69,22 @@ namespace Opm {
             if (sizeObject.is_number()) {
                 m_fixedSize = (size_t) sizeObject.as_int( );
                 m_keywordSizeType = FIXED;
-            } else {
-                std::string sizeKeyword = sizeObject.get_string("keyword");
-                std::string sizeItem = sizeObject.get_string("item");
-                initSizeKeyword( sizeKeyword , sizeItem);
-            }
+            } else
+                initSizeKeyword( sizeObject );
+
+        } else
+            if (jsonConfig.has_item("num_tables")) {
+             Json::JsonObject numTablesObject = jsonConfig.get_item("num_tables");
+
+             if (!numTablesObject.is_object())
+                 throw std::invalid_argument("The num_tables key must point to a {} object");
+
+             initSizeKeyword( numTablesObject );
+             m_isTableCollection = true;
         } else {
             if (jsonConfig.has_item("items"))
                 // The number of records is undetermined - the keyword will be '/' terminated.
-                m_keywordSizeType = UNDEFINED;
+                m_keywordSizeType = SLASH_TERMINATED;
             else {
                 m_keywordSizeType = FIXED;
                 if (jsonConfig.has_item("data"))
@@ -100,6 +111,9 @@ namespace Opm {
         if (jsonConfig.has_item("data"))
             initData( jsonConfig );
 
+        if (isTableCollection())
+            addTableItems();
+
         if (m_fixedSize == 0 && m_keywordSizeType == FIXED)
             return;
         else  {
@@ -118,6 +132,13 @@ namespace Opm {
     }
 
     
+    void ParserKeyword::initSizeKeyword(const Json::JsonObject& sizeObject) {
+        std::string sizeKeyword = sizeObject.get_string("keyword");
+        std::string sizeItem = sizeObject.get_string("item");
+        initSizeKeyword( sizeKeyword , sizeItem);
+    }
+
+
     bool ParserKeyword::validName(const std::string& name) {
         if (name.length() > ParserConst::maxKeywordLength)
             return false;
@@ -138,8 +159,9 @@ namespace Opm {
         if (!validName(name))
             throw std::invalid_argument("Invalid name: " + name + "keyword must be all upper case, max 8 characters. Starting with character.");
         
-        m_keywordSizeType = UNDEFINED;
+        m_keywordSizeType = SLASH_TERMINATED;
         m_isDataKeyword = false;
+        m_isTableCollection = false;
         m_name = name;
         m_record = ParserRecordPtr(new ParserRecord);
     }
@@ -203,6 +225,12 @@ namespace Opm {
             }
         } else
             throw std::invalid_argument("The items: object must be an array");            
+    }
+
+
+    void ParserKeyword::addTableItems() {
+        ParserDoubleItemConstPtr item = ParserDoubleItemConstPtr(new ParserDoubleItem("TABLEROW" , ALL , 0));
+        addItem( item );
     }
 
 
@@ -306,7 +334,8 @@ namespace Opm {
         if ((m_name == other.m_name) &&
             (m_record->equal( *(other.m_record) )) &&
             (m_keywordSizeType == other.m_keywordSizeType) &&
-            (m_isDataKeyword == other.m_isDataKeyword))
+            (m_isDataKeyword == other.m_isDataKeyword) &&
+            (m_isTableCollection == other.m_isTableCollection))
             {
                 bool equal = false;
                 switch(m_keywordSizeType) {
@@ -314,7 +343,7 @@ namespace Opm {
                     if (m_fixedSize == other.m_fixedSize)
                         equal = true;
                     break;
-                case UNDEFINED:
+                case SLASH_TERMINATED:
                     equal = true;
                     break;
                 case OTHER:
@@ -332,14 +361,17 @@ namespace Opm {
 
   void ParserKeyword::inlineNew(std::ostream& os , const std::string& lhs, const std::string& indent) const {
         switch(m_keywordSizeType) {
-        case UNDEFINED:
+        case SLASH_TERMINATED:
             os << lhs << " = new ParserKeyword(\"" << m_name << "\");" << std::endl;
             break;
         case FIXED:
-            os << lhs << " = new ParserKeyword(\"" << m_name << "\"," << m_fixedSize << ");" << std::endl;
+            os << lhs << " = new ParserKeyword(\"" << m_name << "\",(size_t)" << m_fixedSize << ");" << std::endl;
             break;
         case OTHER:
-            os << lhs << " = new ParserKeyword(\"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\");" << std::endl;
+            if (isTableCollection())
+                os << lhs << " = new ParserKeyword(\"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\" , true);" << std::endl;
+            else
+                os << lhs << " = new ParserKeyword(\"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\");" << std::endl;
             break;
         }
 
