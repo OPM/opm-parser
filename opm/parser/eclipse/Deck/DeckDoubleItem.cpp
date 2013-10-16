@@ -51,6 +51,18 @@ namespace Opm {
     }
 
 
+    void DeckDoubleItem::push_backDefault(double data) {
+        m_data.push_back( data );
+        m_defaultApplied = true;
+    }
+    
+    
+    void DeckDoubleItem::push_backMultiple(double value, size_t numValues) {
+        for (size_t i = 0; i < numValues; i++) 
+            m_data.push_back( value );
+    }
+
+
     size_t DeckDoubleItem::size() const {
         return m_data.size();
     }
