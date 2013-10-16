@@ -37,6 +37,8 @@ namespace Opm {
         void push_back(std::deque<double> data , size_t items);
         void push_back(std::deque<double> data);
         void push_back(double value);
+        void push_backDefault(double value);
+        void push_backMultiple(double value, size_t numValues);
         
         size_t size() const;
     private:

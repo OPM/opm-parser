@@ -69,3 +69,20 @@ BOOST_AUTO_TEST_CASE(size_variouspushes_sizecorrect) {
     deckStringItem.push_back("WELL-5");
     BOOST_CHECK_EQUAL(3U, deckStringItem.size());
 }
+
+
+BOOST_AUTO_TEST_CASE(DefaultApplied) {
+    DeckStringItem deckStringItem("TEST");
+    BOOST_CHECK_EQUAL( false , deckStringItem.defaultApplied() );
+    deckStringItem.push_backDefault( "1" );
+    BOOST_CHECK_EQUAL( true , deckStringItem.defaultApplied() );
+}
+
+
+BOOST_AUTO_TEST_CASE(PushBackMultiple) {
+    DeckStringItem item("HEI");
+    item.push_backMultiple("Heisann ", 100U );
+    BOOST_CHECK_EQUAL( 100U , item.size() );
+    for (size_t i=0; i < 100; i++)
+        BOOST_CHECK_EQUAL("Heisann " , item.getString(i));
+}

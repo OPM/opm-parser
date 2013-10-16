@@ -494,3 +494,5 @@ BOOST_AUTO_TEST_CASE(scan_intsAndStrings_dataCorrect) {
     BOOST_CHECK_EQUAL(3, deckItemInts->getInt(2));
     BOOST_CHECK_EQUAL(3, deckItemInts->getInt(3));
 }
+
+

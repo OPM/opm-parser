@@ -58,7 +58,7 @@ namespace Opm {
   protected:
     bool m_defaultSet;
 
-#include <opm/parser/eclipse/Parser/ParserItemTemplate.hpp>
+
 
   private:
     std::string m_name;
@@ -67,6 +67,8 @@ namespace Opm {
 
   typedef boost::shared_ptr<const ParserItem> ParserItemConstPtr;
   typedef boost::shared_ptr<ParserItem> ParserItemPtr;
+
+
 }
 
 #endif
