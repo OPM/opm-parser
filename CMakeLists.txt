@@ -30,6 +30,11 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
+# if we are using dynamic boost, the header file must generate a main() function
+if (BUILD_SHARED_LIBS)
+   add_definitions(-DBOOST_TEST_DYN_LINK)
+endif ()
+
 enable_testing()
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
