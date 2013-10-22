@@ -14,7 +14,12 @@ if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
    set (Boost_NO_SYSTEM_PATHS TRUE)
 endif (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
 
-set(Boost_USE_STATIC_LIBS        ON)
+# if we are building shared libraries ourselves, then don't include Boost in them
+if (BUILD_SHARED_LIBS)
+   set(Boost_USE_STATIC_LIBS    OFF)
+else ()
+   set(Boost_USE_STATIC_LIBS     ON)
+endif ()
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
