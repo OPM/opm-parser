@@ -22,6 +22,7 @@ find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_frame
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 enable_testing()
+enable_language(C)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 find_package(cjson)
