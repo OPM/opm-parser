@@ -36,10 +36,19 @@ if (BUILD_SHARED_LIBS)
 endif ()
 
 enable_testing()
+enable_language(C)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+find_package(cjson)
+if (HAVE_CJSON)
+   include_directories( ${CJSON_INCLUDE_DIR} )   
+else()
+    include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
+endif()
 
 add_subdirectory(opm/json)
+
+
 add_subdirectory(opm/parser)
 
 
