@@ -4,10 +4,6 @@ project (OPMParser CXX)
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 SET(CMAKE_BUILD_TYPE "debug")
 SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -Wall -ggdb")
-# Clang does not (yet) support profile-guided optimization or auto. parallelization
-if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-   set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -fopenmp")
-endif ()
 option( INCLUDE_STATOIL_TESTS  "Include the tests which need proprietary Statoil data" OFF)
 
 if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
