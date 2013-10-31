@@ -1,9 +1,18 @@
 cmake_minimum_required (VERSION 2.6)
 project (OPMParser CXX)
+enable_testing()
+enable_language(C)
+
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-SET(CMAKE_BUILD_TYPE "debug")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG -Wall -ggdb")
+SET( CMAKE_CXX_FLAGS "-pipe -Wall -Wno-unknown-pragma -std=c++0x")
+SET( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -O0 -DDEBUG  -ggdb3")
+SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
+
+SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragma -std=c99")
+SET( CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -O0 -DDEBUG -ggdb3")
+SET( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
+
 option( INCLUDE_STATOIL_TESTS  "Include the tests which need proprietary Statoil data" OFF)
 
 if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
@@ -31,8 +40,6 @@ if (BUILD_SHARED_LIBS)
    add_definitions(-DBOOST_TEST_DYN_LINK)
 endif ()
 
-enable_testing()
-enable_language(C)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 find_package(cjson)
@@ -42,9 +49,8 @@ else()
     include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
 endif()
 
+
 add_subdirectory(opm/json)
-
-
 add_subdirectory(opm/parser)
 
 
