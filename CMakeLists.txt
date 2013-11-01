@@ -5,11 +5,11 @@ enable_language(C)
 
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-SET( CMAKE_CXX_FLAGS "-pipe -Wall -Wno-unknown-pragma")
+SET( CMAKE_CXX_FLAGS "-pipe -Wall -Wno-unknown-pragmas")
 SET( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -O0 -DDEBUG  -ggdb3")
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
 
-SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragma -std=c99")
+SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragmas -std=c99")
 SET( CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -O0 -DDEBUG -ggdb3")
 SET( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
 
