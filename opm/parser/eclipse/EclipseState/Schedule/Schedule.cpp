@@ -30,22 +30,6 @@ namespace Opm {
             throw std::invalid_argument("Deck does not contain SCHEDULE section.\n");
     }
 
-    /*void Schedule::initTimeMap(DeckConstPtr deck) {
-        DeckKeywordConstPtr scheduleKeyword = deck->getKeyword( "SCHEDULE" );
-        size_t deckIndex = scheduleKeyword->getDeckIndex() + 1;
-        while (deckIndex < deck->size()) {
-            DeckKeywordConstPtr keyword = deck->getKeyword( deckIndex );
-
-            if (keyword->name() == "DATES")
-                m_timeMap->addFromDATESKeyword( keyword );
-            else if (keyword->name() == "TSTEP")
-                m_timeMap->addFromTSTEPKeyword( keyword );
-                
-            deckIndex++;
-        }
-    }
-     */
-
     void Schedule::createTimeMap(DeckConstPtr deck) {
         boost::gregorian::date startDate(defaultStartDate);
         if (deck->hasKeyword("START")) {
@@ -88,6 +72,9 @@ namespace Opm {
             if (keyword->name() == "WCONPROD")
                 handleWCONPROD(keyword, currentStep);
 
+
+            if (keyword->name() == "COMPDAT") 
+                handleCOMPDAT( keyword , currentStep );
 
             deckIndex++;
         }
@@ -132,6 +119,18 @@ namespace Opm {
 
     void Schedule::handleWCONPROD(DeckKeywordConstPtr keyword, size_t currentStep) {
         handleWCON(keyword, currentStep, true);
+    }
+
+    void Schedule::handleCOMPDAT(DeckKeywordConstPtr keyword , size_t currentStep) {
+        std::map<std::string , std::vector< CompletionConstPtr> > completionMapList = Completion::completionsFromCOMPDATKeyword( keyword );
+        std::map<std::string , std::vector< CompletionConstPtr> >::iterator iter;
+        
+        for( iter= completionMapList.begin(); iter != completionMapList.end(); iter++) {
+            const std::string wellName = iter->first;
+            WellPtr well = getWell( wellName );
+
+            well->addCompletions( currentStep , iter->second );
+        }
     }
 
     boost::gregorian::date Schedule::getStartDate() const {

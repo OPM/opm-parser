@@ -17,20 +17,22 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SCHEDULE_ENUMS_H
+#define SCHEDULE_ENUMS_H
+
+#include <string>
 #include <stdexcept>
-#include <iostream>
-#include <boost/filesystem.hpp>
 
-#define BOOST_TEST_MODULE WellTest
-#include <boost/test/unit_test.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+namespace Opm {
+    enum CompletionStateEnum {
+        OPEN = 1,
+        SHUT = 2,
+        AUTO = 3
+    };
 
-
-
-#include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
-
-
-BOOST_AUTO_TEST_CASE(CreateWellCorrentName) {
-    Opm::Well well("WELL1");
-    BOOST_CHECK_EQUAL( "WELL1" , well.name() );
+    const std::string CompletionStateEnum2String( CompletionStateEnum enumValue );
+    CompletionStateEnum CompletionStateEnumFromString( const std::string& stringValue );
+    
 }
+
+#endif
