@@ -19,9 +19,10 @@
 #ifndef SCHEDULE_HPP
 #define SCHEDULE_HPP
 
-
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/GroupTree.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Group.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 
@@ -44,26 +45,25 @@ namespace Opm
         size_t numWells() const;
         bool hasWell(const std::string& wellName) const;
         WellPtr getWell(const std::string& wellName) const;
-
+        GroupTreePtr getGroupTree(size_t t) const;
         size_t numGroups() const;
         bool hasGroup(const std::string& groupName) const;
         GroupPtr getGroup(const std::string& groupName) const;
-        
-
+  
     private:
         TimeMapPtr m_timeMap;
         std::map<std::string , WellPtr> m_wells;
         std::map<std::string , GroupPtr> m_groups;
-
+        boost::shared_ptr<DynamicState<GroupTreePtr> > m_rootGroupTree;
 
         void initFromDeck(DeckConstPtr deck);
         void createTimeMap(DeckConstPtr deck);
+        void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void iterateScheduleSection(DeckConstPtr deck);
-
+        bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
         void addGroup(const std::string& groupName);
         void addWell(const std::string& wellName);
-
-        void handleWELSPECS(DeckKeywordConstPtr keyword);
+        void handleWELSPECS(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWCONProducer(DeckKeywordConstPtr keyword, size_t currentStep, bool isPredictionMode);
         void handleWCONHIST(DeckKeywordConstPtr keyword , size_t currentStep);
         void handleWCONPROD(DeckKeywordConstPtr keyword, size_t currentStep);
@@ -74,6 +74,8 @@ namespace Opm
         void handleGCONPROD(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleDATES(DeckKeywordConstPtr keyword);
         void handleTSTEP(DeckKeywordConstPtr keyword);
+        void handleGRUPTREE(DeckKeywordConstPtr keyword, size_t currentStep);
+
     };
     typedef boost::shared_ptr<Schedule> SchedulePtr;
     typedef boost::shared_ptr<const Schedule> ScheduleConstPtr;

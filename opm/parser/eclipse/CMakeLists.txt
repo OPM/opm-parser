@@ -53,7 +53,9 @@ EclipseState/Schedule/Well.cpp
 EclipseState/Schedule/Group.cpp
 EclipseState/Schedule/Completion.cpp
 EclipseState/Schedule/CompletionSet.cpp
-EclipseState/Schedule/ScheduleEnums.cpp )
+EclipseState/Schedule/ScheduleEnums.cpp 
+EclipseState/Schedule/GroupTreeNode.cpp
+EclipseState/Schedule/GroupTree.cpp)
 
 set( HEADER_FILES
 RawDeck/RawConsts.hpp 
@@ -88,6 +90,8 @@ EclipseState/Schedule/DynamicState.hpp
 EclipseState/Schedule/Completion.hpp
 EclipseState/Schedule/CompletionSet.hpp
 EclipseState/Schedule/ScheduleEnums.hpp
+EclipseState/Schedule/GroupTreeNode.hpp 
+EclipseState/Schedule/GroupTree.hpp 
 )
 
 add_library(buildParser ${rawdeck_source} ${build_parser_source} ${deck_source})
