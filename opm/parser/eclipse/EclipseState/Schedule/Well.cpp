@@ -29,20 +29,30 @@
 
 namespace Opm {
 
-    Well::Well(const std::string& name , TimeMapConstPtr timeMap) 
+    Well::Well(const std::string& name , TimeMapConstPtr timeMap , size_t creationTimeStep)
         : m_oilRate( new DynamicState<double>( timeMap , 0.0)) , 
           m_gasRate(new DynamicState<double>(timeMap, 0.0)), 
           m_waterRate(new DynamicState<double>(timeMap, 0.0)), 
           m_injectionRate(new DynamicState<double>(timeMap, 0.0)), 
           m_inPredictionMode(new DynamicState<bool>(timeMap, true)),
           m_isProducer(new DynamicState<bool>(timeMap, true)) ,
-          m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )) 
+          m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
+          m_groupName( new DynamicState<std::string>( timeMap , "" ))
     {
         m_name = name;
+        m_creationTimeStep = creationTimeStep;
     }
 
     const std::string& Well::name() const {
         return m_name;
+    }
+
+
+    bool Well::hasBeenDefined(size_t timeStep) const {
+        if (timeStep < m_creationTimeStep)
+            return false;
+        else
+            return true;
     }
 
 
@@ -132,6 +142,16 @@ namespace Opm {
         m_completions->add( time_step , newCompletionSet);
     }
     
+    const std::string Well::getGroupName(size_t time_step) const {
+        return m_groupName->get(time_step);
+    }
+
+
+    void Well::setGroupName(size_t time_step, const std::string& groupName ) {
+        m_groupName->add(time_step , groupName);
+    }
+
+
 }
 
 

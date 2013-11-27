@@ -56,13 +56,14 @@ namespace Opm
         std::map<std::string , GroupPtr> m_groups;
         boost::shared_ptr<DynamicState<GroupTreePtr> > m_rootGroupTree;
 
+        void addWellToGroup( GroupPtr newGroup , WellPtr well , size_t timeStep);
         void initFromDeck(DeckConstPtr deck);
         void createTimeMap(DeckConstPtr deck);
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void iterateScheduleSection(DeckConstPtr deck);
         bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
-        void addGroup(const std::string& groupName);
-        void addWell(const std::string& wellName);
+        void addGroup(const std::string& groupName , size_t timeStep);
+        void addWell(const std::string& wellName , size_t timeStep);
         void handleWELSPECS(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWCONProducer(DeckKeywordConstPtr keyword, size_t currentStep, bool isPredictionMode);
         void handleWCONHIST(DeckKeywordConstPtr keyword , size_t currentStep);

@@ -25,7 +25,7 @@ namespace Opm {
 
     Schedule::Schedule(DeckConstPtr deck) {
         if (deck->hasKeyword("SCHEDULE")) {
-            addGroup( "FIELD" );
+            addGroup( "FIELD", 0 );
             initFromDeck(deck);
         } else
             throw std::invalid_argument("Deck does not contain SCHEDULE section.\n");
@@ -129,16 +129,15 @@ namespace Opm {
             const std::string& groupName = record->getItem("GROUP")->getString(0);
 
             if (!hasGroup(groupName)) {
-                addGroup(groupName);
+                addGroup(groupName , currentStep);
             }
 
             if (!hasWell(wellName)) {
-                addWell(wellName);
+                addWell(wellName , currentStep);
             }
-            WellPtr well = getWell(wellName);
+            addWellToGroup( getGroup(groupName) , getWell(wellName) , currentStep);
 
             needNewTree = handleGroupFromWELSPECS(record->getItem(1)->getString(0), newTree);
-
         }
         if (needNewTree) {
             m_rootGroupTree->add(currentStep, newTree);
@@ -272,8 +271,8 @@ namespace Opm {
         return m_rootGroupTree->get(timeStep);
     }
 
-    void Schedule::addWell(const std::string& wellName) {
-        WellPtr well(new Well(wellName, m_timeMap));
+    void Schedule::addWell(const std::string& wellName, size_t timeStep) {
+        WellPtr well(new Well(wellName, m_timeMap , timeStep));
         m_wells[ wellName ] = well;
     }
 
@@ -292,8 +291,8 @@ namespace Opm {
             throw std::invalid_argument("Well: " + wellName + " does not exist");
     }
 
-    void Schedule::addGroup(const std::string& groupName) {
-        GroupPtr group(new Group(groupName, m_timeMap));
+    void Schedule::addGroup(const std::string& groupName, size_t timeStep) {
+        GroupPtr group(new Group(groupName, m_timeMap , timeStep));
         m_groups[ groupName ] = group;
     }
 
@@ -312,6 +311,15 @@ namespace Opm {
             throw std::invalid_argument("Group: " + groupName + " does not exist");
     }
 
+    void Schedule::addWellToGroup( GroupPtr newGroup , WellPtr well , size_t timeStep) {
+        const std::string currentGroupName = well->getGroupName(timeStep);
+        if (currentGroupName != "") {
+            GroupPtr currentGroup = getGroup( currentGroupName );
+            currentGroup->delWell( timeStep , well->name());
+        }
+        well->setGroupName(timeStep , newGroup->name());
+        newGroup->addWell(timeStep , well);
+    }
 
 
 }

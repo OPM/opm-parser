@@ -33,8 +33,12 @@ namespace Opm {
 
     class Well {
     public:
-        Well(const std::string& name, TimeMapConstPtr timeMap);
+        Well(const std::string& name, TimeMapConstPtr timeMap , size_t creationTimeStep);
         const std::string& name() const;
+
+        bool hasBeenDefined(size_t timeStep) const;
+        const std::string getGroupName(size_t timeStep) const;
+        void setGroupName(size_t timeStep , const std::string& groupName);
 
         double getOilRate(size_t timeStep) const;
         void   setOilRate(size_t timeStep, double oilRate);
@@ -56,6 +60,7 @@ namespace Opm {
         void switch2Producer(size_t timeStep );
         void switch2Injector(size_t timeStep );
         
+        size_t m_creationTimeStep;
         std::string m_name;
         boost::shared_ptr<DynamicState<double> > m_oilRate;
         boost::shared_ptr<DynamicState<double> > m_gasRate;
@@ -65,6 +70,7 @@ namespace Opm {
         boost::shared_ptr<DynamicState<bool> > m_inPredictionMode;
         boost::shared_ptr<DynamicState<bool> > m_isProducer;
         boost::shared_ptr<DynamicState<CompletionSetConstPtr> > m_completions;
+        boost::shared_ptr<DynamicState<std::string> > m_groupName;
     };
     typedef boost::shared_ptr<Well> WellPtr;
     typedef boost::shared_ptr<const Well> WellConstPtr;

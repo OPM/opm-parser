@@ -22,6 +22,7 @@
 #include <boost/date_time.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Group.hpp>
 
+
 namespace Opm {
     namespace GroupProduction {
         struct ProductionData {
@@ -77,19 +78,33 @@ namespace Opm {
         }
     }
 
+    
+        
+
     /*****************************************************************/
     
-    Group::Group(const std::string& name , TimeMapConstPtr timeMap) : 
+    Group::Group(const std::string& name , TimeMapConstPtr timeMap , size_t creationTimeStep) : 
         m_injection( new GroupInjection::InjectionData(timeMap) ),
-        m_production( new GroupProduction::ProductionData( timeMap ))
+        m_production( new GroupProduction::ProductionData( timeMap )),
+        m_wells( new DynamicState<WellSetConstPtr>(timeMap , WellSetConstPtr(new WellSet() )))
     {
         m_name = name;
+        m_creationTimeStep = creationTimeStep;
     }
 
 
     const std::string& Group::name() const {
         return m_name;
     }
+
+
+    bool Group::hasBeenDefined(size_t timeStep) const {
+        if (timeStep < m_creationTimeStep)
+            return false;
+        else
+            return true;
+    }
+
 
     
     void Group::setInjectionPhase(size_t time_step , PhaseEnum phase){
@@ -232,7 +247,46 @@ namespace Opm {
     }
 
 
+    /*****************************************************************/
     
+    WellSetConstPtr Group::wellMap(size_t time_step) const {
+        return m_wells->get(time_step);
+    }
+
+
+    bool Group::hasWell(const std::string& wellName , size_t time_step) {
+        WellSetConstPtr wellSet = wellMap(time_step);
+        return wellSet->hasWell(wellName);
+    }
+
+
+    WellConstPtr Group::getWell(const std::string& wellName , size_t time_step) const {
+        WellSetConstPtr wellSet = wellMap(time_step);
+        return wellSet->getWell(wellName);
+    }
+
+
+    size_t Group::numWells(size_t time_step) {
+        WellSetConstPtr wellSet = wellMap(time_step);
+        return wellSet->size();
+    }
+    
+    void Group::addWell(size_t time_step , WellPtr well) {
+        WellSetConstPtr wellSet = wellMap(time_step);
+        WellSetPtr newWellSet = WellSetPtr( wellSet->shallowCopy() );
+        
+        newWellSet->addWell(well);
+        m_wells->add(time_step , newWellSet);
+    }
+
+
+    void Group::delWell(size_t time_step, const std::string& wellName) {
+        WellSetConstPtr wellSet = wellMap(time_step);
+        WellSetPtr newWellSet = WellSetPtr( wellSet->shallowCopy() );
+        
+        newWellSet->delWell(wellName);
+        m_wells->add(time_step , newWellSet);
+    }
 
 }
 
