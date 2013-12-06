@@ -17,8 +17,8 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef OPM_PARSER_HPP
+#define OPM_PARSER_HPP
 #include <string>
 #include <map>
 #include <fstream>
@@ -66,7 +66,6 @@ namespace Opm {
         bool tryParseKeyword(const DeckConstPtr deck , const std::string& filename , size_t& lineNR , std::ifstream& inputstream , RawKeywordPtr& rawKeyword, bool strictParsing) const;
         void parseFile(DeckPtr deck , const boost::filesystem::path& file, const boost::filesystem::path& rootPath, bool strictParsing) const;
         RawKeywordPtr createRawKeyword(const DeckConstPtr deck , const std::string& filename , size_t lineNR , const std::string& keywordString, bool strictParsing) const;
-        void addDefaultKeywords();
     };
 
     typedef std::shared_ptr<Parser> ParserPtr;

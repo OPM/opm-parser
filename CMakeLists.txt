@@ -1,65 +1,71 @@
-cmake_minimum_required (VERSION 2.6)
-project (OPMParser CXX)
-enable_testing()
-enable_language(C)
+# -*- mode: cmake; tab-width: 2; indent-tabs-mode: t; truncate-lines: t; compile-command: "cmake -Wdev" -*-
+# vim: set filetype=cmake autoindent tabstop=2 shiftwidth=2 noexpandtab softtabstop=2 nowrap:
 
+###########################################################################
+#                                                                         #
+# Note: The bulk of the build system is located in the cmake/ directory.  #
+#       This file only contains the specializations for this particular   #
+#       project. Most likely you are interested in editing one of these   #
+#       files instead:                                                    #
+#                                                                         #
+#       dune.module                              Name and version number  #
+#       CMakeLists_files.cmake                   Path of source files     #
+#       cmake/Modules/${project}-prereqs.cmake   Dependencies             #
+#                                                                         #
+###########################################################################
 
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-SET( CMAKE_CXX_FLAGS "-pipe -Wall -Wno-unknown-pragmas -std=c++0x")
-SET( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -O0 -DDEBUG  -ggdb3")
-SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
+cmake_minimum_required (VERSION 2.8)
 
-SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragmas -std=c99")
-SET( CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}   -O0 -DDEBUG -ggdb3")
-SET( CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
+# additional search modules
+find_path (OPM_MACROS_ROOT cmake/Modules/OpmInit.cmake
+	PATHS ${opm-macros_ROOT}
+	      ${CMAKE_CURRENT_SOURCE_DIR}
+	DOC "Path to build system macros and scripts"
+	NO_DEFAULT_PATH
+	)
+list (APPEND CMAKE_MODULE_PATH "${OPM_MACROS_ROOT}/cmake/Modules")
 
-option( INCLUDE_STATOIL_TESTS  "Include the tests which need proprietary Statoil data" OFF)
+# not the same location as most of the other projects; this hook overrides
+macro (dir_hook)
+	set (doxy_dir "Documentation")
+endmacro (dir_hook)
 
-if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
-   set (Boost_NO_SYSTEM_PATHS TRUE)
-endif (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
+# project information is in dune.module. Read this file and set variables.
+# we cannot generate dune.module since it is read by dunecontrol before
+# the build starts, so it makes sense to keep the data there then.
+include (OpmInit)
 
-# if we are building shared libraries ourselves, then don't include Boost in them
-if (BUILD_SHARED_LIBS)
-   set(Boost_USE_STATIC_LIBS    OFF)
-else ()
-   set(Boost_USE_STATIC_LIBS     ON)
-endif ()
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME    OFF)
+# list of prerequisites for this particular project; this is in a
+# separate file (in cmake/Modules sub-directory) because it is shared
+# with the find module
+include (${project}-prereqs)
 
-include(cmake/Modules/UseMultiArch.cmake)
+# read the list of components from this file (in the project directory);
+# it should set various lists with the names of the files to include
+include (CMakeLists_files.cmake)
 
-# Requires BOOST filesystem version 3, thus 1.44 is necessary.
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
-find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+macro (config_hook)
+endmacro (config_hook)
 
-# if we are using dynamic boost, the header file must generate a main() function
-if (BUILD_SHARED_LIBS)
-   add_definitions(-DBOOST_TEST_DYN_LINK)
-endif ()
+macro (prereqs_hook)
+endmacro (prereqs_hook)
 
+macro (sources_hook)
+endmacro (sources_hook)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-find_package(cjson)
-if (HAVE_CJSON)
-   include_directories( ${CJSON_INCLUDE_DIR} )   
-else()
-    include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
-endif()
+macro (fortran_hook)
+endmacro (fortran_hook)
 
+macro (tests_hook)
+endmacro (tests_hook)
 
-add_subdirectory(opm/json)
-add_subdirectory(opm/parser)
+macro (install_hook)
+#	# copy the cmake macros to system when installing
+#	install (
+#		DIRECTORY cmake
+#		DESTINATION share/opm
+#		)
+endmacro (install_hook)
 
-
-# These commands should be run unconditionally; i.e. the testdata
-# directory should be copied to the EXECUTABLE_OUTPUT_PATH for each
-# invocation of cmake, and the the directory generated-source/ should
-# be (re)created under the build directory for each invocation. These
-# dependencies are currently not correctly handled.
-
-file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/generated-source")
-
+# all setup common to the OPM library modules is done here
+include (OpmLibMain)

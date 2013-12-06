@@ -1,0 +1,6 @@
+Module: opm-parser
+Description: Open Porous Media Initiative File Parser Library
+# if you change this, make sure to also change opm/core/version.h
+Version: 1.1
+Label: 2013.10
+Maintainer: joaho@statoil.com

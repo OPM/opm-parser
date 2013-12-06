@@ -29,8 +29,6 @@
 namespace Opm {
 
     Parser::Parser(bool addDefault) {
-        if (addDefault)
-            addDefaultKeywords();
     }
 
     DeckPtr Parser::parse(const std::string &dataFile) const {
