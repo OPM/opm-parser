@@ -24,7 +24,7 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <cjson/cJSON.h>
+#include <opm/json/cjson/cJSON.h>
 
 
 namespace Json {
