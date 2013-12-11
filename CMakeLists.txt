@@ -22,8 +22,8 @@ endif (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
 # if we are building shared libraries ourselves, then don't include Boost in them
 if (BUILD_SHARED_LIBS)
    set(Boost_USE_STATIC_LIBS    OFF)
-else ()
-   set(Boost_USE_STATIC_LIBS     ON)
+elseif (DEFINED BUILD_SHARED_LIBS)
+   set(Boost_USE_STATIC_LIBS    ON)
 endif ()
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
@@ -36,7 +36,7 @@ find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_frame
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 # if we are using dynamic boost, the header file must generate a main() function
-if (BUILD_SHARED_LIBS)
+if (NOT Boost_USE_STATIC_LIBS)
    add_definitions(-DBOOST_TEST_DYN_LINK)
 endif ()
 
