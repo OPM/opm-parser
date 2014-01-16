@@ -48,6 +48,12 @@ namespace Opm {
         void   setWaterRate(size_t timeStep, double waterRate);
         double getInjectionRate(size_t timeStep) const;
         void   setInjectionRate(size_t timeStep, double injectionRate);
+        int    getHeadI(size_t timeStep) const;
+        void   setHeadI(size_t timeStep, int headI);
+        int    getHeadJ(size_t timeStep) const;
+        void   setHeadJ(size_t timeStep, int headJ);
+        double getRefDepth(size_t timeStep) const;
+        void   setRefDepth(size_t timeStep, double headJ);
         
         bool isInPredictionMode(size_t timeStep) const;
         void setInPredictionMode(size_t timeStep, bool isInPredictionMode);
@@ -56,6 +62,7 @@ namespace Opm {
         void addWELSPECS(DeckRecordConstPtr deckRecord);
         void addCompletions(size_t time_step , const std::vector<CompletionConstPtr>& newCompletions);
         CompletionSetConstPtr getCompletions(size_t timeStep);
+
     private:
         void switch2Producer(size_t timeStep );
         void switch2Injector(size_t timeStep );
@@ -71,6 +78,11 @@ namespace Opm {
         std::shared_ptr<DynamicState<bool> > m_isProducer;
         std::shared_ptr<DynamicState<CompletionSetConstPtr> > m_completions;
         std::shared_ptr<DynamicState<std::string> > m_groupName;
+
+        // WELSPECS data
+        std::shared_ptr<DynamicState<int> > m_headI;
+        std::shared_ptr<DynamicState<int> > m_headJ;
+        std::shared_ptr<DynamicState<double> > m_refDepth;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

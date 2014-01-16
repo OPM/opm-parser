@@ -313,3 +313,51 @@ BOOST_AUTO_TEST_CASE( WellTestGroupAndWellRelation ) {
     BOOST_CHECK_EQUAL( true  , group2->hasWell("W_2" , 1));
 }
 
+
+BOOST_AUTO_TEST_CASE(WellTestWELSPECSDataLoaded) {
+    ParserPtr parser(new Parser());
+    boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
+    DeckPtr deck =  parser->parseFile(scheduleFile.string());
+    ScheduleConstPtr sched(new Schedule(deck));
+
+    BOOST_CHECK_EQUAL(3U, sched->numWells());
+    BOOST_CHECK(sched->hasWell("W_1"));
+    BOOST_CHECK(sched->hasWell("W_2"));
+    BOOST_CHECK(sched->hasWell("W_3"));
+    {
+        WellConstPtr well1 = sched->getWell("W_1");
+        BOOST_CHECK_EQUAL(0, well1->getHeadI(2));
+        BOOST_CHECK_EQUAL(30, well1->getHeadI(3));
+        BOOST_CHECK_EQUAL(30, well1->getHeadI(11));
+        BOOST_CHECK_EQUAL(0, well1->getHeadJ(2));
+        BOOST_CHECK_EQUAL(37, well1->getHeadJ(3));
+        BOOST_CHECK_EQUAL(37, well1->getHeadJ(11));
+        BOOST_CHECK_EQUAL(0, well1->getRefDepth(3));
+        BOOST_CHECK_EQUAL(0.0, well1->getRefDepth(4));
+        BOOST_CHECK_EQUAL(0.0, well1->getRefDepth(11));
+
+        WellConstPtr well2 = sched->getWell("W_2");
+        BOOST_CHECK_EQUAL(0, well2->getHeadI(2));
+        BOOST_CHECK_EQUAL(20, well2->getHeadI(3));
+        BOOST_CHECK_EQUAL(20, well2->getHeadI(11));
+        BOOST_CHECK_EQUAL(0, well2->getHeadJ(2));
+        BOOST_CHECK_EQUAL(51, well2->getHeadJ(3));
+        BOOST_CHECK_EQUAL(51, well2->getHeadJ(11));
+        BOOST_CHECK_EQUAL(0, well2->getRefDepth(3));
+        BOOST_CHECK_EQUAL(0.0, well2->getRefDepth(4));
+        BOOST_CHECK_EQUAL(0.0, well2->getRefDepth(11));
+
+        WellConstPtr well3 = sched->getWell("W_3");
+        BOOST_CHECK_EQUAL(0, well3->getHeadI(2));
+        BOOST_CHECK_EQUAL(31, well3->getHeadI(3));
+        BOOST_CHECK_EQUAL(31, well3->getHeadI(11));
+        BOOST_CHECK_EQUAL(0, well3->getHeadJ(2));
+        BOOST_CHECK_EQUAL(18, well3->getHeadJ(3));
+        BOOST_CHECK_EQUAL(18, well3->getHeadJ(11));
+        BOOST_CHECK_EQUAL(0, well3->getRefDepth(3));
+        BOOST_CHECK_EQUAL(0.0, well3->getRefDepth(4));
+        BOOST_CHECK_EQUAL(0.0, well3->getRefDepth(11));
+
+    }
+}
+
