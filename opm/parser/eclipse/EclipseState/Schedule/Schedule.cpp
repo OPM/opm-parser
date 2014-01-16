@@ -20,7 +20,6 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
 #include <iostream>
-#include <stdexcept>
 
 namespace Opm {
 
