@@ -1,3 +1,23 @@
+/*
+  Copyright (C) 2013 by Andreas Lauser
+
+  This file is part of the Open Porous Media project (OPM).
+
+  OPM is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  OPM is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with OPM.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <math.h>
 
@@ -43,14 +63,14 @@ void check_parser(ParserPtr parser) {
     BOOST_CHECK_EQUAL(1U , record0->size());
 
     DeckItemConstPtr item0 = record0->getItem(0);
-    BOOST_CHECK_EQUAL(10 * 4, item0->size());
+    BOOST_CHECK_EQUAL(10U * 4, item0->size());
 }
 
 void check_SwofTable(ParserPtr parser) {
     DeckPtr deck =  parser->parseString(parserData);
     Opm::SwofTable swofTable(deck->getKeyword("SWOF"));
 
-    BOOST_CHECK_EQUAL(10, swofTable.getSwColumn().size());
+    BOOST_CHECK_EQUAL(10U, swofTable.getSwColumn().size());
     BOOST_CHECK_EQUAL(0.1, swofTable.getSwColumn()[0]);
     BOOST_CHECK_EQUAL(0.0, swofTable.getKrwColumn()[0]);
     BOOST_CHECK_EQUAL(1.0, swofTable.getKrowColumn()[0]);
