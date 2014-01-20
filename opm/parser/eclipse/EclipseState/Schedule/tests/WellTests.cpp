@@ -26,6 +26,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 
+#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Deck/DeckStringItem.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
@@ -199,7 +201,6 @@ BOOST_AUTO_TEST_CASE(GroupnameCorretlySet) {
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
     Opm::Well well("WELL1" , timeMap ,0);
 
-
     BOOST_CHECK_EQUAL("" , well.getGroupName(2));
 
     well.setGroupName(3 , "GROUP2");
@@ -207,4 +208,27 @@ BOOST_AUTO_TEST_CASE(GroupnameCorretlySet) {
     BOOST_CHECK_EQUAL("GROUP2" , well.getGroupName(6));
     well.setGroupName(7 , "NEWGROUP");
     BOOST_CHECK_EQUAL("NEWGROUP" , well.getGroupName(7));
+}
+
+BOOST_AUTO_TEST_CASE(addWELSPECS_nodataexists_dataAdded) {
+    Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
+    Opm::Well well("WELL1" , timeMap ,0);
+
+    BOOST_CHECK_EQUAL(0, well.getHeadI(0));
+    well.setHeadI(0, 23);
+    BOOST_CHECK_EQUAL(23, well.getHeadI(0));
+    well.setHeadI(8, 42);
+    BOOST_CHECK_EQUAL(42, well.getHeadI(8));
+
+    BOOST_CHECK_EQUAL(0, well.getHeadJ(0));
+    well.setHeadJ(0, 23);
+    BOOST_CHECK_EQUAL(23, well.getHeadJ(0));
+    well.setHeadJ(8, 42);
+    BOOST_CHECK_EQUAL(42, well.getHeadJ(8));
+
+    BOOST_CHECK_EQUAL(0.0, well.getRefDepth(0));
+    well.setRefDepth(0, 2334.32);
+    BOOST_CHECK_EQUAL(2334.32, well.getRefDepth(0));
+    well.setRefDepth(8, 4222.243);
+    BOOST_CHECK_EQUAL(4222.243, well.getRefDepth(8));
 }

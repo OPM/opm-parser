@@ -30,14 +30,18 @@
 namespace Opm {
 
     Well::Well(const std::string& name , TimeMapConstPtr timeMap , size_t creationTimeStep)
-        : m_oilRate( new DynamicState<double>( timeMap , 0.0)) , 
-          m_gasRate(new DynamicState<double>(timeMap, 0.0)), 
-          m_waterRate(new DynamicState<double>(timeMap, 0.0)), 
-          m_injectionRate(new DynamicState<double>(timeMap, 0.0)), 
+        : m_oilRate( new DynamicState<double>( timeMap , 0.0)) ,
+          m_gasRate(new DynamicState<double>(timeMap, 0.0)),
+          m_waterRate(new DynamicState<double>(timeMap, 0.0)),
+          m_injectionRate(new DynamicState<double>(timeMap, 0.0)),
           m_inPredictionMode(new DynamicState<bool>(timeMap, true)),
           m_isProducer(new DynamicState<bool>(timeMap, true)) ,
           m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
-          m_groupName( new DynamicState<std::string>( timeMap , "" ))
+          m_groupName( new DynamicState<std::string>( timeMap , "" )),
+          m_headI( new DynamicState<int>(timeMap, 0)),
+          m_headJ( new DynamicState<int>(timeMap, 0)),
+          m_refDepth( new DynamicState<double>(timeMap, 0.0))
+
     {
         m_name = name;
         m_creationTimeStep = creationTimeStep;
@@ -75,7 +79,6 @@ namespace Opm {
         switch2Producer( timeStep );
     }
 
-
     double Well::getWaterRate(size_t timeStep) const {
         return m_waterRate->get(timeStep);
     }
@@ -84,7 +87,6 @@ namespace Opm {
         m_waterRate->add(timeStep, waterRate);
         switch2Producer( timeStep );
     }
-
 
     double Well::getInjectionRate(size_t timeStep) const {
         return m_injectionRate->get(timeStep);
@@ -123,9 +125,28 @@ namespace Opm {
         m_inPredictionMode->add(timeStep, inPredictionMode);
     }
     
-    
-    void Well::addWELSPECS(DeckRecordConstPtr deckRecord) {
+    int Well::getHeadI(size_t timeStep) const {
+        return m_headI->get(timeStep);
+    }
 
+    void Well::setHeadI(size_t timeStep, int headI) {
+        m_headI->add(timeStep, headI);
+    }
+
+    int Well::getHeadJ(size_t timeStep) const {
+        return m_headJ->get(timeStep);
+    }
+
+    void Well::setHeadJ(size_t timeStep, int headJ) {
+        m_headJ->add(timeStep, headJ);
+    }
+
+    double Well::getRefDepth(size_t timeStep) const {
+        return m_refDepth->get(timeStep);
+    }
+
+    void Well::setRefDepth(size_t timeStep, double refDepth) {
+        m_refDepth->add(timeStep, refDepth);
     }
 
     CompletionSetConstPtr Well::getCompletions(size_t timeStep) {

@@ -135,8 +135,13 @@ namespace Opm {
             if (!hasWell(wellName)) {
                 addWell(wellName , currentStep);
             }
-            addWellToGroup( getGroup(groupName) , getWell(wellName) , currentStep);
+            WellPtr currentWell = getWell(wellName);
 
+            currentWell->setHeadI(currentStep, record->getItem("HEAD_I")->getInt(0));
+            currentWell->setHeadJ(currentStep, record->getItem("HEAD_J")->getInt(0));
+            currentWell->setRefDepth(currentStep, record->getItem("REF_DEPTH")->getRawDouble(0));
+
+            addWellToGroup( getGroup(groupName) , getWell(wellName) , currentStep);
             needNewTree = handleGroupFromWELSPECS(record->getItem(1)->getString(0), newTree);
         }
         if (needNewTree) {
