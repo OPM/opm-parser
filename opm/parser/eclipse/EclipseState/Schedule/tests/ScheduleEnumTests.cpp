@@ -222,32 +222,68 @@ BOOST_AUTO_TEST_CASE(TestPhaseEnumMask) {
 /*****************************************************************/
 
 BOOST_AUTO_TEST_CASE(TestInjectorEnum2String) {
-    BOOST_CHECK_EQUAL( "OIL"  ,  InjectorType::InjectorEnum2String(InjectorType::OIL));
-    BOOST_CHECK_EQUAL( "GAS"  ,  InjectorType::InjectorEnum2String(InjectorType::GAS));
-    BOOST_CHECK_EQUAL( "WATER" , InjectorType::InjectorEnum2String(InjectorType::WATER));
-    BOOST_CHECK_EQUAL( "MULTI" , InjectorType::InjectorEnum2String(InjectorType::MULTI));
+    BOOST_CHECK_EQUAL( "OIL"  ,  WellInjector::Type2String(WellInjector::OIL));
+    BOOST_CHECK_EQUAL( "GAS"  ,  WellInjector::Type2String(WellInjector::GAS));
+    BOOST_CHECK_EQUAL( "WATER" , WellInjector::Type2String(WellInjector::WATER));
+    BOOST_CHECK_EQUAL( "MULTI" , WellInjector::Type2String(WellInjector::MULTI));
 }
 
 
 BOOST_AUTO_TEST_CASE(TestInjectorEnumFromString) {
-    BOOST_CHECK_THROW( InjectorType::InjectorEnumFromString("XXX") , std::invalid_argument );
-    BOOST_CHECK_EQUAL( InjectorType::OIL   , InjectorType::InjectorEnumFromString("OIL"));
-    BOOST_CHECK_EQUAL( InjectorType::WATER , InjectorType::InjectorEnumFromString("WATER"));
-    BOOST_CHECK_EQUAL( InjectorType::GAS   , InjectorType::InjectorEnumFromString("GAS"));
-    BOOST_CHECK_EQUAL( InjectorType::MULTI , InjectorType::InjectorEnumFromString("MULTI"));
+    BOOST_CHECK_THROW( WellInjector::TypeFromString("XXX") , std::invalid_argument );
+    BOOST_CHECK_EQUAL( WellInjector::OIL   , WellInjector::TypeFromString("OIL"));
+    BOOST_CHECK_EQUAL( WellInjector::WATER , WellInjector::TypeFromString("WATER"));
+    BOOST_CHECK_EQUAL( WellInjector::GAS   , WellInjector::TypeFromString("GAS"));
+    BOOST_CHECK_EQUAL( WellInjector::MULTI , WellInjector::TypeFromString("MULTI"));
 }
 
 
 
 BOOST_AUTO_TEST_CASE(TestInjectorEnumLoop) {
-    BOOST_CHECK_EQUAL( InjectorType::OIL   , InjectorType::InjectorEnumFromString( InjectorType::InjectorEnum2String( InjectorType::OIL ) ));
-    BOOST_CHECK_EQUAL( InjectorType::WATER , InjectorType::InjectorEnumFromString( InjectorType::InjectorEnum2String( InjectorType::WATER ) ));
-    BOOST_CHECK_EQUAL( InjectorType::GAS   , InjectorType::InjectorEnumFromString( InjectorType::InjectorEnum2String( InjectorType::GAS ) ));
-    BOOST_CHECK_EQUAL( InjectorType::MULTI   , InjectorType::InjectorEnumFromString( InjectorType::InjectorEnum2String( InjectorType::MULTI ) ));
+    BOOST_CHECK_EQUAL( WellInjector::OIL     , WellInjector::TypeFromString( WellInjector::Type2String( WellInjector::OIL ) ));
+    BOOST_CHECK_EQUAL( WellInjector::WATER   , WellInjector::TypeFromString( WellInjector::Type2String( WellInjector::WATER ) ));
+    BOOST_CHECK_EQUAL( WellInjector::GAS     , WellInjector::TypeFromString( WellInjector::Type2String( WellInjector::GAS ) ));
+    BOOST_CHECK_EQUAL( WellInjector::MULTI   , WellInjector::TypeFromString( WellInjector::Type2String( WellInjector::MULTI ) ));
 
-    BOOST_CHECK_EQUAL( "MULTI"    , InjectorType::InjectorEnum2String(InjectorType::InjectorEnumFromString(  "MULTI" ) ));
-    BOOST_CHECK_EQUAL( "OIL"    , InjectorType::InjectorEnum2String(InjectorType::InjectorEnumFromString(  "OIL" ) ));
-    BOOST_CHECK_EQUAL( "GAS"    , InjectorType::InjectorEnum2String(InjectorType::InjectorEnumFromString(  "GAS" ) ));
-    BOOST_CHECK_EQUAL( "WATER"  , InjectorType::InjectorEnum2String(InjectorType::InjectorEnumFromString(  "WATER" ) ));
+    BOOST_CHECK_EQUAL( "MULTI"    , WellInjector::Type2String(WellInjector::TypeFromString(  "MULTI" ) ));
+    BOOST_CHECK_EQUAL( "OIL"      , WellInjector::Type2String(WellInjector::TypeFromString(  "OIL" ) ));
+    BOOST_CHECK_EQUAL( "GAS"      , WellInjector::Type2String(WellInjector::TypeFromString(  "GAS" ) ));
+    BOOST_CHECK_EQUAL( "WATER"    , WellInjector::Type2String(WellInjector::TypeFromString(  "WATER" ) ));
+}
+
+/*****************************************************************/
+
+BOOST_AUTO_TEST_CASE(InjectorCOntrolMopdeEnum2String) {
+    BOOST_CHECK_EQUAL( "RATE"  ,  WellInjector::ControlMode2String(WellInjector::RATE));
+    BOOST_CHECK_EQUAL( "RESV"  ,  WellInjector::ControlMode2String(WellInjector::RESV));
+    BOOST_CHECK_EQUAL( "BHP" , WellInjector::ControlMode2String(WellInjector::BHP));
+    BOOST_CHECK_EQUAL( "THP" , WellInjector::ControlMode2String(WellInjector::THP));
+    BOOST_CHECK_EQUAL( "GRUP" , WellInjector::ControlMode2String(WellInjector::GRUP));
+}
+
+
+BOOST_AUTO_TEST_CASE(InjectorControlModeEnumFromString) {
+    BOOST_CHECK_THROW( WellInjector::ControlModeFromString("XXX") , std::invalid_argument );
+    BOOST_CHECK_EQUAL( WellInjector::RATE   , WellInjector::ControlModeFromString("RATE"));
+    BOOST_CHECK_EQUAL( WellInjector::BHP , WellInjector::ControlModeFromString("BHP"));
+    BOOST_CHECK_EQUAL( WellInjector::RESV   , WellInjector::ControlModeFromString("RESV"));
+    BOOST_CHECK_EQUAL( WellInjector::THP , WellInjector::ControlModeFromString("THP"));
+    BOOST_CHECK_EQUAL( WellInjector::GRUP , WellInjector::ControlModeFromString("GRUP"));
+}
+
+
+
+BOOST_AUTO_TEST_CASE(InjectorControlModeEnumLoop) {
+    BOOST_CHECK_EQUAL( WellInjector::RATE     , WellInjector::ControlModeFromString( WellInjector::ControlMode2String( WellInjector::RATE ) ));
+    BOOST_CHECK_EQUAL( WellInjector::BHP   , WellInjector::ControlModeFromString( WellInjector::ControlMode2String( WellInjector::BHP ) ));
+    BOOST_CHECK_EQUAL( WellInjector::RESV     , WellInjector::ControlModeFromString( WellInjector::ControlMode2String( WellInjector::RESV ) ));
+    BOOST_CHECK_EQUAL( WellInjector::THP   , WellInjector::ControlModeFromString( WellInjector::ControlMode2String( WellInjector::THP ) ));
+    BOOST_CHECK_EQUAL( WellInjector::GRUP   , WellInjector::ControlModeFromString( WellInjector::ControlMode2String( WellInjector::GRUP ) ));
+
+    BOOST_CHECK_EQUAL( "THP"    , WellInjector::ControlMode2String(WellInjector::ControlModeFromString(  "THP" ) ));
+    BOOST_CHECK_EQUAL( "RATE"      , WellInjector::ControlMode2String(WellInjector::ControlModeFromString(  "RATE" ) ));
+    BOOST_CHECK_EQUAL( "RESV"      , WellInjector::ControlMode2String(WellInjector::ControlModeFromString(  "RESV" ) ));
+    BOOST_CHECK_EQUAL( "BHP"    , WellInjector::ControlMode2String(WellInjector::ControlModeFromString(  "BHP" ) ));
+    BOOST_CHECK_EQUAL( "GRUP"    , WellInjector::ControlMode2String(WellInjector::ControlModeFromString(  "GRUP" ) ));
 }
 
