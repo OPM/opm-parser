@@ -15,7 +15,7 @@
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 #define BOOST_TEST_MODULE ScheduleIntegrationTests
 #include <math.h>
@@ -71,8 +71,16 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
 
     {
         WellPtr well2 = sched->getWell("W_2");
+        BOOST_CHECK_EQUAL( 0 , well2->getResVRate(2));
+        BOOST_CHECK_CLOSE( 777/Metric::Time , well2->getResVRate(7) , 0.0001);
+        BOOST_CHECK_EQUAL( 0 , well2->getResVRate(8));
 
         BOOST_CHECK_EQUAL( WellCommon::SHUT , well2->getStatus(3));
+
+        BOOST_CHECK_EQUAL( WellProducer::ORAT , well2->getProducerControlMode( 3 ));
+        BOOST_CHECK( well2->hasProductionControl( 3 , WellProducer::ORAT ));
+        BOOST_CHECK( well2->hasProductionControl( 3 , WellProducer::GRAT ));
+        BOOST_CHECK( !well2->hasProductionControl( 8 , WellProducer::GRAT ));
     }
 
 
@@ -80,6 +88,12 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
         WellPtr well3 = sched->getWell("W_3");
 
         BOOST_CHECK_EQUAL( WellCommon::AUTO , well3->getStatus(3));
+
+        BOOST_CHECK_EQUAL( 0 , well3->getLiquidRate(2));
+        BOOST_CHECK_CLOSE( 999/Metric::Time , well3->getLiquidRate(7) , 0.001);
+        BOOST_CHECK_EQUAL( 0 , well3->getLiquidRate(8));
+
+        BOOST_CHECK_EQUAL( WellProducer::RESV, well3->getProducerControlMode( 7 ));
     }
 
     {
@@ -128,6 +142,17 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
         BOOST_CHECK_EQUAL( WellInjector::RATE  , well1->getInjectorControlMode( 11 ));
         BOOST_CHECK_EQUAL( WellCommon::OPEN , well1->getStatus( 11 ));
         BOOST_CHECK_EQUAL( WellCommon::SHUT , well1->getStatus( 12 ));
+
+        BOOST_CHECK(  well1->hasInjectionControl( 9 , WellInjector::RATE ));
+        BOOST_CHECK(  well1->hasInjectionControl( 9 , WellInjector::RESV ));
+        BOOST_CHECK( !well1->hasInjectionControl( 9 , WellInjector::THP ));
+        BOOST_CHECK( !well1->hasInjectionControl( 9 , WellInjector::BHP ));
+        
+        BOOST_CHECK(  well1->hasInjectionControl( 12 , WellInjector::RATE ));
+        BOOST_CHECK( !well1->hasInjectionControl( 12 , WellInjector::RESV ));
+        BOOST_CHECK(  well1->hasInjectionControl( 12 , WellInjector::THP ));
+        BOOST_CHECK(  well1->hasInjectionControl( 12 , WellInjector::BHP ));
+
     }
 }
 
@@ -239,7 +264,6 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_GRUPTREE_WITH_REPARENT_correct_tree) {
     ScheduleConstPtr schedule(new Schedule(deck));
 
     schedule->getGroupTree(0)->printTree();
-    std::cout << std::endl << std::endl;
     schedule->getGroupTree(1)->printTree();
 
     // Time , from  first GRUPTREE

@@ -68,19 +68,52 @@ namespace Opm {
 
         
         enum ControlModeEnum {
-            RATE = 1,
-            RESV = 2 , 
-            BHP = 3,
-            THP = 4,
-            GRUP = 5
+            RATE =  1 ,
+            RESV =  2 , 
+            BHP  =  4 ,
+            THP  =  8 ,
+            GRUP = 16
         };
-
+        /*
+          The elements in this enum are used as bitmasks to keep track
+          of which controls are present, i.e. the 2^n structure must
+          be intact.
+        */
+        
+        
 
         const std::string ControlMode2String( ControlModeEnum enumValue );
         ControlModeEnum ControlModeFromString( const std::string& stringValue );
 
         const std::string Type2String( TypeEnum enumValue );
         TypeEnum TypeFromString( const std::string& stringValue );
+    };
+
+
+    namespace WellProducer {
+
+        enum ControlModeEnum {
+            ORAT =   1,
+            WRAT =   2, 
+            GRAT =   4,
+            LRAT =   8,
+            CRAT =  16,
+            RESV =  32,
+            BHP  =  64, 
+            THP  = 128, 
+            GRUP = 256  
+        };
+
+        /*
+          The items BHP, THP and GRUP only apply in prediction mode:
+          WCONPROD. The elements in this enum are used as bitmasks to
+          keep track of which controls are present, i.e. the 2^n
+          structure must be intact.
+        */
+
+
+        const std::string ControlMode2String( ControlModeEnum enumValue );
+        ControlModeEnum ControlModeFromString( const std::string& stringValue );
     };
 
     
