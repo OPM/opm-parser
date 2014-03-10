@@ -50,6 +50,10 @@ else()
 endif()
 
 
+set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+
 add_subdirectory(opm/json)
 add_subdirectory(opm/parser)
 
