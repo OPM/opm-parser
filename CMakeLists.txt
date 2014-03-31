@@ -49,6 +49,9 @@ else()
     include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
 endif()
 
+find_package(ERT)
+include_directories( ${ERT_INCLUDE_DIRS} )   
+
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
