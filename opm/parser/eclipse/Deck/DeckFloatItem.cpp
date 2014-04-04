@@ -53,6 +53,17 @@ namespace Opm {
         return m_SIdata;
     }
 
+    double DeckFloatItem::getRawDouble(size_t index) const
+    {
+        return getRawFloat(index);
+    }
+
+    double DeckFloatItem::getSIDouble(size_t index) const
+    {
+        return getSIFloat(index);
+    }
+
+
     void DeckFloatItem::assertSIData() const {
         if (m_dimensions.size() > 0) {
             if (m_SIdata.size() > 0) {
