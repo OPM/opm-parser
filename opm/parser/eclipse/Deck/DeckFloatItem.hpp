@@ -38,6 +38,9 @@ namespace Opm {
         float getSIFloat(size_t index) const;
         const std::vector<float>& getSIFloatData() const;
 
+        double getRawDouble(size_t index) const;
+        double getSIDouble(size_t index) const;
+
         void push_back(std::deque<float> data , size_t items);
         void push_back(std::deque<float> data);
         void push_back(float value);
