@@ -61,12 +61,9 @@ add_subdirectory(opm/json)
 add_subdirectory(opm/parser)
 
 
-# These commands should be run unconditionally; i.e. the testdata
+# This commands should be run unconditionally; i.e. the testdata
 # directory should be copied to the EXECUTABLE_OUTPUT_PATH for each
-# invocation of cmake, and the the directory generated-source/ should
-# be (re)created under the build directory for each invocation. These
-# dependencies are currently not correctly handled.
+# invocation of cmake. This dependencies are currently not correctly
+# handled.
 
 file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
-file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/generated-source")
-
