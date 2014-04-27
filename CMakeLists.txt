@@ -50,13 +50,14 @@ else()
     include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
 endif()
 
+include("cmake/Modules/CheckCaseSensitiveFileSystem.cmake")
+add_definitions("-DHAVE_CASE_SENSITIVE_FILESYSTEM=${HAVE_CASE_SENSITIVE_FILESYSTEM}")
+
 find_package(ERT)
 include_directories( ${ERT_INCLUDE_DIRS} )   
 
-
 set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
 
 add_subdirectory(opm/json)
 add_subdirectory(opm/parser)
