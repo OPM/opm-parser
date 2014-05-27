@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (OPMParser CXX)
 enable_testing()
 enable_language(C)
+include(CTest)
 
 
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
