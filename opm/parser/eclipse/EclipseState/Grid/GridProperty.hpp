@@ -22,8 +22,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <unordered_map>
+#include <boost/lexical_cast.hpp>
+
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 
 /*
   This class implemenents a class representing properties which are
@@ -43,9 +47,12 @@ template <typename T>
 class GridProperty {
 public:
 
-    GridProperty(size_t gridVolume , const std::string& keyword , T defaultValue = 0) {
+    GridProperty(size_t nx , size_t ny , size_t nz , const std::string& keyword , T defaultValue = 0) {
+        m_nx = nx;
+        m_ny = ny;
+        m_nz = nz;
         m_keyword = keyword;
-        m_data.resize( gridVolume );
+        m_data.resize( nx * ny * nz );
         std::fill( m_data.begin() , m_data.end() , defaultValue );
     }
     
@@ -63,22 +70,107 @@ public:
     }
 
 
+    T iget(size_t i , size_t j , size_t k) const {
+        size_t g = i + j*m_nx + k*m_nx*m_ny;
+        return iget(g);
+    }
+
+
     const std::vector<T>& getData() {
         return m_data;
     }
 
-    void loadFromDeckKeyword( DeckKeywordConstPtr deckKeyword);
+    void loadFromDeckKeyword(std::shared_ptr<const Box> inputBox , DeckKeywordConstPtr deckKeyword);
+    void loadFromDeckKeyword(DeckKeywordConstPtr deckKeyword);    
+
+
     
+    void copyFrom(const GridProperty<T>& src, std::shared_ptr<const Box> inputBox) {
+        if (inputBox->isGlobal()) {
+            std::copy( src.m_data.begin() , src.m_data.end() , m_data.begin() );
+        } else {
+            const std::vector<size_t>& indexList = inputBox->getIndexList();
+            for (size_t i = 0; i < indexList.size(); i++) {
+                size_t targetIndex = indexList[i];
+                m_data[targetIndex] = src.m_data[targetIndex];
+            }
+        }
+    }
+    
+    void scale(T scaleFactor , std::shared_ptr<const Box> inputBox) {
+        if (inputBox->isGlobal()) {
+            std::transform(m_data.begin(), m_data.end(), m_data.begin(),
+                           std::bind1st(std::multiplies<T>() , scaleFactor));
+
+        } else {
+            const std::vector<size_t>& indexList = inputBox->getIndexList();
+            for (size_t i = 0; i < indexList.size(); i++) {
+                size_t targetIndex = indexList[i];
+                m_data[targetIndex] *= scaleFactor;
+            }
+        }
+    }
+
+
+    void add(T shiftValue , std::shared_ptr<const Box> inputBox) {
+        if (inputBox->isGlobal()) {
+            std::transform(m_data.begin(), m_data.end(), m_data.begin(),
+                           std::bind1st(std::plus<T>() , shiftValue));
+
+        } else {
+            const std::vector<size_t>& indexList = inputBox->getIndexList();
+            for (size_t i = 0; i < indexList.size(); i++) {
+                size_t targetIndex = indexList[i];
+                m_data[targetIndex] += shiftValue;
+            }
+        }
+    }
+
+
+    
+
+    void setScalar(T value , std::shared_ptr<const Box> inputBox) {
+        if (inputBox->isGlobal()) {
+            std::fill(m_data.begin(), m_data.end(), value);
+        } else {
+            const std::vector<size_t>& indexList = inputBox->getIndexList();
+            for (size_t i = 0; i < indexList.size(); i++) {
+                size_t targetIndex = indexList[i];
+                m_data[targetIndex] = value;
+            }
+        }
+    }
+    
+
+    
+
 private:
 
     void setFromVector(const std::vector<T>& data) {
         if (data.size() == m_data.size()) {
-            for (size_t i = 0; i < m_data.size(); i++) 
+            for (size_t i = 0; i < data.size(); i++) 
                 m_data[i] = data[i];
         } else
-            throw std::invalid_argument("Size mismatch");
+            throw std::invalid_argument("Size mismatch when setting data for:" + m_keyword + " keyword size: " + boost::lexical_cast<std::string>(m_data.size()) + " input size: " + boost::lexical_cast<std::string>(data.size()));
     }
-        
+    
+    
+    void setFromVector(std::shared_ptr<const Box> inputBox , const std::vector<T>& data) {
+        if (inputBox->isGlobal())
+            setFromVector( data );
+        else {
+            const std::vector<size_t>& indexList = inputBox->getIndexList();
+            if (data.size() == indexList.size()) {
+                for (size_t i = 0; i < data.size(); i++) {
+                    size_t targetIndex = indexList[i];
+                    m_data[targetIndex] = data[i];
+                }
+            } else
+                throw std::invalid_argument("Size mismatch when setting data for:" + m_keyword + " box size: " + boost::lexical_cast<std::string>(inputBox->size()) + " input size: " + boost::lexical_cast<std::string>(data.size()));
+        }
+    }
+
+    size_t      m_nx,m_ny,m_nz;
     std::string m_keyword;
     std::vector<T> m_data;
 };
