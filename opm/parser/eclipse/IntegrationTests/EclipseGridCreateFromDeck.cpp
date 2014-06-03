@@ -40,10 +40,10 @@ BOOST_AUTO_TEST_CASE(CreateCPGrid) {
     std::shared_ptr<GRIDSection> gridSection(new GRIDSection(deck) );
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( runspecSection , gridSection ));
 
-    BOOST_CHECK_EQUAL( 10 , grid->getNX( ));
-    BOOST_CHECK_EQUAL( 10 , grid->getNY( ));
-    BOOST_CHECK_EQUAL(  5 , grid->getNZ( ));
-    BOOST_CHECK_EQUAL( 500 , grid->getNumActive() );
+    BOOST_CHECK_EQUAL( 10U  , grid->getNX( ));
+    BOOST_CHECK_EQUAL( 10U  , grid->getNY( ));
+    BOOST_CHECK_EQUAL(  5U  , grid->getNZ( ));
+    BOOST_CHECK_EQUAL( 500U , grid->getNumActive() );
 }
 
 
@@ -55,10 +55,10 @@ BOOST_AUTO_TEST_CASE(CreateCPActnumGrid) {
     std::shared_ptr<GRIDSection> gridSection(new GRIDSection(deck) );
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( runspecSection , gridSection ));
 
-    BOOST_CHECK_EQUAL( 10 , grid->getNX( ));
-    BOOST_CHECK_EQUAL( 10 , grid->getNY( ));
-    BOOST_CHECK_EQUAL(  5 , grid->getNZ( ));
-    BOOST_CHECK_EQUAL( 100 , grid->getNumActive() );
+    BOOST_CHECK_EQUAL(  10U , grid->getNX( ));
+    BOOST_CHECK_EQUAL(  10U , grid->getNY( ));
+    BOOST_CHECK_EQUAL(   5U , grid->getNZ( ));
+    BOOST_CHECK_EQUAL( 100U , grid->getNumActive() );
 }
 
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(ExportFromCPGridACTNUM) {
     size_t volume = grid->getNX()*grid->getNY()*grid->getNZ();
 
     grid->exportCOORD( coord );
-    BOOST_CHECK_EQUAL( coord.size() , (size_t) (grid->getNX() + 1) * (grid->getNY() + 1) * 6);
+    BOOST_CHECK_EQUAL( coord.size() , (grid->getNX() + 1) * (grid->getNY() + 1) * 6);
 
     grid->exportZCORN( zcorn );
     BOOST_CHECK_EQUAL( zcorn.size() , volume * 8);

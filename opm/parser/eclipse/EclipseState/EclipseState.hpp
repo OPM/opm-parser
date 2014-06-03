@@ -23,6 +23,8 @@
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 
@@ -39,9 +41,13 @@ namespace Opm {
         bool hasPhase(enum Phase::PhaseEnum phase) const;
         std::string getTitle() const;
         bool supportsGridProperty(const std::string& keyword) const;
-        std::shared_ptr<GridProperty<int> > getIntProperty( const std::string& keyword );
+
+        std::shared_ptr<GridProperty<int> > getIntGridProperty( const std::string& keyword ) const;
+        std::shared_ptr<GridProperty<double> > getDoubleGridProperty( const std::string& keyword ) const;
         bool hasIntGridProperty(const std::string& keyword) const;
-        void loadGridPropertyFromDeckKeyword(DeckKeywordConstPtr deckKeyword);
+        bool hasDoubleGridProperty(const std::string& keyword) const;
+
+        void loadGridPropertyFromDeckKeyword(std::shared_ptr<const Box> inputBox , DeckKeywordConstPtr deckKeyword);
         
     private:
         void initSchedule(DeckConstPtr deck);
@@ -50,12 +56,28 @@ namespace Opm {
         void initTitle(DeckConstPtr deck);
         void initProperties(DeckConstPtr deck);
 
+        double getSIScaling(const std::string &dimensionString) const;
+
+        void scanSection(std::shared_ptr<Opm::Section> section , BoxManager& boxManager);
+        void handleADDKeyword(DeckKeywordConstPtr deckKeyword , BoxManager& boxManager);
+        void handleBOXKeyword(DeckKeywordConstPtr deckKeyword , BoxManager& boxManager);
+        void handleCOPYKeyword(DeckKeywordConstPtr deckKeyword , BoxManager& boxManager);
+        void handleENDBOXKeyword(BoxManager& boxManager);
+        void handleEQUALSKeyword(DeckKeywordConstPtr deckKeyword , BoxManager& boxManager);
+        void handleMULTIPLYKeyword(DeckKeywordConstPtr deckKeyword , BoxManager& boxManager);
+        
+        void setKeywordBox(DeckRecordConstPtr deckRecord , BoxManager& boxManager);
+
+        void copyIntKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
+        void copyDoubleKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
 
         EclipseGridConstPtr m_eclipseGrid;
         ScheduleConstPtr schedule;
         std::set<enum Phase::PhaseEnum> phases;
         std::string m_title;
+        std::shared_ptr<UnitSystem> m_unitSystem;
         std::shared_ptr<GridProperties<int> > m_intGridProperties;
+        std::shared_ptr<GridProperties<double> > m_doubleGridProperties;
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

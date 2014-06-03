@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(IntProperties) {
     DeckPtr deck = createDeck();
     EclipseState state(deck);
 
-    BOOST_CHECK_EQUAL( false , state.supportsGridProperty("PVTNUM"));
+    BOOST_CHECK_EQUAL( false , state.supportsGridProperty("NONO"));
     BOOST_CHECK_EQUAL( true  , state.supportsGridProperty("SATNUM"));
     BOOST_CHECK_EQUAL( true  , state.hasIntGridProperty("SATNUM"));
 }
@@ -120,7 +120,8 @@ BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     DeckPtr deck = createDeck();
     EclipseState state(deck);
     DeckKeywordConstPtr fluxNUM = deck->getKeyword("FLUXNUM");
-    BOOST_CHECK_THROW( state.loadGridPropertyFromDeckKeyword( fluxNUM ) , std::invalid_argument)
+    BOOST_CHECK_EQUAL( false , state.supportsGridProperty("FLUXNUM"));
+    BOOST_CHECK_THROW( state.loadGridPropertyFromDeckKeyword( std::make_shared<const Box>(10,10,10) , fluxNUM ) , std::invalid_argument)
 }
 
 
@@ -128,7 +129,7 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
     DeckPtr deck = createDeck();
     EclipseState state(deck);
 
-    std::shared_ptr<GridProperty<int> > satNUM = state.getIntProperty( "SATNUM" );
+    std::shared_ptr<GridProperty<int> > satNUM = state.getIntGridProperty( "SATNUM" );
 
     BOOST_CHECK_EQUAL(1000U , satNUM->size() );
     for (size_t i=0; i < satNUM->size(); i++) 
