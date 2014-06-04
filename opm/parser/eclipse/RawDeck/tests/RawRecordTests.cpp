@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE(Rawrecord_spaceOnlyEmpty_OK) {
 
 BOOST_AUTO_TEST_CASE(Rawrecord_noFileAndKeywordGiven_EmptyStringUsed) {
     Opm::RawRecordPtr record(new Opm::RawRecord("32 33  /"));
-    BOOST_CHECK_EQUAL("", record->getKeywordName());
-    BOOST_CHECK_EQUAL("", record->getFileName());
+    BOOST_CHECK_EQUAL(std::string(""), record->getKeywordName());
+    BOOST_CHECK_EQUAL(std::string(""), record->getFileName());
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_FileAndKeywordGiven_CorrectStringsReturned) {
