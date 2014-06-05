@@ -49,6 +49,8 @@ ${PROJECT_BINARY_DIR}/generated-source/DefaultKeywordList.cpp
 SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/generated-source/DefaultKeywordList.cpp PROPERTIES GENERATED TRUE)
 
 set( build_parser_source 
+Parser/ParserEmptyKeywordList.cpp
+Parser/Parser.cpp
 Parser/ParserEnums.cpp
 Parser/ParserKeyword.cpp 
 Parser/ParserRecord.cpp
