@@ -27,10 +27,14 @@
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
 
 namespace Opm {
+    class Parser;
+    typedef std::shared_ptr<Parser> ParserPtr;
+    typedef std::shared_ptr<const Parser> ParserConstPtr;
 
     class Deck {
     public:
         Deck();
+        Deck(const Parser *parser);
         bool hasKeyword( const std::string& keyword ) const;
         void addKeyword( DeckKeywordPtr keyword);
         DeckKeywordPtr getKeyword(const std::string& keyword , size_t index) const;
@@ -49,6 +53,7 @@ namespace Opm {
         std::shared_ptr<UnitSystem> getActiveUnitSystem()  const;
 
     private:
+        const Parser* m_parser;
         KeywordContainerPtr m_keywords;
         std::shared_ptr<UnitSystem> m_defaultUnits;
         std::shared_ptr<UnitSystem> m_activeUnits;

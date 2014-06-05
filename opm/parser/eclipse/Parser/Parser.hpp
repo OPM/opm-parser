@@ -63,11 +63,13 @@ namespace Opm {
         void loadKeywordsFromDirectory(const boost::filesystem::path& directory , bool recursive = true, bool onlyALLCAPS8Files = true);
         size_t size() const;
         void applyUnitsToDeck(DeckPtr deck) const;
+
+        bool hasKeyword(const std::string& keyword) const;
+
     private:
         std::map<std::string, ParserKeywordConstPtr> m_parserKeywords;
         std::map<std::string, ParserKeywordConstPtr> m_wildCardKeywords;
 
-        bool hasKeyword(const std::string& keyword) const;
         bool hasWildCardKeyword(const std::string& keyword) const;
         ParserKeywordConstPtr matchingKeyword(const std::string& keyword) const;
 

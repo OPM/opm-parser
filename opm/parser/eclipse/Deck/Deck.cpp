@@ -20,16 +20,25 @@
 #include <vector>
 #include <iostream>
 
+#include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 
 namespace Opm {
-
     Deck::Deck() {
+        m_parser = 0;
         m_keywords = KeywordContainerPtr(new KeywordContainer());
     }
 
-    bool Deck::hasKeyword(const std::string& keyword) const {
-        return m_keywords->hasKeyword(keyword);
+    Deck::Deck(const Parser* parser) {
+        m_parser = parser;
+        m_keywords = KeywordContainerPtr(new KeywordContainer());
+    }
+
+    bool Deck::hasKeyword(const std::string& keywordName) const {
+        if (m_parser && !m_parser->canParseKeyword(keywordName))
+            throw std::logic_error("Queried for unrecognized keyword '" + keywordName + "'");
+
+        return m_keywords->hasKeyword(keywordName);
     }
     
     void Deck::addKeyword( DeckKeywordPtr keyword) {

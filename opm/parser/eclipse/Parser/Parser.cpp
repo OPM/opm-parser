@@ -89,7 +89,7 @@ namespace Opm {
 
     DeckPtr Parser::parseFile(const std::string &dataFileName, bool strictParsing) const {
 
-        std::shared_ptr<ParserState> parserState(new ParserState(dataFileName, DeckPtr(new Deck()), getRootPathFromFile(dataFileName), strictParsing));
+        std::shared_ptr<ParserState> parserState(new ParserState(dataFileName, DeckPtr(new Deck(this)), getRootPathFromFile(dataFileName), strictParsing));
 
         parseStream(parserState);
         applyUnitsToDeck(parserState->deck);
@@ -98,7 +98,7 @@ namespace Opm {
 
     DeckPtr Parser::parseString(const std::string &data, bool strictParsing) const {
 
-        std::shared_ptr<ParserState> parserState(new ParserState(data, DeckPtr(new Deck()), strictParsing));
+        std::shared_ptr<ParserState> parserState(new ParserState(data, DeckPtr(new Deck(this)), strictParsing));
 
         parseStream(parserState);
         applyUnitsToDeck(parserState->deck);
@@ -107,7 +107,7 @@ namespace Opm {
 
     DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, bool strictParsing) const {
 
-        std::shared_ptr<ParserState> parserState(new ParserState(inputStream, DeckPtr(new Deck()), strictParsing));
+        std::shared_ptr<ParserState> parserState(new ParserState(inputStream, DeckPtr(new Deck(this)), strictParsing));
 
         parseStream(parserState);
         applyUnitsToDeck(parserState->deck);
