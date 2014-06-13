@@ -77,6 +77,7 @@ EclipseState/Schedule/GroupTree.cpp
 EclipseState/Grid/GridProperty.cpp
 EclipseState/Grid/Box.cpp
 EclipseState/Grid/BoxManager.cpp
+EclipseState/Grid/TransMult.cpp
 EclipseState/Grid/EclipseGrid.cpp)
 
 set (utility_source
@@ -134,6 +135,7 @@ EclipseState/Schedule/OrderedMap.hpp
 EclipseState/Grid/EclipseGrid.hpp
 EclipseState/Grid/GridProperty.hpp
 EclipseState/Grid/GridProperties.hpp
+EclipseState/Grid/TransMult.hpp
 EclipseState/Grid/Box.hpp
 EclipseState/Grid/BoxManager.hpp
 #
