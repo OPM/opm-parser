@@ -23,6 +23,7 @@
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/TransMult.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
@@ -38,6 +39,7 @@ namespace Opm {
         EclipseState(DeckConstPtr deck);
         ScheduleConstPtr getSchedule() const;
         EclipseGridConstPtr getEclipseGrid() const;
+        std::shared_ptr<const TransMult> getTransMultipliers() const;
         bool hasPhase(enum Phase::PhaseEnum phase) const;
         std::string getTitle() const;
         bool supportsGridProperty(const std::string& keyword) const;
@@ -55,6 +57,7 @@ namespace Opm {
         void initPhases(DeckConstPtr deck);
         void initTitle(DeckConstPtr deck);
         void initProperties(DeckConstPtr deck);
+        void initTransMultipliers();
 
         double getSIScaling(const std::string &dimensionString) const;
 
@@ -78,6 +81,7 @@ namespace Opm {
         std::shared_ptr<UnitSystem> m_unitSystem;
         std::shared_ptr<GridProperties<int> > m_intGridProperties;
         std::shared_ptr<GridProperties<double> > m_doubleGridProperties;
+        std::shared_ptr<TransMult> m_transMultipliers;
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

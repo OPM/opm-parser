@@ -29,6 +29,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/TransMult.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Deck/DeckIntItem.hpp>
 #include <opm/parser/eclipse/Deck/DeckStringItem.hpp>
@@ -136,4 +137,13 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
         BOOST_CHECK_EQUAL( 2 , satNUM->iget(i) );
     
     BOOST_CHECK_THROW( satNUM->iget(100000) , std::invalid_argument);
+}
+
+
+
+BOOST_AUTO_TEST_CASE(GetTransMult) {
+    DeckPtr deck = createDeck();
+    EclipseState state(deck);
+    std::shared_ptr<const TransMult> transMult = state.getTransMultipliers();
+    BOOST_CHECK_EQUAL( transMult->getXFaceMultiplier(0,0,0) , 1.0);
 }
