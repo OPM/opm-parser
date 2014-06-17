@@ -70,3 +70,5 @@ add_subdirectory(opm/parser)
 # handled.
 
 file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
+
+install(FILES dune.module DESTINATION lib/dunecontrol/opm-parser)
