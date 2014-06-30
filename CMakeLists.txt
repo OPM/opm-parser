@@ -34,7 +34,7 @@ include(cmake/Modules/UseMultiArch.cmake)
 
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
-find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework REQUIRED)
+find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework regex REQUIRED)
 include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 # if we are using dynamic boost, the header file must generate a main() function
