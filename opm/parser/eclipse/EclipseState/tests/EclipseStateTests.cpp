@@ -51,6 +51,9 @@ static DeckPtr createDeck() {
         "1000*0.25 /\n"
         "TOPS\n"
         "1000*0.25 /\n"
+        "FAULTS \n"
+        "  'F1'  1  1  1  4   1  4  'X' / \n"
+        "/\n"
         "EDIT\n"
         "OIL\n"
         "\n"
@@ -148,3 +151,14 @@ BOOST_AUTO_TEST_CASE(GetTransMult) {
     BOOST_CHECK_EQUAL( 1.0 , transMult->getMultiplier(0,0,0,FaceDir::XPlus));
     BOOST_CHECK_THROW(transMult->getMultiplier(1000 , FaceDir::XPlus) , std::invalid_argument);
 }
+
+
+
+BOOST_AUTO_TEST_CASE(GetFaults) {
+    DeckPtr deck = createDeck();
+    EclipseState state(deck);
+    std::shared_ptr<const FaultCollection> faults = state.getFaults();
+
+    BOOST_CHECK( faults->hasFault("F1") );
+}
+

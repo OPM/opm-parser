@@ -27,6 +27,7 @@
 
 #include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 
 
 BOOST_AUTO_TEST_CASE(CreateFault) {
@@ -57,3 +58,21 @@ BOOST_AUTO_TEST_CASE(AddFaultsToCollection) {
 }
 
 
+
+BOOST_AUTO_TEST_CASE(AddFaceToCollection) {
+    Opm::FaultCollection faults(10,10,10);
+    
+
+    // I out of range
+    BOOST_CHECK_THROW( faults.addFace("FAULT1" , 10 , 10 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    BOOST_CHECK_THROW( faults.addFace("FAULT1" , -1 , -1 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+
+    // I1 != I2 when face == X
+    BOOST_CHECK_THROW( faults.addFace("FAULT1" ,  1 , 3  , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+
+    // J1 < J2
+    BOOST_CHECK_THROW( faults.addFace("FAULT1" ,  3 , 3  , 3 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+
+    faults.addFace("FAULT1" ,  3 , 3  , 1 , 3 , 5 , 5 , Opm::FaceDir::XPlus);
+    BOOST_CHECK( faults.hasFault("FAULT1"));
+}

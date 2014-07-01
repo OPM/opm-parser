@@ -40,6 +40,7 @@ namespace Opm {
         initTitle(deck);
         initProperties(deck);
         initTransMult(deck);
+        initFaults(deck);
     }
     
 
@@ -50,6 +51,10 @@ namespace Opm {
 
     ScheduleConstPtr EclipseState::getSchedule() const {
         return schedule;
+    }
+
+    std::shared_ptr<const FaultCollection> EclipseState::getFaults() const {
+        return m_faults;
     }
 
     std::shared_ptr<const TransMult> EclipseState::getTransMult() const {
@@ -68,6 +73,31 @@ namespace Opm {
         EclipseGridConstPtr grid = getEclipseGrid();
         m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
     }
+
+    
+    void EclipseState::initFaults(DeckConstPtr deck) {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        m_faults = std::make_shared<FaultCollection>( grid->getNX() , grid->getNY() , grid->getNZ());
+        std::shared_ptr<Opm::GRIDSection> gridSection(new Opm::GRIDSection(deck) );
+        
+        for (size_t index=0; index < gridSection->count("FAULTS"); index++) {
+            DeckKeywordConstPtr faultsKeyword = gridSection->getKeyword("FAULTS" , index);
+            for (auto iter = faultsKeyword->begin(); iter != faultsKeyword->end(); ++iter) {
+                DeckRecordConstPtr faultRecord = *iter;
+                const std::string& faultName = faultRecord->getItem(0)->getString(0);
+                int I1 = faultRecord->getItem(1)->getInt(0) - 1;
+                int I2 = faultRecord->getItem(2)->getInt(0) - 1;
+                int J1 = faultRecord->getItem(3)->getInt(0) - 1;
+                int J2 = faultRecord->getItem(4)->getInt(0) - 1;
+                int K1 = faultRecord->getItem(5)->getInt(0) - 1;
+                int K2 = faultRecord->getItem(6)->getInt(0) - 1;
+                FaceDir::DirEnum faceDir = FaceDir::FromString( faultRecord->getItem(7)->getString(0) );
+
+                m_faults->addFace( faultName , I1 , I2 , J1 , J2 , K1 , K2 , faceDir );
+            }
+        }
+    }
+
 
 
     void EclipseState::initEclipseGrid(DeckConstPtr deck) {
