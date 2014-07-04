@@ -16,34 +16,36 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef FAULT_COLLECTION_HPP_
-#define FAULT_COLLECTION_HPP_
+#ifndef FAULT_FACE_HPP_
+#define FAULT_FACE_HPP_
 
 #include <cstddef>
-#include <string>
-#include <memory>
-#include <map>
+#include <vector>
 
-#include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 
 namespace Opm {
 
 
-class FaultCollection {
+class FaultFace {
 public:
-    FaultCollection(size_t nx , size_t ny , size_t nz);
-    size_t size() const;
-    bool hasFault(const std::string& faultName) const;
-    std::shared_ptr<Fault>  getFault(const std::string& faultName) const;
-    void addFault(std::shared_ptr<Fault> fault);
-    void addFace(const std::string& faultName, int I1 , int I2 , int J1 , int J2 , int K1 , int K2 , FaceDir::DirEnum faceDir);
-private:
-
-    size_t m_nx, m_ny, m_nz;
-    std::map<std::string , std::shared_ptr<Fault> > m_faults;
+    FaultFace(size_t nx , size_t ny , size_t nz,
+              size_t I1 , size_t I2,
+              size_t J1 , size_t J2,
+              size_t K1 , size_t K2,
+              FaceDir::DirEnum faceDir);
+    
+    std::vector<size_t>::iterator begin();
+    std::vector<size_t>::iterator end();
+    FaceDir::DirEnum getDir() const;
+    
+private:    
+    static void checkCoord(size_t dim , size_t l1 , size_t l2);
+    FaceDir::DirEnum m_faceDir;
+    std::vector<size_t> m_indexList;
 };
-}
 
+
+}
 
 #endif

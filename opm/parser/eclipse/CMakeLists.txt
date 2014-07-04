@@ -81,6 +81,7 @@ EclipseState/Grid/FaceDir.cpp
 EclipseState/Grid/TransMult.cpp        
 EclipseState/Grid/EclipseGrid.cpp
 EclipseState/Grid/Fault.cpp
+EclipseState/Grid/FaultFace.cpp
 EclipseState/Grid/FaultCollection.cpp)
 
 set (utility_source
@@ -143,6 +144,7 @@ EclipseState/Grid/BoxManager.hpp
 EclipseState/Grid/FaceDir.hpp
 EclipseState/Grid/TransMult.hpp       
 EclipseState/Grid/Fault.hpp 
+EclipseState/Grid/FaultFace.hpp
 EclipseState/Grid/FaultCollection.hpp 
 #
 Utility/WconinjeWrapper.hpp

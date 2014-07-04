@@ -26,6 +26,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 
@@ -59,20 +60,45 @@ BOOST_AUTO_TEST_CASE(AddFaultsToCollection) {
 
 
 
-BOOST_AUTO_TEST_CASE(AddFaceToCollection) {
-    Opm::FaultCollection faults(10,10,10);
-    
-
+BOOST_AUTO_TEST_CASE(CreateInvalidFace) {
     // I out of range
-    BOOST_CHECK_THROW( faults.addFace("FAULT1" , 10 , 10 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
-    BOOST_CHECK_THROW( faults.addFace("FAULT1" , -1 , -1 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    BOOST_CHECK_THROW( Opm::FaultFace(10,10,10,10 , 10 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
 
     // I1 != I2 when face == X
-    BOOST_CHECK_THROW( faults.addFace("FAULT1" ,  1 , 3  , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    BOOST_CHECK_THROW( Opm::FaultFace( 10,10,10, 1 , 3  , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
 
     // J1 < J2
-    BOOST_CHECK_THROW( faults.addFace("FAULT1" ,  3 , 3  , 3 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    BOOST_CHECK_THROW( Opm::FaultFace(  10,10,10,3 , 3  , 3 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
 
-    faults.addFace("FAULT1" ,  3 , 3  , 1 , 3 , 5 , 5 , Opm::FaceDir::XPlus);
-    BOOST_CHECK( faults.hasFault("FAULT1"));
+}
+
+
+BOOST_AUTO_TEST_CASE(CreateFace) {
+    Opm::FaultFace face1(10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
+    Opm::FaultFace face2(10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
+    Opm::FaultFace face3(10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
+
+    std::vector<size_t> trueValues1{0,1,2};
+    std::vector<size_t> trueValues2{10,11,12};
+    std::vector<size_t> trueValues3{100,101,102};
+    size_t i = 0;
+
+    {
+        auto iter3 = face3.begin();
+        auto iter2 = face2.begin();
+        for (auto iter1 = face1.begin(); iter1 != face1.end(); ++iter1) {
+            size_t index1 = *iter1;
+            size_t index2 = *iter2;
+            size_t index3 = *iter3;
+        
+            BOOST_CHECK_EQUAL( index1 , trueValues1[i] );
+            BOOST_CHECK_EQUAL( index2 , trueValues2[i] );
+            BOOST_CHECK_EQUAL( index3 , trueValues3[i] );
+
+            ++iter2;
+            ++iter3;
+            ++i;
+        }
+    }
+    BOOST_CHECK_EQUAL( face1.getDir() , Opm::FaceDir::YPlus);
 }

@@ -56,38 +56,23 @@ namespace Opm {
     }
 
 
-    void FaultCollection::checkCoord(size_t dim , int l1 , int l2) {
-        if (l1 > l2)
-            throw std::invalid_argument("Invalid coordinates");
-
-        if (l1 < 0)
-            throw std::invalid_argument("Invalid coordinates");
-
-        if (static_cast<size_t>(l2) >= dim)
-            throw std::invalid_argument("Invalid coordinates");            
-    }
-
 
     void FaultCollection::addFace(const std::string& faultName, int I1 , int I2 , int J1 , int J2 , int K1 , int K2 , FaceDir::DirEnum faceDir) {
-        checkCoord(m_nx , I1,I2);
-        checkCoord(m_ny , J1,J2);
-        checkCoord(m_nz , K1,K2);
+        /*std::shared_ptr<FaultFace> face = std::make_shared<FaultFace>(m_nx , m_ny , m_nz , 
+          static_cast<size_t>(I1) , static_cast<size_t>(I2) , 
+          static_cast<size_t>(J1) , static_cast<size_t>(J2) , 
+          static_cast<size_t>(K1) , static_cast<size_t>(K2) , 
+          faceDir);
+        */
 
-        if ((faceDir == FaceDir::XPlus) || (faceDir == FaceDir::XMinus))
-            if (I1 != I2)
-                throw std::invalid_argument("When the face is in X direction we must have I1 == I2");
-
-        if ((faceDir == FaceDir::YPlus) || (faceDir == FaceDir::YMinus))
-            if (J1 != J2)
-                throw std::invalid_argument("When the face is in Y direction we must have J1 == J2");
-
-        if ((faceDir == FaceDir::ZPlus) || (faceDir == FaceDir::ZMinus))
-            if (K1 != K2)
-                throw std::invalid_argument("When the face is in Z direction we must have K1 == K2");
         
         if (!hasFault(faultName)) {
             std::shared_ptr<Fault> fault = std::make_shared<Fault>( faultName );
             addFault( fault );
+        }
+        {
+            std::shared_ptr<Fault> fault = getFault( faultName );
+        
         }
     }
 

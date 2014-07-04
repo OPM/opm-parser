@@ -92,7 +92,7 @@ namespace Opm {
                 int K1 = faultRecord->getItem(5)->getInt(0) - 1;
                 int K2 = faultRecord->getItem(6)->getInt(0) - 1;
                 FaceDir::DirEnum faceDir = FaceDir::FromString( faultRecord->getItem(7)->getString(0) );
-
+                
                 m_faults->addFace( faultName , I1 , I2 , J1 , J2 , K1 , K2 , faceDir );
             }
         }
