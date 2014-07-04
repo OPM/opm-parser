@@ -20,6 +20,10 @@
 #define FAULT_HPP_
 
 #include <string>
+#include <memory>
+#include <vector>
+
+#include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
 
 namespace Opm {
 
@@ -27,11 +31,16 @@ namespace Opm {
 class Fault {
 public:
     Fault(const std::string& faultName);
-    const std::string& getName() const;
+
+    const  std::string& getName() const;
+    void   setTransMult(double transMult);
     double getTransMult() const;
+    void   addFace(std::shared_ptr<const FaultFace> face);
+
 private:
     std::string m_name;
     double m_transMult;
+    std::vector<std::shared_ptr<const FaultFace> > m_faceList;
 };
 }
 

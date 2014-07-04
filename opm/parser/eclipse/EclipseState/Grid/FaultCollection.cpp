@@ -57,24 +57,21 @@ namespace Opm {
 
 
 
-    void FaultCollection::addFace(const std::string& faultName, int I1 , int I2 , int J1 , int J2 , int K1 , int K2 , FaceDir::DirEnum faceDir) {
-        /*std::shared_ptr<FaultFace> face = std::make_shared<FaultFace>(m_nx , m_ny , m_nz , 
-          static_cast<size_t>(I1) , static_cast<size_t>(I2) , 
-          static_cast<size_t>(J1) , static_cast<size_t>(J2) , 
-          static_cast<size_t>(K1) , static_cast<size_t>(K2) , 
-          faceDir);
-        */
-
-        
+    void FaultCollection::addFace(const std::string& faultName, std::shared_ptr<const FaultFace> face) {
         if (!hasFault(faultName)) {
             std::shared_ptr<Fault> fault = std::make_shared<Fault>( faultName );
             addFault( fault );
         }
         {
             std::shared_ptr<Fault> fault = getFault( faultName );
-        
+            fault->addFace( face );
         }
     }
 
+
+    void FaultCollection::setTransMult(const std::string& faultName , double transMult) {
+        std::shared_ptr<Fault> fault = getFault( faultName );
+        fault->setTransMult( transMult );
+    }
 
 }

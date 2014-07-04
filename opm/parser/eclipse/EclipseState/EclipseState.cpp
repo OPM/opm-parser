@@ -79,6 +79,8 @@ namespace Opm {
         EclipseGridConstPtr grid = getEclipseGrid();
         m_faults = std::make_shared<FaultCollection>( grid->getNX() , grid->getNY() , grid->getNZ());
         std::shared_ptr<Opm::GRIDSection> gridSection(new Opm::GRIDSection(deck) );
+        std::shared_ptr<Opm::EDITSection> editSection(new Opm::EDITSection(deck) );
+
         
         for (size_t index=0; index < gridSection->count("FAULTS"); index++) {
             DeckKeywordConstPtr faultsKeyword = gridSection->getKeyword("FAULTS" , index);
@@ -92,12 +94,32 @@ namespace Opm {
                 int K1 = faultRecord->getItem(5)->getInt(0) - 1;
                 int K2 = faultRecord->getItem(6)->getInt(0) - 1;
                 FaceDir::DirEnum faceDir = FaceDir::FromString( faultRecord->getItem(7)->getString(0) );
+                std::shared_ptr<const FaultFace> face = std::make_shared<const FaultFace>(grid->getNX() , grid->getNY() , grid->getNZ(),
+                                                                                          static_cast<size_t>(I1) , static_cast<size_t>(I2) , 
+                                                                                          static_cast<size_t>(J1) , static_cast<size_t>(J2) , 
+                                                                                          static_cast<size_t>(K1) , static_cast<size_t>(K2) ,
+                                                                                          faceDir);
+                m_faults->addFace( faultName , face );
+            }
+        }
+        
+        setMULTFLT( gridSection );
+        setMULTFLT( editSection );
+    }
+
+
+    void EclipseState::setMULTFLT(std::shared_ptr<const Section> section) const {
+        for (size_t index=0; index < section->count("MULTFLT"); index++) {
+            DeckKeywordConstPtr faultsKeyword = section->getKeyword("MULTFLT" , index);
+            for (auto iter = faultsKeyword->begin(); iter != faultsKeyword->end(); ++iter) {
+                DeckRecordConstPtr faultRecord = *iter;
+                const std::string& faultName = faultRecord->getItem(0)->getString(0);
+                double multFlt = faultRecord->getItem(1)->getRawDouble(0);
                 
-                m_faults->addFace( faultName , I1 , I2 , J1 , J2 , K1 , K2 , faceDir );
+                m_faults->setTransMult( faultName , multFlt );
             }
         }
     }
-
 
 
     void EclipseState::initEclipseGrid(DeckConstPtr deck) {

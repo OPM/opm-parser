@@ -53,8 +53,16 @@ static DeckPtr createDeck() {
         "1000*0.25 /\n"
         "FAULTS \n"
         "  'F1'  1  1  1  4   1  4  'X' / \n"
+        "  'F2'  1  1  1  4   1  4  'X' / \n"
+        "/\n"
+        "MULTFLT \n"
+        "  'F1' 0.50 / \n"
+        "  'F2' 0.50 / \n"
         "/\n"
         "EDIT\n"
+        "MULTFLT /\n"
+        "  'F2' 0.25 / \n"
+        "/\n"
         "OIL\n"
         "\n"
         "GAS\n"
@@ -160,5 +168,12 @@ BOOST_AUTO_TEST_CASE(GetFaults) {
     std::shared_ptr<const FaultCollection> faults = state.getFaults();
 
     BOOST_CHECK( faults->hasFault("F1") );
+    BOOST_CHECK( faults->hasFault("F2") );
+
+    std::shared_ptr<Fault> F1 = faults->getFault("F1");
+    std::shared_ptr<Fault> F2 = faults->getFault("F2");
+
+    BOOST_CHECK_EQUAL( 0.50 , F1->getTransMult());
+    BOOST_CHECK_EQUAL( 0.25 , F2->getTransMult());
 }
 

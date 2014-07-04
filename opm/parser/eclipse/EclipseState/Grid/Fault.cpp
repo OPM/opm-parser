@@ -36,5 +36,13 @@ namespace Opm {
         return m_transMult;
     }
 
+    void Fault::setTransMult(double transMult) {
+        m_transMult = transMult;
+    }
+
+
+    void Fault::addFace(std::shared_ptr<const FaultFace> face) {
+        m_faceList.push_back( face );
+    }
 
 }

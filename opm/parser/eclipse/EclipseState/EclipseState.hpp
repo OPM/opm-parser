@@ -61,6 +61,7 @@ namespace Opm {
         void initProperties(DeckConstPtr deck);
         void initTransMult(DeckConstPtr deck);
         void initFaults(DeckConstPtr deck);
+        void setMULTFLT(std::shared_ptr<const Section> section) const;
 
         double getSIScaling(const std::string &dimensionString) const;
 

@@ -25,6 +25,7 @@
 #include <map>
 
 #include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 
 namespace Opm {
@@ -37,7 +38,8 @@ public:
     bool hasFault(const std::string& faultName) const;
     std::shared_ptr<Fault>  getFault(const std::string& faultName) const;
     void addFault(std::shared_ptr<Fault> fault);
-    void addFace(const std::string& faultName, int I1 , int I2 , int J1 , int J2 , int K1 , int K2 , FaceDir::DirEnum faceDir);
+    void addFace(const std::string& faultName, std::shared_ptr<const FaultFace> face); 
+    void setTransMult(const std::string& faultName , double transMult);
 private:
 
     size_t m_nx, m_ny, m_nz;
