@@ -65,11 +65,11 @@ namespace Opm {
     }
 
 
-    std::vector<size_t>::iterator FaultFace::begin() {
+    std::vector<size_t>::const_iterator FaultFace::begin() const {
         return m_indexList.begin();
     }
     
-    std::vector<size_t>::iterator FaultFace::end() {
+    std::vector<size_t>::const_iterator FaultFace::end() const {
         return m_indexList.end();
     }
     
