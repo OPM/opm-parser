@@ -74,9 +74,10 @@ BOOST_AUTO_TEST_CASE(CreateInvalidFace) {
 
 
 BOOST_AUTO_TEST_CASE(CreateFace) {
-    Opm::FaultFace face1(10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
-    Opm::FaultFace face2(10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
-    Opm::FaultFace face3(10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
+    Opm::Fault fault("FAULT1");
+    std::shared_ptr<Opm::FaultFace> face1 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face2 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face3 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
 
     std::vector<size_t> trueValues1{0,1,2};
     std::vector<size_t> trueValues2{10,11,12};
@@ -84,9 +85,9 @@ BOOST_AUTO_TEST_CASE(CreateFace) {
     size_t i = 0;
 
     {
-        auto iter3 = face3.begin();
-        auto iter2 = face2.begin();
-        for (auto iter1 = face1.begin(); iter1 != face1.end(); ++iter1) {
+        auto iter3 = face3->begin();
+        auto iter2 = face2->begin();
+        for (auto iter1 = face1->begin(); iter1 != face1->end(); ++iter1) {
             size_t index1 = *iter1;
             size_t index2 = *iter2;
             size_t index3 = *iter3;
@@ -100,5 +101,17 @@ BOOST_AUTO_TEST_CASE(CreateFace) {
             ++i;
         }
     }
-    BOOST_CHECK_EQUAL( face1.getDir() , Opm::FaceDir::YPlus);
+    BOOST_CHECK_EQUAL( face1->getDir() , Opm::FaceDir::YPlus);
+
+    fault.addFace( face1 );
+    fault.addFace( face2 );
+    fault.addFace( face3 );
+
+    {
+        auto iter = fault.begin();
+        BOOST_CHECK_EQUAL( *iter , face1 ); ++iter;
+        BOOST_CHECK_EQUAL( *iter , face2 ); ++iter;
+        BOOST_CHECK_EQUAL( *iter , face3 ); ++iter;
+    }    
+    
 }

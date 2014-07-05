@@ -45,4 +45,15 @@ namespace Opm {
         m_faceList.push_back( face );
     }
 
+    std::vector<std::shared_ptr<const FaultFace> >::iterator Fault::begin() {
+        return m_faceList.begin();
+    }
+
+    
+    std::vector<std::shared_ptr<const FaultFace> >::iterator Fault::end() {
+        return m_faceList.end();
+    }
+
+
+
 }

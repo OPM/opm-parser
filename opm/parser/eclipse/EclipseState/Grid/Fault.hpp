@@ -36,6 +36,8 @@ public:
     void   setTransMult(double transMult);
     double getTransMult() const;
     void   addFace(std::shared_ptr<const FaultFace> face);
+    std::vector<std::shared_ptr<const FaultFace> >::iterator begin();
+    std::vector<std::shared_ptr<const FaultFace> >::iterator end();
 
 private:
     std::string m_name;
