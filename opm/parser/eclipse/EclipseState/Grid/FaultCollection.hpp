@@ -24,6 +24,9 @@
 #include <memory>
 #include <map>
 
+
+#include <opm/parser/eclipse/EclipseState/Schedule/OrderedMap.hpp>
+
 #include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
@@ -37,13 +40,15 @@ public:
     size_t size() const;
     bool hasFault(const std::string& faultName) const;
     std::shared_ptr<Fault>  getFault(const std::string& faultName) const;
+    std::shared_ptr<Fault>  getFault(size_t faultIndex) const;
     void addFault(std::shared_ptr<Fault> fault);
     void addFace(const std::string& faultName, std::shared_ptr<const FaultFace> face); 
     void setTransMult(const std::string& faultName , double transMult);
+
 private:
 
     size_t m_nx, m_ny, m_nz;
-    std::map<std::string , std::shared_ptr<Fault> > m_faults;
+    OrderedMap<std::shared_ptr<Fault > > m_faults;
 };
 }
 

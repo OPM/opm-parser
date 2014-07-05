@@ -37,22 +37,21 @@ namespace Opm {
     
 
     bool FaultCollection::hasFault(const std::string& faultName) const {
-        if (m_faults.count(faultName) == 1)
-            return true;
-        else
-            return false;
+        return m_faults.hasKey( faultName );
     }
     
+
     std::shared_ptr<Fault> FaultCollection::getFault(const std::string& faultName) const {
-        if (hasFault( faultName))
-            return m_faults.at(faultName);
-        else
-            throw std::invalid_argument("Unknown fault: " + faultName);
+        return m_faults.get( faultName );
+    }
+
+    std::shared_ptr<Fault> FaultCollection::getFault(size_t faultIndex) const {
+        return m_faults.get( faultIndex );
     }
     
     
     void FaultCollection::addFault(std::shared_ptr<Fault> fault) {
-        m_faults[fault->getName()] = fault;
+        m_faults.insert(fault->getName() , fault);
     }
 
 
@@ -73,5 +72,7 @@ namespace Opm {
         std::shared_ptr<Fault> fault = getFault( faultName );
         fault->setTransMult( transMult );
     }
+
+
 
 }

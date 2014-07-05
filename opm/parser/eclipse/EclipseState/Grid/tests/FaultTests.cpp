@@ -55,7 +55,15 @@ BOOST_AUTO_TEST_CASE(AddFaultsToCollection) {
     BOOST_CHECK(faults.hasFault("FAULT"));
 
     std::shared_ptr<Opm::Fault> fault2 = faults.getFault("FAULT");
+    std::shared_ptr<Opm::Fault> fault0 = faults.getFault(0);
     BOOST_CHECK_EQUAL( fault , fault2 );
+    BOOST_CHECK_EQUAL( fault , fault0 );
+
+    std::shared_ptr<Opm::Fault> faultx = std::make_shared<Opm::Fault>("FAULTX");
+    faults.addFault(faultx);
+    BOOST_CHECK_EQUAL( faults.size() , 2 );
+    BOOST_CHECK(faults.hasFault("FAULTX"));
+    BOOST_CHECK_EQUAL( faultx , faults.getFault(1));
 }
 
 
