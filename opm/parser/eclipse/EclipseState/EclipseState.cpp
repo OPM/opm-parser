@@ -105,6 +105,7 @@ namespace Opm {
         
         setMULTFLT( gridSection );
         setMULTFLT( editSection );
+        m_transMult->applyMULTFLT( m_faults );
     }
 
 

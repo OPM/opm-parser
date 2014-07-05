@@ -53,7 +53,7 @@ static DeckPtr createDeck() {
         "1000*0.25 /\n"
         "FAULTS \n"
         "  'F1'  1  1  1  4   1  4  'X' / \n"
-        "  'F2'  1  1  1  4   1  4  'X' / \n"
+        "  'F2'  5  5  1  4   1  4  'X-' / \n"
         "/\n"
         "MULTFLT \n"
         "  'F1' 0.50 / \n"
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(GetTransMult) {
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
     
     
-    BOOST_CHECK_EQUAL( 1.0 , transMult->getMultiplier(0,0,0,FaceDir::XPlus));
+    BOOST_CHECK_EQUAL( 1.0 , transMult->getMultiplier(1,0,0,FaceDir::XPlus));
     BOOST_CHECK_THROW(transMult->getMultiplier(1000 , FaceDir::XPlus) , std::invalid_argument);
 }
 
@@ -175,5 +175,10 @@ BOOST_AUTO_TEST_CASE(GetFaults) {
 
     BOOST_CHECK_EQUAL( 0.50 , F1->getTransMult());
     BOOST_CHECK_EQUAL( 0.25 , F2->getTransMult());
+
+    std::shared_ptr<const TransMult> transMult = state.getTransMult();
+    BOOST_CHECK_EQUAL( transMult->getMultiplier(0 , 0 , 0 , FaceDir::XPlus) , 0.50 );
+    BOOST_CHECK_EQUAL( transMult->getMultiplier(4 , 3 , 0 , FaceDir::XMinus) , 0.25 );
+    BOOST_CHECK_EQUAL( transMult->getMultiplier(4 , 3 , 0 , FaceDir::ZPlus) , 1.00 );
 }
 
