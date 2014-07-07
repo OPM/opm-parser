@@ -42,6 +42,8 @@ if (NOT Boost_USE_STATIC_LIBS)
    add_definitions(-DBOOST_TEST_DYN_LINK)
 endif ()
 
+find_package(CXX11Features)
+add_definitions(-DHAVE_REGEX=${HAVE_REGEX})
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 find_package(cjson)
