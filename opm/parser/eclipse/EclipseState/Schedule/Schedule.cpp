@@ -19,10 +19,12 @@
 
 #include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <boost/algorithm/string.hpp>
 
-
+#include <string>
+#include <vector>
 
 namespace Opm {
 
@@ -165,115 +167,51 @@ namespace Opm {
         }
     }
 
-    
-
     void Schedule::handleWCONProducer(DeckKeywordConstPtr keyword, size_t currentStep, bool isPredictionMode) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
-            const std::string& wellNamePattern    = record->getItem("WELL")->getTrimmedString(0);
-            std::vector<WellPtr> wells       = getWells(wellNamePattern);
+
+            const std::string& wellNamePattern =
+                record->getItem("WELL")->getTrimmedString(0);
+
+            const WellCommon::StatusEnum status =
+                WellCommon::StatusFromString(record->getItem("STATUS")->getTrimmedString(0));
+
+            WellProductionProperties properties =
+                ((isPredictionMode)
+                 ? WellProductionProperties::prediction(record)
+                 : WellProductionProperties::history   (record));
+
+            const std::vector<WellPtr>& wells = getWells(wellNamePattern);
 
             for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
-                WellPtr well                          = *wellIter;
-                double orat                           = record->getItem("ORAT")->getSIDouble(0);
-                double wrat                           = record->getItem("WRAT")->getSIDouble(0);
-                double grat                           = record->getItem("GRAT")->getSIDouble(0);
-                WellCommon::StatusEnum status         = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
-                WellProductionProperties properties   = well->getProductionProperties(currentStep);
+                WellPtr well = *wellIter;
 
-                well->setStatus( currentStep , status );
-                {
-                    double liquidRate = 0;
-                    double resVRate = 0;
-                    double BHPLimit = 0;
-                    double THPLimit = 0;
-
-                    if (isPredictionMode) {
-                        liquidRate = record->getItem("LRAT")->getSIDouble(0);
-                        BHPLimit = record->getItem("BHP")->getSIDouble(0);
-                        THPLimit = record->getItem("THP")->getSIDouble(0);
-                        resVRate = record->getItem("RESV")->getSIDouble(0);
-                    }
-
-                    properties.predictionMode = isPredictionMode;
-                    properties.OilRate = orat;
-                    properties.WaterRate = wrat;
-                    properties.GasRate = grat;
-                    properties.LiquidRate = liquidRate;
-                    properties.ResVRate = resVRate;
-                    properties.BHPLimit = BHPLimit;
-                    properties.THPLimit = THPLimit;
-
-                    if (isPredictionMode) {
-                        if (record->getItem("LRAT")->defaultApplied())
-                            properties.dropProductionControl(WellProducer::LRAT);
-                        else
-                            properties.addProductionControl(WellProducer::LRAT);
-
-                        if (record->getItem("RESV")->defaultApplied())
-                            properties.dropProductionControl(WellProducer::RESV);
-                        else
-                            properties.addProductionControl(WellProducer::RESV);
-
-                        if (record->getItem("BHP")->defaultApplied())
-                            properties.dropProductionControl(WellProducer::BHP);
-                        else
-                            properties.addProductionControl(WellProducer::BHP);
-
-                        if (record->getItem("THP")->defaultApplied())
-                            properties.dropProductionControl(WellProducer::THP);
-                        else
-                            properties.addProductionControl(WellProducer::THP);
-                    } else {
-                        properties.dropProductionControl(WellProducer::LRAT);
-                        properties.dropProductionControl(WellProducer::RESV);
-                        properties.dropProductionControl(WellProducer::BHP);
-                        properties.dropProductionControl(WellProducer::THP);
-                    }
+                if (well->isAvailableForGroupControl(currentStep)) {
+                    properties.addProductionControl(WellProducer::GRUP);
                 }
-
-                if (record->getItem("ORAT")->defaultApplied())
-                    properties.dropProductionControl(WellProducer::ORAT);
-                else
-                    properties.addProductionControl(WellProducer::ORAT);
-
-                if (record->getItem("GRAT")->defaultApplied())
-                    properties.dropProductionControl(WellProducer::GRAT);
-                else
-                    properties.addProductionControl(WellProducer::GRAT);
-
-                if (record->getItem("WRAT")->defaultApplied())
-                    properties.dropProductionControl(WellProducer::WRAT);
-                else
-                    properties.addProductionControl(WellProducer::WRAT);
+                else {
+                    properties.dropProductionControl(WellProducer::GRUP);
+                }
 
                 if (status != WellCommon::SHUT) {
-                    const std::string& cmodeString = record->getItem("CMODE")->getTrimmedString(0);
-                    WellProducer::ControlModeEnum control = WellProducer::ControlModeFromString( cmodeString );
-                    if (properties.hasProductionControl( control))
+                    const std::string& cmodeString =
+                        record->getItem("CMODE")->getTrimmedString(0);
+
+                    WellProducer::ControlModeEnum control =
+                        WellProducer::ControlModeFromString(cmodeString);
+
+                    if (properties.hasProductionControl(control)) {
                         properties.controlMode = control;
+                    }
                     else {
-                        /*
-                          This is an awkward situation. The current control mode variable
-                          points to a control which has not been specified in the deck; i.e. a
-                          situation like this:
-
-                            WCONHIST
-                               'WELL'      'OPEN'      'RESV'      0.000      0.000      0.000  5* /
-                            /
-
-                          We have specified that the well should be controlled with 'RESV'
-                          mode, but actual RESV value has been defaulted. ECLIPSE seems to
-                          handle this, but the well machinery in OPM-Core keeps close track of
-                          which controls are available, i.e. have a value set, and will be
-                          confused by this. We therefor throw here; the fix is to modify the
-                          deck to set an explicit value for the defaulted control, or
-                          alternatively change control mode.
-                        */
-                        throw std::invalid_argument("Tried to set invalid control: " + cmodeString + " for well: " + wellNamePattern);
+                        throw std::invalid_argument("Tried to set invalid control: " +
+                                                    cmodeString + " for well: " +
+                                                    wellNamePattern);
                     }
                 }
 
+                well->setStatus( currentStep , status );
                 well->setProductionProperties(currentStep, properties);
             }
         }
@@ -336,6 +274,11 @@ namespace Opm {
                     properties.dropInjectionControl(WellInjector::BHP);
                 else
                     properties.addInjectionControl(WellInjector::BHP);
+
+                if (well->isAvailableForGroupControl(currentStep))
+                    properties.addInjectionControl(WellInjector::GRUP);
+                else
+                    properties.dropInjectionControl(WellInjector::GRUP);
                 {
                     const std::string& cmodeString = record->getItem("CMODE")->getTrimmedString(0);
                     WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
