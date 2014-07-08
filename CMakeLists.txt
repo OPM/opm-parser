@@ -43,7 +43,9 @@ if (NOT Boost_USE_STATIC_LIBS)
 endif ()
 
 find_package(CXX11Features)
-add_definitions(-DHAVE_REGEX=${HAVE_REGEX})
+if (HAVE_REGEX)
+  add_definitions(-DHAVE_REGEX=${HAVE_REGEX})
+endif()
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 find_package(cjson)
