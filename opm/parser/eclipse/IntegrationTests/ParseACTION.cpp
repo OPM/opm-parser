@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( parse_ACTION_OK ) {
     ParserKeywordConstPtr DIMENS = ParserKeyword::createFixedSized("DIMENS" , (size_t) 1 , IGNORE_WARNING );
     ParserKeywordConstPtr THROW = ParserKeyword::createFixedSized("THROW" , UNKNOWN , THROW_EXCEPTION );
     
-    BOOST_REQUIRE( parser->loadKeywordFromFile( boost::filesystem::path( std::string(KEYWORD_DIRECTORY) + std::string("/W/WCONHIST") )) );
+    BOOST_REQUIRE( parser->loadKeywordFromFile( boost::filesystem::path( std::string(KEYWORD_DIRECTORY) + std::string("/E100/W/WCONHIST") )) );
     parser->addParserKeyword( DIMENS );
     parser->addParserKeyword( THROW );
 
