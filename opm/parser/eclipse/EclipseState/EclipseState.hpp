@@ -40,6 +40,7 @@ namespace Opm {
         EclipseState(DeckConstPtr deck);
         ScheduleConstPtr getSchedule() const;
         EclipseGridConstPtr getEclipseGrid() const;
+        EclipseGridPtr getMutableEclipseGrid();
         bool hasPhase(enum Phase::PhaseEnum phase) const;
         std::string getTitle() const;
         bool supportsGridProperty(const std::string& keyword) const;
@@ -78,7 +79,7 @@ namespace Opm {
         void copyIntKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
         void copyDoubleKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
 
-        EclipseGridConstPtr m_eclipseGrid;
+        EclipseGridPtr m_eclipseGrid;
         ScheduleConstPtr schedule;
         std::set<enum Phase::PhaseEnum> phases;
         std::string m_title;
