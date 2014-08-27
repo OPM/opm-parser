@@ -136,10 +136,11 @@ namespace Opm
                 std::string token = rawRecord->pop_front();
                 if (tokenContainsStar( token )) {
                     StarToken<double> st(token);
-                    double value = defaultValue;  
+                    double value = defaultValue;
                     if (st.hasValue())
                         value = st.value();
-                    deckItem->push_backMultiple( value , st.multiplier() );
+                    deckItem->push_backMultiple(value , st.multiplier());
+                    deckItem->setDefaultApplied(!st.hasValue());
                 } else {
                     double value = readValueToken<double>(token);
                     deckItem->push_back(value);
