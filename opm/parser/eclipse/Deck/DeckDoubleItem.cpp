@@ -96,7 +96,7 @@ namespace Opm {
 
     void DeckDoubleItem::push_backDefault(double data) {
         m_data.push_back( data );
-        m_defaultApplied = true;
+        setDefaultApplied(true);
     }
     
     
@@ -111,7 +111,7 @@ namespace Opm {
     }
 
     void DeckDoubleItem::push_backDimension(std::shared_ptr<const Dimension> activeDimension , std::shared_ptr<const Dimension> defaultDimension) {
-        if (m_defaultApplied)
+        if (defaultApplied())
             m_dimensions.push_back( defaultDimension );
         else
             m_dimensions.push_back( activeDimension );

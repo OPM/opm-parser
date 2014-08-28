@@ -128,7 +128,7 @@ namespace Opm
     /// returns a DeckItem object.
     /// NOTE: data are popped from the rawRecords deque!
     DeckItemPtr ParserDoubleItem::scan(RawRecordPtr rawRecord) const {
-        DeckDoubleItemPtr deckItem(new DeckDoubleItem(name() , scalar()));
+        DeckDoubleItemPtr deckItem(new DeckDoubleItem(name()));
         double defaultValue = m_default;
 
         if (sizeType() == ALL) {  
