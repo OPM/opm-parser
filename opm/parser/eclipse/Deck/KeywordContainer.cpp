@@ -70,6 +70,9 @@ namespace Opm {
 
     DeckKeywordPtr KeywordContainer::getKeyword(const std::string& keyword) const {
         const std::vector<DeckKeywordPtr>& keywordList = getKeywordList( keyword );
+        if (keywordList.size() != 1)
+            throw std::invalid_argument("Keyword '"+keyword+"' is occures multiple times in the deck "
+                                        "but must be unique.");
         return keywordList.back();
     }
 
