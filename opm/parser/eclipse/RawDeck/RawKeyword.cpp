@@ -127,7 +127,7 @@ namespace Opm {
     }
 
     bool RawKeyword::isValidKeyword(const std::string& keywordCandidate) {
-        return ParserKeyword::validDeckName(keywordCandidate);
+        return ParserKeyword::validDeckName(keywordCandidate, /*acceptLowerCase=*/true);
     }
 
     void RawKeyword::setKeywordName(const std::string& name) {
