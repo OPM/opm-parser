@@ -31,10 +31,11 @@ namespace Opm {
 
     class DeckItem {
     public:
-        DeckItem(const std::string& name , bool m_scalar = true);
+        DeckItem(const std::string& name);
         const std::string& name() const;
         
         bool defaultApplied() const;
+        void setDefaultApplied(bool yesno);
 
         virtual size_t size() const = 0;
         
@@ -103,10 +104,9 @@ namespace Opm {
         virtual ~DeckItem() {
         }
 
-        bool m_defaultApplied;
     private:
+        bool m_defaultApplied;
         std::string m_name;
-        bool m_scalar;
     };
 
     typedef std::shared_ptr<DeckItem> DeckItemPtr;

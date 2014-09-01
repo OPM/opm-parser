@@ -25,8 +25,11 @@ namespace Opm {
 template<>  
 void GridProperty<int>::loadFromDeckKeyword(Opm::DeckKeywordConstPtr deckKeyword) {
     if (deckKeyword->isDataKeyword()) {
-        const std::vector<int>& data = deckKeyword->getIntData();
-        setFromVector(data);
+        if (!deckKeyword->getRecord(0)->getItem(0)->defaultApplied()) {
+            // only use the array from the keyword if it does not contain garbage
+            const std::vector<int>& data = deckKeyword->getIntData();
+            setFromVector(data);
+        }
     } else
         throw std::invalid_argument("Can only load from DATA keywords");
 }
@@ -54,8 +57,11 @@ void GridProperty<double>::loadFromDeckKeyword(Opm::DeckKeywordConstPtr deckKeyw
 template<>  
 void GridProperty<double>::loadFromDeckKeyword(std::shared_ptr<const Box> inputBox , Opm::DeckKeywordConstPtr deckKeyword) {
     if (deckKeyword->isDataKeyword()) {
-        const std::vector<double>& data = deckKeyword->getSIDoubleData();
-        setFromVector(inputBox , data);
+        if (!deckKeyword->getRecord(0)->getItem(0)->defaultApplied()) {
+            // only use the array from the keyword if it does not contain garbage
+            const std::vector<double>& data = deckKeyword->getSIDoubleData();
+            setFromVector(inputBox , data);
+        }
     } else
         throw std::invalid_argument("Can only load from DATA keywords");
 }

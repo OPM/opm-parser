@@ -64,7 +64,7 @@ namespace Opm {
     /// NOTE: data are popped from the rawRecords deque!
 
      DeckItemPtr ParserStringItem::scan(RawRecordPtr rawRecord) const {
-         DeckStringItemPtr deckItem(new DeckStringItem(name() , scalar()));
+         DeckStringItemPtr deckItem(new DeckStringItem(name()));
         std::string defaultValue = m_default;
 
         if (sizeType() == ALL) {  

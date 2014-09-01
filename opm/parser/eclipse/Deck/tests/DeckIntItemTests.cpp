@@ -41,14 +41,6 @@ BOOST_AUTO_TEST_CASE(InitializeDefaultApplied) {
     BOOST_REQUIRE_NO_THROW( deckIntItem.defaultApplied() );
 }
 
-
-BOOST_AUTO_TEST_CASE(InitializeDefaultApplied_Throws_for_nonScalar) {
-    DeckIntItem deckIntItem("TEST" , false);
-    BOOST_REQUIRE_THROW( deckIntItem.defaultApplied() , std::invalid_argument);
-}
-
-
-
 BOOST_AUTO_TEST_CASE(PushBack_VectorPushed_ElementsCorrect) {
     DeckIntItem deckIntItem("TEST");
     std::deque<int> pushThese;
@@ -101,6 +93,3 @@ BOOST_AUTO_TEST_CASE(PushBackMultiple) {
     for (size_t i=0; i < 100; i++)
         BOOST_CHECK_EQUAL(10 , item.getInt(i));
 }
-
-
-

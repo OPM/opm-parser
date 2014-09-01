@@ -80,7 +80,6 @@ BOOST_AUTO_TEST_CASE( parse_DATAWithDefult_OK ) {
     DeckItemConstPtr item1 = rec1->getItem(0);
     
     BOOST_CHECK_EQUAL( 2U , keyword->size());
-    BOOST_CHECK_THROW( item0->defaultApplied() , std::invalid_argument);
 
     BOOST_CHECK_EQUAL( 100 , item0->getRawDouble(0));
     BOOST_CHECK_EQUAL(  -1 , item0->getRawDouble(1));
