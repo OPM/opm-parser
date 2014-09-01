@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE( KeywordInCorrectSection ) {
             "SOLUTION\n"
             "SCHEDULE\n";
 
-        auto deck = parser->parseString(incorrectDeckString, /*strict=*/false);
+        auto deck = parser->parseString(incorrectDeckString);
         Opm::ParserLogPtr parserLog(new Opm::ParserLog());
         BOOST_CHECK(!Opm::checkDeck(deck, parserLog));
 

@@ -50,10 +50,10 @@ BOOST_AUTO_TEST_CASE( parse_ACTION_OK ) {
     BOOST_REQUIRE( parser->isRecognizedKeyword( "WCONHIST" ));
     BOOST_REQUIRE( parser->isRecognizedKeyword( "THROW" ));
     
-    BOOST_REQUIRE_THROW(  parser->parseFile( actionFile2.string() , false) , std::invalid_argument );
+    BOOST_REQUIRE_THROW(  parser->parseFile( actionFile2.string()) , std::invalid_argument );
     
     ParserLogPtr parserLog(new ParserLog);
-    DeckPtr deck =  parser->parseFile(actionFile.string() , false, parserLog);
+    DeckPtr deck =  parser->parseFile(actionFile.string(), parserLog);
     DeckKeywordConstPtr kw1 = deck->getKeyword("WCONHIST" , 0);
     BOOST_CHECK_EQUAL( 3U , kw1->size() );
 
