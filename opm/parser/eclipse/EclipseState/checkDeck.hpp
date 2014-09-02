@@ -32,6 +32,8 @@ enum DeckChecks {
 
     UnknownKeywords = 0x0004,
 
+    TableSizes = 0x0008,
+
     AllChecks = 0xffff
 };
 
