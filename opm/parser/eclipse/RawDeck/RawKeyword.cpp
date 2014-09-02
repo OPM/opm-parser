@@ -121,38 +121,14 @@ namespace Opm {
             throw std::range_error("Index out of range");
     }
 
-    bool RawKeyword::isKeywordPrefix(const std::string& keywordCandidate, std::string& result) {
-        // get rid of comments
-        size_t commentPos = keywordCandidate.find("--");
-        if (commentPos != std::string::npos)
-            result = keywordCandidate.substr(0, commentPos);
-        else
-            result = keywordCandidate;
-
-        // white space is for dicks!
-        result = boost::trim_right_copy_if(result.substr(0, 8), boost::is_any_of(" \t"));
-        if (isValidKeyword(result))
-            return true;
-        else
-            return false;
+    bool RawKeyword::isKeywordPrefix(const std::string& line, std::string& keywordName) {
+        keywordName = ParserKeyword::getDeckName(line);
+        return isValidKeyword(keywordName);
     }
 
     bool RawKeyword::isValidKeyword(const std::string& keywordCandidate) {
         return ParserKeyword::validDeckName(keywordCandidate);
     }
-
-
-    bool RawKeyword::useLine(std::string line) {
-        boost::algorithm::trim_left(line);
-        if (line.length()) {
-            if (line.substr(0,2) == "--")
-                return false;
-            else
-                return true;
-        } else
-            return false;
-    }
-
 
     void RawKeyword::setKeywordName(const std::string& name) {
         m_name = boost::algorithm::trim_right_copy(name);
