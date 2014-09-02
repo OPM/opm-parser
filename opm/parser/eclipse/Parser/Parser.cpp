@@ -31,7 +31,6 @@ namespace Opm {
 
     struct ParserState {
         DeckPtr deck;
-        ParserLog parserLog;
         boost::filesystem::path dataFile;
         boost::filesystem::path rootPath;
         std::map<std::string, std::string> pathMap;
@@ -77,6 +76,7 @@ namespace Opm {
     };
 
     Parser::Parser(bool addDefault) {
+        m_parserLog.reset(new ParserLog(&std::cout));
         if (addDefault)
             addDefaultKeywords();
     }
@@ -90,48 +90,60 @@ namespace Opm {
      */
 
     DeckPtr Parser::parseFile(const std::string &dataFileName, ParserLogPtr parserLog) const {
+        auto parserState = std::make_shared<ParserState>(dataFileName, DeckPtr(new Deck()), getRootPathFromFile(dataFileName));
 
-        std::shared_ptr<ParserState> parserState(new ParserState(dataFileName, DeckPtr(new Deck()), getRootPathFromFile(dataFileName)));
+        // use the parser log object from the argument list instead of the internal one
+        // if one was passed...
+        ParserLogPtr tmpParserLog = m_parserLog;
+        if (parserLog)
+            m_parserLog = parserLog;
 
         // warn if the file we'd like to parse does not exist or is not readable
         if (!parserState->initSuccessful) {
             std::string msg = "Input file '" + dataFileName + "' does not exist or is not readable. Ignoring";
 
-            parserLog->addError("", -1, msg);
+            m_parserLog->addError("", -1, msg);
         }
         else {
             parseState(parserState);
             applyUnitsToDeck(parserState->deck);
         }
 
-        if (parserLog)
-            *parserLog = parserState->parserLog;
+        m_parserLog = tmpParserLog;
 
         return parserState->deck;
     }
 
     DeckPtr Parser::parseString(const std::string &data, ParserLogPtr parserLog) const {
+        auto parserState = std::make_shared<ParserState>(data, DeckPtr(new Deck()));
 
-        std::shared_ptr<ParserState> parserState(new ParserState(data, DeckPtr(new Deck())));
+        // use the parser log object from the argument list instead of the internal one
+        // if one was passed...
+        ParserLogPtr tmpParserLog = m_parserLog;
+        if (parserLog)
+            m_parserLog = parserLog;
 
         parseState(parserState);
         applyUnitsToDeck(parserState->deck);
 
-        if (parserLog)
-            *parserLog = parserState->parserLog;
+        m_parserLog = tmpParserLog;
 
         return parserState->deck;
     }
 
     DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, ParserLogPtr parserLog) const {
+        auto parserState = std::make_shared<ParserState>(inputStream, DeckPtr(new Deck()));
 
-        std::shared_ptr<ParserState> parserState(new ParserState(inputStream, DeckPtr(new Deck())));
+        // use the parser log object from the argument list instead of the internal one
+        // if one was passed...
+        ParserLogPtr tmpParserLog = m_parserLog;
+        if (parserLog)
+            m_parserLog = parserLog;
 
         parseState(parserState);
         applyUnitsToDeck(parserState->deck);
 
-        if (parserLog)
-            *parserLog = parserState->parserLog;
+        m_parserLog = tmpParserLog;
 
         return parserState->deck;
     }
@@ -147,6 +159,10 @@ namespace Opm {
     ParserKeywordConstPtr Parser::getParserKeywordFromInternalName(const std::string& internalKeywordName) const {
         return m_internalParserKeywords.at(internalKeywordName);
     }
+
+    ParserLogPtr Parser::getParserLog() const
+    { return m_parserLog; }
+
 
     ParserKeywordConstPtr Parser::matchingKeyword(const std::string& name) const {
         for (auto iter = m_wildCardKeywords.begin(); iter != m_wildCardKeywords.end(); ++iter) {
@@ -208,7 +224,7 @@ namespace Opm {
 
 
 
-    ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& deckKeywordName) const {
+ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& deckKeywordName, ParserState* /*parserState*/) const {
         if (m_deckParserKeywords.count(deckKeywordName)) {
             return m_deckParserKeywords.at(deckKeywordName);
         } else {
@@ -289,7 +305,7 @@ namespace Opm {
                         if (!newParserState->initSuccessful) {
                             std::string msg = "Included file '" + includeFile.string() + "' does not exist or is not readable. Ignoring";
 
-                            parserState->parserLog.addError(newParserState->dataFile.string(), newParserState->lineNR, msg);
+                            m_parserLog->addError(newParserState->dataFile.string(), newParserState->lineNR, msg);
                         }
                         else
                             stopParsing = parseState(newParserState);
@@ -305,17 +321,17 @@ namespace Opm {
                                 deckKeyword->setParserKeyword(parserKeyword);
                                 parserState->deck->addKeyword(deckKeyword);
                             } else if (action == IGNORE_WARNING) 
-                                parserState->parserLog.addWarning(parserState->dataFile.string(),
-                                                                  parserState->rawKeyword->getLineNR(),
-                                                                  "The keyword " + parserState->rawKeyword->getKeywordName() + " is ignored - this might potentially affect the results");
+                                m_parserLog->addWarning(parserState->dataFile.string(),
+                                                        parserState->rawKeyword->getLineNR(),
+                                                        "The keyword " + parserState->rawKeyword->getKeywordName() + " is ignored - this might potentially affect the results");
                         } else {
                             DeckKeywordPtr deckKeyword(new DeckKeyword(parserState->rawKeyword->getKeywordName(), false));
                             deckKeyword->setLocation(parserState->rawKeyword->getFilename(),
                                                      parserState->rawKeyword->getLineNR());
                             parserState->deck->addKeyword(deckKeyword);
-                            parserState->parserLog.addWarning(parserState->dataFile.string(),
-                                                              parserState->rawKeyword->getLineNR(),
-                                                              "The keyword " + parserState->rawKeyword->getKeywordName() + " is not recognized");
+                            m_parserLog->addWarning(parserState->dataFile.string(),
+                                                    parserState->rawKeyword->getLineNR(),
+                                                    "The keyword " + parserState->rawKeyword->getKeywordName() + " is not recognized");
                         }
                     }
                     parserState->rawKeyword.reset();
@@ -426,9 +442,9 @@ namespace Opm {
                     if (lastWarningFile == parserState->dataFile.string()
                         && lastWarningLine < curLine - 1)
                     {
-                        parserState->parserLog.addWarning(parserState->dataFile.string(),
-                                                          parserState->lineNR,
-                                                          "Can't parse line: Expected beginning of keyword");
+                        m_parserLog->addWarning(parserState->dataFile.string(),
+                                                parserState->lineNR,
+                                                "Can't parse line: Expected beginning of keyword");
                     }
 
                     lastWarningFile = parserState->dataFile.string();
@@ -469,7 +485,6 @@ namespace Opm {
     }
 
     bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
-
         try {
             Json::JsonObject jsonKeyword(configFile);
             ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonKeyword);
