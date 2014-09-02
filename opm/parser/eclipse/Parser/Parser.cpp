@@ -349,28 +349,20 @@ namespace Opm {
 
                 return RawKeywordPtr(new RawKeyword(keywordString , rawSizeType , parserState->dataFile.string(), parserState->lineNR));
             } else {
-                size_t targetSize;
-
                 if (parserKeyword->hasFixedSize())
-                    targetSize = parserKeyword->getFixedSize();
+                    return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , parserKeyword->getFixedSize(), parserKeyword->isTableCollection()));
                 else {
-                    const std::pair<std::string, std::string> sizeKeyword = parserKeyword->getSizeDefinitionPair();
-                    DeckKeywordConstPtr sizeDefinitionKeyword = parserState->deck->getKeyword(sizeKeyword.first);
-                    DeckItemPtr sizeDefinitionItem;
-                    {
-                        DeckRecordConstPtr record = sizeDefinitionKeyword->getRecord(0);
-                        sizeDefinitionItem = record->getItem(sizeKeyword.second);
-                    }
-                    targetSize = sizeDefinitionItem->getInt(0);
+                    // we do not require the presence and correctness of the
+                    // size-definition keyword here (e.g. TABDIMS for the saturation
+                    // tables). Instead this is ensured by Eclipse::checkDeck()
+                    return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR));
                 }
-                return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , targetSize , parserKeyword->isTableCollection()));
             }
         } else {
             if (parserState->strictParsing) {
                 throw std::invalid_argument("Keyword " + keywordString + " not recognized ");
-            } else {
-                return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string(), parserState->lineNR , 0));
-            }
+            } else
+                return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR));
         }
     }
 
@@ -400,7 +392,6 @@ namespace Opm {
 
             boost::algorithm::trim_right(line); // Removing garbage (eg. \r)
             line = doSpecialHandlingForTitleKeyword(line, parserState);
-            std::string keywordString;
             parserState->lineNR++;
 
             // skip empty lines
@@ -408,12 +399,41 @@ namespace Opm {
                 continue;
 
             if (parserState->rawKeyword == NULL) {
-                if (RawKeyword::isKeywordPrefix(line, keywordString)) {
-                    parserState->rawKeyword = createRawKeyword(keywordString, parserState);
+                // else try to create a new keyword
+                std::string keywordName;
+                if (RawKeyword::isKeywordPrefix(line, keywordName))
+                    parserState->rawKeyword = createRawKeyword(keywordName, parserState);
+                else {
+                    // to prevent the user from being flooded by warnings, only add a
+                    // warning for the first unparsable line if the unparsable lines are
+                    // consecutive...
+                    static std::string lastWarningFile = parserState->dataFile.string();
+                    static int lastWarningLine = -100;
+
+                    int curLine = parserState->lineNR;
+                    if (parserState->rawKeyword)
+                        curLine = parserState->rawKeyword->getLineNR();
+
+                    if (lastWarningFile == parserState->dataFile.string()
+                        && lastWarningLine < curLine - 1)
+                    {
+                        parserState->parserLog.addWarning(parserState->dataFile.string(),
+                                                          parserState->lineNR,
+                                                          "Can't parse line: Expected beginning of keyword");
+                    }
+
+                    lastWarningFile = parserState->dataFile.string();
+                    lastWarningLine = curLine;
                 }
             } else {
                 if (parserState->rawKeyword->getSizeType() == Raw::UNKNOWN) {
-                    if (isRecognizedKeyword(line)) {
+                    // for unknown keywords we can't know if the first item of the next
+                    // line is a string or a keyword name which we don't know. We thus
+                    // assume that all records of keywords with an unknown number of
+                    // records start with a double item...
+                    std::string keywordName = ParserKeyword::getDeckName(line);
+                    if (ParserKeyword::validDeckName(keywordName, /*acceptLowerCase=*/true))
+                    {
                         parserState->rawKeyword->finalizeUnknownSize();
                         parserState->nextKeyword = line;
                         return true;

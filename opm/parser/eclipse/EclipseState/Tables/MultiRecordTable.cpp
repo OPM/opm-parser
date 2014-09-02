@@ -38,10 +38,6 @@ size_t MultiRecordTable::numTables(Opm::DeckKeywordConstPtr keyword)
             ++ result;
     }
 
-    // the last empty record of a keyword seems to go MIA for some
-    // strange reason...
-    ++result;
-
     return result;
 }
 
