@@ -25,6 +25,7 @@
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
@@ -44,15 +45,15 @@ BOOST_AUTO_TEST_CASE(ParseWellProbe) {
 
     ParserPtr parser(new Parser());
 
-    // TODO: for some reason, the parser does not seem to throw here. Investigate
-/*
     const char *invalidDeckString =
         "WELL_PROBE\n"
         "/\n";
-    BOOST_CHECK_THROW(parser->parseString(invalidDeckString), std::invalid_argument);
-*/
+    ParserLogPtr parserLog(new ParserLog());
+    auto deck = parser->parseString(invalidDeckString, parserLog);
+    BOOST_CHECK(parserLog->size() == 1);
+    BOOST_CHECK(parserLog->numWarnings() == 1);
 
-    DeckPtr deck = parser->parseString(validDeckString);
+    deck = parser->parseString(validDeckString);
     BOOST_CHECK( !deck->hasKeyword("WELL_PROBE"));
     BOOST_CHECK( deck->hasKeyword("WBHP"));
     BOOST_CHECK( deck->hasKeyword("WOPR"));
