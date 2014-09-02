@@ -420,11 +420,18 @@ namespace Opm {
                 line = "";
             }
 
-            if (parserState->rawKeyword != NULL && parserState->rawKeyword->isFinished())
+            if (parserState->rawKeyword
+                && parserState->rawKeyword->isFinished()
+                && parserState->rawKeyword->getSizeType() != Raw::UNKNOWN)
+            {
                 return true;
+            }
         }
-        if (parserState->rawKeyword && parserState->rawKeyword->getSizeType() == Raw::UNKNOWN)
+        if (parserState->rawKeyword
+            && parserState->rawKeyword->getSizeType() == Raw::UNKNOWN)
+        {
             parserState->rawKeyword->finalizeUnknownSize();
+        }
 
         return false;
     }
