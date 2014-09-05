@@ -27,6 +27,8 @@
 namespace Opm {
 
     std::string DeckStringItem::getString(size_t index) const {
+        assertValueSet();        
+
         if (index < m_data.size()) {
             return m_data[index];
         } else
@@ -41,6 +43,8 @@ namespace Opm {
     }
 
     const std::vector<std::string>& DeckStringItem::getStringData() const {
+        assertValueSet();        
+
         return m_data;
     }
 
@@ -49,28 +53,36 @@ namespace Opm {
         for (size_t i = 0; i < items; i++) {
             m_data.push_back(data[i]);
         }
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
+
 
     void DeckStringItem::push_back(std::deque<std::string> data) {
         push_back(data, data.size());
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
-    void DeckStringItem::push_back(std::string data) {
-        m_data.push_back(data);
+
+    void DeckStringItem::push_back(const std::string& data ) {
+        m_data.push_back( data );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
+
 
   
-    void DeckStringItem::push_backDefault(std::string data) {
-        m_data.push_back( data );
-        m_defaultApplied = true;
-    }
-    
-    
     void DeckStringItem::push_backMultiple(std::string value, size_t numValues) {
         for (size_t i = 0; i < numValues; i++) 
             m_data.push_back( value );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
+
+    void DeckStringItem::push_backDefault(std::string data) {
+        m_data.push_back( data );
+        m_valueStatus |= DeckValue::DEFAULT;
+    }
+    
+    
 
     size_t DeckStringItem::size() const {
         return m_data.size();

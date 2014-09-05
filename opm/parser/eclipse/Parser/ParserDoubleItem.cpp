@@ -34,12 +34,10 @@ namespace Opm
             ParserItemSizeEnum sizeType_) :
             ParserItem(itemName, sizeType_)
     {
-        m_default = defaultDouble();
     }
 
     ParserDoubleItem::ParserDoubleItem(const std::string& itemName) : ParserItem(itemName)
     {
-        m_default = defaultDouble();
     }
 
 
@@ -56,7 +54,10 @@ namespace Opm
 
 
     double ParserDoubleItem::getDefault() const {
-        return m_default;
+        if (m_defaultSet) 
+            return m_default;
+        else
+            throw std::invalid_argument("Tried get default from parser item " + name() + " No default has been configured");
     }
     
 
@@ -72,21 +73,11 @@ namespace Opm
     {
         if (jsonConfig.has_item("default")) 
             setDefault( jsonConfig.get_double("default") );
-        else
-            m_default = defaultDouble();
     }
-
 
     bool ParserDoubleItem::equal(const ParserItem& other) const
     {
-        // cast to a pointer to avoid bad_cast exception
-        const ParserDoubleItem* rhs = dynamic_cast<const ParserDoubleItem*>(&other);
-        if (rhs && ParserItem::equal(other) && (getDefault() == rhs->getDefault())) {
-            return equalDimensions( other );
-        }
-        else
-            return false;
-    }
+        return (ParserItemEqual<ParserDoubleItem>(this , other) && equalDimensions(other));    }
 
 
     bool ParserDoubleItem::equalDimensions(const ParserItem& other) const {
@@ -124,55 +115,11 @@ namespace Opm
     }
 
 
-    /// Scans the rawRecords data according to the ParserItems definition.
-    /// returns a DeckItem object.
-    /// NOTE: data are popped from the rawRecords deque!
     DeckItemPtr ParserDoubleItem::scan(RawRecordPtr rawRecord) const {
-        DeckDoubleItemPtr deckItem(new DeckDoubleItem(name() , scalar()));
-        double defaultValue = m_default;
-
-        if (sizeType() == ALL) {  
-            while (rawRecord->size() > 0) {
-                std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<double> st(token);
-                    double value = defaultValue;  
-                    if (st.hasValue())
-                        value = st.value();
-                    deckItem->push_backMultiple( value , st.multiplier() );
-                } else {
-                    double value = readValueToken<double>(token);
-                    deckItem->push_back(value);
-                }
-            }
-        } else {
-            // The '*' should be interpreted as a default indicator
-            if (rawRecord->size() > 0) {
-                std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<double> st(token);
-        
-                    if (st.hasValue()) { // Probably never true
-                        deckItem->push_back( st.value() ); 
-                        std::string stringValue = boost::lexical_cast<std::string>(st.value());
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( stringValue );
-                    } else {
-                        deckItem->push_backDefault( defaultValue );
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( "*" );
-                    }
-                } else {
-                    double value = readValueToken<double>(token);
-                    deckItem->push_back(value);
-                }
-            } else
-                deckItem->push_backDefault( defaultValue );
-        }
-        return deckItem;
+        return ParserItemScan<ParserDoubleItem,DeckDoubleItem,double>(this , rawRecord);
     }
     
-  void ParserDoubleItem::inlineNew(std::ostream& os) const {
+    void ParserDoubleItem::inlineNew(std::ostream& os) const {
         os << "new ParserDoubleItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();

@@ -28,13 +28,17 @@
 namespace Opm {
 
     double DeckDoubleItem::getRawDouble(size_t index) const {
+        assertValueSet();
+
         if (index < m_data.size()) {
             return m_data[index];
         } else
             throw std::out_of_range("Out of range, index must be lower than " + boost::lexical_cast<std::string>(m_data.size()));
     }
     
+
     const std::vector<double>& DeckDoubleItem::getRawDoubleData() const {
+        assertValueSet();
         return m_data;
     }
 
@@ -64,16 +68,17 @@ namespace Opm {
 
     double DeckDoubleItem::getSIDouble(size_t index) const {
         assertSIData();
-        {
-            if (index < m_data.size()) {
-                return m_SIdata[index];
-            } else
-                throw std::out_of_range("Out of range, index must be lower than " + boost::lexical_cast<std::string>(m_data.size()));
-        }
+        assertValueSet();
+
+        if (index < m_data.size()) {
+            return m_SIdata[index];
+        } else
+            throw std::out_of_range("Out of range, index must be lower than " + boost::lexical_cast<std::string>(m_data.size()));
     }
     
     const std::vector<double>& DeckDoubleItem::getSIDoubleData() const {
         assertSIData();
+        assertValueSet();
         return m_SIdata;
     }
 
@@ -82,27 +87,30 @@ namespace Opm {
         for (size_t i=0; i<items; i++) {
             m_data.push_back(data[i]);
         }
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
 
     void DeckDoubleItem::push_back(std::deque<double> data) {
         push_back( data  , data.size() );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
     void DeckDoubleItem::push_back(double data) {
         m_data.push_back( data );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
+    }
+
+    void DeckDoubleItem::push_backMultiple(double value, size_t numValues) {
+        for (size_t i = 0; i < numValues; i++) 
+            m_data.push_back( value );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
 
     void DeckDoubleItem::push_backDefault(double data) {
         m_data.push_back( data );
-        m_defaultApplied = true;
-    }
-    
-    
-    void DeckDoubleItem::push_backMultiple(double value, size_t numValues) {
-        for (size_t i = 0; i < numValues; i++) 
-            m_data.push_back( value );
+        m_valueStatus |= DeckValue::DEFAULT;
     }
 
 
@@ -111,7 +119,7 @@ namespace Opm {
     }
 
     void DeckDoubleItem::push_backDimension(std::shared_ptr<const Dimension> activeDimension , std::shared_ptr<const Dimension> defaultDimension) {
-        if (m_defaultApplied)
+        if (m_valueStatus == DeckValue::DEFAULT)
             m_dimensions.push_back( defaultDimension );
         else
             m_dimensions.push_back( activeDimension );

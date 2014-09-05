@@ -28,6 +28,8 @@
 namespace Opm {
 
     float DeckFloatItem::getRawFloat(size_t index) const {
+        assertValueSet();
+
         if (index < m_data.size()) {
             return m_data[index];
         } else
@@ -40,18 +42,21 @@ namespace Opm {
 
     float DeckFloatItem::getSIFloat(size_t index) const {
         assertSIData();
-        {
-            if (index < m_data.size()) {
-                return m_SIdata[index];
-            } else
-                throw std::out_of_range("Out of range, index must be lower than " + boost::lexical_cast<std::string>(m_data.size()));
-        }
+        assertValueSet();
+
+        if (index < m_data.size()) {
+            return m_SIdata[index];
+        } else
+            throw std::out_of_range("Out of range, index must be lower than " + boost::lexical_cast<std::string>(m_data.size()));
     }
 
     const std::vector<float>& DeckFloatItem::getSIFloatData() const {
         assertSIData();
+        assertValueSet();
         return m_SIdata;
     }
+
+
 
     void DeckFloatItem::assertSIData() const {
         if (m_dimensions.size() > 0) {
@@ -78,31 +83,36 @@ namespace Opm {
         for (size_t i=0; i<items; i++) {
             m_data.push_back(data[i]);
         }
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
     void DeckFloatItem::push_back(std::deque<float> data) {
         push_back( data  , data.size() );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
     void DeckFloatItem::push_back(float data) {
         m_data.push_back( data );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
     }
 
-
-    void DeckFloatItem::push_backDefault(float data) {
-        m_data.push_back( data );
-        m_defaultApplied = true;
-    }
 
 
     void DeckFloatItem::push_backMultiple(float value, size_t numValues) {
         for (size_t i = 0; i < numValues; i++)
             m_data.push_back( value );
+        m_valueStatus |= DeckValue::SET_IN_DECK;
+    }
+
+
+    void DeckFloatItem::push_backDefault(float data) {
+        m_data.push_back( data );
+        m_valueStatus |= DeckValue::DEFAULT;
     }
 
 
     void DeckFloatItem::push_backDimension(std::shared_ptr<const Dimension> activeDimension , std::shared_ptr<const Dimension> defaultDimension) {
-        if (m_defaultApplied)
+        if (m_valueStatus == DeckValue::DEFAULT)
             m_dimensions.push_back( defaultDimension );
         else
             m_dimensions.push_back( activeDimension );

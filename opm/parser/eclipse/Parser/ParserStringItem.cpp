@@ -24,13 +24,13 @@
 #include <opm/parser/eclipse/RawDeck/StarToken.hpp>
 namespace Opm {
 
-    ParserStringItem::ParserStringItem(const std::string& itemName) : ParserItem(itemName) {
-        m_default = defaultString();
+    ParserStringItem::ParserStringItem(const std::string& itemName) : ParserItem(itemName) 
+    {
     }
 
 
-    ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType_) : ParserItem(itemName, sizeType_) {
-        m_default = defaultString();
+    ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType_) : ParserItem(itemName, sizeType_) 
+    {
     }
 
     ParserStringItem::ParserStringItem(const std::string& itemName, ParserItemSizeEnum sizeType_, const std::string& defaultValue) : ParserItem(itemName, sizeType_) {
@@ -46,79 +46,38 @@ namespace Opm {
     ParserStringItem::ParserStringItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig) {
         if (jsonConfig.has_item("default")) 
             setDefault( jsonConfig.get_string("default") );
-        else
-            m_default = defaultString();
     }
 
 
 
     void ParserStringItem::setDefault(const std::string& defaultValue) {
+        if (sizeType() == ALL)
+            throw std::invalid_argument("The size type ALL can not be combined with an explicit default value");
+
         m_default = defaultValue;
         m_defaultSet = true;
     }
 
-
-
-    /// Scans the rawRecords data according to the ParserItems definition.
-    /// returns a DeckItem object.
-    /// NOTE: data are popped from the rawRecords deque!
-
-     DeckItemPtr ParserStringItem::scan(RawRecordPtr rawRecord) const {
-         DeckStringItemPtr deckItem(new DeckStringItem(name() , scalar()));
-        std::string defaultValue = m_default;
-
-        if (sizeType() == ALL) {  
-            while (rawRecord->size() > 0) {
-                std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<std::string> st(token);
-                    std::string value = defaultValue;   
-                    if (st.hasValue())
-                        value = st.value();
-                    deckItem->push_backMultiple( value , st.multiplier() );
-                } else {
-                    std::string value = readValueToken<std::string>(token);
-                    deckItem->push_back(value);
-                }
-            }
-        } else {
-            // The '*' should be interpreted as a default indicator
-            if (rawRecord->size() > 0) {
-                std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<std::string> st(token);
-        
-                    if (st.hasValue()) { // Probably never true
-                        deckItem->push_back( st.value() ); 
-                        std::string stringValue = boost::lexical_cast<std::string>(st.value());
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( stringValue );
-                    } else {
-                        deckItem->push_backDefault( defaultValue );
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( "*" );
-                    }
-                } else {
-                    std::string value = readValueToken<std::string>(token);
-                    deckItem->push_back(value);
-                }
-            } else
-                deckItem->push_backDefault( defaultValue );
-        }
-        return deckItem;
+    std::string ParserStringItem::getDefault() const {
+        if (m_defaultSet) 
+            return m_default;
+        else
+            throw std::invalid_argument("Tried get default from parser item " + name() + " No default has been configured");
     }
+
+
+
+    DeckItemPtr ParserStringItem::scan(RawRecordPtr rawRecord) const {
+        return ParserItemScan<ParserStringItem,DeckStringItem,std::string>(this , rawRecord);
+    }
+
      
      
     bool ParserStringItem::equal(const ParserItem& other) const
     {
-        // cast to a pointer to avoid bad_cast exception
-        const ParserStringItem* rhs = dynamic_cast<const ParserStringItem*>(&other);
-        if (rhs && ParserItem::equal(other) && (getDefault() == rhs->getDefault()))
-            return true;
-        else
-            return false;
+        return ParserItemEqual<ParserStringItem>(this , other);
     }
-
+    
     void ParserStringItem::inlineNew(std::ostream& os) const {
         os << "new ParserStringItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
         if (m_defaultSet)

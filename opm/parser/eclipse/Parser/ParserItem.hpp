@@ -32,7 +32,7 @@
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 #include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
-
+#include <opm/parser/eclipse/RawDeck/StarToken.hpp>
 
 namespace Opm {
     
@@ -50,14 +50,10 @@ namespace Opm {
         const std::string& name() const;
         ParserItemSizeEnum sizeType() const;
         std::string getDescription() const;
+        bool defaultSet() const;
         bool scalar() const;
         void setDescription(std::string helpText);
 
-        static int defaultInt();
-        static std::string defaultString();
-        static float defaultFloat();
-        static double defaultDouble();
-      
         virtual bool equal(const ParserItem& other) const;
         virtual void inlineNew(std::ostream& /* os */) const {}
       
@@ -66,8 +62,6 @@ namespace Opm {
     
     protected:
         bool m_defaultSet;
-
-
 
     private:
         std::string m_name;
@@ -78,6 +72,86 @@ namespace Opm {
     typedef std::shared_ptr<const ParserItem> ParserItemConstPtr;
     typedef std::shared_ptr<ParserItem> ParserItemPtr;
 
+
+
+    template<typename T>
+    bool ParserItemEqual(const T * self , const ParserItem& other) {
+        const T * rhs = dynamic_cast<const T*>(&other);     
+        if (rhs && self->ParserItem::equal(other)) {              
+            if (self->defaultSet()) {                          
+                if (self->getDefault() == rhs->getDefault())  
+                    return true;                        
+                else                                    
+                    return false;                       
+            } else                                      
+                return true;                            
+        } else                                          
+            return false;
+    }
+
+        
+    /// Scans the rawRecords data according to the ParserItems definition.
+    /// returns a DeckItem object.
+    /// NOTE: data are popped from the rawRecords deque!
+    template<typename ParserItemType , typename DeckItemType , typename valueType>
+    DeckItemPtr ParserItemScan(const ParserItemType * self , RawRecordPtr rawRecord) {
+        std::shared_ptr<DeckItemType> deckItem = std::make_shared<DeckItemType>( self->name() , self->scalar() );
+        
+        if (self->sizeType() == ALL) {  
+            while (rawRecord->size() > 0) {
+                std::string token = rawRecord->pop_front();
+                if (tokenContainsStar( token )) {
+                    StarToken<valueType> st(token);
+                    valueType value;
+                    
+                    if (st.hasValue()) {
+                        value = st.value();   
+                        deckItem->push_backMultiple( value , st.multiplier() );
+                    } else {
+                        value = self->getDefault();
+                        for (size_t i=0; i < st.multiplier(); i++)
+                            deckItem->push_backDefault( value );
+                    }
+                    
+                        
+                } else {
+                    valueType value = readValueToken<valueType>(token);
+                    deckItem->push_back(value);
+                }
+            }
+        } else {
+            // The '*' should be interpreted as a default indicator
+            if (rawRecord->size() > 0) {
+                std::string token = rawRecord->pop_front();
+                if (tokenContainsStar( token )) {
+                    StarToken<valueType> st(token);
+        
+                    if (st.hasValue()) { // Probably never true
+                        deckItem->push_back( st.value() ); 
+                        std::string stringValue = boost::lexical_cast<std::string>(st.value());
+                        for (size_t i=1; i < st.multiplier(); i++)
+                            rawRecord->push_front( stringValue );
+                    } else {
+                        if (self->defaultSet())
+                            deckItem->push_backDefault( self->getDefault() );
+                        
+                        for (size_t i=1; i < st.multiplier(); i++)
+                            rawRecord->push_front( "*" );
+                    }
+                } else {
+                    valueType value = readValueToken<valueType>(token);
+                    deckItem->push_back(value);
+                }
+            } else {
+                if (self->defaultSet())
+                    deckItem->push_backDefault( self->getDefault() );
+                
+            }
+        }
+        return deckItem;
+    }
+
+    
 
 }
 

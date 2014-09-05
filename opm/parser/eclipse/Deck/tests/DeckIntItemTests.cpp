@@ -31,20 +31,26 @@ BOOST_AUTO_TEST_CASE(Initialize) {
 }
 
 BOOST_AUTO_TEST_CASE(GetIntAtIndex_NoData_ExceptionThrown) {
-    const DeckIntItem deckIntItem("TEST");
-    BOOST_CHECK_THROW(deckIntItem.getInt(0), std::out_of_range);
+    DeckIntItem deckIntItem("TEST");
+    deckIntItem.push_back(100);
+    BOOST_CHECK_THROW(deckIntItem.getInt(1), std::out_of_range);
 }
+
+
+
 
  
 BOOST_AUTO_TEST_CASE(InitializeDefaultApplied) {
     DeckIntItem deckIntItem("TEST");
-    BOOST_REQUIRE_NO_THROW( deckIntItem.defaultApplied() );
+    BOOST_REQUIRE_NO_THROW( deckIntItem.setInDeck() );
+    BOOST_CHECK( !deckIntItem.setInDeck());
 }
 
 
 BOOST_AUTO_TEST_CASE(InitializeDefaultApplied_Throws_for_nonScalar) {
     DeckIntItem deckIntItem("TEST" , false);
-    BOOST_REQUIRE_THROW( deckIntItem.defaultApplied() , std::invalid_argument);
+    BOOST_REQUIRE_NO_THROW( deckIntItem.setInDeck() );
+    BOOST_CHECK( !deckIntItem.setInDeck());
 }
 
 
@@ -84,13 +90,31 @@ BOOST_AUTO_TEST_CASE(size_correct) {
     BOOST_CHECK_EQUAL( 3U , deckIntItem.size());
 }
 
-
-
-BOOST_AUTO_TEST_CASE(DefaultApplied) {
+BOOST_AUTO_TEST_CASE(SetInDeck) {
     DeckIntItem deckIntItem("TEST");
-    BOOST_CHECK_EQUAL( false , deckIntItem.defaultApplied() );
+    BOOST_CHECK( !deckIntItem.setInDeck() );
+
+    deckIntItem.push_back( 100 );
+    BOOST_CHECK( deckIntItem.setInDeck() );
+}
+
+
+BOOST_AUTO_TEST_CASE(SetInDeckData) {
+    DeckIntItem deckIntItem("TEST");
+    BOOST_CHECK_EQUAL( false , deckIntItem.setInDeck() );
+    BOOST_CHECK_EQUAL( false , deckIntItem.defaultApplied());
+    BOOST_CHECK_EQUAL( false , deckIntItem.hasData());
     deckIntItem.push_backDefault( 1 );
-    BOOST_CHECK_EQUAL( true , deckIntItem.defaultApplied() );
+    BOOST_CHECK_EQUAL( false , deckIntItem.setInDeck() );
+    BOOST_CHECK_EQUAL( true  , deckIntItem.defaultApplied());
+    BOOST_CHECK_EQUAL( true , deckIntItem.hasData());
+    deckIntItem.push_back( 10 );
+    BOOST_CHECK_EQUAL( true , deckIntItem.setInDeck() );
+    BOOST_CHECK_EQUAL( true  , deckIntItem.defaultApplied());
+    BOOST_CHECK_EQUAL( true  , deckIntItem.hasData());
+    deckIntItem.push_backDefault( 1 );
+    BOOST_CHECK_EQUAL( true , deckIntItem.setInDeck() );
+    BOOST_CHECK_EQUAL( true  , deckIntItem.hasData());
 }
 
 

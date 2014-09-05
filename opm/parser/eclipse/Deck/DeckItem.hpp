@@ -29,12 +29,24 @@
 
 namespace Opm {
 
+    namespace DeckValue {
+        enum StatusEnum {
+            // These values are used as a bitmask.
+            NOT_SET = 0 ,
+            SET_IN_DECK = 1,  
+            DEFAULT = 2
+        };
+    }
+
+
     class DeckItem {
     public:
         DeckItem(const std::string& name , bool m_scalar = true);
         const std::string& name() const;
         
+        bool setInDeck() const;
         bool defaultApplied() const;
+        bool hasData() const;
 
         virtual size_t size() const = 0;
         
@@ -103,7 +115,10 @@ namespace Opm {
         virtual ~DeckItem() {
         }
 
-        bool m_defaultApplied;
+    protected:
+        void assertValueSet() const;
+        int m_valueStatus;
+
     private:
         std::string m_name;
         bool m_scalar;

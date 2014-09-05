@@ -32,8 +32,10 @@ BOOST_AUTO_TEST_CASE(InitializeString) {
 }
 
 BOOST_AUTO_TEST_CASE(GetStringAtIndex_NoData_ExceptionThrown) {
-    const DeckStringItem deckStringItem("TEST");
-    BOOST_CHECK_THROW(deckStringItem.getString(0), std::out_of_range);
+    DeckStringItem deckStringItem("TEST");
+    BOOST_CHECK_THROW(deckStringItem.getString(0), std::invalid_argument);
+    deckStringItem.push_back("SA");
+    BOOST_CHECK_THROW(deckStringItem.getString(1), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(PushBack_VectorPushed_ElementsCorrect) {
@@ -71,11 +73,15 @@ BOOST_AUTO_TEST_CASE(size_variouspushes_sizecorrect) {
 }
 
 
-BOOST_AUTO_TEST_CASE(DefaultApplied) {
+BOOST_AUTO_TEST_CASE(SetInDeckData) {
     DeckStringItem deckStringItem("TEST");
-    BOOST_CHECK_EQUAL( false , deckStringItem.defaultApplied() );
-    deckStringItem.push_backDefault( "1" );
-    BOOST_CHECK_EQUAL( true , deckStringItem.defaultApplied() );
+    BOOST_CHECK_EQUAL( false , deckStringItem.setInDeck() );
+    deckStringItem.push_backDefault( "Default" );
+    BOOST_CHECK_EQUAL( false , deckStringItem.setInDeck() );
+    deckStringItem.push_back( "Value" );
+    BOOST_CHECK_EQUAL( true , deckStringItem.setInDeck() );
+    deckStringItem.push_backDefault( "Deafult" );
+    BOOST_CHECK_EQUAL( true , deckStringItem.setInDeck() );
 }
 
 

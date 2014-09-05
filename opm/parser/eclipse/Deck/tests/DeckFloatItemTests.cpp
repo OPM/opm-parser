@@ -35,8 +35,11 @@ BOOST_AUTO_TEST_CASE(InitializeFloat) {
 }
 
 BOOST_AUTO_TEST_CASE(GetFloatAtIndex_NoData_ExceptionThrown) {
-    const DeckFloatItem deckFloatItem("TEST");
-    BOOST_CHECK_THROW(deckFloatItem.getRawFloat(0), std::out_of_range);
+    DeckFloatItem deckFloatItem("TEST");
+
+    BOOST_CHECK_THROW(deckFloatItem.getRawFloat(0), std::invalid_argument);
+    deckFloatItem.push_back(1.89);
+    BOOST_CHECK_THROW(deckFloatItem.getRawFloat(1), std::out_of_range);
 }
 
 
@@ -78,12 +81,15 @@ BOOST_AUTO_TEST_CASE(sizeFloat_correct) {
 }
 
 
-
-BOOST_AUTO_TEST_CASE(DefaultApplied) {
+BOOST_AUTO_TEST_CASE(SetInDeck) {
     DeckFloatItem deckFloatItem("TEST");
-    BOOST_CHECK_EQUAL( false , deckFloatItem.defaultApplied() );
+    BOOST_CHECK_EQUAL( false , deckFloatItem.setInDeck() );
     deckFloatItem.push_backDefault( 1 );
-    BOOST_CHECK_EQUAL( true , deckFloatItem.defaultApplied() );
+    BOOST_CHECK_EQUAL( false , deckFloatItem.setInDeck() );
+    deckFloatItem.push_back( 10 );
+    BOOST_CHECK_EQUAL( true , deckFloatItem.setInDeck() );
+    deckFloatItem.push_backDefault( 1 );
+    BOOST_CHECK_EQUAL( true , deckFloatItem.setInDeck() );
 }
 
 
