@@ -19,50 +19,35 @@
 
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 
+#include <boost/lexical_cast.hpp>
+
 #include <stdexcept>
+#include <cassert>
 
 namespace Opm {
 
     DeckItem::DeckItem(const std::string& name_, bool scalar) {
         m_name = name_;
         m_scalar = scalar;
-        m_valueStatus = DeckValue::NOT_SET;
     }
 
     const std::string& DeckItem::name() const {
         return m_name;
     }
 
-    /**
-       This function will return true if the item has been explicitly
-       set in the deck.
-    */
-    bool DeckItem::setInDeck() const {
-        if ((m_valueStatus & DeckValue::SET_IN_DECK) == DeckValue::SET_IN_DECK)
-            return true;
-        else
-            return false;
+    bool DeckItem::defaultApplied(size_t index) const {
+        assert(m_dataPointDefaulted.size() == size());
+        assertSize(index);
+
+        return m_dataPointDefaulted[index];
     }
 
-
-    bool DeckItem::defaultApplied() const {
-        if ((m_valueStatus & DeckValue::DEFAULT) == DeckValue::DEFAULT)
-            return true;
-        else
-            return false;
-    }
-
-    bool DeckItem::hasData() const {
-        if (m_valueStatus & (DeckValue::DEFAULT + DeckValue::SET_IN_DECK))
-            return true;
-        else
-            return false;
-    }
-
-    
-    void DeckItem::assertValueSet() const {
-        if (m_valueStatus == DeckValue::NOT_SET)
-            throw std::invalid_argument("Trying to access property: " + name() + " which has not been properly set - either explicitly or with a default.");
+    void DeckItem::assertSize(size_t index) const {
+        if (index >= size())
+            throw std::out_of_range("Index must be smaller than "
+                                    + boost::lexical_cast<std::string>(size())
+                                    + " but is "
+                                    + boost::lexical_cast<std::string>(index));
     }
 
 

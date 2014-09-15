@@ -50,17 +50,44 @@ namespace Opm {
         const std::string& name() const;
         ParserItemSizeEnum sizeType() const;
         std::string getDescription() const;
-        bool defaultSet() const;
         bool scalar() const;
         void setDescription(std::string helpText);
 
-        virtual bool equal(const ParserItem& other) const;
-        virtual void inlineNew(std::ostream& /* os */) const {}
-      
+        virtual void inlineNew(std::ostream& /* os */) const = 0;
+
         virtual ~ParserItem() {
         }
-    
+
+        virtual bool equal(const ParserItem& other) const = 0;
+
     protected:
+        template <class T>
+        bool parserRawItemEqual(const ParserItem &other) const {
+            const T * lhs = dynamic_cast<const T*>(this);
+            const T * rhs = dynamic_cast<const T*>(&other);
+            if (!lhs || !rhs)
+                return false;
+
+            if (lhs->name() != rhs->name())
+                return false;
+
+            if (lhs->getDescription() != rhs->getDescription())
+                return false;
+
+            if (lhs->sizeType() != rhs->sizeType())
+                return false;
+
+            if (lhs->m_defaultSet != rhs->m_defaultSet)
+                return false;
+
+            // we only care that the default value is equal if it was
+            // specified...
+            if (lhs->m_defaultSet && lhs->getDefault() != rhs->getDefault())
+                return false;
+
+            return true;
+        }
+
         bool m_defaultSet;
 
     private:
@@ -72,80 +99,70 @@ namespace Opm {
     typedef std::shared_ptr<const ParserItem> ParserItemConstPtr;
     typedef std::shared_ptr<ParserItem> ParserItemPtr;
 
-
-
-    template<typename T>
-    bool ParserItemEqual(const T * self , const ParserItem& other) {
-        const T * rhs = dynamic_cast<const T*>(&other);     
-        if (rhs && self->ParserItem::equal(other)) {              
-            if (self->defaultSet()) {                          
-                if (self->getDefault() == rhs->getDefault())  
-                    return true;                        
-                else                                    
-                    return false;                       
-            } else                                      
-                return true;                            
-        } else                                          
-            return false;
-    }
-
-        
     /// Scans the rawRecords data according to the ParserItems definition.
     /// returns a DeckItem object.
     /// NOTE: data are popped from the rawRecords deque!
-    template<typename ParserItemType , typename DeckItemType , typename valueType>
+    template<typename ParserItemType , typename DeckItemType , typename ValueType>
     DeckItemPtr ParserItemScan(const ParserItemType * self , RawRecordPtr rawRecord) {
         std::shared_ptr<DeckItemType> deckItem = std::make_shared<DeckItemType>( self->name() , self->scalar() );
         
-        if (self->sizeType() == ALL) {  
+        if (self->sizeType() == ALL) {
             while (rawRecord->size() > 0) {
                 std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<valueType> st(token);
-                    valueType value;
-                    
+
+                std::string countString;
+                std::string valueString;
+                if (isStarToken(token, countString, valueString)) {
+                    StarToken<ValueType> st(token, countString, valueString);
+                    ValueType value;
+
                     if (st.hasValue()) {
-                        value = st.value();   
-                        deckItem->push_backMultiple( value , st.multiplier() );
+                        value = st.value();
+                        deckItem->push_backMultiple( value , st.count());
                     } else {
                         value = self->getDefault();
-                        for (size_t i=0; i < st.multiplier(); i++)
+                        for (size_t i=0; i < st.count(); i++)
                             deckItem->push_backDefault( value );
                     }
-                    
-                        
                 } else {
-                    valueType value = readValueToken<valueType>(token);
+                    ValueType value = readValueToken<ValueType>(token);
                     deckItem->push_back(value);
                 }
             }
         } else {
-            // The '*' should be interpreted as a default indicator
-            if (rawRecord->size() > 0) {
+            if (rawRecord->size() == 0)
+                // if the record was ended prematurely, use the default value for the
+                // item...
+                deckItem->push_backDefault( self->getDefault() );
+            else {
+                // The '*' should be interpreted as a repetition indicator, but it must
+                // be preceeded by an integer...
                 std::string token = rawRecord->pop_front();
-                if (tokenContainsStar( token )) {
-                    StarToken<valueType> st(token);
-        
-                    if (st.hasValue()) { // Probably never true
-                        deckItem->push_back( st.value() ); 
-                        std::string stringValue = boost::lexical_cast<std::string>(st.value());
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( stringValue );
-                    } else {
-                        if (self->defaultSet())
-                            deckItem->push_backDefault( self->getDefault() );
-                        
-                        for (size_t i=1; i < st.multiplier(); i++)
-                            rawRecord->push_front( "*" );
-                    }
+                std::string countString;
+                std::string valueString;
+                if (isStarToken(token, countString, valueString)) {
+                    StarToken<ValueType> st(token, countString, valueString);
+
+                    if (!st.hasValue())
+                        deckItem->push_backDefault( self->getDefault() );
+                    else
+                        deckItem->push_back(st.value());
+
+                    // replace the first occurence of "N*FOO" by a sequence of N-1 times
+                    // "1*FOO". this is slightly hacky, but it makes it work if the
+                    // number of defaults pass item boundaries...
+                    std::string singleRepetition;
+                    if (st.hasValue())
+                        singleRepetition = st.valueString();
+                    else
+                        singleRepetition = "1*";
+
+                    for (size_t i=0; i < st.count() - 1; i++)
+                        rawRecord->push_front(singleRepetition);
                 } else {
-                    valueType value = readValueToken<valueType>(token);
+                    ValueType value = readValueToken<ValueType>(token);
                     deckItem->push_back(value);
                 }
-            } else {
-                if (self->defaultSet())
-                    deckItem->push_backDefault( self->getDefault() );
-                
             }
         }
         return deckItem;

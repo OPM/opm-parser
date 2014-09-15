@@ -26,7 +26,6 @@
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
-#include <opm/parser/eclipse/Parser/ParserBoolItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserDoubleItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserFloatItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
@@ -34,6 +33,8 @@
 #include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
 
 #include <opm/parser/eclipse/Deck/DeckIntItem.hpp>
+
+#include <cmath>
 
 using namespace Opm;
 
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE(Initialize_DefaultSizeType) {
 BOOST_AUTO_TEST_CASE(Initialize_Default) {
     ParserIntItem item1(std::string("ITEM1"));
     ParserIntItem item2(std::string("ITEM1"), 88);
-    BOOST_CHECK_THROW(item1.getDefault(), std::invalid_argument);
+    BOOST_CHECK(item1.getDefault() < 0);
     BOOST_CHECK_EQUAL(item2.getDefault(), 88);
 }
 
@@ -78,21 +79,21 @@ BOOST_AUTO_TEST_CASE(Initialize_Default) {
 BOOST_AUTO_TEST_CASE(Initialize_Default_Double) {
     ParserDoubleItem item1(std::string("ITEM1"));
     ParserDoubleItem item2("ITEM1",  88.91);
-    BOOST_CHECK_THROW(item1.getDefault(), std::invalid_argument);
+    BOOST_CHECK(!std::isfinite(item1.getDefault()));
     BOOST_CHECK_EQUAL( 88.91 , item2.getDefault());
 }
 
 BOOST_AUTO_TEST_CASE(Initialize_Default_Float) {
     ParserFloatItem item1(std::string("ITEM1"));
     ParserFloatItem item2("ITEM1",  88.91F);
-    BOOST_CHECK_THROW(item1.getDefault(), std::invalid_argument);
+    BOOST_CHECK(!std::isfinite(item1.getDefault()));
     BOOST_CHECK_EQUAL( 88.91F , item2.getDefault());
 }
 
 
 BOOST_AUTO_TEST_CASE(Initialize_Default_String) {
     ParserStringItem item1(std::string("ITEM1"));
-    BOOST_CHECK_THROW( item1.getDefault(), std::invalid_argument);
+    BOOST_CHECK(item1.getDefault() == "");
 
     ParserStringItem item2("ITEM1",  "String");
     BOOST_CHECK_EQUAL( "String" , item2.getDefault());
@@ -103,7 +104,12 @@ BOOST_AUTO_TEST_CASE(scan_PreMatureTerminator_defaultUsed) {
 
     RawRecordPtr rawRecord1(new RawRecord("/"));
     DeckItemConstPtr defaulted = itemInt.scan(rawRecord1);
-    BOOST_CHECK_THROW(defaulted->getInt(0) , std::invalid_argument);
+    // an item is always present even if the record was ended. If the deck specified no
+    // data and the item does not have a meaningful default, the item gets assigned a NaN
+    // (for float and double items), -1 (for integer items) and "" (for string items)
+    // whit the defaultApplied(0) method returning true...
+    BOOST_CHECK(defaulted->defaultApplied(0));
+    BOOST_CHECK(defaulted->getInt(0) < 0);
 }    
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_setDescription_canReadBack) {
@@ -136,7 +142,7 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject) {
     ParserIntItem item1( jsonConfig );
     BOOST_CHECK_EQUAL( "ITEM1" , item1.name() );
     BOOST_CHECK_EQUAL( ALL , item1.sizeType() );
-    BOOST_CHECK_THROW( item1.getDefault(), std::invalid_argument);
+    BOOST_CHECK(item1.getDefault() < 0);
 }
 
 
@@ -390,6 +396,21 @@ BOOST_AUTO_TEST_CASE(Scan_All_CorrectIntSetInDeckItem) {
     BOOST_CHECK_EQUAL(25, deckIntItem->getInt(22));
 }
 
+BOOST_AUTO_TEST_CASE(Scan_All_WithDefaults) {
+    ParserItemSizeEnum sizeType = ALL;
+    ParserIntItem itemInt("ITEM", sizeType);
+
+    RawRecordPtr rawRecord(new RawRecord("100 10* 10*1 25/"));
+    DeckItemConstPtr deckIntItem = itemInt.scan(rawRecord);
+    BOOST_CHECK_EQUAL(22U, deckIntItem->size());
+    BOOST_CHECK(!deckIntItem->defaultApplied(0));
+    BOOST_CHECK(deckIntItem->defaultApplied(1));
+    BOOST_CHECK(!deckIntItem->defaultApplied(11));
+    BOOST_CHECK(!deckIntItem->defaultApplied(21));
+    BOOST_CHECK_EQUAL(1, deckIntItem->getInt(20));
+    BOOST_CHECK_EQUAL(25, deckIntItem->getInt(21));
+}
+
 BOOST_AUTO_TEST_CASE(Scan_SINGLE_CorrectIntSetInDeckItem) {
     ParserIntItem itemInt(std::string("ITEM2"));
 
@@ -532,7 +553,7 @@ BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject) {
     ParserStringItem item1( jsonConfig );
     BOOST_CHECK_EQUAL( "ITEM1" , item1.name() );
     BOOST_CHECK_EQUAL( ALL , item1.sizeType() );
-    BOOST_CHECK_THROW( item1.getDefault() , std::invalid_argument );
+    BOOST_CHECK(item1.getDefault() == "");
 }
 
 
@@ -587,6 +608,29 @@ BOOST_AUTO_TEST_CASE(scan_all_valuesCorrect) {
     BOOST_CHECK_EQUAL("OPPLEGG_FOR_DATAANALYSE", deckItem->getString(6));
 }
 
+BOOST_AUTO_TEST_CASE(scan_all_withdefaults) {
+    ParserItemSizeEnum sizeType = ALL;
+    ParserIntItem itemString("ITEMWITHMANY", sizeType);
+    RawRecordPtr rawRecord(new RawRecord("10*1 10* 10*2 /"));
+    DeckItemConstPtr deckItem = itemString.scan(rawRecord);
+
+    BOOST_CHECK_EQUAL(30U, deckItem->size());
+
+    BOOST_CHECK_EQUAL(false, deckItem->defaultApplied(0));
+    BOOST_CHECK_EQUAL(false, deckItem->defaultApplied(9));
+    BOOST_CHECK_EQUAL(true, deckItem->defaultApplied(10));
+    BOOST_CHECK_EQUAL(true, deckItem->defaultApplied(19));
+    BOOST_CHECK_EQUAL(false, deckItem->defaultApplied(20));
+    BOOST_CHECK_EQUAL(false, deckItem->defaultApplied(29));
+
+    BOOST_CHECK_THROW(deckItem->getInt(30), std::out_of_range);
+    BOOST_CHECK_THROW(deckItem->defaultApplied(30), std::out_of_range);
+
+    BOOST_CHECK_EQUAL(1, deckItem->getInt(0));
+    BOOST_CHECK_EQUAL(1, deckItem->getInt(9));
+    BOOST_CHECK_EQUAL(2, deckItem->getInt(20));
+    BOOST_CHECK_EQUAL(2, deckItem->getInt(29));
+}
 
 BOOST_AUTO_TEST_CASE(scan_single_dataCorrect) {
     ParserStringItem itemString(std::string("ITEM1"));

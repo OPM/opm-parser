@@ -71,14 +71,11 @@ namespace Opm {
             DeckItemConstPtr diameterItem = compdatRecord->getItem("DIAMETER");
             DeckItemConstPtr skinFactorItem = compdatRecord->getItem("SKIN");
 
-            if (connectionTransmissibilityFactorItem->hasData())
-                connectionTransmissibilityFactor.setValue( connectionTransmissibilityFactorItem->getSIDouble(0));
-            
-            if (diameterItem->hasData())
-                diameter.setValue( diameterItem->getSIDouble(0));
+            if (!connectionTransmissibilityFactorItem->defaultApplied(0))
+                connectionTransmissibilityFactor.setValue(connectionTransmissibilityFactorItem->getSIDouble(0));
 
-            if (skinFactorItem->hasData())
-                skinFactor.setValue( skinFactorItem->getRawDouble(0));
+            diameter.setValue( diameterItem->getSIDouble(0));
+            skinFactor.setValue( skinFactorItem->getRawDouble(0));
         }
         
         const CompletionDirection::DirectionEnum& direction = CompletionDirection::DirectionEnumFromString(compdatRecord->getItem("DIR")->getTrimmedString(0));

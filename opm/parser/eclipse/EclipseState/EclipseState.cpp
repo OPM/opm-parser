@@ -671,22 +671,22 @@ namespace Opm {
 
         size_t setCount = 0;
         
-        if (I1Item->setInDeck())
+        if (!I1Item->defaultApplied(0))
             setCount++;
 
-        if (I2Item->setInDeck())
+        if (!I2Item->defaultApplied(0))
             setCount++;
 
-        if (J1Item->setInDeck())
+        if (!J1Item->defaultApplied(0))
             setCount++;
 
-        if (J2Item->setInDeck())
+        if (!J2Item->defaultApplied(0))
             setCount++;
 
-        if (K1Item->setInDeck())
+        if (!K1Item->defaultApplied(0))
             setCount++;
 
-        if (K2Item->setInDeck())
+        if (!K2Item->defaultApplied(0))
             setCount++;
         
         if (setCount == 6) {

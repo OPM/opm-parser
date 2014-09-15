@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(InitializeDouble) {
 BOOST_AUTO_TEST_CASE(GetDoubleAtIndex_NoData_ExceptionThrown) {
     DeckDoubleItem deckDoubleItem("TEST");
 
-    BOOST_CHECK_THROW(deckDoubleItem.getRawDouble(0), std::invalid_argument);
+    BOOST_CHECK_THROW(deckDoubleItem.getRawDouble(0), std::out_of_range);
     deckDoubleItem.push_back(1.89);
     BOOST_CHECK_THROW(deckDoubleItem.getRawDouble(1), std::out_of_range);
 }
@@ -85,13 +85,19 @@ BOOST_AUTO_TEST_CASE(sizeDouble_correct) {
 
 BOOST_AUTO_TEST_CASE(SetInDeck) {
     DeckDoubleItem deckDoubleItem("TEST");
-    BOOST_CHECK_EQUAL( false , deckDoubleItem.setInDeck() );
+    BOOST_CHECK( deckDoubleItem.size() == 0 );
+
     deckDoubleItem.push_backDefault( 1 );
-    BOOST_CHECK_EQUAL( false , deckDoubleItem.setInDeck() );
+    BOOST_CHECK( deckDoubleItem.size() == 1 );
+    BOOST_CHECK_EQUAL( true , deckDoubleItem.defaultApplied(0) );
+
     deckDoubleItem.push_back( 10 );
-    BOOST_CHECK_EQUAL( true , deckDoubleItem.setInDeck() );
+    BOOST_CHECK( deckDoubleItem.size() == 2 );
+    BOOST_CHECK_EQUAL( false , deckDoubleItem.defaultApplied(1) );
+
     deckDoubleItem.push_backDefault( 1 );
-    BOOST_CHECK_EQUAL( true , deckDoubleItem.setInDeck() );
+    BOOST_CHECK( deckDoubleItem.size() == 3 );
+    BOOST_CHECK_EQUAL( true , deckDoubleItem.defaultApplied(2) );
 }
 
 
@@ -111,6 +117,10 @@ BOOST_AUTO_TEST_CASE(PushBackDimension) {
     std::shared_ptr<Dimension> activeDimension(new Dimension("Length" , 100));
     std::shared_ptr<Dimension> defaultDimension(new Dimension("Length" , 10));
 
+    item.push_back(1.234);
+    item.push_backDimension( activeDimension , defaultDimension);
+
+    item.push_backDefault(5.678);
     item.push_backDimension( activeDimension , defaultDimension);
 }
 
