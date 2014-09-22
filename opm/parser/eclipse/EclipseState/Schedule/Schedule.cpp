@@ -302,16 +302,26 @@ namespace Opm {
             WellPtr well = getWell(wellName);
 
             // convert injection rates to SI
-            WellInjector::TypeEnum wellType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0));
+            WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0));
             double injectionRate = record->getItem("RATE")->getRawDouble(0);
-            injectionRate = convertInjectionRateToSI(injectionRate, wellType, *deck->getActiveUnitSystem());
+            injectionRate = convertInjectionRateToSI(injectionRate, injectorType, *deck->getActiveUnitSystem());
 
             WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
 
             well->setStatus( currentStep , status );
             WellInjectionProperties properties(well->getInjectionPropertiesCopy(currentStep));
-            properties.surfaceInjectionRate = injectionRate;
+
+            properties.injectorType = injectorType;
+
+            const std::string& cmodeString = record->getItem("CMODE")->getTrimmedString(0);
+            WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
+            if (!record->getItem("RATE")->defaultApplied(0)) {
+                properties.surfaceInjectionRate = injectionRate;
+                properties.addInjectionControl(controlMode);
+                properties.controlMode = controlMode;
+            }
             properties.predictionMode = false;
+
             well->setInjectionProperties(currentStep, properties);
         }
     }
