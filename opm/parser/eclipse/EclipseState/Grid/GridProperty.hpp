@@ -19,6 +19,7 @@
 #ifndef ECLIPSE_GRIDPROPERTY_HPP_
 #define ECLIPSE_GRIDPROPERTY_HPP_
 
+#include "GridPropertyInitializers.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -32,87 +33,56 @@
 /*
   This class implemenents a class representing properties which are
   define over an ECLIPSE grid, i.e. with one value for each logical
-  cartesian cell in the grid. 
+  cartesian cell in the grid.
 
   The class is implemented as a thin wrapper around std::vector<T>;
   where the most relevant specialisations of T are 'int' and 'float'.
 */
-
-
-
-
 namespace Opm {
-
 template <class DataType>
-class GridPropertySupportedKeywordInfo;
-
-template <>
-class GridPropertySupportedKeywordInfo<int>
+class GridPropertySupportedKeywordInfo
 {
 public:
+    typedef GridPropertyBaseInitializer<DataType> Initializer;
+
     GridPropertySupportedKeywordInfo()
     {}
 
     GridPropertySupportedKeywordInfo(const std::string& name,
-                                     int defaultValue)
+                                     std::shared_ptr<const Initializer> initializer,
+                                     const std::string& dimString)
         : m_keywordName(name)
-        , m_defaultValue(defaultValue)
+        , m_initializer(initializer)
+        , m_dimensionString(dimString)
     {}
 
-    GridPropertySupportedKeywordInfo(const GridPropertySupportedKeywordInfo &other)
-        : m_keywordName(other.m_keywordName)
-        , m_defaultValue(other.m_defaultValue)
-    {}
-
-    const std::string& getKeywordName() const {
-        return m_keywordName;
-    }
-
-    int getDefaultValue() const {
-        return m_defaultValue;
-    }
-
-private:
-    std::string m_keywordName;
-    int m_defaultValue;
-};
-
-template <>
-class GridPropertySupportedKeywordInfo<double>
-{
-public:
-    GridPropertySupportedKeywordInfo()
-    {}
-
+    // this is a convenience constructor which can be used if the default value for the
+    // grid property is just a constant...
     GridPropertySupportedKeywordInfo(const std::string& name,
-                                     double defaultValue,
-                                     const std::string& dimensionString)
+                                     const DataType defaultValue,
+                                     const std::string& dimString)
         : m_keywordName(name)
-        , m_defaultValue(defaultValue)
-        , m_dimensionString(dimensionString)
+        , m_initializer(new Opm::GridPropertyConstantInitializer<DataType>(defaultValue))
+        , m_dimensionString(dimString)
     {}
 
-    GridPropertySupportedKeywordInfo(const GridPropertySupportedKeywordInfo &other)
-        : m_keywordName(other.m_keywordName)
-        , m_defaultValue(other.m_defaultValue)
-        , m_dimensionString(other.m_dimensionString)
-    {}
+    GridPropertySupportedKeywordInfo(const GridPropertySupportedKeywordInfo&) = default;
 
     const std::string& getKeywordName() const {
         return m_keywordName;
-    }
-
-    double getDefaultValue() const {
-        return m_defaultValue;
     }
 
     const std::string& getDimensionString() const {
         return m_dimensionString;
     }
 
+    std::shared_ptr<const Initializer> getInitializer() const {
+        return m_initializer;
+    }
+
 private:
     std::string m_keywordName;
-    double m_defaultValue;
+    std::shared_ptr<const Initializer> m_initializer;
     std::string m_dimensionString;
 };
 
@@ -127,7 +97,8 @@ public:
         m_nz = nz;
         m_kwInfo = kwInfo;
         m_data.resize( nx * ny * nz );
-        std::fill( m_data.begin() , m_data.end() ,  m_kwInfo.getDefaultValue());
+
+        m_kwInfo.getInitializer()->apply(m_data, m_kwInfo.getKeywordName());
     }
 
     size_t size() const {
@@ -158,11 +129,26 @@ public:
         return m_data;
     }
 
-    void loadFromDeckKeyword(std::shared_ptr<const Box> inputBox , DeckKeywordConstPtr deckKeyword);
-    void loadFromDeckKeyword(DeckKeywordConstPtr deckKeyword);    
+    void loadFromDeckKeyword(std::shared_ptr<const Box> inputBox, DeckKeywordConstPtr deckKeyword) {
+        const auto deckItem = getDeckItem(deckKeyword);
 
+        const std::vector<size_t>& indexList = inputBox->getIndexList();
+        for (size_t sourceIdx = 0; sourceIdx < indexList.size(); sourceIdx++) {
+            size_t targetIdx = indexList[sourceIdx];
+            if (!deckItem->defaultApplied(sourceIdx))
+                setDataPoint(sourceIdx, targetIdx, deckItem);
+        }
+    }
 
-    
+    void loadFromDeckKeyword(DeckKeywordConstPtr deckKeyword) {
+        const auto deckItem = getDeckItem(deckKeyword);
+
+        for (size_t dataPointIdx = 0; dataPointIdx < deckItem->size(); ++dataPointIdx) {
+            if (!deckItem->defaultApplied(dataPointIdx))
+                setDataPoint(dataPointIdx, dataPointIdx, deckItem);
+        }
+    }
+
     void copyFrom(const GridProperty<T>& src, std::shared_ptr<const Box> inputBox) {
         if (inputBox->isGlobal()) {
             for (size_t i = 0; i < src.size(); ++i)
@@ -227,30 +213,27 @@ public:
     }
 
 private:
+    Opm::DeckItemConstPtr getDeckItem(Opm::DeckKeywordConstPtr deckKeyword) {
+        if (deckKeyword->size() != 1)
+            throw std::invalid_argument("Grid properties can only have a single record (keyword "
+                                        + deckKeyword->name() + ")");
+        if (deckKeyword->getRecord(0)->size() != 1)
+            // this is an error of the definition of the ParserKeyword (most likely in
+            // the corresponding JSON file)
+            throw std::invalid_argument("Grid properties may only exhibit a single item  (keyword "
+                                        + deckKeyword->name() + ")");
 
-    void setFromVector(const std::vector<T>& data) {
-        if (data.size() == m_data.size()) {
-            for (size_t i = 0; i < data.size(); i++) 
-                m_data[i] = data[i];
-        } else
-            throw std::invalid_argument("Size mismatch when setting data for:" + getKeywordName() + " keyword size: " + boost::lexical_cast<std::string>(m_data.size()) + " input size: " + boost::lexical_cast<std::string>(data.size()));
+        const auto deckItem = deckKeyword->getRecord(0)->getItem(0);
+
+        if (deckItem->size() > m_data.size())
+            throw std::invalid_argument("Size mismatch when setting data for:" + getKeywordName() +
+                                        " keyword size: " + boost::lexical_cast<std::string>(deckItem->size())
+                                        + " input size: " + boost::lexical_cast<std::string>(m_data.size()));
+
+        return deckItem;
     }
-    
-    
-    void setFromVector(std::shared_ptr<const Box> inputBox , const std::vector<T>& data) {
-        if (inputBox->isGlobal())
-            setFromVector( data );
-        else {
-            const std::vector<size_t>& indexList = inputBox->getIndexList();
-            if (data.size() == indexList.size()) {
-                for (size_t i = 0; i < data.size(); i++) {
-                    size_t targetIndex = indexList[i];
-                    m_data[targetIndex] = data[i];
-                }
-            } else
-                throw std::invalid_argument("Size mismatch when setting data for:" + getKeywordName() + " box size: " + boost::lexical_cast<std::string>(inputBox->size()) + " input size: " + boost::lexical_cast<std::string>(data.size()));
-        }
-    }
+
+    void setDataPoint(size_t sourceIdx, size_t targetIdx, Opm::DeckItemConstPtr deckItem);
 
     size_t      m_nx,m_ny,m_nz;
     SupportedKeywordInfo m_kwInfo;
