@@ -44,7 +44,10 @@ BOOST_AUTO_TEST_CASE(Empty) {
     Opm::GridProperty<int> gridProperty( 5 , 5 , 4 , keywordInfo);
     const std::vector<int>& data = gridProperty.getData();
     BOOST_CHECK_EQUAL( 100U , data.size());
-    BOOST_CHECK_EQUAL( 100U , gridProperty.size());
+    BOOST_CHECK_EQUAL( 100U , gridProperty.getCartesianSize());
+    BOOST_CHECK_EQUAL( 5U , gridProperty.getNX());
+    BOOST_CHECK_EQUAL( 5U , gridProperty.getNY());
+    BOOST_CHECK_EQUAL( 4U , gridProperty.getNZ());
     for (size_t k=0; k < 4; k++) {
         for (size_t j=0; j < 5; j++) {
             for (size_t i=0; i < 5; i++) {

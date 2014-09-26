@@ -75,7 +75,7 @@ static DeckPtr createDeck() {
         "\n"
         "PROPS\n"
         "REGIONS\n"
-        "FLUXNUM\n"
+        "SWAT\n"
         "1000*1 /\n"
         "SATNUM\n"
         "1000*2 /\n"
@@ -170,9 +170,9 @@ BOOST_AUTO_TEST_CASE(IntProperties) {
 BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     DeckPtr deck = createDeck();
     EclipseState state(deck, /*beStrict=*/false);
-    DeckKeywordConstPtr fluxNUM = deck->getKeyword("FLUXNUM");
-    BOOST_CHECK_EQUAL( false , state.supportsGridProperty("FLUXNUM"));
-    BOOST_CHECK_THROW( state.loadGridPropertyFromDeckKeyword( std::make_shared<const Box>(10,10,10) , fluxNUM ) , std::invalid_argument)
+    DeckKeywordConstPtr swat = deck->getKeyword("SWAT");
+    BOOST_CHECK_EQUAL( false , state.supportsGridProperty("SWAT"));
+    BOOST_CHECK_THROW( state.loadGridPropertyFromDeckKeyword( std::make_shared<const Box>(10,10,10) , swat ) , std::invalid_argument)
 }
 
 
@@ -182,8 +182,8 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
 
     std::shared_ptr<GridProperty<int> > satNUM = state.getIntGridProperty( "SATNUM" );
 
-    BOOST_CHECK_EQUAL(1000U , satNUM->size() );
-    for (size_t i=0; i < satNUM->size(); i++) 
+    BOOST_CHECK_EQUAL(1000U , satNUM->getCartesianSize() );
+    for (size_t i=0; i < satNUM->getCartesianSize(); i++) 
         BOOST_CHECK_EQUAL( 2 , satNUM->iget(i) );
     
     BOOST_CHECK_THROW( satNUM->iget(100000) , std::invalid_argument);

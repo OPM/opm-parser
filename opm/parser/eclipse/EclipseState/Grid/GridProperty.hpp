@@ -101,10 +101,22 @@ public:
         m_kwInfo.getInitializer()->apply(m_data, m_kwInfo.getKeywordName());
     }
 
-    size_t size() const {
+    size_t getCartesianSize() const {
         return m_data.size();
     }
 
+    size_t getNX() const {
+        return m_nx;
+    }
+
+    size_t getNY() const {
+        return m_ny;
+    }
+
+    size_t getNZ() const {
+        return m_nz;
+    }
+    
     
     T iget(size_t index) const {
         if (index < m_data.size()) {
@@ -154,7 +166,7 @@ public:
 
     void copyFrom(const GridProperty<T>& src, std::shared_ptr<const Box> inputBox) {
         if (inputBox->isGlobal()) {
-            for (size_t i = 0; i < src.size(); ++i)
+            for (size_t i = 0; i < src.getCartesianSize(); ++i)
                 m_data[i] = src.m_data[i];
         } else {
             const std::vector<size_t>& indexList = inputBox->getIndexList();
