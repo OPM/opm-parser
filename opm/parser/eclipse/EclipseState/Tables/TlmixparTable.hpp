@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        TlmixparTable() = default;
 
         /*!
          * \brief Read the TLMIXPAR keyword and provide some convenience
@@ -60,9 +59,16 @@ namespace Opm {
         }
 
     public:
+        TlmixparTable() = default;
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
+
+#ifdef BOOST_TEST_MODULE
+        // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
+        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
+        { init(keyword, tableIdx); }
+#endif
 
         // this table is not necessarily monotonic, so it cannot be evaluated!
         //using ParentType::evaluate;
