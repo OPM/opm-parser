@@ -132,6 +132,10 @@ namespace Opm {
         return m_tlmixparTables;
     }
 
+    const std::vector<PlmixparTable>& EclipseState::getPlmixparTables() const {
+        return m_plmixparTables;
+    }
+
     ScheduleConstPtr EclipseState::getSchedule() const {
         return schedule;
     }

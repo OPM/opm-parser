@@ -16,8 +16,8 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPM_PARSER_TLMIXPAR_TABLE_HPP
-#define	OPM_PARSER_TLMIXPAR_TABLE_HPP
+#ifndef OPM_PARSER_PLMIXPAR_TABLE_HPP
+#define	OPM_PARSER_PLMIXPAR_TABLE_HPP
 
 #include "SingleRecordTable.hpp"
 
@@ -25,7 +25,7 @@ namespace Opm {
     // forward declaration
     class EclipseState;
 
-    class TlmixparTable : protected SingleRecordTable {
+    class PlmixparTable : protected SingleRecordTable {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
@@ -37,29 +37,22 @@ namespace Opm {
         void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
         {
             ParentType::init(keyword,
-                             std::vector<std::string>{"VISC_PARA", "DENS_PARA"},
+                             std::vector<std::string>{"VISC_PARA"},
                              recordIdx,
                              /*firstEntityOffset=*/0);
 
             // make sure the first column is not defaulted and copy the value from the
             // first column to the second one if the second column is defaulted
             int nRows = numRows();
-            auto& viscColumn = m_columns[0];
-            auto& densColumn = m_columns[1];
             auto& viscColumnDefaulted = m_valueDefaulted[0];
-            auto& densColumnDefaulted = m_valueDefaulted[1];
             for (int rowIdx = 0; rowIdx < nRows; ++ rowIdx) {
                 if (viscColumnDefaulted[rowIdx])
                     throw std::invalid_argument("The first column of the TLMIXPAR table cannot be defaulted");
-                if (densColumnDefaulted[rowIdx]) {
-                    densColumn[rowIdx] = viscColumn[rowIdx];
-                    densColumnDefaulted[rowIdx] = false;
-                }
             }
         }
 
     public:
-        TlmixparTable() = default;
+        PlmixparTable() = default;
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
@@ -76,8 +69,6 @@ namespace Opm {
         const std::vector<double> &getViscosityParameterColumn() const
         { return ParentType::getColumn(0); }
 
-        const std::vector<double> &getDensityParameterColumn() const
-        { return ParentType::getColumn(1); }
     };
 }
 

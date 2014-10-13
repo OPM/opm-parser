@@ -32,6 +32,9 @@
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Tables/PlmixparTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TlmixparTable.hpp>
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <boost/filesystem.hpp>
@@ -268,4 +271,41 @@ BOOST_AUTO_TEST_CASE(PvtoTable_Tests) {
     // that everything else is fine...
     BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().front(), 12.0);
     BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().back(), 23.0);
+}
+
+BOOST_AUTO_TEST_CASE(mixparTable_Tests) {
+    const char *deckData =
+        "REGDIMS\n"
+        "1 1 1 0 /\n"
+        "\n"
+        "MISCIBLE\n"
+        " 1 25 TWOPOINT\n"
+        "/\n"
+        "PLMIXPAR\n"
+        "1.0/\n"
+        "TLMIXPAR\n"
+        "1.0 0.8 /\n";
+    Opm::ParserPtr parser(new Opm::Parser);
+    Opm::DeckConstPtr deck(parser->parseString(deckData));
+    Opm::DeckKeywordConstPtr plKeyword = deck->getKeyword("PLMIXPAR");
+    Opm::DeckKeywordConstPtr tlKeyword = deck->getKeyword("TLMIXPAR");
+
+    BOOST_CHECK_EQUAL(Opm::PlmixparTable::numTables(plKeyword), 1);
+    BOOST_CHECK_EQUAL(Opm::TlmixparTable::numTables(tlKeyword), 1);
+
+    Opm::PlmixparTable plTable;
+    Opm::TlmixparTable tlTable;
+
+    plTable.initFORUNITTESTONLY(deck->getKeyword("PLMIXPAR"), /*tableIdx=*/0);
+    tlTable.initFORUNITTESTONLY(deck->getKeyword("TLMIXPAR"), /*tableIdx=*/0);
+
+    BOOST_CHECK_EQUAL(plTable.numRows(), 1);
+    BOOST_CHECK_EQUAL(tlTable.numRows(), 1);
+
+    BOOST_CHECK_EQUAL(plTable.numColumns(), 1);
+    BOOST_CHECK_EQUAL(tlTable.numColumns(), 2);
+
+    BOOST_CHECK_EQUAL(plTable.getViscosityParameterColumn().front(), 1.0);
+    BOOST_CHECK_EQUAL(tlTable.getViscosityParameterColumn().front(), 1.0);
+    BOOST_CHECK_EQUAL(tlTable.getDensityParameterColumn().back(), 0.8);
 }
