@@ -123,7 +123,7 @@ namespace Opm
     }
     
     void ParserFloatItem::inlineNew(std::ostream& os) const {
-        os << "new ParserFloatItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserFloatItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();
         os << ")";

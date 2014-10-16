@@ -56,10 +56,10 @@ namespace Opm {
         THROW_EXCEPTION = 3
     };
     
-    const std::string ParserKeywordActionEnum2String(ParserKeywordActionEnum enumValue);
-    const std::string ParserItemSizeEnum2String(ParserItemSizeEnum enumValue);
-    const std::string ParserKeywordSizeEnum2String(ParserKeywordSizeEnum enumValue);
-    const std::string ParserValueTypeEnum2String(ParserValueTypeEnum enumValue);
+    const std::string ParserKeywordActionEnumToString(ParserKeywordActionEnum enumValue);
+    const std::string ParserItemSizeEnumToString(ParserItemSizeEnum enumValue);
+    const std::string ParserKeywordSizeEnumToString(ParserKeywordSizeEnum enumValue);
+    const std::string ParserValueTypeEnumToString(ParserValueTypeEnum enumValue);
         
     ParserItemSizeEnum ParserItemSizeEnumFromString(const std::string& stringValue);
     ParserKeywordSizeEnum ParserKeywordSizeEnumFromString(const std::string& stringValue);

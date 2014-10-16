@@ -122,7 +122,7 @@ namespace Opm
     }
     
     void ParserDoubleItem::inlineNew(std::ostream& os) const {
-        os << "new ParserDoubleItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserDoubleItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();
         os << ")";

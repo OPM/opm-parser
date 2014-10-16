@@ -47,7 +47,7 @@ namespace Opm {
 
     ParserKeyword::ParserKeyword(const std::string& name, ParserKeywordSizeEnum sizeType, ParserKeywordActionEnum action) {
         if (!(sizeType == SLASH_TERMINATED || sizeType == UNKNOWN)) {
-            throw std::invalid_argument("Size type " + ParserKeywordSizeEnum2String(sizeType) + " can not be set explicitly.");
+            throw std::invalid_argument("Size type " + ParserKeywordSizeEnumToString(sizeType) + " can not be set explicitly.");
         }
         commonInit(name, sizeType , action);
     }
@@ -628,8 +628,8 @@ namespace Opm {
 
     void ParserKeyword::inlineNew(std::ostream& os, const std::string& lhs, const std::string& indent) const {
         {
-            const std::string actionString(ParserKeywordActionEnum2String(m_action));
-            const std::string sizeString(ParserKeywordSizeEnum2String(m_keywordSizeType));
+            const std::string actionString(ParserKeywordActionEnumToString(m_action));
+            const std::string sizeString(ParserKeywordSizeEnumToString(m_keywordSizeType));
             switch (m_keywordSizeType) {
                 case SLASH_TERMINATED:
                     os << lhs << " = ParserKeyword::createDynamicSized(\"" << m_name << "\"," << sizeString << "," << actionString << ");" << std::endl;

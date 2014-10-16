@@ -35,7 +35,7 @@ static void printKeyword(Opm::ParserKeywordConstPtr keyword)
     }
     std::cout << indent << "Number of items: " << keyword->numItems() << std::endl;
     std::cout << indent << "Has dimension information: " << keyword->hasDimension() << std::endl;
-    std::cout << indent << "Size type: " << ParserKeywordSizeEnum2String(keyword->getSizeType()) << std::endl;
+    std::cout << indent << "Size type: " << ParserKeywordSizeEnumToString(keyword->getSizeType()) << std::endl;
     switch (keyword->getSizeType()) {
         case Opm::ParserKeywordSizeEnum::FIXED: {
             if (keyword->hasFixedSize())
@@ -59,7 +59,7 @@ static void printItem(Opm::ParserItemConstPtr item, std::string indent)
     if (item->getDescription().length() > 0) {
         std::cout << indent << "Description: " << item->getDescription() << std::endl;
     }
-    std::cout << indent << "SizeType: " << ParserItemSizeEnum2String(item->sizeType()) << std::endl;
+    std::cout << indent << "SizeType: " << ParserItemSizeEnumToString(item->sizeType()) << std::endl;
     std::cout << indent << "Has dimension information: " << item->hasDimension() << std::endl;
     if (item->numDimensions() == 1)
         std::cout << indent << "Dimension: " << item->getDimension(item->numDimensions()-1) << std::endl;

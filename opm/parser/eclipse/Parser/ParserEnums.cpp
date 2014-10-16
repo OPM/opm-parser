@@ -24,7 +24,7 @@ namespace Opm {
 
     
 
-    const std::string ParserItemSizeEnum2String(ParserItemSizeEnum enumValue) {
+    const std::string ParserItemSizeEnumToString(ParserItemSizeEnum enumValue) {
         switch (enumValue) {
         case ALL:
             return "ALL";
@@ -33,7 +33,7 @@ namespace Opm {
             return "SINGLE";
             break;
         default:
-            throw std::invalid_argument("Implementation error - should NOT be here");
+            throw std::logic_error("Implementation error: "+std::to_string((long long)enumValue)+" is not a valid ParserItemSizeEnum.");
         }
     }
     
@@ -44,13 +44,13 @@ namespace Opm {
         else if (stringValue == "SINGLE")
             return SINGLE;
         else
-            throw std::invalid_argument("String: " + stringValue + " can not be converted to enum value");
+            throw std::invalid_argument("String '" + stringValue + "' cannot be converted to a ParserItemSizeEnum value.");
     }
 
 
     /*****************************************************************/
 
-    const std::string ParserKeywordSizeEnum2String(ParserKeywordSizeEnum enumValue) {
+    const std::string ParserKeywordSizeEnumToString(ParserKeywordSizeEnum enumValue) {
         switch (enumValue) {
         case SLASH_TERMINATED:
             return "SLASH_TERMINATED";
@@ -65,7 +65,7 @@ namespace Opm {
             return "UNKNOWN";
             break;
         default:
-            throw std::invalid_argument("Implementation error - should NOT be here");
+            throw std::logic_error("Implementation error: "+std::to_string((long long) enumValue)+" is not a valid ParserKeywordSizeEnum.");
         }
     }
 
@@ -81,12 +81,12 @@ namespace Opm {
         else if (stringValue == "UNKNOWN")
             return UNKNOWN;
         else
-            throw std::invalid_argument("String: " + stringValue + " can not be converted to enum value");
+            throw std::invalid_argument("String '" + stringValue + "' cannot be converted to a ParserKeywordSizeEnum value.");
     }
     
     /*****************************************************************/
 
-    const std::string ParserValueTypeEnum2String(ParserValueTypeEnum enumValue) {
+    const std::string ParserValueTypeEnumToString(ParserValueTypeEnum enumValue) {
         switch (enumValue) {
         case INT:
             return "INT";
@@ -118,7 +118,7 @@ namespace Opm {
 
     /*****************************************************************/
 
-    const std::string ParserKeywordActionEnum2String(ParserKeywordActionEnum enumValue) {
+    const std::string ParserKeywordActionEnumToString(ParserKeywordActionEnum enumValue) {
         switch (enumValue) {
         case INTERNALIZE:
             return "INTERNALIZE";
