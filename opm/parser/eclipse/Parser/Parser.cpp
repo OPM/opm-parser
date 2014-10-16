@@ -387,20 +387,20 @@ namespace Opm {
                 else
                     rawSizeType = Raw::UNKNOWN;
 
-                return RawKeywordPtr(new RawKeyword(keywordString , rawSizeType , parserState->dataFile.string(), parserState->lineNR));
+                return RawKeywordPtr(new RawKeyword(keywordString , rawSizeType , parserState->dataFile.string(), parserState->lineNR, m_parserLog));
             } else {
                 if (parserKeyword->hasFixedSize())
-                    return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , parserKeyword->getFixedSize(), parserKeyword->isTableCollection()));
+                    return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , m_parserLog, parserKeyword->getFixedSize(), parserKeyword->isTableCollection()));
                 else {
                     // we do not require the presence and correctness of the
                     // size-definition keyword here (e.g. TABDIMS for the saturation
                     // tables). Instead this is ensured by Eclipse::checkDeck()
-                    return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR));
+                    return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR, m_parserLog));
                 }
             }
         } else {
             // create a keyword with an unknown name
-            return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR));
+            return RawKeywordPtr(new RawKeyword(keywordString, Raw::UNKNOWN, parserState->dataFile.string(), parserState->lineNR, m_parserLog));
         }
     }
 

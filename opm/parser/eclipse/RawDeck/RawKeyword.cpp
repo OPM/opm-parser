@@ -27,17 +27,26 @@
 namespace Opm {
 
 
-    RawKeyword::RawKeyword(const std::string& name, Raw::KeywordSizeEnum sizeType , const std::string& filename, size_t lineNR) {
+    RawKeyword::RawKeyword(const std::string& name,
+                           Raw::KeywordSizeEnum sizeType,
+                           const std::string& filename,
+                           size_t lineNR,
+                           ParserLogPtr parserLog) {
         if (sizeType == Raw::SLASH_TERMINATED || sizeType == Raw::UNKNOWN) {
-            commonInit(name,filename,lineNR);
+            commonInit(name, filename, lineNR, parserLog);
             m_sizeType = sizeType;
         } else
             throw std::invalid_argument("Error - invalid sizetype on input");
     }
 
 
-    RawKeyword::RawKeyword(const std::string& name , const std::string& filename, size_t lineNR , size_t inputSize, bool isTableCollection ) {
-        commonInit(name,filename,lineNR);
+    RawKeyword::RawKeyword(const std::string& name,
+                           const std::string& filename,
+                           size_t lineNR,
+                           ParserLogPtr parserLog,
+                           size_t inputSize,
+                           bool isTableCollection ) {
+        commonInit(name, filename, lineNR, parserLog);
         if (isTableCollection) {
             m_sizeType = Raw::TABLE_COLLECTION;
             m_numTables = inputSize;
@@ -52,12 +61,16 @@ namespace Opm {
     }
 
 
-    void RawKeyword::commonInit(const std::string& name , const std::string& filename, size_t lineNR) {
-        setKeywordName( name );
+    void RawKeyword::commonInit(const std::string& name,
+                                const std::string& filename,
+                                size_t lineNR,
+                                ParserLogPtr parserLog) {
         m_filename = filename;
         m_lineNR = lineNR;
         m_isFinished = false;
         m_currentNumTables = 0;
+        m_parserLog = parserLog;
+        setKeywordName( name );
     }
 
 

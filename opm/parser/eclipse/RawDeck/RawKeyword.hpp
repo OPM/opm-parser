@@ -25,6 +25,7 @@
 #include <vector>
 #include <memory>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
 #include <opm/parser/eclipse/RawDeck/RawEnums.hpp>
 
@@ -37,8 +38,17 @@ namespace Opm {
 
     class RawKeyword {
     public:
-        RawKeyword(const std::string& name , Raw::KeywordSizeEnum sizeType , const std::string& filename, size_t lineNR);
-        RawKeyword(const std::string& name , const std::string& filename, size_t lineNR , size_t inputSize , bool isTableCollection = false);
+        RawKeyword(const std::string& name,
+                   Raw::KeywordSizeEnum sizeType,
+                   const std::string& filename,
+                   size_t lineNR,
+                   ParserLogPtr parserLog);
+        RawKeyword(const std::string& name,
+                   const std::string& filename,
+                   size_t lineNR,
+                   ParserLogPtr parserLog,
+                   size_t inputSize,
+                   bool isTableCollection = false);
 
         const std::string& getKeywordName() const;
         void addRawRecordString(const std::string& partialRecordString);
@@ -71,8 +81,9 @@ namespace Opm {
 
         size_t m_lineNR;
         std::string m_filename;
+        ParserLogPtr m_parserLog;
 
-        void commonInit(const std::string& name,const std::string& filename, size_t lineNR);
+        void commonInit(const std::string& name, const std::string& filename, size_t lineNR, ParserLogPtr parserLog);
         void setKeywordName(const std::string& keyword);
         static bool isValidKeyword(const std::string& keywordCandidate);
     };
