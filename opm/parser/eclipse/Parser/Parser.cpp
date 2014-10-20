@@ -233,7 +233,7 @@ namespace Opm {
                     lineNumber = parserState->lineNR;
                 }
                 m_parserLog->addError(fileName, lineNumber, msg);
-                return ParserKeyword::createDynamicSized(deckKeywordName, /*sizeType=*/UNKNOWN);
+                return ParserKeyword::createDynamicSized(m_parserLog, deckKeywordName, /*sizeType=*/UNKNOWN);
             }
         }
     }
@@ -352,7 +352,7 @@ namespace Opm {
         if (jsonKeywords.is_array()) {
             for (size_t index = 0; index < jsonKeywords.size(); index++) {
                 Json::JsonObject jsonKeyword = jsonKeywords.get_array_item(index);
-                ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonKeyword);
+                ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(m_parserLog, jsonKeyword);
 
                 addParserKeyword(parserKeyword);
             }
@@ -498,9 +498,10 @@ namespace Opm {
     }
 
     bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
+
         try {
             Json::JsonObject jsonKeyword(configFile);
-            ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonKeyword);
+            ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(m_parserLog, jsonKeyword);
             addParserKeyword(parserKeyword);
             return true;
         } 

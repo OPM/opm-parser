@@ -113,10 +113,11 @@ static void testKeyword(ParserKeywordConstPtr parserKeyword , const std::string&
     std::string testName("test"+keywordName+"Keyword");
     startTest(of , testName);
     of << "    Json::JsonObject jsonKeyword(boost::filesystem::path(" << jsonFile << "));" << std::endl;
-    of << "    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonKeyword);" << std::endl;
+    of << "    ParserLogPtr parserLog(new ParserLog());" << std::endl;
+    of << "    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonKeyword);" << std::endl;
 
     of << "    ParserKeywordPtr ";
-    parserKeyword->inlineNew(of , "inlineKeyword" , "   ");
+    parserKeyword->inlineNew(of , "parserLog", "inlineKeyword" , "   ");
     
     of << "BOOST_CHECK( parserKeyword->equal( *inlineKeyword));" << std::endl;
     if (parserKeyword->hasDimension()) {
@@ -163,7 +164,7 @@ static void generateSourceForKeyword(std::iostream& of, KeywordElementType keywo
     std::string indent("   ");
     of << "{" << std::endl;
     of << indent << "ParserKeywordPtr ";
-    parserKeyword->inlineNew(of , keywordName , indent);
+    parserKeyword->inlineNew(of, "parser->getParserLog()", keywordName, indent);
     of << indent << "parser->addParserKeyword( " << keywordName << ");" << std::endl;
     of << "}" << std::endl << std::endl;
     
@@ -212,7 +213,8 @@ static void scanKeyword(const boost::filesystem::path& file , KeywordMapType& ke
     }
 
     {
-        ParserKeywordConstPtr parserKeyword(ParserKeyword::createFromJson( *jsonKeyword ));
+        ParserLogPtr parserLog(new ParserLog());
+        ParserKeywordConstPtr parserKeyword(ParserKeyword::createFromJson(parserLog, *jsonKeyword));
         if (parserKeyword->getName() != boost::filesystem::basename(file))
             std::cerr << "Warning: The name '" << parserKeyword->getName() << " specified in the JSON definitions of file '" << file
                       << "' does not match the file's name!\n";

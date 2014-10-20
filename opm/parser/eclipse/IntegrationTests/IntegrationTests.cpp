@@ -35,14 +35,15 @@
 using namespace Opm;
 
 static ParserPtr createWWCTParser() {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("WWCT");
+    ParserPtr parser(new Parser());
+    ParserLogPtr parserLog = parser->getParserLog();
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "WWCT");
     {
         ParserRecordPtr wwctRecord = parserKeyword->getRecord();
         wwctRecord->addItem(ParserStringItemConstPtr(new ParserStringItem("WELL", ALL)));
     }
-    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized("SUMMARY" , (size_t) 0);
+    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized(parserLog, "SUMMARY" , (size_t) 0);
 
-    ParserPtr parser(new Parser());
     parser->addParserKeyword(parserKeyword);
     parser->addParserKeyword(summaryKeyword);
     return parser;
@@ -126,15 +127,16 @@ BOOST_AUTO_TEST_CASE(parser_internal_name_vs_deck_name) {
 }
 
 static ParserPtr createBPRParser() {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("BPR");
+    ParserPtr parser(new Parser());
+    ParserLogPtr parserLog(parser->getParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "BPR");
     {
         ParserRecordPtr bprRecord = parserKeyword->getRecord();
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("I", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("J", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("K", SINGLE)));
     }
-    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized("SUMMARY" , (size_t) 0);
-    ParserPtr parser(new Parser());
+    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized(parserLog, "SUMMARY" , (size_t) 0);
     parser->addParserKeyword(parserKeyword);
     parser->addParserKeyword(summaryKeyword);
     return parser;

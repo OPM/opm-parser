@@ -45,8 +45,9 @@ BOOST_AUTO_TEST_CASE(Initializing) {
 
 BOOST_AUTO_TEST_CASE(addKeyword_keyword_doesntfail) {
     Parser parser;
+    ParserLogPtr parserLog(parser.getParserLog());
     {
-        ParserKeywordPtr equilKeyword = ParserKeyword::createDynamicSized("EQUIL");
+        ParserKeywordPtr equilKeyword = ParserKeyword::createDynamicSized(parserLog, "EQUIL");
         parser.addParserKeyword(equilKeyword);
     }
 }
@@ -54,21 +55,24 @@ BOOST_AUTO_TEST_CASE(addKeyword_keyword_doesntfail) {
 
 BOOST_AUTO_TEST_CASE(canParseDeckKeyword_returnstrue) {
     ParserPtr parser(new Parser());
-    parser->addParserKeyword(ParserKeyword::createDynamicSized("FJAS"));
+    ParserLogPtr parserLog(parser->getParserLog());
+    parser->addParserKeyword(ParserKeyword::createDynamicSized(parserLog, "FJAS"));
     BOOST_CHECK(parser->isRecognizedKeyword("FJAS"));
 }
 
 
 BOOST_AUTO_TEST_CASE(getKeyword_haskeyword_returnskeyword) {
     ParserPtr parser(new Parser());
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized("FJAS");
+    ParserLogPtr parserLog(parser->getParserLog());
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "FJAS");
     parser->addParserKeyword(parserKeyword);
     BOOST_CHECK_EQUAL(parserKeyword, parser->getParserKeywordFromDeckName("FJAS"));
 }
 
 BOOST_AUTO_TEST_CASE(getKeyword_hasnotkeyword_getKeyword) {
     ParserPtr parser(new Parser());
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized("FJAS");
+    ParserLogPtr parserLog(parser->getParserLog());
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "FJAS");
     parser->addParserKeyword(parserKeyword);
 
     parser->getParserLog()->clear();
@@ -78,10 +82,11 @@ BOOST_AUTO_TEST_CASE(getKeyword_hasnotkeyword_getKeyword) {
 
 BOOST_AUTO_TEST_CASE(getAllDeckNames_hasTwoKeywords_returnsCompleteList) {
     ParserPtr parser(new Parser(false));
+    ParserLogPtr parserLog(parser->getParserLog());
     std::cout << parser->getAllDeckNames().size() << std::endl;
-    ParserKeywordConstPtr firstParserKeyword = ParserKeyword::createDynamicSized("FJAS");
+    ParserKeywordConstPtr firstParserKeyword = ParserKeyword::createDynamicSized(parserLog, "FJAS");
     parser->addParserKeyword(firstParserKeyword);
-    ParserKeywordConstPtr secondParserKeyword = ParserKeyword::createDynamicSized("SAJF");
+    ParserKeywordConstPtr secondParserKeyword = ParserKeyword::createDynamicSized(parserLog, "SAJF");
     parser->addParserKeyword(secondParserKeyword);
     BOOST_CHECK_EQUAL(2U, parser->getAllDeckNames().size());
 }
@@ -98,16 +103,18 @@ BOOST_AUTO_TEST_CASE(getAllDeckNames_hasNoKeywords_returnsEmptyList) {
 
 BOOST_AUTO_TEST_CASE(addParserKeywordJSON_isRecognizedKeyword_returnstrue) {
     ParserPtr parser(new Parser());
+    ParserLogPtr parserLog(parser->getParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 ,  \"items\" :[{\"name\":\"ItemX\" , \"size_type\":\"SINGLE\" , \"value_type\" : \"DOUBLE\"}]}");
-    parser->addParserKeyword(ParserKeyword::createFromJson( jsonConfig ));
+    parser->addParserKeyword(ParserKeyword::createFromJson(parserLog, jsonConfig));
     BOOST_CHECK(parser->isRecognizedKeyword("BPR"));
 }
 
 
 BOOST_AUTO_TEST_CASE(addParserKeywordJSON_size_isObject_allGood) {
     ParserPtr parser(new Parser());
+    ParserLogPtr parserLog(parser->getParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"EQUIXL\", \"sections\":[], \"size\" : {\"keyword\":\"EQLDIMS\" , \"item\" : \"NTEQUL\"},  \"items\" :[{\"name\":\"ItemX\" , \"size_type\":\"SINGLE\" , \"value_type\" : \"DOUBLE\"}]}");
-    parser->addParserKeyword(ParserKeyword::createFromJson( jsonConfig ));
+    parser->addParserKeyword(ParserKeyword::createFromJson(parserLog, jsonConfig));
     BOOST_CHECK(parser->isRecognizedKeyword("EQUIXL"));
 }
 
@@ -298,7 +305,8 @@ BOOST_AUTO_TEST_CASE(WildCardTest) {
 /***************** Simple Int parsing ********************************/
 
 static ParserKeywordPtr __attribute__((unused)) setupParserKeywordInt(std::string name, int numberOfItems) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(name);
+    ParserLogPtr parserLog(new ParserLog);
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, name);
     ParserRecordPtr parserRecord = parserKeyword->getRecord();
 
     for (int i = 0; i < numberOfItems; i++) {

@@ -48,18 +48,22 @@ namespace Opm {
     typedef std::shared_ptr<const ParserKeyword> ParserKeywordConstPtr;
 
     class ParserKeyword {
-        ParserKeyword(const std::string& name ,
+        ParserKeyword(ParserLogPtr parserLog,
+                      const std::string& name ,
                       const std::string& sizeKeyword ,
                       const std::string& sizeItem,
                       ParserKeywordActionEnum action = INTERNALIZE ,
                       bool isTableCollection = false);
-        ParserKeyword(const std::string& name ,
+        ParserKeyword(ParserLogPtr parserLog,
+                      const std::string& name ,
                       ParserKeywordSizeEnum sizeType = SLASH_TERMINATED ,
                       ParserKeywordActionEnum action = INTERNALIZE);
-        ParserKeyword(const std::string& name ,
+        ParserKeyword(ParserLogPtr parserLog,
+                      const std::string& name ,
                       size_t fixedKeywordSize,
                       ParserKeywordActionEnum action = INTERNALIZE);
-        ParserKeyword(const Json::JsonObject& jsonConfig);
+        ParserKeyword(ParserLogPtr parserLog,
+                      const Json::JsonObject& jsonConfig);
 
     public:
         typedef std::set<std::string> DeckNameSet;
@@ -71,7 +75,8 @@ namespace Opm {
          *
          * This are for example well specifcation keywords like WCONPROD...
          */
-        static ParserKeywordPtr createFixedSized(const std::string& name,
+        static ParserKeywordPtr createFixedSized(ParserLogPtr parserLog,
+                                                 const std::string& name,
                                                  size_t fixedKeywordSize,
                                                  ParserKeywordActionEnum action = INTERNALIZE);
 
@@ -81,7 +86,8 @@ namespace Opm {
          *
          * This are for example grid properties like PERM?...
          */
-        static ParserKeywordPtr createDynamicSized(const std::string& name,
+        static ParserKeywordPtr createDynamicSized(ParserLogPtr parserLog,
+                                                   const std::string& name,
                                                    ParserKeywordSizeEnum sizeType = SLASH_TERMINATED ,
                                                    ParserKeywordActionEnum action = INTERNALIZE);
 
@@ -92,7 +98,8 @@ namespace Opm {
          * But with the number of items are specified via an item of a
          * different keyword, e.g. for tables.
          */
-        static ParserKeywordPtr createTable(const std::string& name,
+        static ParserKeywordPtr createTable(ParserLogPtr parserLog,
+                                            const std::string& name,
                                             const std::string& sizeKeyword,
                                             const std::string& sizeItem,
                                             ParserKeywordActionEnum action = INTERNALIZE,
@@ -102,7 +109,7 @@ namespace Opm {
          * \brief Factory method to create a keyword from a JSON
          *        configuration object.
          */
-        static ParserKeywordPtr createFromJson(const Json::JsonObject& jsonConfig);
+        static ParserKeywordPtr createFromJson(ParserLogPtr parserLog, const Json::JsonObject& jsonConfig);
 
         static std::string getDeckName(const std::string& rawString);
         static bool validInternalName(const std::string& name);
@@ -141,9 +148,10 @@ namespace Opm {
         void addDataItem( ParserItemConstPtr item );
         bool isDataKeyword() const;
         bool equal(const ParserKeyword& other) const;
-        void inlineNew(std::ostream& os , const std::string& lhs, const std::string& indent) const;
+        void inlineNew(std::ostream& os, const std::string& parserLogString, const std::string& lhs, const std::string& indent) const;
         void applyUnitsToDeck(std::shared_ptr<const Deck> deck , std::shared_ptr<DeckKeyword> deckKeyword) const;
     private:
+        ParserLogPtr m_parserLog;
         std::pair<std::string,std::string> m_sizeDefinitionPair;
         std::string m_name;
         DeckNameSet m_deckNames;
@@ -170,10 +178,10 @@ namespace Opm {
         void initSize( const Json::JsonObject& jsonConfig );
         void initSizeKeyword( const std::string& sizeKeyword, const std::string& sizeItem);
         void initSizeKeyword(const Json::JsonObject& sizeObject);
-        void commonInit(const std::string& name, ParserKeywordSizeEnum sizeType , ParserKeywordActionEnum action);
+        void commonInit(ParserLogPtr parserLog, const std::string& name, ParserKeywordSizeEnum sizeType, ParserKeywordActionEnum action);
         void addItems( const Json::JsonObject& jsonConfig);
-        static void initDoubleItemDimension( ParserDoubleItemPtr item, const Json::JsonObject itemConfig);
-        static void initFloatItemDimension( ParserFloatItemPtr item, const Json::JsonObject itemConfig);
+        void initDoubleItemDimension( ParserDoubleItemPtr item, const Json::JsonObject itemConfig);
+        void initFloatItemDimension( ParserFloatItemPtr item, const Json::JsonObject itemConfig);
     };
 }
 
