@@ -146,11 +146,17 @@ namespace Opm {
     void RawKeyword::setKeywordName(const std::string& name) {
         m_name = boost::algorithm::trim_right_copy(name);
         if (!isValidKeyword(m_name)) {
-            throw std::invalid_argument("Not a valid keyword:" + name);
+            std::string msg("Not a valid keyword:" + name);
+            m_parserLog->addError(m_filename, m_lineNR, msg);
+            throw std::invalid_argument(msg);
         } else if (m_name.size() > Opm::RawConsts::maxKeywordLength) {
-            throw std::invalid_argument("Too long keyword:" + name);
+            std::string msg("Too long keyword:" + name);
+            m_parserLog->addError(m_filename, m_lineNR, msg);
+            throw std::invalid_argument(msg);
         } else if (boost::algorithm::trim_left_copy(m_name) != m_name) {
-            throw std::invalid_argument("Illegal whitespace start of keyword:" + name);
+            std::string msg("Illegal whitespace start of keyword:" + name);
+            m_parserLog->addError(m_filename, m_lineNR, msg);
+            throw std::invalid_argument(msg);
         }
     }
 
