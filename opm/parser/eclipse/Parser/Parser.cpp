@@ -48,14 +48,6 @@ namespace Opm {
             std::ifstream *ifs = new std::ifstream(inputDataFile.string().c_str());
             initSuccessful = ifs->is_open();
             inputstream.reset(ifs);
-
-            // make sure the file we'd like to parse exists and is
-            // readable
-            if (!ifs->is_open()) {
-                throw std::runtime_error(std::string("Input file '") +
-                                         inputDataFile.string() +
-                                         std::string("' does not exist or is not readable"));
-            }
         }
 
         ParserState(const std::string &inputData, DeckPtr deckToFill) {
@@ -224,7 +216,7 @@ namespace Opm {
 
 
 
-ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& deckKeywordName, ParserState* /*parserState*/) const {
+    ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& deckKeywordName, ParserState* parserState) const {
         if (m_deckParserKeywords.count(deckKeywordName)) {
             return m_deckParserKeywords.at(deckKeywordName);
         } else {
@@ -232,8 +224,17 @@ ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& de
 
             if (wildCardKeyword)
                 return wildCardKeyword;
-            else
-                throw std::invalid_argument("Do not have parser keyword for parsing: " + deckKeywordName);
+            else {
+                std::string msg = "Unspecified deck keyword " + deckKeywordName + ". Practicing black magic!";
+                std::string fileName = "";
+                int lineNumber = -1;
+                if (parserState) {
+                    fileName = parserState->dataFile.string();
+                    lineNumber = parserState->lineNR;
+                }
+                m_parserLog->addError(fileName, lineNumber, msg);
+                return ParserKeyword::createDynamicSized(deckKeywordName, /*sizeType=*/UNKNOWN);
+            }
         }
     }
 
@@ -340,7 +341,9 @@ ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& de
                     break;
             }
         } else
-            throw std::invalid_argument("Failed to open file: " + parserState->dataFile.string());
+            m_parserLog->addWarning(parserState->dataFile.string(),
+                                    parserState->rawKeyword->getLineNR(),
+                                    "Failed to open the file: " + parserState->dataFile.string());
         return stopParsing;
     }
 
@@ -360,13 +363,23 @@ ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& de
     RawKeywordPtr Parser::createRawKeyword(const std::string& initialLine, std::shared_ptr<ParserState> parserState) const {
         std::string keywordString = ParserKeyword::getDeckName(initialLine);
 
+        std::string fileName = "";
+        int lineNumber = -1;
+        if (parserState) {
+            fileName = parserState->dataFile.string();
+            lineNumber = parserState->lineNR;
+        }
+
         if (isRecognizedKeyword(keywordString)) {
             ParserKeywordConstPtr parserKeyword = getParserKeywordFromDeckName( keywordString );
             ParserKeywordActionEnum action = parserKeyword->getAction();
-            
-            if (action == THROW_EXCEPTION)
-                throw std::invalid_argument("Parsing terminated by fatal keyword: " + keywordString);
-            
+
+            if (action == THROW_EXCEPTION) {
+                std::string msg = "Parsing terminated by fatal keyword " + keywordString + ".";
+                m_parserLog->addError(fileName, lineNumber, msg);
+                throw std::invalid_argument(msg);
+            }
+
             if (parserKeyword->getSizeType() == SLASH_TERMINATED || parserKeyword->getSizeType() == UNKNOWN) {
                 Raw::KeywordSizeEnum rawSizeType;
                 if (parserKeyword->getSizeType() == SLASH_TERMINATED)
@@ -498,8 +511,10 @@ ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& de
 
 
     void Parser::loadKeywordsFromDirectory(const boost::filesystem::path& directory, bool recursive) {
-        if (!boost::filesystem::exists(directory))
-            throw std::invalid_argument("Directory: " + directory.string() + " does not exist.");
+        if (!boost::filesystem::exists(directory)) {
+            std::string msg = "The directory "+directory.string()+" does not exit. Ignoring.";
+            m_parserLog->addError("", -1, msg);
+        }
         else {
             boost::filesystem::directory_iterator end;
             for (boost::filesystem::directory_iterator iter(directory); iter != end; iter++) {
@@ -508,8 +523,10 @@ ParserKeywordConstPtr Parser::getParserKeywordFromDeckName(const std::string& de
                         loadKeywordsFromDirectory(*iter, recursive);
                 } else {
                     if (ParserKeyword::validInternalName(iter->path().filename().string())) {
-                        if (!loadKeywordFromFile(*iter))
-                            std::cerr << "** Warning: failed to load keyword from file:" << iter->path() << std::endl;
+                        if (!loadKeywordFromFile(*iter)) {
+                            std::string msg = "Failed to load a keyword from file "+iter->path().string();
+                            m_parserLog->addError("", -1, msg);
+                        }
                     }
                 }
             }

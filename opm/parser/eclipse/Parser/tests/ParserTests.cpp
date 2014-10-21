@@ -66,11 +66,14 @@ BOOST_AUTO_TEST_CASE(getKeyword_haskeyword_returnskeyword) {
     BOOST_CHECK_EQUAL(parserKeyword, parser->getParserKeywordFromDeckName("FJAS"));
 }
 
-BOOST_AUTO_TEST_CASE(getKeyword_hasnotkeyword_getKeywordThrowsException) {
+BOOST_AUTO_TEST_CASE(getKeyword_hasnotkeyword_getKeyword) {
     ParserPtr parser(new Parser());
     ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized("FJAS");
     parser->addParserKeyword(parserKeyword);
-    BOOST_CHECK_THROW(parser->getParserKeywordFromDeckName("FJASS"), std::invalid_argument);
+
+    parser->getParserLog()->clear();
+    parser->getParserKeywordFromDeckName("FJASS");
+    BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(getAllDeckNames_hasTwoKeywords_returnsCompleteList) {
@@ -189,10 +192,13 @@ BOOST_AUTO_TEST_CASE(loadKeywordFromFile_validKeyword_returnsTrueHasKeyword) {
 
 
 
-BOOST_AUTO_TEST_CASE(loadConfigFromDirectory_directoryDoesNotexist_throws) {
+BOOST_AUTO_TEST_CASE(loadConfigFromDirectory_directoryDoesNotexist) {
         ParserPtr parser(new Parser(false));
         boost::filesystem::path configPath("path/does/not/exist");
-        BOOST_CHECK_THROW(parser->loadKeywordsFromDirectory( configPath), std::invalid_argument);
+
+        parser->getParserLog()->clear();
+        parser->loadKeywordsFromDirectory(configPath);
+        BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(loadConfigFromDirectory_notRecursive_allNames) {
