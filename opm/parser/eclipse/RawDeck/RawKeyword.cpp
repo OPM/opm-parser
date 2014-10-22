@@ -36,7 +36,7 @@ namespace Opm {
             commonInit(name, filename, lineNR, parserLog);
             m_sizeType = sizeType;
         } else
-            throw std::invalid_argument("Error - invalid sizetype on input");
+            throw std::invalid_argument("Invalid sizeType for keyword "+name);
     }
 
 
@@ -136,27 +136,18 @@ namespace Opm {
 
     bool RawKeyword::isKeywordPrefix(const std::string& line, std::string& keywordName) {
         keywordName = ParserKeyword::getDeckName(line);
-        return isValidKeyword(keywordName);
+        return isValidName(keywordName);
     }
 
-    bool RawKeyword::isValidKeyword(const std::string& keywordCandidate) {
-        return ParserKeyword::validDeckName(keywordCandidate, /*acceptLowerCase=*/true);
+    bool RawKeyword::isValidName(const std::string& keywordCandidate) {
+        return ParserKeyword::validDeckName(keywordCandidate);
     }
 
     void RawKeyword::setKeywordName(const std::string& name) {
         m_name = boost::algorithm::trim_right_copy(name);
-        if (!isValidKeyword(m_name)) {
-            std::string msg("Not a valid keyword:" + name);
+        if (!isValidName(m_name)) {
+            std::string msg("'"+name+"' is not a valid keyword name");
             m_parserLog->addError(m_filename, m_lineNR, msg);
-            throw std::invalid_argument(msg);
-        } else if (m_name.size() > Opm::RawConsts::maxKeywordLength) {
-            std::string msg("Too long keyword:" + name);
-            m_parserLog->addError(m_filename, m_lineNR, msg);
-            throw std::invalid_argument(msg);
-        } else if (boost::algorithm::trim_left_copy(m_name) != m_name) {
-            std::string msg("Illegal whitespace start of keyword:" + name);
-            m_parserLog->addError(m_filename, m_lineNR, msg);
-            throw std::invalid_argument(msg);
         }
     }
 

@@ -85,7 +85,7 @@ namespace Opm {
 
         void commonInit(const std::string& name, const std::string& filename, size_t lineNR, ParserLogPtr parserLog);
         void setKeywordName(const std::string& keyword);
-        static bool isValidKeyword(const std::string& keywordCandidate);
+        static bool isValidName(const std::string& keywordName);
     };
     typedef std::shared_ptr<RawKeyword> RawKeywordPtr;
     typedef std::shared_ptr<const RawKeyword> RawKeywordConstPtr;

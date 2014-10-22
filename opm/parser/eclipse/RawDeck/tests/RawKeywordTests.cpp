@@ -57,28 +57,39 @@ BOOST_AUTO_TEST_CASE(RawKeywordFinalizeUnknownSize) {
 
 
 
-BOOST_AUTO_TEST_CASE(RawKeywordGiveKeywordToConstructorTooLongThrows) {
+BOOST_AUTO_TEST_CASE(RawKeywordNameTooLong) {
     ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK_THROW(RawKeyword keyword("KEYYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog), std::invalid_argument);
+    BOOST_CHECK_NO_THROW(RawKeyword("KEYYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(RawKeywordSetKeywordInitialWhitespaceInKeywordThrows) {
+BOOST_AUTO_TEST_CASE(RawKeywordNameWithInitialWhitespace) {
     ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK_THROW(RawKeyword(" TELONG", Raw::SLASH_TERMINATED, "FILE" , 10U, parserLog), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword(" TELONG", Raw::SLASH_TERMINATED, "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("\tTELONG", Raw::SLASH_TERMINATED, "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(constructor_mixedCaseName_throws) {
+BOOST_AUTO_TEST_CASE(RawKeywordNameWithLowerCaseLetters) {
     // raw keywords may be lower-case even if this is not allowed in valid deck
     // names... (this will produce a warning if the deck is checked.)
     ParserLogPtr parserLog(new ParserLog());
-    RawKeyword("Test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
-    RawKeyword("test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
-    BOOST_CHECK_THROW(RawKeyword keyword("1test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog), std::invalid_argument);
-}
 
-BOOST_AUTO_TEST_CASE(RawKeywordSetKeywordInitialTabInKeywordThrows) {
-    ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK_THROW( RawKeyword("\tTELONG", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("Test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("1test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(RawKeywordSetCorrectLenghtKeywordNoError) {
