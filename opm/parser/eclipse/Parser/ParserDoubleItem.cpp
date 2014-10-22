@@ -69,8 +69,8 @@ namespace Opm
 
 
 
-    ParserDoubleItem::ParserDoubleItem(const Json::JsonObject& jsonConfig) :
-            ParserItem(jsonConfig)
+    ParserDoubleItem::ParserDoubleItem(const std::string& keywordName, const Json::JsonObject& jsonConfig)
+        : ParserItem(keywordName, jsonConfig)
     {
         m_default = std::numeric_limits<double>::quiet_NaN();
         if (jsonConfig.has_item("default")) 

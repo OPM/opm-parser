@@ -52,7 +52,7 @@ namespace Opm {
         setDefault(defaultValue);
     }
 
-    ParserIntItem::ParserIntItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig)
+    ParserIntItem::ParserIntItem(const std::string& keywordName, const Json::JsonObject& jsonConfig) : ParserItem(keywordName, jsonConfig)
     {
         m_default = -1;
         if (jsonConfig.has_item("default")) 

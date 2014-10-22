@@ -125,13 +125,13 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_setDescription_canReadBack) {
 /* <Json> */
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_missingName_throws) {
     Json::JsonObject jsonConfig("{\"nameX\": \"ITEM1\" , \"size_type\" : \"ALL\"}");
-    BOOST_CHECK_THROW( ParserIntItem item1( jsonConfig ) , std::invalid_argument );
+    BOOST_CHECK_THROW( ParserIntItem item1("TESTKEYWORD", jsonConfig ) , std::invalid_argument );
 }
 
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_defaultSizeType) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" }");
-    ParserIntItem item1( jsonConfig );
+    ParserIntItem item1("TESTKEYWORD", jsonConfig );
     BOOST_CHECK_EQUAL( SINGLE , item1.sizeType());
 }
 
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_defaultSizeType) {
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"ALL\"}");
-    ParserIntItem item1( jsonConfig );
+    ParserIntItem item1("TESTKEYWORD", jsonConfig);
     BOOST_CHECK_EQUAL( "ITEM1" , item1.name() );
     BOOST_CHECK_EQUAL( ALL , item1.sizeType() );
     BOOST_CHECK(item1.getDefault() < 0);
@@ -148,20 +148,20 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject) {
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_withDefault) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"SINGLE\", \"default\" : 100}");
-    ParserIntItem item1( jsonConfig );
+    ParserIntItem item1("TESTKEYWORD", jsonConfig);
     BOOST_CHECK_EQUAL( 100 , item1.getDefault() );
 }
 
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_withDefaultInvalid_throws) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"SINGLE\", \"default\" : \"100X\"}");
-    BOOST_CHECK_THROW( ParserIntItem item1( jsonConfig ) , std::invalid_argument );
+    BOOST_CHECK_THROW( ParserIntItem item1("TESTKEYWORD", jsonConfig) , std::invalid_argument );
 }
 
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_withSizeTypeALL_throws) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"ALL\", \"default\" : 100}");
-    BOOST_CHECK_THROW( ParserIntItem item1( jsonConfig ) , std::invalid_argument );
+    BOOST_CHECK_THROW( ParserIntItem item1("TESTKEYWORD", jsonConfig) , std::invalid_argument );
 }
 
 
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_FromJsonObject_withSizeTypeALL_throws) {
 BOOST_AUTO_TEST_CASE(InitializeIntItem_WithDescription_DescriptionPropertyShouldBePopulated) {
     std::string description("Description goes here");
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"description\" : \"Description goes here\"}");
-    ParserIntItem item(jsonConfig);
+    ParserIntItem item("TESTKEYWORD", jsonConfig);
 
     BOOST_CHECK_EQUAL( "Description goes here", item.getDescription() );
 }
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(InitializeIntItem_WithDescription_DescriptionPropertyShould
 
 BOOST_AUTO_TEST_CASE(InitializeIntItem_WithoutDescription_DescriptionPropertyShouldBeEmpty) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\"}");
-    ParserIntItem item(jsonConfig);
+    ParserIntItem item("TESTKEYWORD", jsonConfig);
 
     BOOST_CHECK_EQUAL( "", item.getDescription() );
 }
@@ -536,13 +536,13 @@ BOOST_AUTO_TEST_CASE(Scan_RawRecordErrorInRawData_ExceptionThrown) {
     BOOST_CHECK_THROW(itemInt.scan(rawRecord5), std::invalid_argument);
 }
 
-/*********************String************************'*/
+/*********************String*************************/
 /*****************************************************************/
 /*</json>*/
 
 BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject_missingName_throws) {
     Json::JsonObject jsonConfig("{\"nameX\": \"ITEM1\" , \"size_type\" : \"ALL\"}");
-    BOOST_CHECK_THROW( ParserStringItem item1( jsonConfig ) , std::invalid_argument );
+    BOOST_CHECK_THROW( ParserStringItem item1("TESTKEYWORD", jsonConfig) , std::invalid_argument );
 }
 
 
@@ -550,7 +550,7 @@ BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject_missingName_throws) {
 
 BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"ALL\"}");
-    ParserStringItem item1( jsonConfig );
+    ParserStringItem item1("TESTKEYWORD", jsonConfig);
     BOOST_CHECK_EQUAL( "ITEM1" , item1.name() );
     BOOST_CHECK_EQUAL( ALL , item1.sizeType() );
     BOOST_CHECK(item1.getDefault() == "");
@@ -559,7 +559,7 @@ BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject) {
 
 BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject_withDefault) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"SINGLE\", \"default\" : \"100\"}");
-    ParserStringItem item1( jsonConfig );
+    ParserStringItem item1("TESTKEYWORD", jsonConfig);
     BOOST_CHECK_EQUAL( "100" , item1.getDefault() );
 }
 
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject_withDefault) {
 
 BOOST_AUTO_TEST_CASE(InitializeStringItem_FromJsonObject_withDefaultInvalid_throws) {
     Json::JsonObject jsonConfig("{\"name\": \"ITEM1\" , \"size_type\" : \"ALL\", \"default\" : [1,2,3]}");
-    BOOST_CHECK_THROW( ParserStringItem item1( jsonConfig ) , std::invalid_argument );
+    BOOST_CHECK_THROW( ParserStringItem item1("TESTKEYWORD", jsonConfig) , std::invalid_argument );
 }
 /*</json>*/
 /*****************************************************************/
