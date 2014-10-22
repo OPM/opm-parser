@@ -300,7 +300,8 @@ namespace Opm {
                 int K1 = faultRecord->getItem(5)->getInt(0) - 1;
                 int K2 = faultRecord->getItem(6)->getInt(0) - 1;
                 FaceDir::DirEnum faceDir = FaceDir::FromString( faultRecord->getItem(7)->getString(0) );
-                std::shared_ptr<const FaultFace> face = std::make_shared<const FaultFace>(grid->getNX() , grid->getNY() , grid->getNZ(),
+                std::shared_ptr<const FaultFace> face = std::make_shared<const FaultFace>(parserLog, faultsKeyword->getFileName(), faultsKeyword->getLineNumber(),
+                                                                                          grid->getNX() , grid->getNY() , grid->getNZ(),
                                                                                           static_cast<size_t>(I1) , static_cast<size_t>(I2) , 
                                                                                           static_cast<size_t>(J1) , static_cast<size_t>(J2) , 
                                                                                           static_cast<size_t>(K1) , static_cast<size_t>(K2) ,

@@ -22,30 +22,41 @@
 
 namespace Opm {
 
-    FaultFace::FaultFace(size_t nx , size_t ny , size_t nz,
+    FaultFace::FaultFace(ParserLogPtr parserLog, const std::string& fileName, int lineNumber,
+                         size_t nx , size_t ny , size_t nz,
                          size_t I1 , size_t I2,
                          size_t J1 , size_t J2,
                          size_t K1 , size_t K2,
                          FaceDir::DirEnum faceDir) 
         : m_faceDir( faceDir )
     {
-        checkCoord(nx , I1,I2);
-        checkCoord(ny , J1,J2);
-        checkCoord(nz , K1,K2);
+        if (!checkCoord(parserLog, fileName, lineNumber, nx, I1, I2) ||
+            !checkCoord(parserLog, fileName, lineNumber, ny, J1, J2) ||
+            !checkCoord(parserLog, fileName, lineNumber, nz, K1, K2))
+            return;
 
+        if ((faceDir == FaceDir::XPlus) || (faceDir == FaceDir::XMinus)) {
+            if (I1 != I2) {
+                std::string msg("X coordinates must exhibit the same values it the face multiplier is for the X direction.");
+                parserLog->addError(fileName, lineNumber, msg);
+                return;
+            }
+        }
+        if ((faceDir == FaceDir::YPlus) || (faceDir == FaceDir::YMinus)) {
+            if (J1 != J2) {
+                std::string msg("Y coordinates must exhibit the same values it the face multiplier is for the Y direction.");
+                parserLog->addError(fileName, lineNumber, msg);
+                return;
+            }
+        }
 
-        if ((faceDir == FaceDir::XPlus) || (faceDir == FaceDir::XMinus))
-            if (I1 != I2)
-                throw std::invalid_argument("When the face is in X direction we must have I1 == I2");
-        
-        if ((faceDir == FaceDir::YPlus) || (faceDir == FaceDir::YMinus))
-            if (J1 != J2)
-                throw std::invalid_argument("When the face is in Y direction we must have J1 == J2");
-        
-        if ((faceDir == FaceDir::ZPlus) || (faceDir == FaceDir::ZMinus))
-            if (K1 != K2)
-                throw std::invalid_argument("When the face is in Z direction we must have K1 == K2");
-
+        if ((faceDir == FaceDir::ZPlus) || (faceDir == FaceDir::ZMinus)) {
+            if (K1 != K2) {
+                std::string msg("Z coordinates must exhibit the same values it the face multiplier is for the Z direction.");
+                parserLog->addError(fileName, lineNumber, msg);
+                return;
+            }
+        }
 
         for (size_t k=K1; k <= K2; k++)
             for (size_t j=J1; j <= J2; j++)
@@ -56,12 +67,22 @@ namespace Opm {
     }
 
     
-    void FaultFace::checkCoord(size_t dim , size_t l1 , size_t l2) {
-        if (l1 > l2)
-            throw std::invalid_argument("Invalid coordinates");
+    bool FaultFace::checkCoord(ParserLogPtr parserLog, const std::string& fileName, int lineNumber,
+                               size_t dim , size_t l1 , size_t l2) {
+        if (l1 > l2) {
+            std::string msg("Invalid coordinates: ["
+                            +std::to_string((long long) l1+1)+", " +std::to_string((long long) l2+1)+"] is not a valid range");
+            parserLog->addError(fileName, lineNumber, msg);
+            return false;
+        }
 
-        if (l2 >= dim)
-            throw std::invalid_argument("Invalid coordinates");            
+        if (l2 >= dim) {
+            std::string msg("Invalid coordinates: "
+                            +std::to_string((long long) l2+1)+" exceeds number of cells ("+std::to_string((long long) dim)+")");
+            parserLog->addError(fileName, lineNumber, msg);
+            return false;
+        }
+        return true;
     }
 
 
