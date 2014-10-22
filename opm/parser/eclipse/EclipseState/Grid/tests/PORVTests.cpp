@@ -227,10 +227,14 @@ static Opm::DeckPtr createDeckWithNTG() {
 BOOST_AUTO_TEST_CASE(PORV_cartesianDeck) {
     /* Check that an exception is raised if we try to create a PORV field without PORO. */
     Opm::DeckPtr deck = createCARTDeck();
-    auto state = std::make_shared<Opm::EclipseState>(deck);
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    auto state = std::make_shared<Opm::EclipseState>(deck, parserLog);
     auto poro = state->getDoubleGridProperty("PORO");
     BOOST_CHECK( poro->containsNaN() );
-    BOOST_CHECK_THROW( state->getDoubleGridProperty("PORV") , std::logic_error );
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(state->getDoubleGridProperty("PORV") );
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(PORV_initFromPoro) {

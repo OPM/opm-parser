@@ -65,8 +65,9 @@ namespace Opm {
         class InitPORV : public GridPropertyBasePostProcessor<double>
         {
         public:
-            InitPORV(const EclipseState& eclipseState) : 
-                m_eclipseState( eclipseState )
+            InitPORV(const EclipseState& eclipseState, ParserLogPtr parserLog) : 
+                m_eclipseState( eclipseState ),
+                m_parserLog(parserLog)
             { }
             
             
@@ -81,18 +82,20 @@ namespace Opm {
                 if (porv->containsNaN()) {
                     auto poro = m_eclipseState.getDoubleGridProperty("PORO");
                     auto ntg = m_eclipseState.getDoubleGridProperty("NTG");   
-                    if (poro->containsNaN())
-                        throw std::logic_error("Do not have information for the PORV keyword - some defaulted values in PORO");
-                    {
-                        for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
-                            if (std::isnan(porv->iget(globalIndex))) {
-                                double cell_poro = poro->iget(globalIndex);
-                                double cell_ntg = ntg->iget(globalIndex);
-                                double cell_volume = grid->getCellVolume(globalIndex);
-                                porv->iset( globalIndex , cell_poro * cell_volume * cell_ntg);
-                            }
+                    if (poro->containsNaN()) {
+                        std::string msg("PORV cannot be calculated because defaulted values were detected in PORO");
+                        m_parserLog->addError("", -1, msg);
+                        return;
+                    }
+
+                    for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
+                        if (std::isnan(porv->iget(globalIndex))) {
+                            double cell_poro = poro->iget(globalIndex);
+                            double cell_ntg = ntg->iget(globalIndex);
+                            double cell_volume = grid->getCellVolume(globalIndex);
+                            porv->iset( globalIndex , cell_poro * cell_volume * cell_ntg);
                         }
-                    } 
+                    }
                 }
                 
                 if (m_eclipseState.hasDoubleGridProperty("MULTPV")) {
@@ -104,6 +107,7 @@ namespace Opm {
             
         private:
             const EclipseState& m_eclipseState;
+            mutable ParserLogPtr m_parserLog;
         };
 
         
@@ -432,9 +436,11 @@ namespace Opm {
             if (rocktabKeyword->getRecord(tableIdx)->getItem(0)->size() == 0) {
                 // for ROCKTAB tables, an empty record indicates that the previous table
                 // should be copied...
-                if (tableIdx == 0)
-                    throw std::invalid_argument("The first table for keyword ROCKTAB"
-                                                " must be explicitly defined!");
+                if (tableIdx == 0) {
+                    parserLog->addError(rocktabKeyword->getFileName(), rocktabKeyword->getLineNumber(),
+                                        "The first table for keyword ROCKTAB must be defined explicitly");
+                    return;
+                }
                 m_rocktabTables[tableIdx] = m_rocktabTables[tableIdx - 1];
                 continue;
             }
@@ -546,7 +552,7 @@ namespace Opm {
         double nan = std::numeric_limits<double>::quiet_NaN();
         const auto eptLookup = std::make_shared<GridPropertyEndpointTableLookupInitializer<>>(*deck, *this);
         const auto distributeTopLayer = std::make_shared<const GridPropertyPostProcessor::DistributeTopLayer>(*this);
-        const auto initPORV = std::make_shared<GridPropertyPostProcessor::InitPORV>(*this);
+        const auto initPORV = std::make_shared<GridPropertyPostProcessor::InitPORV>(*this, parserLog);
 
 
         // Note that the variants of grid keywords for radial grids
@@ -846,8 +852,12 @@ namespace Opm {
                     property->scale( scaleFactor , boxManager.getActiveBox() );
                 }
             } else if (!m_intGridProperties->supportsKeyword(field) &&
-                       !m_doubleGridProperties->supportsKeyword(field))
-                throw std::invalid_argument("Fatal error processing MULTIPLY keyword. Tried to multiply not defined keyword " + field);
+                       !m_doubleGridProperties->supportsKeyword(field)) {
+                std::string msg("Tried to multiply with undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -880,9 +890,12 @@ namespace Opm {
                     property->add(siShiftValue , boxManager.getActiveBox() );
                 }
             } else if (!m_intGridProperties->supportsKeyword(field) &&
-                       !m_doubleGridProperties->supportsKeyword(field))
-                throw std::invalid_argument("Fatal error processing ADD keyword. Tried to shift not defined keyword " + field);
-
+                       !m_doubleGridProperties->supportsKeyword(field)) {
+                std::string msg("Tried to add undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -910,9 +923,12 @@ namespace Opm {
                     double siValue = value * getSIScaling(property->getKeywordInfo().getDimensionString());
                     property->setScalar( siValue , boxManager.getActiveBox() );
                 }
-            } else
-                throw std::invalid_argument("Fatal error processing EQUALS keyword. Tried to set not defined keyword " + field);
-
+            } else {
+                std::string msg("Tried to set from undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -935,8 +951,12 @@ namespace Opm {
                     copyDoubleKeyword( srcField , targetField , boxManager.getActiveBox());
             }
             else if (!m_intGridProperties->supportsKeyword(srcField) &&
-                     !m_doubleGridProperties->supportsKeyword(srcField))
-                throw std::invalid_argument("Fatal error processing COPY keyword. Tried to copy from not defined keyword " + srcField);
+                     !m_doubleGridProperties->supportsKeyword(srcField)){
+                std::string msg("Tried to copy from undefined keyword " + srcField + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
