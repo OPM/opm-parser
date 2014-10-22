@@ -71,8 +71,8 @@ namespace Opm
 
 
 
-    ParserFloatItem::ParserFloatItem(const Json::JsonObject& jsonConfig) :
-            ParserItem(jsonConfig)
+    ParserFloatItem::ParserFloatItem(const std::string& keywordName, const Json::JsonObject& jsonConfig)
+        : ParserItem(keywordName, jsonConfig)
     {
         m_default = std::numeric_limits<float>::quiet_NaN();
         if (jsonConfig.has_item("default"))

@@ -39,7 +39,7 @@ namespace Opm {
         ParserFloatItem(const std::string& itemName, ParserItemSizeEnum sizeType);
         ParserFloatItem(const std::string& itemName, float defaultValue);
         ParserFloatItem(const std::string& itemName, ParserItemSizeEnum sizeType, float defaultValue);
-        explicit ParserFloatItem( const Json::JsonObject& jsonConfig);
+        explicit ParserFloatItem(const std::string& keywordName, const Json::JsonObject& jsonConfig);
 
         size_t numDimensions() const;
         bool hasDimension() const;
