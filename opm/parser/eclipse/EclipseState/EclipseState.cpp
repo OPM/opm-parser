@@ -249,8 +249,13 @@ namespace Opm {
         schedule = ScheduleConstPtr( new Schedule(deck, parserLog) );
     }
 
-    void EclipseState::initTransMult(ParserLogPtr /*parserLog*/) {
+    void EclipseState::initTransMult(ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping transmissibility multipliers.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
 
         if (hasDoubleGridProperty("MULTX"))
@@ -271,6 +276,11 @@ namespace Opm {
 
     void EclipseState::initFaults(DeckConstPtr deck, ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping fault multipliers.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         m_faults = std::make_shared<FaultCollection>();
         std::shared_ptr<Opm::GRIDSection> gridSection(new Opm::GRIDSection(deck) );
 
@@ -330,8 +340,13 @@ namespace Opm {
 
 
     
-    void EclipseState::initMULTREGT(DeckConstPtr deck, ParserLogPtr /*parserLog*/) {
+    void EclipseState::initMULTREGT(DeckConstPtr deck, ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping MULTREGT keyword.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         std::shared_ptr<MULTREGTScanner> scanner = std::make_shared<MULTREGTScanner>();
 
         {
@@ -357,7 +372,12 @@ namespace Opm {
 
 
     void EclipseState::initEclipseGrid(DeckConstPtr deck, ParserLogPtr parserLog) {
-        m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck, parserLog));
+        try {
+            m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck, parserLog));
+        } catch (const std::exception& e) {
+            std::string msg("Could not create a grid: "+std::string(e.what()));
+            parserLog->addWarning("", -1, msg);
+        }
     }
 
 
@@ -506,6 +526,11 @@ namespace Opm {
     
 
     void EclipseState::initProperties(DeckConstPtr deck, ParserLogPtr parserLog) {
+        if (!m_eclipseGrid) {
+            std::string msg("Grid could not be initialized. Skipping grid properties.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         typedef GridProperties<int>::SupportedKeywordInfo SupportedIntKeywordInfo;
         std::shared_ptr<std::vector<SupportedIntKeywordInfo> > supportedIntKeywords(new std::vector<SupportedIntKeywordInfo>{
             SupportedIntKeywordInfo( "SATNUM" , 1, "1" ),
