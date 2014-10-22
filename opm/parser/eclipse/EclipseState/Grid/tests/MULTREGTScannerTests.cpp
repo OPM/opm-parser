@@ -244,6 +244,8 @@ static Opm::DeckPtr createSimpleMULTREGTDeck() {
 
 
 BOOST_AUTO_TEST_CASE(SimpleMULTREGT) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
     std::shared_ptr<std::vector<SupportedKeywordInfo> > supportedKeywords(new std::vector<SupportedKeywordInfo>{
             SupportedKeywordInfo("FLUXNUM" , 1 , "1") , 
@@ -263,8 +265,8 @@ BOOST_AUTO_TEST_CASE(SimpleMULTREGT) {
     Opm::DeckKeywordConstPtr multregtKeyword0 = deck->getKeyword("MULTREGT",0);
     Opm::DeckKeywordConstPtr multregtKeyword1 = deck->getKeyword("MULTREGT",1);
     
-    multNum->loadFromDeckKeyword( inputBox , multnumKeyword );
-    fluxNum->loadFromDeckKeyword( inputBox , fluxnumKeyword );
+    multNum->loadFromDeckKeyword(inputBox, multnumKeyword, parserLog);
+    fluxNum->loadFromDeckKeyword(inputBox, fluxnumKeyword, parserLog);
     
     {
         Opm::MULTREGTScanner scanner;

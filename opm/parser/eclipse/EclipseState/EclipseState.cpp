@@ -100,7 +100,7 @@ namespace Opm {
                 
                 if (m_eclipseState.hasDoubleGridProperty("MULTPV")) {
                     auto multpv = m_eclipseState.getDoubleGridProperty("MULTPV");   
-                    porv->multiplyWith( *multpv );
+                    porv->multiplyWith(*multpv);
                 }
             }
             
@@ -516,17 +516,18 @@ namespace Opm {
         if (m_intGridProperties->supportsKeyword( keyword )) {
             if (enabledTypes & IntProperties) {
                 auto gridProperty = m_intGridProperties->getKeyword( keyword );
-                gridProperty->loadFromDeckKeyword( inputBox , deckKeyword );
+                gridProperty->loadFromDeckKeyword(inputBox, deckKeyword, parserLog);
             }
         } else if (m_doubleGridProperties->supportsKeyword( keyword )) {
             if (enabledTypes & DoubleProperties) {
                 auto gridProperty = m_doubleGridProperties->getKeyword( keyword );
-                gridProperty->loadFromDeckKeyword( inputBox , deckKeyword );
+                gridProperty->loadFromDeckKeyword(inputBox , deckKeyword, parserLog);
             }
         } else {
             parserLog->addError(deckKeyword->getFileName(),
                                 deckKeyword->getLineNumber(),
-                                "Tried to load unsupported grid property from keyword: " + deckKeyword->name());
+                                "Tried to load unsupported grid property from keyword " + deckKeyword->name()
+                                +". Ignoring.");
         }
     }
         

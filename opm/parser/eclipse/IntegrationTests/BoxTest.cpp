@@ -133,7 +133,10 @@ BOOST_AUTO_TEST_CASE( INCOMPLETE_KEYWORD_BOX) {
 
 BOOST_AUTO_TEST_CASE( KEYWORD_BOX_TOO_SMALL) {
     ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK_THROW( makeState("testdata/integration_tests/BOX/BOXTEST3", parserLog) , std::invalid_argument);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(makeState("testdata/integration_tests/BOX/BOXTEST3", parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
 }
 
 

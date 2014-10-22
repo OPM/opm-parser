@@ -118,30 +118,40 @@ Opm::DeckKeywordConstPtr createTABDIMSKeyword( ) {
 
 
 BOOST_AUTO_TEST_CASE(SetFromDeckKeyword_notData_Throws) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::DeckKeywordConstPtr tabdimsKw = createTABDIMSKeyword(); 
     typedef Opm::GridProperty<int>::SupportedKeywordInfo SupportedKeywordInfo;
     SupportedKeywordInfo keywordInfo("TABDIMS" , 100, "1");
     Opm::GridProperty<int> gridProperty( 6 ,1,1 , keywordInfo);
-    BOOST_CHECK_THROW( gridProperty.loadFromDeckKeyword( tabdimsKw ) , std::invalid_argument );
+
+    BOOST_CHECK_THROW(gridProperty.loadFromDeckKeyword(tabdimsKw, parserLog), std::invalid_argument);
 }
 
 
 BOOST_AUTO_TEST_CASE(SetFromDeckKeyword_wrong_size_throws) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::DeckKeywordConstPtr satnumKw = createSATNUMKeyword(); 
     typedef Opm::GridProperty<int>::SupportedKeywordInfo SupportedKeywordInfo;
     SupportedKeywordInfo keywordInfo("SATNUM" , 66, "1");
     Opm::GridProperty<int> gridProperty( 15 ,1,1, keywordInfo);
-    BOOST_CHECK_THROW( gridProperty.loadFromDeckKeyword( satnumKw ) , std::invalid_argument );
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(gridProperty.loadFromDeckKeyword(satnumKw, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
 }
 
 
 
 BOOST_AUTO_TEST_CASE(SetFromDeckKeyword) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::DeckKeywordConstPtr satnumKw = createSATNUMKeyword(); 
     typedef Opm::GridProperty<int>::SupportedKeywordInfo SupportedKeywordInfo;
     SupportedKeywordInfo keywordInfo("SATNUM" , 99, "1");
     Opm::GridProperty<int> gridProperty( 4 , 4 , 2 , keywordInfo);
-    gridProperty.loadFromDeckKeyword( satnumKw );
+    gridProperty.loadFromDeckKeyword(satnumKw, parserLog);
     const std::vector<int>& data = gridProperty.getData();
     for (size_t k=0; k < 2; k++) {
         for (size_t j=0; j < 4; j++) {
@@ -420,6 +430,8 @@ static Opm::DeckPtr createDeck() {
 
 
 BOOST_AUTO_TEST_CASE(GridPropertyPostProcessors) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     std::shared_ptr<TestPostProcessorMul<double> > testPostP = std::make_shared<TestPostProcessorMul<double> >(2.0);
     
     typedef Opm::GridPropertySupportedKeywordInfo<double> SupportedKeywordInfo;
@@ -435,8 +447,8 @@ BOOST_AUTO_TEST_CASE(GridPropertyPostProcessors) {
         auto poro = properties.getKeyword("PORO"); 
         auto multpv = properties.getKeyword("MULTPV"); 
 
-        poro->loadFromDeckKeyword( deck->getKeyword("PORO" , 0));
-        multpv->loadFromDeckKeyword( deck->getKeyword("MULTPV" , 0));
+        poro->loadFromDeckKeyword( deck->getKeyword("PORO" , 0), parserLog);
+        multpv->loadFromDeckKeyword( deck->getKeyword("MULTPV" , 0), parserLog);
 
         if (poro->postProcessorRunRequired())
             poro->runPostProcessor();
