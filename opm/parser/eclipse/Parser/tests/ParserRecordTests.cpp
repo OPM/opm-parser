@@ -124,15 +124,19 @@ static ParserRecordPtr createSimpleParserRecord() {
 }
 
 BOOST_AUTO_TEST_CASE(parse_validRecord_noThrow) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr record = createSimpleParserRecord();
-    RawRecordPtr rawRecord(new RawRecord("100 443 /"));
+    RawRecordPtr rawRecord(new RawRecord("100 443 /", parserLog));
     rawRecord->dump();
     BOOST_CHECK_NO_THROW(record->parse(rawRecord));
 }
 
 BOOST_AUTO_TEST_CASE(parse_validRecord_deckRecordCreated) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr record = createSimpleParserRecord();
-    RawRecordPtr rawRecord(new RawRecord("100 443 /"));
+    RawRecordPtr rawRecord(new RawRecord("100 443 /", parserLog));
     DeckRecordConstPtr deckRecord = record->parse(rawRecord);
     BOOST_CHECK_EQUAL(2U, deckRecord->size());
 }
@@ -141,7 +145,6 @@ BOOST_AUTO_TEST_CASE(parse_validRecord_deckRecordCreated) {
 // INT INT DOUBLE DOUBLE INT DOUBLE
 
 static ParserRecordPtr createMixedParserRecord() {
-
     ParserItemSizeEnum sizeType = SINGLE;
     ParserIntItemPtr itemInt1(new ParserIntItem("INTITEM1", sizeType));
     ParserIntItemPtr itemInt2(new ParserIntItem("INTITEM2", sizeType));
@@ -163,12 +166,17 @@ static ParserRecordPtr createMixedParserRecord() {
 }
 
 BOOST_AUTO_TEST_CASE(parse_validMixedRecord_noThrow) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr record = createMixedParserRecord();
-    RawRecordPtr rawRecord(new RawRecord("1 2 10.0 20.0 4 90.0 /"));
+    RawRecordPtr rawRecord(new RawRecord("1 2 10.0 20.0 4 90.0 /", parserLog));
     BOOST_CHECK_NO_THROW(record->parse(rawRecord));
+    BOOST_CHECK_EQUAL(parserLog->size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(Equal_Equal_ReturnsTrue) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr record1 = createMixedParserRecord();
     ParserRecordPtr record2 = createMixedParserRecord();
 
@@ -200,6 +208,8 @@ BOOST_AUTO_TEST_CASE(Equal_Different_ReturnsFalse) {
 }
 
 BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecord parserRecord;
     ParserIntItemConstPtr itemInt(new ParserIntItem("ITEM1", SINGLE , 100));
     ParserStringItemConstPtr itemString(new ParserStringItem("ITEM2", SINGLE , "DEFAULT"));
@@ -212,7 +222,7 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
     // according to the RM, this is invalid ("an asterisk by itself is not sufficient"),
     // but it seems to appear in the wild. Thus, we interpret this as "1*"...
     {
-        RawRecordPtr rawRecord(new RawRecord("* /"));
+        RawRecordPtr rawRecord(new RawRecord("* /", parserLog));
         DeckItemConstPtr deckStringItem = itemString->scan(rawRecord);
         DeckItemConstPtr deckIntItem = itemInt->scan(rawRecord);
         DeckItemConstPtr deckDoubleItem = itemDouble->scan(rawRecord);
@@ -227,7 +237,7 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
     }
 
     {
-        RawRecordPtr rawRecord(new RawRecord("/"));
+        RawRecordPtr rawRecord(new RawRecord("/", parserLog));
         DeckItemConstPtr deckStringItem = itemString->scan(rawRecord);
         DeckItemConstPtr deckIntItem = itemInt->scan(rawRecord);
         DeckItemConstPtr deckDoubleItem = itemDouble->scan(rawRecord);
@@ -243,7 +253,7 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
 
 
     {
-        RawRecordPtr rawRecord(new RawRecord("TRYGVE 10 2.9 /"));
+        RawRecordPtr rawRecord(new RawRecord("TRYGVE 10 2.9 /", parserLog));
 
         // let the raw record be "consumed" by the items. Note that the scan() method
         // modifies the rawRecord object!
@@ -262,7 +272,7 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
 
     // again this is invalid according to the RM, but it is used anyway in the wild...
     {
-        RawRecordPtr rawRecord(new RawRecord("* * * /"));
+        RawRecordPtr rawRecord(new RawRecord("* * * /", parserLog));
         DeckItemConstPtr deckStringItem = itemString->scan(rawRecord);
         DeckItemConstPtr deckIntItem = itemInt->scan(rawRecord);
         DeckItemConstPtr deckDoubleItem = itemDouble->scan(rawRecord);
@@ -277,7 +287,7 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
     }
 
     {
-        RawRecordPtr rawRecord(new RawRecord("3* /"));
+        RawRecordPtr rawRecord(new RawRecord("3* /", parserLog));
         DeckItemConstPtr deckStringItem = itemString->scan(rawRecord);
         DeckItemConstPtr deckIntItem = itemInt->scan(rawRecord);
         DeckItemConstPtr deckDoubleItem = itemDouble->scan(rawRecord);
@@ -293,6 +303,8 @@ BOOST_AUTO_TEST_CASE(ParseWithDefault_defaultAppliedCorrectInDeck) {
 }
 
 BOOST_AUTO_TEST_CASE(Parse_RawRecordTooManyItems_Throws) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr parserRecord(new ParserRecord());
     ParserIntItemConstPtr itemI(new ParserIntItem("I", SINGLE));
     ParserIntItemConstPtr itemJ(new ParserIntItem("J", SINGLE));
@@ -303,19 +315,20 @@ BOOST_AUTO_TEST_CASE(Parse_RawRecordTooManyItems_Throws) {
     parserRecord->addItem(itemK);
 
         
-    RawRecordPtr rawRecord(new RawRecord("3 3 3 /"));
+    RawRecordPtr rawRecord(new RawRecord("3 3 3 /", parserLog));
     BOOST_CHECK_NO_THROW(parserRecord->parse(rawRecord));
     
-    RawRecordPtr rawRecordOneExtra(new RawRecord("3 3 3 4 /"));
+    RawRecordPtr rawRecordOneExtra(new RawRecord("3 3 3 4 /", parserLog));
     BOOST_CHECK_THROW(parserRecord->parse(rawRecordOneExtra), std::invalid_argument);
 
-    RawRecordPtr rawRecordForgotRecordTerminator(new RawRecord("3 3 3 \n 4 4 4 /"));
+    RawRecordPtr rawRecordForgotRecordTerminator(new RawRecord("3 3 3 \n 4 4 4 /", parserLog));
     BOOST_CHECK_THROW(parserRecord->parse(rawRecordForgotRecordTerminator), std::invalid_argument);
-
 }
 
 
 BOOST_AUTO_TEST_CASE(Parse_RawRecordTooFewItems_ThrowsNot) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserRecordPtr parserRecord(new ParserRecord());
     ParserIntItemConstPtr itemI(new ParserIntItem("I", SINGLE));
     ParserIntItemConstPtr itemJ(new ParserIntItem("J", SINGLE));
@@ -325,8 +338,10 @@ BOOST_AUTO_TEST_CASE(Parse_RawRecordTooFewItems_ThrowsNot) {
     parserRecord->addItem(itemJ);
     parserRecord->addItem(itemK);
 
-    RawRecordPtr rawRecord(new RawRecord("3 3  /"));
+    parserLog->clear();
+    RawRecordPtr rawRecord(new RawRecord("3 3  /", parserLog));
     BOOST_CHECK_NO_THROW(parserRecord->parse(rawRecord));
+    BOOST_CHECK_EQUAL(parserLog->size(), 0);
 }
 
 
