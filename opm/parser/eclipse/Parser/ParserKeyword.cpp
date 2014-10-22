@@ -39,7 +39,7 @@ namespace Opm {
         m_isTableCollection = false;
         m_name = name;
         m_action = action;
-        m_record = ParserRecordPtr(new ParserRecord);
+        m_record = ParserRecordPtr(new ParserRecord(parserLog));
         m_keywordSizeType = sizeType;
         m_Description = "";
 

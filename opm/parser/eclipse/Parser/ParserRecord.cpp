@@ -23,7 +23,8 @@
 
 namespace Opm {
 
-    ParserRecord::ParserRecord() {
+    ParserRecord::ParserRecord(ParserLogPtr parserLog)
+        : m_parserLog(parserLog) {
     }
 
     size_t ParserRecord::size() const {
@@ -100,10 +101,12 @@ namespace Opm {
             deckRecord->addItem(deckItem);
         }
         const size_t recordSize = rawRecord->size();
-        if (recordSize > 0)
-            throw std::invalid_argument("The RawRecord for keyword \""  + rawRecord->getKeywordName() + "\" in file\"" + rawRecord->getFileName() + "\" contained " + 
-                                        boost::lexical_cast<std::string>(recordSize) + 
-                                        " too many items according to the spec. RawRecord was: " + recordBeforeParsing);
+        if (recordSize > 0) {
+            m_parserLog->addError(rawRecord->getFileName(),
+                                  rawRecord->getLineNumber(),
+                                  "The RawRecord for keyword "+rawRecord->getKeywordName()+" contains "
+                                  +std::to_string((long long) recordSize)+" too many items according to the spec.");
+        }
 
         return deckRecord;
     }

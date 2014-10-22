@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(StringsWithSpaceOK) {
     auto parserLog = std::make_shared<Opm::ParserLog>();
 
     ParserStringItemPtr itemString(new ParserStringItem(std::string("STRINGITEM1")));
-    ParserRecordPtr record1(new ParserRecord());
+    ParserRecordPtr record1(new ParserRecord(parserLog));
     RawRecordPtr rawRecord(new Opm::RawRecord(" ' VALUE ' /", parserLog));
     record1->addItem( itemString );
 
