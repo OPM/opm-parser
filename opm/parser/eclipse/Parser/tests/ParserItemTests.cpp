@@ -469,7 +469,9 @@ BOOST_AUTO_TEST_CASE(Scan_StarNoMultiplier_ExceptionThrown) {
     ParserIntItem itemInt("ITEM2", sizeType , 100);
 
     RawRecordPtr rawRecord(new RawRecord("*45 /", parserLog));
-    BOOST_CHECK_THROW(itemInt.scan(rawRecord), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt.scan(rawRecord));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(Scan_MultipleItems_CorrectIntsSetInDeckItem) {
@@ -520,7 +522,10 @@ BOOST_AUTO_TEST_CASE(Scan_MalformedMultiplier_Throw) {
     ParserIntItem itemInt1("ITEM1" , 10);
 
     RawRecordPtr rawRecord(new RawRecord("2.10*30/", parserLog));
-    BOOST_CHECK_THROW(itemInt1.scan(rawRecord), std::invalid_argument);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt1.scan(rawRecord));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(Scan_MalformedMultiplierChar_Throw) {
@@ -529,7 +534,10 @@ BOOST_AUTO_TEST_CASE(Scan_MalformedMultiplierChar_Throw) {
     ParserIntItem itemInt1("ITEM1", 10);
 
     RawRecordPtr rawRecord(new RawRecord("210X30/", parserLog));
-    BOOST_CHECK_THROW(itemInt1.scan(rawRecord), std::invalid_argument);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt1.scan(rawRecord));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(Scan_MultipleWithMultiplierDefault_CorrectIntsSetInDeckItem) {
@@ -553,15 +561,21 @@ BOOST_AUTO_TEST_CASE(Scan_RawRecordErrorInRawData_ExceptionThrown) {
 
     // Wrong type
     RawRecordPtr rawRecord2(new RawRecord("333.2 /", parserLog));
-    BOOST_CHECK_THROW(itemInt.scan(rawRecord2), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt.scan(rawRecord2));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 
     // Wrong type
     RawRecordPtr rawRecord3(new RawRecord("100X /", parserLog));
-    BOOST_CHECK_THROW(itemInt.scan(rawRecord3), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt.scan(rawRecord3));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 
     // Wrong type
-    RawRecordPtr rawRecord5(new RawRecord("astring /", parserLog));
-    BOOST_CHECK_THROW(itemInt.scan(rawRecord5), std::invalid_argument);
+    RawRecordPtr rawRecord4(new RawRecord("astring /", parserLog));
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(itemInt.scan(rawRecord4));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 /*********************String*************************/

@@ -103,9 +103,15 @@ namespace Opm {
     /// returns a DeckItem object.
     /// NOTE: data are popped from the rawRecords deque!
     template<typename ParserItemType , typename DeckItemType , typename ValueType>
-    DeckItemPtr ParserItemScan(const ParserItemType * self , RawRecordPtr rawRecord) {
+    DeckItemPtr ParserItemScan(const ParserItemType * self,
+                               RawRecordPtr rawRecord)
+    {
+        ParserLogPtr parserLog = rawRecord->getParserLog();
+        const std::string& fileName = rawRecord->getFileName();
+        int lineNumber = rawRecord->getLineNumber();
+
         std::shared_ptr<DeckItemType> deckItem = std::make_shared<DeckItemType>( self->name() , self->scalar() );
-        
+
         if (self->sizeType() == ALL) {
             while (rawRecord->size() > 0) {
                 std::string token = rawRecord->pop_front();
@@ -113,11 +119,20 @@ namespace Opm {
                 std::string countString;
                 std::string valueString;
                 if (isStarToken(token, countString, valueString)) {
-                    StarToken st(token, countString, valueString);
+                    StarToken st(token,
+                                 countString,
+                                 valueString,
+                                 parserLog,
+                                 fileName,
+                                 lineNumber);
                     ValueType value;
 
                     if (st.hasValue()) {
-                        value = readValueToken<ValueType>(st.valueString());
+                        value = readValueToken<ValueType>(st.valueString(),
+                                                          parserLog,
+                                                          fileName,
+                                                          lineNumber);
+
                         deckItem->push_backMultiple( value , st.count());
                     } else {
                         value = self->getDefault();
@@ -125,7 +140,10 @@ namespace Opm {
                             deckItem->push_backDefault( value );
                     }
                 } else {
-                    ValueType value = readValueToken<ValueType>(token);
+                    ValueType value = readValueToken<ValueType>(token,
+                                                                parserLog,
+                                                                fileName,
+                                                                lineNumber);
                     deckItem->push_back(value);
                 }
             }
@@ -141,12 +159,15 @@ namespace Opm {
                 std::string countString;
                 std::string valueString;
                 if (isStarToken(token, countString, valueString)) {
-                    StarToken st(token, countString, valueString);
+                    StarToken st(token, countString, valueString, parserLog, fileName, lineNumber);
 
                     if (!st.hasValue())
                         deckItem->push_backDefault( self->getDefault() );
                     else
-                        deckItem->push_back(readValueToken<ValueType>(st.valueString()));
+                        deckItem->push_back(readValueToken<ValueType>(st.valueString(),
+                                                                      parserLog,
+                                                                      fileName,
+                                                                      lineNumber));
 
                     // replace the first occurence of "N*FOO" by a sequence of N-1 times
                     // "1*FOO". this is slightly hacky, but it makes it work if the
@@ -160,7 +181,11 @@ namespace Opm {
                     for (size_t i=0; i < st.count() - 1; i++)
                         rawRecord->push_front(singleRepetition);
                 } else {
-                    ValueType value = readValueToken<ValueType>(token);
+                    ValueType value = readValueToken<ValueType>(token,
+                                                                parserLog,
+                                                                fileName,
+                                                                lineNumber);
+
                     deckItem->push_back(value);
                 }
             }

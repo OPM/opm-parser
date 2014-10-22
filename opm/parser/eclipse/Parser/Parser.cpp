@@ -290,14 +290,24 @@ namespace Opm {
                     else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::paths) {
                         for (size_t i = 0; i < parserState->rawKeyword->size(); i++) {
                              RawRecordConstPtr record = parserState->rawKeyword->getRecord(i);
-                             std::string pathName = readValueToken<std::string>(record->getItem(0));
-                             std::string pathValue = readValueToken<std::string>(record->getItem(1));
+                             std::string pathName = readValueToken<std::string>(record->getItem(0),
+                                                                                m_parserLog,
+                                                                                parserState->dataFile.string(),
+                                                                                parserState->lineNR);
+                             std::string pathValue = readValueToken<std::string>(record->getItem(1),
+                                                                                 m_parserLog,
+                                                                                 parserState->dataFile.string(),
+                                                                                 parserState->lineNR);
                              parserState->pathMap.insert(std::pair<std::string, std::string>(pathName, pathValue));
                         }
                     }
                     else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::include) {
                         RawRecordConstPtr firstRecord = parserState->rawKeyword->getRecord(0);
-                        std::string includeFileAsString = readValueToken<std::string>(firstRecord->getItem(0));
+                        std::string includeFileAsString = readValueToken<std::string>(firstRecord->getItem(0),
+                                                                                      m_parserLog,
+                                                                                      parserState->dataFile.string(),
+                                                                                      parserState->lineNR);
+
                         boost::filesystem::path includeFile = getIncludeFilePath(parserState, includeFileAsString);
 
                         std::shared_ptr<ParserState> newParserState(new ParserState(includeFile.string(), parserState->deck, parserState->rootPath));

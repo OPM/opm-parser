@@ -68,7 +68,7 @@ namespace Opm {
 
 
     DeckItemPtr ParserStringItem::scan(RawRecordPtr rawRecord) const {
-        return ParserItemScan<ParserStringItem,DeckStringItem,std::string>(this , rawRecord);
+        return ParserItemScan<ParserStringItem,DeckStringItem,std::string>(this, rawRecord);
     }
 
      

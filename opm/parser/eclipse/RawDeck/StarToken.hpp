@@ -20,6 +20,8 @@
 #ifndef STAR_TOKEN_HPP
 #define STAR_TOKEN_HPP
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
+
 #include <string>
 #include <iostream>
 
@@ -27,24 +29,37 @@
 
 namespace Opm {
     bool isStarToken(const std::string& token,
-                           std::string& countString,
-                           std::string& valueString);
+                     std::string& countString,
+                     std::string& valueString);
 
     template <class T>
-    T readValueToken(const std::string& valueString) {
+    T readValueToken(const std::string& valueString,
+                     ParserLogPtr parserLog,
+                     const std::string& fileName,
+                     int lineNumber)
+    {
         try {
             return boost::lexical_cast<T>(valueString);
         }
-        catch (boost::bad_lexical_cast&) {
-            throw std::invalid_argument("Unable to parse string" + valueString + " to typeid: " + typeid(T).name());
+        catch (boost::bad_lexical_cast& e) {
+            std::string msg("Unable to parse string" + valueString + ": " + e.what());
+            parserLog->addWarning(fileName, lineNumber, msg);
+            return T();
         }
     }
 
     template <>
-    inline std::string readValueToken<std::string>(const std::string& valueString) {
+    inline std::string readValueToken<std::string>(const std::string& valueString,
+                                                   ParserLogPtr parserLog,
+                                                   const std::string& fileName,
+                                                   int lineNumber)
+    {
         if (valueString.size() > 0 && valueString[0] == '\'') {
-            if (valueString.size() < 2 || valueString[valueString.size() - 1] != '\'')
-                throw std::invalid_argument("Unable to parse string" + valueString + " as a string token");
+            if (valueString.size() < 2 || valueString[valueString.size() - 1] != '\'') {
+                std::string msg("Unable to parse string '" + valueString + "' as a string token");
+                parserLog->addWarning(fileName, lineNumber, msg);
+                return valueString;
+            }
             return valueString.substr(1, valueString.size() - 2);
         }
         else
@@ -54,18 +69,30 @@ namespace Opm {
 
 class StarToken {
 public:
-    StarToken(const std::string& token)
+    StarToken(const std::string& token,
+              ParserLogPtr parserLog,
+              const std::string& fileName,
+              int lineNumber)
     {
-        if (!isStarToken(token, m_countString, m_valueString))
-            throw std::invalid_argument("Token \""+token+"\" is not a repetition specifier");
-        init_(token);
+        if (!isStarToken(token, m_countString, m_valueString)) {
+            parserLog->addWarning(fileName,
+                                  lineNumber,
+                                  "Token \""+token+"\" is not a repetition specifier");
+            return;
+        }
+        init_(token, parserLog, fileName, lineNumber);
     }
 
-    StarToken(const std::string& token, const std::string& countStr, const std::string& valueStr)
+    StarToken(const std::string& token,
+              const std::string& countStr,
+              const std::string& valueStr,
+              ParserLogPtr parserLog,
+              const std::string& fileName,
+              int lineNumber)
         : m_countString(countStr)
         , m_valueString(valueStr)
     {
-        init_(token);
+        init_(token, parserLog, fileName, lineNumber);
     }
 
     size_t count() const {
@@ -95,13 +122,16 @@ public:
 private:
     // internal initialization method. the m_countString and m_valueString attributes
     // must be set before calling this method.
-    void init_(const std::string& token) {
+    void init_(const std::string& token,
+               ParserLogPtr parserLog,
+               const std::string& fileName,
+               int lineNumber) {
         // special-case the interpretation of a lone star as "1*" but do not
         // allow constructs like "*123"...
         if (m_countString == "") {
-            if (m_valueString != "")
-                // TODO: decorate the deck with a warning instead?
-                throw std::invalid_argument("Not specifying a count also implies not specifying a value. Token: \'" + token + "\'.");
+            parserLog->addWarning(fileName,
+                                  lineNumber,
+                                  "Not specifying a repetition count in token '"+token+"' is explicitly forbidden by the Eclipse documentation.");
 
             // TODO: since this is explicitly forbidden by the documentation it might
             // be a good idea to decorate the deck with a warning?
@@ -110,9 +140,12 @@ private:
         else {
             m_count = boost::lexical_cast<int>(m_countString);
 
-            if (m_count == 0)
-                // TODO: decorate the deck with a warning instead?
-                throw std::invalid_argument("Specifing zero repetitions is not allowed. Token: \'" + token + "\'.");
+            if (m_count == 0) {
+                parserLog->addWarning(fileName,
+                                      lineNumber,
+                                      "Specifing zero repetitions is not allowed. Changing to 1. Token: \'" + token + "\'.");
+                m_count = 1;
+            }
         }
     }
 
