@@ -81,9 +81,10 @@ class GridPropertyEndpointTableLookupInitializer
     : public GridPropertyBaseInitializer<double>
 {
 public:
-    GridPropertyEndpointTableLookupInitializer(const Deck& deck, const EclipseState& eclipseState)
+    GridPropertyEndpointTableLookupInitializer(const Deck& deck, const EclipseState& eclipseState, ParserLogPtr parserLog)
         : m_deck(deck)
         , m_eclipseState(eclipseState)
+        , m_parserLog(parserLog)
     { }
 
     void apply(std::vector<double>& values,
@@ -183,11 +184,12 @@ public:
             }
         }
 
-        // acctually assign the defaults. if the ENPVD keyword was specified in the deck,
+        // actually assign the defaults. if the ENPVD keyword was specified in the deck,
         // this currently cannot be done because we would need the Z-coordinate of the
         // cell and we would need to know how the simulator wants to interpolate between
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
+        try {
         bool useEnptvd = m_deck.hasKeyword("ENPTVD");
         bool useImptvd = m_deck.hasKeyword("IMPTVD");
         const auto& enptvdTables = m_eclipseState.getEnptvdTables();
@@ -316,6 +318,9 @@ public:
                                               cellDepth,
                                               criticalOilOWSat[imbTableIdx]);
         }
+        } catch (const std::invalid_argument& e) {
+            m_parserLog->addError("", -1, "Initialization of grid property "+propertyName+" failed: "+e.what());
+        }
     }
 
 private:
@@ -329,8 +334,13 @@ private:
         double value = fallbackValue;
 
         if (tableIdx >= 0) {
-            if (tableIdx >= static_cast<int>(depthTables.size()))
-                throw std::invalid_argument("Not enough tables!");
+            if (tableIdx >= static_cast<int>(depthTables.size())) {
+                std::string msg("Not saturatation enough saturation tables."
+                                " Need at least "+std::to_string((long long) tableIdx + 1)+
+                                " but only "+std::to_string((long long) depthTables.size())+
+                                " have been provided.");
+                throw std::invalid_argument(msg);
+            }
 
             // evaluate the table at the cell depth
             value = depthTables[tableIdx].evaluate(columnName, cellDepth);
@@ -348,6 +358,7 @@ private:
 
     const Deck& m_deck;
     const EclipseState& m_eclipseState;
+    ParserLogPtr m_parserLog;
 };
 }
 
