@@ -44,10 +44,13 @@ BOOST_AUTO_TEST_CASE(CreateBoxManager) {
 
 
 BOOST_AUTO_TEST_CASE(TestInputBox) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::BoxManager boxManager(10,10,10);
     Opm::Box inputBox( *boxManager.getGlobalBox() , 0,4,0,4,0,4);
 
-    boxManager.setInputBox( 0,4,0,4,0,4 );
+    boxManager.setInputBox(parserLog, "", -1,
+                           0,4,0,4,0,4 );
     BOOST_CHECK( inputBox.equal( *boxManager.getInputBox()) );
     BOOST_CHECK( inputBox.equal( *boxManager.getActiveBox()) );
 
@@ -61,13 +64,17 @@ BOOST_AUTO_TEST_CASE(TestInputBox) {
 
 
 BOOST_AUTO_TEST_CASE(TestKeywordBox) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::BoxManager boxManager(10,10,10);
-    Opm::Box inputBox( *boxManager.getGlobalBox() , 0,4,0,4,0,4);
-    Opm::Box keywordBox( *boxManager.getGlobalBox() , 0,2,0,2,0,2);
 
+    Opm::Box inputBox(*boxManager.getGlobalBox() , 0,4,0,4,0,4);
+    Opm::Box keywordBox(*boxManager.getGlobalBox() , 0,2,0,2,0,2);
 
-    boxManager.setInputBox( 0,4,0,4,0,4 );
-    boxManager.setKeywordBox( 0,2,0,2,0,2 );
+    boxManager.setInputBox(parserLog, "", -1,
+                           0,4,0,4,0,4 );
+    boxManager.setKeywordBox(parserLog, "", -1,
+                             0,2,0,2,0,2 );
     BOOST_CHECK( inputBox.equal( *boxManager.getInputBox()) );
     BOOST_CHECK( keywordBox.equal( *boxManager.getKeywordBox()) );
     BOOST_CHECK( keywordBox.equal( *boxManager.getActiveBox()) );

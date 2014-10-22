@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
 
 
@@ -54,8 +55,36 @@ namespace Opm {
     }
 
 
-    void BoxManager::setInputBox( int i1,int i2 , int j1 , int j2 , int k1 , int k2) {
-        m_inputBox.reset( new Box( *m_globalBox , i1,i2,j1,j2,k1,k2) );
+    void BoxManager::setInputBox(Opm::ParserLogPtr parserLog, const std::string& fileName, int lineNumber, int i1,int i2 , int j1 , int j2 , int k1 , int k2) {
+        if (i1 < 0 || (int) m_globalBox->getDim(0) <= i1 ||
+            i2 < 0 || (int) m_globalBox->getDim(0) <= i2) {
+            std::string msg("X indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(0)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (j1 < 0 || (int) m_globalBox->getDim(1) <= j1 ||
+                 j2 < 0 || (int) m_globalBox->getDim(1) <= j2) {
+            std::string msg("Y indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(1)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (k1 < 0 || (int) m_globalBox->getDim(2) <= k1 ||
+                 k2 < 0 || (int) m_globalBox->getDim(2) <= k2) {
+            std::string msg("Z indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(2)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (i1 > i2) {
+            std::string msg("The 'begin' index for the X coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (j1 > j2) {
+            std::string msg("The 'begin' index for the Y coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (k1 > k2) {
+            std::string msg("The 'begin' index for the Y coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else
+            m_inputBox.reset( new Box( *m_globalBox , i1,i2,j1,j2,k1,k2) );
     }
 
     void BoxManager::endInputBox() {
@@ -69,8 +98,36 @@ namespace Opm {
         endInputBox();
     }
 
-    void BoxManager::setKeywordBox( int i1,int i2 , int j1 , int j2 , int k1 , int k2) {
-        m_keywordBox.reset( new Box( *m_globalBox , i1,i2,j1,j2,k1,k2) );
+    void BoxManager::setKeywordBox(Opm::ParserLogPtr parserLog, const std::string& fileName, int lineNumber, int i1,int i2 , int j1 , int j2 , int k1 , int k2) {
+        if (i1 < 0 || (int) m_globalBox->getDim(0) <= i1 ||
+            i2 < 0 || (int) m_globalBox->getDim(0) <= i2) {
+            std::string msg("X indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(0)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (j1 < 0 || (int) m_globalBox->getDim(1) <= j1 ||
+                 j2 < 0 || (int) m_globalBox->getDim(1) <= j2) {
+            std::string msg("Y indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(1)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (k1 < 0 || (int) m_globalBox->getDim(2) <= k1 ||
+                 k2 < 0 || (int) m_globalBox->getDim(2) <= k2) {
+            std::string msg("Z indices for boxes must be in range [1, "+std::to_string((long long) m_globalBox->getDim(2)) + "]. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (i1 > i2) {
+            std::string msg("The 'begin' index for the X coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (j1 > j2) {
+            std::string msg("The 'begin' index for the Y coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else if (k1 > k2) {
+            std::string msg("The 'begin' index for the Y coordinate must be smaller than or equal to the end index in boxes. Ignoring box.");
+            parserLog->addError(fileName, lineNumber, msg);
+        }
+        else
+            m_keywordBox.reset( new Box( *m_globalBox , i1,i2,j1,j2,k1,k2) );
     }
 
     void BoxManager::endKeyword() {

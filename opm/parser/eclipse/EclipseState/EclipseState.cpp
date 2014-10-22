@@ -813,7 +813,7 @@ namespace Opm {
 
 
 
-    void EclipseState::handleBOXKeyword(DeckKeywordConstPtr deckKeyword, ParserLogPtr /*parserLog*/, BoxManager& boxManager) {
+    void EclipseState::handleBOXKeyword(DeckKeywordConstPtr deckKeyword, ParserLogPtr parserLog, BoxManager& boxManager) {
         DeckRecordConstPtr record = deckKeyword->getRecord(0);
         int I1 = record->getItem("I1")->getInt(0) - 1;
         int I2 = record->getItem("I2")->getInt(0) - 1;
@@ -822,7 +822,7 @@ namespace Opm {
         int K1 = record->getItem("K1")->getInt(0) - 1;
         int K2 = record->getItem("K2")->getInt(0) - 1;
         
-        boxManager.setInputBox( I1 , I2 , J1 , J2 , K1 , K2 );
+        boxManager.setInputBox(parserLog, deckKeyword->getFileName(), deckKeyword->getLineNumber(), I1, I2, J1, J2, K1, K2);
     }
 
 
@@ -1009,7 +1009,8 @@ namespace Opm {
             setCount++;
         
         if (setCount == 6) {
-            boxManager.setKeywordBox( I1Item->getInt(0) - 1,
+            boxManager.setKeywordBox( parserLog, deckKeyword->getFileName(), deckKeyword->getLineNumber(),
+                                      I1Item->getInt(0) - 1,
                                       I2Item->getInt(0) - 1,
                                       J1Item->getInt(0) - 1,
                                       J2Item->getInt(0) - 1,

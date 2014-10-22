@@ -77,6 +77,7 @@ BOOST_AUTO_TEST_CASE( PERMX ) {
 BOOST_AUTO_TEST_CASE( PARSE_BOX_OK ) {
     ParserLogPtr parserLog(new ParserLog());
     EclipseState state = makeState("testdata/integration_tests/BOX/BOXTEST1", parserLog);
+    parserLog->printAll();
     std::shared_ptr<GridProperty<int> > satnum = state.getIntGridProperty("SATNUM");
     {
         size_t i,j,k;
