@@ -114,15 +114,6 @@ namespace Opm {
         m_timeMap->addFromTSTEPKeyword(keyword);
     }
 
-    bool Schedule::handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const {
-        bool treeUpdated = false;
-        if (!newTree->getNode(groupName)) {
-            treeUpdated = true;
-            newTree->updateTree(groupName);
-        }
-        return treeUpdated;
-    }
-
     void Schedule::handleWELSPECS(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         bool needNewTree = false;
         GroupTreePtr newTree = m_rootGroupTree->get(currentStep)->deepCopy();
@@ -145,7 +136,9 @@ namespace Opm {
                 return;
 
             addWellToGroup( getGroup(groupName) , getWell(wellName) , currentStep);
-            bool treeChanged = handleGroupFromWELSPECS(groupName, newTree);
+            bool treeChanged =
+                !newTree->getNode(groupName) &&
+                newTree->updateTree(groupName, parserLog, record->getFileName(), record->getLineNumber());
             needNewTree = needNewTree || treeChanged;
         }
         if (needNewTree) {
@@ -568,7 +561,8 @@ namespace Opm {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& childName = record->getItem("CHILD_GROUP")->getTrimmedString(0);
             const std::string& parentName = record->getItem("PARENT_GROUP")->getTrimmedString(0);
-            newTree->updateTree(childName, parentName);
+            if (!newTree->updateTree(childName, parentName, parserLog, record->getFileName(), record->getLineNumber()))
+                continue;
 
             if (!hasGroup(parentName))
                 addGroup(parentName, currentStep, parserLog);

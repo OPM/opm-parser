@@ -68,7 +68,6 @@ namespace Opm
         void createTimeMap(DeckConstPtr deck, ParserLogPtr parserLog);
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void iterateScheduleSection(DeckConstPtr deck, ParserLogPtr parserLog);
-        bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
         void addGroup(const std::string& groupName , size_t timeStep, ParserLogPtr parserLog);
         void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep, ParserLogPtr parserLog);
         bool checkWELSPECSConsistency(WellConstPtr well, DeckKeywordConstPtr keyword, size_t recordIdx, ParserLogPtr parserLog) const;

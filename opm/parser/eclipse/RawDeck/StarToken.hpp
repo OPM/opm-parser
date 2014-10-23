@@ -129,9 +129,14 @@ private:
         // special-case the interpretation of a lone star as "1*" but do not
         // allow constructs like "*123"...
         if (m_countString == "") {
-            parserLog->addWarning(fileName,
-                                  lineNumber,
-                                  "Not specifying a repetition count in token '"+token+"' is explicitly forbidden by the Eclipse documentation.");
+            if (m_valueString != "")
+                parserLog->addWarning(fileName,
+                                      lineNumber,
+                                      "Not specifying a repetition count should imply not specifying a value. Token \'" + token + "\'.");
+            else
+                parserLog->addWarning(fileName,
+                                      lineNumber,
+                                      "Not specifying a repetion count for '*' is explicitly forbidden by the Eclipse documentation.");
 
             // TODO: since this is explicitly forbidden by the documentation it might
             // be a good idea to decorate the deck with a warning?

@@ -269,13 +269,12 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_WELSPECS_AND_GRUPTREE_correct_iter_function) 
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELSPECS_GROUPS");
     DeckPtr deck =  parser->parseFile(scheduleFile.string());
-    ScheduleConstPtr schedule(new Schedule(deck));
+    ScheduleConstPtr schedule(new Schedule(deck, parser->getParserLog()));
 
     // Time 0, only from WELSPECS
     GroupTreeNodeConstPtr root = schedule->getGroupTree(0)->getNode("FIELD");
 
     int iter_counted = 0;
-
     for (auto iter=root->begin(); iter != root->end(); ++iter) 
         iter_counted++;
     

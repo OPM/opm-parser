@@ -41,10 +41,11 @@ BOOST_AUTO_TEST_CASE(GetNode_NonExistingNode_ReturnsNull) {
 }
 
 BOOST_AUTO_TEST_CASE(GetNodeAndParent_AllOK) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    tree.updateTree("GRANDPARENT", "FIELD");
-    tree.updateTree("PARENT", "GRANDPARENT");
-    tree.updateTree("GRANDCHILD", "PARENT");
+    tree.updateTree("GRANDPARENT", "FIELD", parserLog, "", -1);
+    tree.updateTree("PARENT", "GRANDPARENT", parserLog, "", -1);
+    tree.updateTree("GRANDCHILD", "PARENT", parserLog, "", -1);
 
     GroupTreeNodePtr grandchild = tree.getNode("GRANDCHILD");
     BOOST_CHECK(grandchild);
@@ -54,24 +55,27 @@ BOOST_AUTO_TEST_CASE(GetNodeAndParent_AllOK) {
 }
 
 BOOST_AUTO_TEST_CASE(UpdateTree_ParentNotSpecified_AddedUnderField) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    tree.updateTree("CHILD_OF_FIELD");
+    tree.updateTree("CHILD_OF_FIELD", parserLog, "", -1);
     BOOST_CHECK(tree.getNode("CHILD_OF_FIELD"));
     GroupTreeNodePtr rootNode = tree.getNode("FIELD");
     BOOST_CHECK(rootNode->hasChildGroup("CHILD_OF_FIELD"));
 }
 
 BOOST_AUTO_TEST_CASE(UpdateTree_ParentIsField_AddedUnderField) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    tree.updateTree("CHILD_OF_FIELD", "FIELD");
+    tree.updateTree("CHILD_OF_FIELD", "FIELD", parserLog, "", -1);
     BOOST_CHECK(tree.getNode("CHILD_OF_FIELD"));
     GroupTreeNodePtr rootNode = tree.getNode("FIELD");
     BOOST_CHECK(rootNode->hasChildGroup("CHILD_OF_FIELD"));
 }
 
 BOOST_AUTO_TEST_CASE(UpdateTree_ParentNotAdded_ChildAndParentAdded) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    tree.updateTree("CHILD", "NEWPARENT");
+    tree.updateTree("CHILD", "NEWPARENT", parserLog, "", -1);
     BOOST_CHECK(tree.getNode("CHILD"));
     GroupTreeNodePtr rootNode = tree.getNode("FIELD");
     BOOST_CHECK(rootNode->hasChildGroup("NEWPARENT"));
@@ -80,18 +84,20 @@ BOOST_AUTO_TEST_CASE(UpdateTree_ParentNotAdded_ChildAndParentAdded) {
 }
 
 BOOST_AUTO_TEST_CASE(UpdateTree_AddFieldNode_Throws) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    BOOST_CHECK_THROW(tree.updateTree("FIELD", "NEWPARENT"), std::domain_error);
-    BOOST_CHECK_THROW(tree.updateTree("FIELD"), std::domain_error);
+    BOOST_CHECK_EQUAL(tree.updateTree("FIELD", "NEWPARENT", parserLog, "", -1), false);
+    BOOST_CHECK_EQUAL(tree.updateTree("FIELD", parserLog, "", -1), false);
 }
 
 BOOST_AUTO_TEST_CASE(UpdateTree_ChildExists_ChildMoved) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTree tree;
-    tree.updateTree("OLDPARENT", "FIELD");
-    tree.updateTree("NEWPARENT", "FIELD");
-    tree.updateTree("THECHILD", "OLDPARENT");
-    tree.updateTree("GRANDCHILD1", "THECHILD");
-    tree.updateTree("GRANDCHILD2", "THECHILD");
+    tree.updateTree("OLDPARENT", "FIELD", parserLog, "", -1);
+    tree.updateTree("NEWPARENT", "FIELD", parserLog, "", -1);
+    tree.updateTree("THECHILD", "OLDPARENT", parserLog, "", -1);
+    tree.updateTree("GRANDCHILD1", "THECHILD", parserLog, "", -1);
+    tree.updateTree("GRANDCHILD2", "THECHILD", parserLog, "", -1);
 
     GroupTreeNodePtr oldParent = tree.getNode("OLDPARENT");
     BOOST_CHECK(oldParent->hasChildGroup("THECHILD"));
@@ -101,7 +107,7 @@ BOOST_AUTO_TEST_CASE(UpdateTree_ChildExists_ChildMoved) {
     GroupTreeNodePtr newParent = tree.getNode("NEWPARENT");
     BOOST_CHECK(!newParent->hasChildGroup("THECHILD"));
 
-    tree.updateTree("THECHILD", "NEWPARENT");
+    tree.updateTree("THECHILD", "NEWPARENT", parserLog, "", -1);
     
     BOOST_CHECK(!oldParent->hasChildGroup("THECHILD"));
     
@@ -111,12 +117,13 @@ BOOST_AUTO_TEST_CASE(UpdateTree_ChildExists_ChildMoved) {
 }
 
 BOOST_AUTO_TEST_CASE(DeepCopy_TreeWithChildren_ObjectsDifferContentMatch) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTreePtr tree(new GroupTree());
-    tree->updateTree("L1CHILD1", "FIELD");
-    tree->updateTree("L1CHILD2", "FIELD");
-    tree->updateTree("L2CHILD1", "L1CHILD1");
-    tree->updateTree("L2CHILD2", "L1CHILD1");
-    tree->updateTree("L3CHILD1", "L2CHILD1");
+    tree->updateTree("L1CHILD1", "FIELD", parserLog, "", -1);
+    tree->updateTree("L1CHILD2", "FIELD", parserLog, "", -1);
+    tree->updateTree("L2CHILD1", "L1CHILD1", parserLog, "", -1);
+    tree->updateTree("L2CHILD2", "L1CHILD1", parserLog, "", -1);
+    tree->updateTree("L3CHILD1", "L2CHILD1", parserLog, "", -1);
 
     GroupTreePtr copiedTree = tree->deepCopy();
     GroupTreeNodePtr fieldNodeCopy = copiedTree->getNode("FIELD");
@@ -151,12 +158,13 @@ BOOST_AUTO_TEST_CASE(DeepCopy_TreeWithChildren_ObjectsDifferContentMatch) {
 }
 
 BOOST_AUTO_TEST_CASE(GetNodes_ReturnsAllNodes) {
+    ParserLogPtr parserLog(new ParserLog);
     GroupTreePtr tree(new GroupTree());
-    tree->updateTree("L1CHILD1", "FIELD");
-    tree->updateTree("L1CHILD2", "FIELD");
-    tree->updateTree("L2CHILD1", "L1CHILD1");
-    tree->updateTree("L2CHILD2", "L1CHILD1");
-    tree->updateTree("L3CHILD1", "L2CHILD1");
+    tree->updateTree("L1CHILD1", "FIELD", parserLog, "", -1);
+    tree->updateTree("L1CHILD2", "FIELD", parserLog, "", -1);
+    tree->updateTree("L2CHILD1", "L1CHILD1", parserLog, "", -1);
+    tree->updateTree("L2CHILD2", "L1CHILD1", parserLog, "", -1);
+    tree->updateTree("L3CHILD1", "L2CHILD1", parserLog, "", -1);
 
     std::vector<GroupTreeNodeConstPtr> nodes = tree->getNodes();
     BOOST_CHECK_EQUAL(6U, nodes.size());
