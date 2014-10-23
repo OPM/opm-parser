@@ -69,9 +69,9 @@ namespace Opm
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void iterateScheduleSection(DeckConstPtr deck, ParserLogPtr parserLog);
         bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
-        void addGroup(const std::string& groupName , size_t timeStep);
-        void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep);
-        void checkWELSPECSConsistency(WellConstPtr well, DeckKeywordConstPtr keyword, size_t recordIdx, ParserLogPtr parserLog) const;
+        void addGroup(const std::string& groupName , size_t timeStep, ParserLogPtr parserLog);
+        void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep, ParserLogPtr parserLog);
+        bool checkWELSPECSConsistency(WellConstPtr well, DeckKeywordConstPtr keyword, size_t recordIdx, ParserLogPtr parserLog) const;
         void handleWELSPECS(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep);
         void handleWCONProducer(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep, bool isPredictionMode);
         void handleWCONHIST(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep);
@@ -90,7 +90,7 @@ namespace Opm
         double convertInjectionRateToSI(double rawRate, WellInjector::TypeEnum wellType, const Opm::UnitSystem &unitSystem) const;
         double convertInjectionRateToSI(double rawRate, Phase::PhaseEnum wellPhase, const Opm::UnitSystem &unitSystem) const;
 
-        static bool convertEclipseStringToBool(const std::string& eclipseString);
+        static bool convertEclipseStringToBool(const std::string& eclipseString, ParserLogPtr parserLog, const std::string& fileName, int lineNumber);
     };
     typedef std::shared_ptr<Schedule> SchedulePtr;
     typedef std::shared_ptr<const Schedule> ScheduleConstPtr;

@@ -50,20 +50,20 @@ BOOST_AUTO_TEST_CASE( parse_WCONPROD_OK ) {
 
     {
         WellPtr well = sched->getWell("PROD2");
-        BOOST_CHECK_CLOSE(1000/Metric::Time, well->getProductionProperties(0).OilRate, 0.001);
-        BOOST_CHECK_CLOSE(1500/Metric::Time, well->getProductionProperties(1).OilRate, 0.001);
+        BOOST_CHECK_CLOSE(1000/Metric::Time, well->getProductionProperties(0).oilRate, 0.001);
+        BOOST_CHECK_CLOSE(1500/Metric::Time, well->getProductionProperties(1).oilRate, 0.001);
     }
 
     {
         WellPtr well = sched->getWell("PROD3");
-        BOOST_CHECK_CLOSE(0/Metric::Time, well->getProductionProperties(0).OilRate, 0.001);
-        BOOST_CHECK_CLOSE(1500/Metric::Time, well->getProductionProperties(1).OilRate, 0.001);
+        BOOST_CHECK_CLOSE(0/Metric::Time, well->getProductionProperties(0).oilRate, 0.001);
+        BOOST_CHECK_CLOSE(1500/Metric::Time, well->getProductionProperties(1).oilRate, 0.001);
     }
 
     {
         WellPtr well = sched->getWell("PROX5");
-        BOOST_CHECK_CLOSE(2000/Metric::Time, well->getProductionProperties(0).OilRate, 0.001);
-        BOOST_CHECK_CLOSE(2000/Metric::Time, well->getProductionProperties(1).OilRate, 0.001);
+        BOOST_CHECK_CLOSE(2000/Metric::Time, well->getProductionProperties(0).oilRate, 0.001);
+        BOOST_CHECK_CLOSE(2000/Metric::Time, well->getProductionProperties(1).oilRate, 0.001);
     }
 }
 

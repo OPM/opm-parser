@@ -91,9 +91,9 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
 
     {
         WellPtr well2 = sched->getWell("W_2");
-        BOOST_CHECK_EQUAL( 0 , well2->getProductionPropertiesCopy(2).ResVRate);
-        BOOST_CHECK_CLOSE( 777/Metric::Time , well2->getProductionPropertiesCopy(7).ResVRate , 0.0001);
-        BOOST_CHECK_EQUAL( 0 , well2->getProductionPropertiesCopy(8).ResVRate);
+        BOOST_CHECK_EQUAL( 0 , well2->getProductionPropertiesCopy(2).resvRate);
+        BOOST_CHECK_CLOSE( 777/Metric::Time , well2->getProductionPropertiesCopy(7).resvRate , 0.0001);
+        BOOST_CHECK_EQUAL( 0 , well2->getProductionPropertiesCopy(8).resvRate);
 
         BOOST_CHECK_EQUAL( WellCommon::SHUT , well2->getStatus(3));
 
@@ -113,47 +113,47 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
         WellPtr well3 = sched->getWell("W_3");
 
         BOOST_CHECK_EQUAL( WellCommon::AUTO , well3->getStatus(3));
-        BOOST_CHECK_EQUAL( 0 , well3->getProductionPropertiesCopy(2).LiquidRate);
+        BOOST_CHECK_EQUAL( 0 , well3->getProductionPropertiesCopy(2).liquidRate);
         
         {
             const WellProductionProperties& prop7 = well3->getProductionProperties(7);
-            BOOST_CHECK_CLOSE( 999/Metric::Time , prop7.LiquidRate , 0.001);
+            BOOST_CHECK_CLOSE( 999/Metric::Time , prop7.liquidRate , 0.001);
             BOOST_CHECK_EQUAL( WellProducer::RESV, prop7.controlMode);
         }
-        BOOST_CHECK_EQUAL( 0 , well3->getProductionPropertiesCopy(8).LiquidRate);
+        BOOST_CHECK_EQUAL( 0 , well3->getProductionPropertiesCopy(8).liquidRate);
     }
 
     {
         WellPtr well1 = sched->getWell("W_1");
 
         BOOST_CHECK(well1->getProductionPropertiesCopy(0).predictionMode);
-        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(0).OilRate);
+        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(0).oilRate);
 
-        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(1).OilRate);
-        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(2).OilRate);
+        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(1).oilRate);
+        BOOST_CHECK_EQUAL(0, well1->getProductionPropertiesCopy(2).oilRate);
 
         BOOST_CHECK(!well1->getProductionPropertiesCopy(3).predictionMode);
-        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(3).OilRate , 0.001);
-        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(4).OilRate , 0.001);
-        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(5).OilRate , 0.001);
-        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(3).WaterRate , 0.001);
-        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(3).GasRate , 0.001);
-        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(4).WaterRate , 0.001);
-        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(4).GasRate , 0.001);
-        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(5).WaterRate , 0.001);
-        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(5).GasRate , 0.001);
+        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(3).oilRate , 0.001);
+        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(4).oilRate , 0.001);
+        BOOST_CHECK_CLOSE(4000/Metric::Time , well1->getProductionPropertiesCopy(5).oilRate , 0.001);
+        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(3).waterRate , 0.001);
+        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(3).gasRate , 0.001);
+        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(4).waterRate , 0.001);
+        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(4).gasRate , 0.001);
+        BOOST_CHECK_CLOSE(4/Metric::Time      , well1->getProductionPropertiesCopy(5).waterRate , 0.001);
+        BOOST_CHECK_CLOSE(12345/Metric::Time  , well1->getProductionPropertiesCopy(5).gasRate , 0.001);
 
 
         BOOST_CHECK(!well1->getProductionPropertiesCopy(6).predictionMode);
-        BOOST_CHECK_CLOSE(14000/Metric::Time , well1->getProductionPropertiesCopy(6).OilRate , 0.001);
+        BOOST_CHECK_CLOSE(14000/Metric::Time , well1->getProductionPropertiesCopy(6).oilRate , 0.001);
 
         BOOST_CHECK(well1->getProductionPropertiesCopy(7).predictionMode);
-        BOOST_CHECK_CLOSE(11000/Metric::Time , well1->getProductionPropertiesCopy(7).OilRate , 0.001);
-        BOOST_CHECK_CLOSE(44/Metric::Time    , well1->getProductionPropertiesCopy(7).WaterRate , 0.001);
-        BOOST_CHECK_CLOSE(188/Metric::Time   , well1->getProductionPropertiesCopy(7).GasRate , 0.001);
+        BOOST_CHECK_CLOSE(11000/Metric::Time , well1->getProductionPropertiesCopy(7).oilRate , 0.001);
+        BOOST_CHECK_CLOSE(44/Metric::Time    , well1->getProductionPropertiesCopy(7).waterRate , 0.001);
+        BOOST_CHECK_CLOSE(188/Metric::Time   , well1->getProductionPropertiesCopy(7).gasRate , 0.001);
 
         BOOST_CHECK(!well1->getProductionPropertiesCopy(8).predictionMode);
-        BOOST_CHECK_CLOSE(13000/Metric::Time , well1->getProductionPropertiesCopy(8).OilRate , 0.001);
+        BOOST_CHECK_CLOSE(13000/Metric::Time , well1->getProductionPropertiesCopy(8).oilRate , 0.001);
         
         BOOST_CHECK_CLOSE(123.00 * Metric::Pressure , well1->getInjectionPropertiesCopy(10).BHPLimit, 0.001);
         BOOST_CHECK_CLOSE(678.00 * Metric::Pressure , well1->getInjectionPropertiesCopy(10).THPLimit, 0.001);
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(WellTestCOMPDAT) {
     BOOST_CHECK(sched->hasWell("W_3"));
     {
         WellPtr well1 = sched->getWell("W_1");
-        BOOST_CHECK_CLOSE(13000/Metric::Time , well1->getProductionPropertiesCopy(8).OilRate , 0.0001);
+        BOOST_CHECK_CLOSE(13000/Metric::Time , well1->getProductionPropertiesCopy(8).oilRate , 0.0001);
         CompletionSetConstPtr completions = well1->getCompletions(0);
         BOOST_CHECK_EQUAL(0U, completions->size());
 
@@ -481,17 +481,26 @@ BOOST_AUTO_TEST_CASE(WellTestWELSPECSDataLoaded) {
 
 BOOST_AUTO_TEST_CASE(WellTestWELSPECS_InvalidConfig_Throws) {
     ParserPtr parser(new Parser());
+    ParserLogPtr parserLog = parser->getParserLog();
+
     boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELL_INVALID_WELSPECS");
     DeckPtr deck =  parser->parseFile(scheduleFile.string());
-    BOOST_CHECK_THROW(new Schedule(deck), std::invalid_argument);
 
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(new Schedule(deck, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(WellTestWELOPEN_ConfigWithIndexes_Throws) {
     ParserPtr parser(new Parser());
+    ParserLogPtr parserLog = parser->getParserLog();
+
     boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELOPEN_INVALID");
     DeckPtr deck =  parser->parseFile(scheduleFile.string());
-    BOOST_CHECK_THROW(new Schedule(deck), std::logic_error);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(new Schedule(deck, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
 }
 
 

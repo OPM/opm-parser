@@ -50,11 +50,12 @@ BOOST_AUTO_TEST_CASE(CreatEmptyWellSet) {
 
 
 BOOST_AUTO_TEST_CASE(AddAndDeleteWell) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::WellSet wellSet;
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
 
-    Opm::WellPtr well(new Opm::Well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0));
-    Opm::WellPtr well2(new Opm::Well("WELL2" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0));
+    Opm::WellPtr well(new Opm::Well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog));
+    Opm::WellPtr well2(new Opm::Well("WELL2" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog));
 
     wellSet.addWell( well ); 
     BOOST_CHECK_EQUAL(true , wellSet.hasWell("WELL1"));
@@ -75,15 +76,16 @@ BOOST_AUTO_TEST_CASE(AddAndDeleteWell) {
 
 
 BOOST_AUTO_TEST_CASE(AddWellSameName) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::WellSet wellSet;
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
 
-    Opm::WellPtr well1(new Opm::Well("WELL" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0));
-    Opm::WellPtr well2(new Opm::Well("WELL" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0));
+    Opm::WellPtr well1(new Opm::Well("WELL" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog));
+    Opm::WellPtr well2(new Opm::Well("WELL" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog));
 
-    wellSet.addWell( well1 ); 
+    BOOST_CHECK_NO_THROW(wellSet.addWell(well1));
     BOOST_CHECK_EQUAL(true , wellSet.hasWell("WELL"));
 
-    BOOST_CHECK_NO_THROW( wellSet.addWell( well1 ));
-    BOOST_CHECK_THROW( wellSet.addWell( well2 ) , std::invalid_argument );
+    BOOST_CHECK_NO_THROW(wellSet.addWell(well1));
+    BOOST_CHECK_THROW(wellSet.addWell(well2), std::invalid_argument);
 }

@@ -35,7 +35,7 @@ namespace Opm {
 
     void Schedule::initFromDeck(DeckConstPtr deck, ParserLogPtr parserLog) {
         createTimeMap(deck, parserLog);
-        addGroup( "FIELD", 0 );
+        addGroup("FIELD", 0, parserLog);
         initRootGroupTreeNode(getTimeMap());
         iterateScheduleSection(deck, parserLog);
     }
@@ -133,15 +133,16 @@ namespace Opm {
             const std::string& groupName = record->getItem("GROUP")->getTrimmedString(0);
 
             if (!hasGroup(groupName)) {
-                addGroup(groupName , currentStep);
+                addGroup(groupName, currentStep, parserLog);
             }
 
             if (!hasWell(wellName)) {
-                addWell(wellName, record, currentStep);
+                addWell(wellName, record, currentStep, parserLog);
             }
 
             WellConstPtr currentWell = getWell(wellName);
-            checkWELSPECSConsistency(currentWell, keyword, recordNr, parserLog);
+            if (!checkWELSPECSConsistency(currentWell, keyword, recordNr, parserLog))
+                return;
 
             addWellToGroup( getGroup(groupName) , getWell(wellName) , currentStep);
             bool treeChanged = handleGroupFromWELSPECS(groupName, newTree);
@@ -152,42 +153,43 @@ namespace Opm {
         }
     }
 
-    void Schedule::checkWELSPECSConsistency(WellConstPtr well, DeckKeywordConstPtr keyword, size_t recordIdx, ParserLogPtr parserLog) const {
+    bool Schedule::checkWELSPECSConsistency(WellConstPtr well, DeckKeywordConstPtr keyword, size_t recordIdx, ParserLogPtr parserLog) const {
         DeckRecordConstPtr record = keyword->getRecord(recordIdx);
         if (well->getHeadI() != record->getItem("HEAD_I")->getInt(0) - 1) {
             std::string msg =
-                "Unable process WELSPECS for well " + well->name() + ", HEAD_I deviates from existing value";
+                "Unable process WELSPECS for well " + well->name() + ": HEAD_I deviates from existing value";
             parserLog->addError(keyword->getFileName(),
                                 keyword->getLineNumber(),
                                 msg);
-            throw std::invalid_argument(msg);
+            return false;
         }
         if (well->getHeadJ() != record->getItem("HEAD_J")->getInt(0) - 1) {
             std::string msg =
-                "Unable process WELSPECS for well " + well->name() + ", HEAD_J deviates from existing value";
+                "Unable process WELSPECS for well " + well->name() + ": HEAD_J deviates from existing value";
             parserLog->addError(keyword->getFileName(),
                                 keyword->getLineNumber(),
                                 msg);
-            throw std::invalid_argument(msg);
+            return false;
         }
         if (well->getRefDepthDefaulted() != record->getItem("REF_DEPTH")->defaultApplied(0)) {
             std::string msg =
-                "Unable process WELSPECS for well " + well->name() + ", REF_DEPTH defaulted state deviates from existing value";
+                "Unable process WELSPECS for well " + well->name() + ": REF_DEPTH defaulted state deviates from existing value";
             parserLog->addError(keyword->getFileName(),
                                 keyword->getLineNumber(),
                                 msg);
-            throw std::invalid_argument(msg);
+            return false;
         }
         if (!well->getRefDepthDefaulted()) {
             if (well->getRefDepth() != record->getItem("REF_DEPTH")->getSIDouble(0)) {
                 std::string msg =
-                    "Unable process WELSPECS for well " + well->name() + ", REF_DEPTH deviates from existing value";
+                    "Unable process WELSPECS for well " + well->name() + ": REF_DEPTH deviates from existing value";
                 parserLog->addError(keyword->getFileName(),
                                     keyword->getLineNumber(),
                                     msg);
-                throw std::invalid_argument(msg);
+                return false;
             }
         }
+        return true;
     }
 
     void Schedule::handleWCONProducer(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep, bool isPredictionMode) {
@@ -230,11 +232,11 @@ namespace Opm {
                     else {
                         std::string msg =
                             "Tried to set invalid control: " +
-                            cmodeString + " for well: " + well->name();
+                            cmodeString + " for well " + well->name();
                         parserLog->addError(keyword->getFileName(),
                                             keyword->getLineNumber(),
                                             msg);
-                        throw std::invalid_argument(msg);
+                        return;
                     }
                 }
 
@@ -252,7 +254,7 @@ namespace Opm {
         handleWCONProducer(keyword, parserLog, currentStep, true);
     }
 
-    void Schedule::handleWCONINJE(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleWCONINJE(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& wellNamePattern = record->getItem("WELL")->getTrimmedString(0);
@@ -312,7 +314,10 @@ namespace Opm {
                     if (properties.hasInjectionControl( controlMode))
                         properties.controlMode = controlMode;
                     else {
-                        throw std::invalid_argument("Tried to set invalid control: " + cmodeString + " for well: " + wellNamePattern);
+                        std::string msg("Tried to set invalid injection control mode '"+cmodeString
+                                        +"' for wells '"+wellNamePattern+"'");
+                        parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), msg);
+                        continue;
                     }
                 }
                 well->setInjectionProperties(currentStep, properties);
@@ -352,7 +357,7 @@ namespace Opm {
         }
     }
 
-    void Schedule::handleWELOPEN(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleWELOPEN(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& wellName = record->getItem("WELL")->getTrimmedString(0);
@@ -360,7 +365,9 @@ namespace Opm {
 
             for (size_t i=2; i<7; i++) {
                 if (record->getItem(i)->getInt(0) > 0 ) {
-                    throw std::logic_error("Error processing WELOPEN keyword, specifying specific connections is not supported yet.");
+                    std::string msg("Specifying specific connections is not yet supported for WELOPEN");
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), msg);
+                    return;
                 }
             }
             WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
@@ -435,13 +442,14 @@ namespace Opm {
         }
     }
 
-    void Schedule::handleWGRUPCON(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleWGRUPCON(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& wellName = record->getItem("WELL")->getTrimmedString(0);
             WellPtr well = getWell(wellName);
 
-            bool availableForGroupControl = convertEclipseStringToBool(record->getItem("GROUP_CONTROLLED")->getTrimmedString(0));
+            bool availableForGroupControl = convertEclipseStringToBool(record->getItem("GROUP_CONTROLLED")->getTrimmedString(0),
+                                                                       parserLog, keyword->getFileName(), keyword->getLineNumber());
             well->setAvailableForGroupControl(currentStep, availableForGroupControl);
 
             well->setGuideRate(currentStep, record->getItem("GUIDE_RATE")->getRawDouble(0));
@@ -456,7 +464,7 @@ namespace Opm {
         }
     }
 
-    void Schedule::handleGRUPTREE(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleGRUPTREE(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         GroupTreePtr currentTree = m_rootGroupTree->get(currentStep);
         GroupTreePtr newTree = currentTree->deepCopy();
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
@@ -466,10 +474,10 @@ namespace Opm {
             newTree->updateTree(childName, parentName);
 
             if (!hasGroup(parentName))
-                addGroup( parentName , currentStep );
+                addGroup(parentName, currentStep, parserLog);
             
             if (!hasGroup(childName))
-                addGroup( childName , currentStep );
+                addGroup(childName, currentStep, parserLog);
         }
         m_rootGroupTree->add(currentStep, newTree);
     }
@@ -482,7 +490,7 @@ namespace Opm {
         return m_rootGroupTree->get(timeStep);
     }
 
-    void Schedule::addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep) {
+    void Schedule::addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep, ParserLogPtr parserLog) {
 
         // We change from eclipse's 1 - n, to a 0 - n-1 solution
         int headI = record->getItem("HEAD_I")->getInt(0) - 1;
@@ -492,10 +500,9 @@ namespace Opm {
 
         if (!record->getItem("REF_DEPTH")->defaultApplied(0)) {
             double refDepth = record->getItem("REF_DEPTH")->getSIDouble(0);
-            well = std::make_shared<Well>(wellName, headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep);
-        } else {
-            well = std::make_shared<Well>(wellName, headI, headJ, preferredPhase, m_timeMap , timeStep);
-        }
+            well = std::make_shared<Well>(wellName, headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep, parserLog);
+        } else
+            well = std::make_shared<Well>(wellName, headI, headJ, preferredPhase, m_timeMap , timeStep, parserLog);
 
         m_wells.insert( wellName  , well);
     }
@@ -517,9 +524,8 @@ namespace Opm {
     }
 
     std::vector<WellConstPtr> Schedule::getWells(size_t timeStep) const {
-        if (timeStep >= m_timeMap->size()) {
-            throw std::invalid_argument("Timestep to large");
-        }
+        if (timeStep >= m_timeMap->size())
+            throw std::invalid_argument("Time step index too large");
 
         std::vector<WellConstPtr> wells;
         for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
@@ -548,10 +554,12 @@ namespace Opm {
         return wells;
     }
 
-    void Schedule::addGroup(const std::string& groupName, size_t timeStep) {
+    void Schedule::addGroup(const std::string& groupName, size_t timeStep, ParserLogPtr parserLog) {
         if (!m_timeMap) {
-            throw std::invalid_argument("TimeMap is null, can't add group named: " + groupName);
+            parserLog->addError("", -1, "No TimeMap object; can't add wells group '"+groupName+"'");
+            return;
         }
+
         GroupPtr group(new Group(groupName, m_timeMap , timeStep));
         m_groups[ groupName ] = group;
     }
@@ -568,7 +576,7 @@ namespace Opm {
         if (hasGroup(groupName)) {
             return m_groups.at(groupName);
         } else
-            throw std::invalid_argument("Group: " + groupName + " does not exist");
+            throw std::invalid_argument("Group '"+groupName+"' does not exist");
     }
 
     void Schedule::addWellToGroup( GroupPtr newGroup , WellPtr well , size_t timeStep) {
@@ -617,7 +625,7 @@ namespace Opm {
         }
     }
     
-    bool Schedule::convertEclipseStringToBool(const std::string& eclipseString) {
+    bool Schedule::convertEclipseStringToBool(const std::string& eclipseString, ParserLogPtr parserLog, const std::string& fileName, int lineNumber) {
         std::string lowerTrimmed = boost::algorithm::to_lower_copy(eclipseString);
         boost::algorithm::trim(lowerTrimmed);
 
@@ -627,6 +635,10 @@ namespace Opm {
         else if (lowerTrimmed == "n" || lowerTrimmed == "no") {
             return false;
         }
-        else throw std::invalid_argument("String " + eclipseString + " not recognized as a boolean-convertible string.");
+        else {
+            std::string msg("String '"+eclipseString+"' is not convertible to boolean. Assuming 'false'.");
+            parserLog->addError(fileName, lineNumber, msg);
+            return false;
+        }
     }
 }

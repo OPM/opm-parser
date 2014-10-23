@@ -22,57 +22,47 @@
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 
 namespace Opm {
     struct WellProductionProperties {
-        double  OilRate;
-        double  GasRate;
-        double  WaterRate;
-        double  LiquidRate;
-        double  ResVRate;
+        double  oilRate;
+        double  gasRate;
+        double  waterRate;
+        double  liquidRate;
+        double  resvRate;
         double  BHPLimit;
         double  THPLimit;
         bool    predictionMode;
 
         WellProducer::ControlModeEnum controlMode;
 
-        WellProductionProperties();
+        WellProductionProperties(ParserLogPtr parserLog = std::make_shared<ParserLog>());
 
-        static WellProductionProperties
-        history(DeckRecordConstPtr record);
+        static WellProductionProperties history(DeckRecordConstPtr record);
+        static WellProductionProperties prediction(DeckRecordConstPtr record);
 
-        static WellProductionProperties
-        prediction(DeckRecordConstPtr record);
-
-        bool
-        hasProductionControl(WellProducer::ControlModeEnum controlModeArg) const
-        {
-            return (productionControls & controlModeArg) != 0;
+        bool hasProductionControl(WellProducer::ControlModeEnum controlModeArg) const {
+            return (m_productionControls & controlModeArg) != 0;
         }
 
-        void
-        dropProductionControl(WellProducer::ControlModeEnum controlModeArg)
-        {
-            if (hasProductionControl(controlModeArg)) {
-                productionControls -= controlModeArg;
-            }
+        void dropProductionControl(WellProducer::ControlModeEnum controlModeArg) {
+            if (hasProductionControl(controlModeArg))
+                m_productionControls -= controlModeArg;
         }
 
-        void
-        addProductionControl(WellProducer::ControlModeEnum controlModeArg)
-        {
-            if (! hasProductionControl(controlModeArg)) {
-                productionControls += controlModeArg;
-            }
+        void addProductionControl(WellProducer::ControlModeEnum controlModeArg) {
+            if (! hasProductionControl(controlModeArg))
+                m_productionControls += controlModeArg;
         }
 
     private:
-        int     productionControls;
+        int m_productionControls;
+        ParserLogPtr m_parserLog;
 
         WellProductionProperties(DeckRecordConstPtr record);
 
-        void
-        init();
+        void init();
     };
 } // namespace Opm
 
