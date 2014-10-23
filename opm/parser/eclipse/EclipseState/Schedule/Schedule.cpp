@@ -199,8 +199,13 @@ namespace Opm {
             const std::string& wellNamePattern =
                 record->getItem("WELL")->getTrimmedString(0);
 
-            const WellCommon::StatusEnum status =
-                WellCommon::StatusFromString(record->getItem("STATUS")->getTrimmedString(0));
+            WellCommon::StatusEnum status;
+            try {
+                status = WellCommon::StatusFromString(record->getItem("STATUS")->getTrimmedString(0));
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
 
             WellProductionProperties properties =
                 ((isPredictionMode)
@@ -223,8 +228,14 @@ namespace Opm {
                     const std::string& cmodeString =
                         record->getItem("CMODE")->getTrimmedString(0);
 
-                    WellProducer::ControlModeEnum control =
-                        WellProducer::ControlModeFromString(cmodeString);
+                    WellProducer::ControlModeEnum control;
+                    try {
+                        control = WellProducer::ControlModeFromString(cmodeString);
+                    } catch(const std::exception& e) {
+                        parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                        return;
+                    }
+
 
                     if (properties.hasProductionControl(control)) {
                         properties.controlMode = control;
@@ -262,8 +273,21 @@ namespace Opm {
 
             for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
                 WellPtr well = *wellIter;
-                WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0) );
-                WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+                WellInjector::TypeEnum injectorType;
+                try {
+                    injectorType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0) );
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
+
+                WellCommon::StatusEnum status;
+                try {
+                    status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
 
                 well->setStatus( currentStep , status );
                 WellInjectionProperties properties(well->getInjectionPropertiesCopy(currentStep));
@@ -310,7 +334,14 @@ namespace Opm {
                     properties.dropInjectionControl(WellInjector::GRUP);
                 {
                     const std::string& cmodeString = record->getItem("CMODE")->getTrimmedString(0);
-                    WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
+                    WellInjector::ControlModeEnum controlMode;
+                    try {
+                        controlMode = WellInjector::ControlModeFromString( cmodeString );
+                    } catch(const std::exception& e) {
+                        parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                        return;
+                    }
+
                     if (properties.hasInjectionControl( controlMode))
                         properties.controlMode = controlMode;
                     else {
@@ -326,18 +357,31 @@ namespace Opm {
     }
 
 
-    void Schedule::handleWCONINJH(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleWCONINJH(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& wellName = record->getItem("WELL")->getTrimmedString(0);
             WellPtr well = getWell(wellName);
 
             // convert injection rates to SI
-            WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0));
+            WellInjector::TypeEnum injectorType;
+            try {
+                injectorType = WellInjector::TypeFromString( record->getItem("TYPE")->getTrimmedString(0));
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
+
             double injectionRate = record->getItem("RATE")->getRawDouble(0);
             injectionRate = convertInjectionRateToSI(injectionRate, injectorType, *deck->getActiveUnitSystem());
 
-            WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+            WellCommon::StatusEnum status;
+            try {
+                status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
 
             well->setStatus( currentStep , status );
             WellInjectionProperties properties(well->getInjectionPropertiesCopy(currentStep));
@@ -345,7 +389,13 @@ namespace Opm {
             properties.injectorType = injectorType;
 
             const std::string& cmodeString = record->getItem("CMODE")->getTrimmedString(0);
-            WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
+            WellInjector::ControlModeEnum controlMode;
+            try {
+                controlMode = WellInjector::ControlModeFromString( cmodeString );
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
             if (!record->getItem("RATE")->defaultApplied(0)) {
                 properties.surfaceInjectionRate = injectionRate;
                 properties.addInjectionControl(controlMode);
@@ -370,28 +420,54 @@ namespace Opm {
                     return;
                 }
             }
-            WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+
+            WellCommon::StatusEnum status;
+            try {
+                status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
+
             well->setStatus(currentStep, status);
         }
     }
 
 
-    void Schedule::handleGCONINJE(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleGCONINJE(DeckConstPtr deck, DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& groupName = record->getItem("GROUP")->getTrimmedString(0);
             GroupPtr group = getGroup(groupName);
 
             {
-                Phase::PhaseEnum phase = Phase::PhaseEnumFromString( record->getItem("PHASE")->getTrimmedString(0) );
+                Phase::PhaseEnum phase;
+                try {
+                    phase = Phase::PhaseEnumFromString( record->getItem("PHASE")->getTrimmedString(0) );
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
                 group->setInjectionPhase( currentStep , phase );
             }
             {
-                GroupInjection::ControlEnum controlMode = GroupInjection::ControlEnumFromString( record->getItem("CONTROL_MODE")->getTrimmedString(0) );
+                GroupInjection::ControlEnum controlMode;
+                try {
+                    controlMode = GroupInjection::ControlEnumFromString( record->getItem("CONTROL_MODE")->getTrimmedString(0) );
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
                 group->setInjectionControlMode( currentStep , controlMode );
             }
 
-            Phase::PhaseEnum wellPhase = Phase::PhaseEnumFromString( record->getItem("PHASE")->getTrimmedString(0));
+            Phase::PhaseEnum wellPhase;
+            try {
+                wellPhase = Phase::PhaseEnumFromString( record->getItem("PHASE")->getTrimmedString(0));
+            } catch(const std::exception& e) {
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                return;
+            }
 
             // calculate SI injection rates for the group
             double surfaceInjectionRate = record->getItem("SURFACE_TARGET")->getRawDouble(0);
@@ -409,13 +485,20 @@ namespace Opm {
     }
 
 
-    void Schedule::handleGCONPROD(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/, size_t currentStep) {
+    void Schedule::handleGCONPROD(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
             const std::string& groupName = record->getItem("GROUP")->getTrimmedString(0);
             GroupPtr group = getGroup(groupName);
             {
-                GroupProduction::ControlEnum controlMode = GroupProduction::ControlEnumFromString( record->getItem("CONTROL_MODE")->getTrimmedString(0) );
+                GroupProduction::ControlEnum controlMode;
+                try {
+                    controlMode = GroupProduction::ControlEnumFromString( record->getItem("CONTROL_MODE")->getTrimmedString(0) );
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
+
                 group->setProductionControlMode( currentStep , controlMode );
             }
             group->setOilTargetRate( currentStep , record->getItem("OIL_TARGET")->getSIDouble(0));
@@ -423,7 +506,14 @@ namespace Opm {
             group->setWaterTargetRate( currentStep , record->getItem("WATER_TARGET")->getSIDouble(0));
             group->setLiquidTargetRate( currentStep , record->getItem("LIQUID_TARGET")->getSIDouble(0));
             {
-                GroupProductionExceedLimit::ActionEnum exceedAction = GroupProductionExceedLimit::ActionEnumFromString(record->getItem("EXCEED_PROC")->getTrimmedString(0) );
+                GroupProductionExceedLimit::ActionEnum exceedAction;
+                try {
+                    exceedAction = GroupProductionExceedLimit::ActionEnumFromString(record->getItem("EXCEED_PROC")->getTrimmedString(0) );
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
+
                 group->setProductionExceedLimitAction( currentStep , exceedAction );
             }
             
@@ -455,8 +545,15 @@ namespace Opm {
             well->setGuideRate(currentStep, record->getItem("GUIDE_RATE")->getRawDouble(0));
 
             if (!record->getItem("PHASE")->defaultApplied(0)) {
-                std::string guideRatePhase = record->getItem("PHASE")->getTrimmedString(0);
-                well->setGuideRatePhase(currentStep, GuideRate::GuideRatePhaseEnumFromString(guideRatePhase));
+                const std::string& guideRatePhaseString = record->getItem("PHASE")->getTrimmedString(0);
+                GuideRate::GuideRatePhaseEnum guideRatePhase;
+                try {
+                    guideRatePhase = GuideRate::GuideRatePhaseEnumFromString(guideRatePhaseString);
+                } catch(const std::exception& e) {
+                    parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), e.what());
+                    return;
+                }
+                well->setGuideRatePhase(currentStep, guideRatePhase);
             } else 
                 well->setGuideRatePhase(currentStep, GuideRate::UNDEFINED);
 
@@ -495,7 +592,14 @@ namespace Opm {
         // We change from eclipse's 1 - n, to a 0 - n-1 solution
         int headI = record->getItem("HEAD_I")->getInt(0) - 1;
         int headJ = record->getItem("HEAD_J")->getInt(0) - 1;
-        Phase::PhaseEnum preferredPhase = Phase::PhaseEnumFromString(record->getItem("PHASE")->getTrimmedString(0));
+        Phase::PhaseEnum preferredPhase;
+        try {
+            preferredPhase = Phase::PhaseEnumFromString(record->getItem("PHASE")->getTrimmedString(0));
+        } catch(const std::exception& e) {
+            parserLog->addError(record->getFileName(), record->getLineNumber(), e.what());
+            return;
+        }
+
         WellPtr well;
 
         if (!record->getItem("REF_DEPTH")->defaultApplied(0)) {

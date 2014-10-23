@@ -38,10 +38,14 @@ namespace Opm {
         auto modeIt = controlModes.begin();
         auto endIt = controlModes.end();
         for (; modeIt != endIt; ++modeIt) {
-            const WellProducer::ControlModeEnum cmode =
-                WellProducer::ControlModeFromString(*modeIt);
-
-            p.addProductionControl(cmode);
+            try {
+                const WellProducer::ControlModeEnum cmode
+                    = WellProducer::ControlModeFromString(*modeIt);
+                p.addProductionControl(cmode);
+            } catch(const std::exception& e) {
+                record->getParserLog()->addError(record->getFileName(), record->getLineNumber(), e.what());
+                return p;
+            }
         }
 
         // BHP control must be explictly provided.
@@ -50,11 +54,17 @@ namespace Opm {
 
         const auto cmodeItem = record->getItem("CMODE");
         if (!cmodeItem->defaultApplied(0)) {
-            const WellProducer::ControlModeEnum cmode = WellProducer::ControlModeFromString( cmodeItem->getString(0) );
+            try {
+                const WellProducer::ControlModeEnum cmode
+                    = WellProducer::ControlModeFromString( cmodeItem->getString(0) );
 
-            if (p.hasProductionControl( cmode ))
                 p.controlMode = cmode;
-            else
+            } catch(const std::exception& e) {
+                record->getParserLog()->addError(record->getFileName(), record->getLineNumber(), e.what());
+                return p;
+            }
+
+            if (!p.hasProductionControl(p.controlMode))
                 throw std::invalid_argument("Setting CMODE to unspecified control");
         }
 
@@ -80,20 +90,31 @@ namespace Opm {
         auto endIt = controlModes.end();
         for (; modeIt != endIt; ++modeIt) {
             if (!record->getItem(*modeIt)->defaultApplied(0)) {
-                const WellProducer::ControlModeEnum cmode =
-                    WellProducer::ControlModeFromString(*modeIt);
+                try {
+                    const WellProducer::ControlModeEnum cmode =
+                        WellProducer::ControlModeFromString(*modeIt);
 
-                p.addProductionControl(cmode);
+                    p.addProductionControl(cmode);
+                } catch(const std::exception& e) {
+                    record->getParserLog()->addError(record->getFileName(), record->getLineNumber(), e.what());
+                    return p;
+                }
             }
         }
 
         const auto cmodeItem = record->getItem("CMODE");
         if (!cmodeItem->defaultApplied(0)) {
-            const WellProducer::ControlModeEnum cmode = WellProducer::ControlModeFromString( cmodeItem->getString(0) );
+            try {
+                const WellProducer::ControlModeEnum cmode =
+                    WellProducer::ControlModeFromString( cmodeItem->getString(0) );
 
-            if (p.hasProductionControl( cmode ))
                 p.controlMode = cmode;
-            else
+            } catch(const std::exception& e) {
+                record->getParserLog()->addError(record->getFileName(), record->getLineNumber(), e.what());
+                return p;
+            }
+
+            if (!p.hasProductionControl(p.controlMode))
                 throw std::invalid_argument("Setting CMODE to unspecified control");
         }
 
