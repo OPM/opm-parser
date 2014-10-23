@@ -18,9 +18,9 @@ namespace Opm {
     {
         init();
 
-        WaterRate = record->getItem("WRAT")->getSIDouble(0);
-        OilRate   = record->getItem("ORAT")->getSIDouble(0);
-        GasRate   = record->getItem("GRAT")->getSIDouble(0);
+        waterRate = record->getItem("WRAT")->getSIDouble(0);
+        oilRate   = record->getItem("ORAT")->getSIDouble(0);
+        gasRate   = record->getItem("GRAT")->getSIDouble(0);
     }
 
     WellProductionProperties
@@ -76,8 +76,8 @@ namespace Opm {
 
         p.predictionMode = true;
 
-        p.LiquidRate = record->getItem("LRAT")->getSIDouble(0);
-        p.ResVRate   = record->getItem("RESV")->getSIDouble(0);
+        p.liquidRate = record->getItem("LRAT")->getSIDouble(0);
+        p.resvRate   = record->getItem("RESV")->getSIDouble(0);
         p.BHPLimit   = record->getItem("BHP" )->getSIDouble(0);
         p.THPLimit   = record->getItem("THP" )->getSIDouble(0);
 
@@ -113,20 +113,16 @@ namespace Opm {
         return p;
     }
 
-    void
-    WellProductionProperties::init()
-    {
-        // public: properties (in order of declaration)
-        OilRate     = 0.0;
-        GasRate     = 0.0;
-        WaterRate   = 0.0;
-        LiquidRate  = 0.0;
-        ResVRate    = 0.0;
-        BHPLimit    = 0.0;
-        THPLimit    = 0.0;
+    void WellProductionProperties::init() {
+        oilRate = 0.0;
+        gasRate = 0.0;
+        waterRate = 0.0;
+        liquidRate = 0.0;
+        resvRate = 0.0;
+        BHPLimit = 0.0;
+        THPLimit = 0.0;
         controlMode = WellProducer::CMODE_UNDEFINED;
 
-        // private: property
-        productionControls = 0;
+        m_productionControls = 0;
     }
 } // namespace Opm
