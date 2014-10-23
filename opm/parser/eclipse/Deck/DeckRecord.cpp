@@ -26,8 +26,10 @@
 
 namespace Opm {
 
-    DeckRecord::DeckRecord() {
-
+    DeckRecord::DeckRecord(ParserLogPtr parserLog, const std::string& fileName, int lineNumber)
+        : m_parserLog(parserLog),
+          m_fileName(fileName),
+          m_lineNumber(lineNumber) {
     }
 
     size_t DeckRecord::size() const {
@@ -64,6 +66,17 @@ namespace Opm {
             throw std::range_error("Not a data keyword ?");
     }
 
+    ParserLogPtr DeckRecord::getParserLog() const {
+        return m_parserLog;
+    }
+
+    const std::string& DeckRecord::getFileName() const {
+        return m_fileName;
+    }
+
+    int DeckRecord::getLineNumber() const {
+        return m_lineNumber;
+    }
 }
 
 

@@ -96,7 +96,8 @@ BOOST_AUTO_TEST_CASE(AddStepSizeCorrect) {
 
 
 BOOST_AUTO_TEST_CASE( dateFromEclipseThrowsInvalidRecord ) {
-    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord());
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord(parserLog, "", -1));
     Opm::DeckIntItemPtr    dayItem( new  Opm::DeckIntItem("DAY") );
     Opm::DeckStringItemPtr monthItem(new Opm::DeckStringItem("MONTH") );
     Opm::DeckIntItemPtr    yearItem(new  Opm::DeckIntItem("YEAR"));
@@ -129,7 +130,8 @@ BOOST_AUTO_TEST_CASE( dateFromEclipseThrowsInvalidRecord ) {
 
 
 BOOST_AUTO_TEST_CASE( dateFromEclipseInvalidMonthThrows ) {
-    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord());
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord(parserLog, "", -1));
     Opm::DeckIntItemPtr    dayItem( new  Opm::DeckIntItem("DAY") );
     Opm::DeckStringItemPtr monthItem(new Opm::DeckStringItem("MONTH") );
     Opm::DeckIntItemPtr    yearItem(new  Opm::DeckIntItem("YEAR"));
@@ -170,7 +172,8 @@ BOOST_AUTO_TEST_CASE( timeFromEclipseCheckMonthNames ) {
 
 
 BOOST_AUTO_TEST_CASE( timeFromEclipseInputRecord ) {
-    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord());
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+    Opm::DeckRecordPtr  startRecord(new  Opm::DeckRecord(parserLog, "", -1));
     Opm::DeckIntItemPtr    dayItem( new  Opm::DeckIntItem("DAY") );
     Opm::DeckStringItemPtr monthItem(new Opm::DeckStringItem("MONTH") );
     Opm::DeckIntItemPtr    yearItem(new  Opm::DeckIntItem("YEAR"));

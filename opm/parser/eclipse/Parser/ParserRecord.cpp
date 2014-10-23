@@ -94,7 +94,9 @@ namespace Opm {
 
     DeckRecordConstPtr ParserRecord::parse(RawRecordPtr rawRecord) const {
         std::string recordBeforeParsing = rawRecord->getRecordString();
-        DeckRecordPtr deckRecord(new DeckRecord());
+        DeckRecordPtr deckRecord(new DeckRecord(rawRecord->getParserLog(),
+                                                rawRecord->getFileName(),
+                                                rawRecord->getLineNumber()));
         for (size_t i = 0; i < size(); i++) {
             ParserItemConstPtr parserItem = get(i);
             DeckItemPtr deckItem = parserItem->scan(rawRecord);
