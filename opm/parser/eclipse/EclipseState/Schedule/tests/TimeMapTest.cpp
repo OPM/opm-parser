@@ -195,20 +195,22 @@ BOOST_AUTO_TEST_CASE( timeFromEclipseInputRecord ) {
 
 
 BOOST_AUTO_TEST_CASE( addDATESFromWrongKeywordThrows ) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     boost::gregorian::date startDate( 2010 , boost::gregorian::Jan , 1);
     Opm::TimeMap timeMap((boost::posix_time::ptime(startDate)));
     Opm::DeckKeywordConstPtr deckKeyword(new Opm::DeckKeyword("NOTDATES"));
-    BOOST_CHECK_THROW( timeMap.addFromDATESKeyword( deckKeyword ) , std::invalid_argument );
+    BOOST_CHECK_THROW(timeMap.addFromDATESKeyword(deckKeyword, parserLog), std::invalid_argument);
 }
 
 
 
 BOOST_AUTO_TEST_CASE( addTSTEPFromWrongKeywordThrows ) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     boost::gregorian::date startDate( 2010 , boost::gregorian::Jan , 1);
     boost::posix_time::ptime ptime(startDate);
     Opm::TimeMap timeMap(ptime);
     Opm::DeckKeywordConstPtr deckKeyword(new Opm::DeckKeyword("NOTTSTEP"));
-    BOOST_CHECK_THROW( timeMap.addFromTSTEPKeyword( deckKeyword ) , std::invalid_argument );
+    BOOST_CHECK_THROW(timeMap.addFromTSTEPKeyword(deckKeyword, parserLog), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(TimeStepsCorrect) {
@@ -230,7 +232,7 @@ BOOST_AUTO_TEST_CASE(TimeStepsCorrect) {
 
     Opm::ParserPtr parser(new Opm::Parser(/*addDefault=*/true));
     Opm::DeckPtr deck = parser->parseString(deckData);
-    Opm::TimeMap tmap(deck);
+    Opm::TimeMap tmap(deck, parser->getParserLog());
 
     BOOST_CHECK_EQUAL(tmap.getStartTime(/*timeLevelIdx=*/0),
                       boost::posix_time::ptime(boost::gregorian::date(1981, 5, 21)));

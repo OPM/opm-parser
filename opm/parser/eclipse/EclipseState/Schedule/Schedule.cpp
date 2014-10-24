@@ -106,12 +106,12 @@ namespace Opm {
         }
     }
 
-    void Schedule::handleDATES(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/) {
-        m_timeMap->addFromDATESKeyword(keyword);
+    void Schedule::handleDATES(DeckKeywordConstPtr keyword, ParserLogPtr parserLog) {
+        m_timeMap->addFromDATESKeyword(keyword, parserLog);
     }
 
-    void Schedule::handleTSTEP(DeckKeywordConstPtr keyword, ParserLogPtr /*parserLog*/) {
-        m_timeMap->addFromTSTEPKeyword(keyword);
+    void Schedule::handleTSTEP(DeckKeywordConstPtr keyword, ParserLogPtr parserLog) {
+        m_timeMap->addFromTSTEPKeyword(keyword, parserLog);
     }
 
     void Schedule::handleWELSPECS(DeckKeywordConstPtr keyword, ParserLogPtr parserLog, size_t currentStep) {
