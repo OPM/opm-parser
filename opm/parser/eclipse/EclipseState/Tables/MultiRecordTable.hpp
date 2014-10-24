@@ -45,7 +45,8 @@ namespace Opm {
         void init(Opm::DeckKeywordConstPtr keyword,
                   const std::vector<std::string> &columnNames,
                   size_t tableIndex,
-                  size_t firstEntityOffset);
+                  size_t firstEntityOffset,
+                  ParserLogPtr parserLog);
 
     public:
         MultiRecordTable() = default;
@@ -55,8 +56,9 @@ namespace Opm {
         void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword,
                                  const std::vector<std::string> &columnNames,
                                  size_t tableIndex,
-                                 size_t firstEntityOffset)
-        { init(keyword, columnNames, tableIndex, firstEntityOffset); }
+                                 size_t firstEntityOffset,
+                                 ParserLogPtr parserLog)
+        { init(keyword, columnNames, tableIndex, firstEntityOffset, parserLog); }
 #endif
 
         /*!

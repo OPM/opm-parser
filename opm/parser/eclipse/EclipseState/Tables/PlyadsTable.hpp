@@ -34,7 +34,7 @@ namespace Opm {
          * \brief Read the PLYADS keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{
@@ -42,12 +42,13 @@ namespace Opm {
                                  "AdsorbedPolymer"
                              },
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("PolymerConcentration");
-            ParentType::checkMonotonic("PolymerConcentration", /*isAscending=*/true);
-            ParentType::checkNonDefaultable("AdsorbedPolymer");
-            ParentType::checkMonotonic("AdsorbedPolymer", /*isAscending=*/true, /*strictlyMonotonic=*/false);
+            ParentType::checkNonDefaultable("PolymerConcentration", parserLog);
+            ParentType::checkMonotonic("PolymerConcentration", /*isAscending=*/true, parserLog);
+            ParentType::checkNonDefaultable("AdsorbedPolymer", parserLog);
+            ParentType::checkMonotonic("AdsorbedPolymer", /*isAscending=*/true, parserLog, /*strictlyMonotonic=*/false);
         }
 
     public:
@@ -55,8 +56,8 @@ namespace Opm {
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
-        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
-        { init(keyword, tableIdx); }
+        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx, Opm::ParserLogPtr parserLog)
+        { init(keyword, tableIdx, parserLog); }
 #endif
 
         using ParentType::numTables;

@@ -53,16 +53,17 @@ namespace Opm {
          * the pressure, volume factor and viscosity of untersaturated
          * oil with the same gas dissolution factor.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx, ParserLogPtr parserLog)
         {
             OuterTable* outerTable = new OuterTable;
-            outerTable->init(keyword, tableIdx);
+            outerTable->init(keyword, tableIdx, parserLog);
             m_outerTable.reset(outerTable);
 
             for (size_t rowIdx = 0; rowIdx < m_outerTable->numRecords(); ++rowIdx) {
                 InnerTable *curRow = new InnerTable;
                 curRow->init(keyword,
-                             /*recordIdx=*/m_outerTable->firstRecordIndex() + rowIdx);
+                             /*recordIdx=*/m_outerTable->firstRecordIndex() + rowIdx,
+                             parserLog);
                 m_innerTables.push_back(std::shared_ptr<const InnerTable>(curRow));
             }
         }

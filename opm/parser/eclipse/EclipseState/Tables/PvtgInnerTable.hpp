@@ -42,16 +42,16 @@ namespace Opm {
          *
          * The first value of the record (-> Rv) is skipped.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, size_t recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, size_t recordIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"RV", "BG", "MUG"},
-                             recordIdx, 1U);
+                             recordIdx, 1U, parserLog);
 
-            ParentType::checkNonDefaultable("RV");
-            ParentType::checkMonotonic("RV", /*isAscending=*/false);
-            ParentType::applyDefaultsLinear("BG");
-            ParentType::applyDefaultsLinear("MUG");
+            ParentType::checkNonDefaultable("RV", parserLog);
+            ParentType::checkMonotonic("RV", /*isAscending=*/false, parserLog);
+            ParentType::applyDefaultsLinear("BG", parserLog);
+            ParentType::applyDefaultsLinear("MUG", parserLog);
         }
 
     public:

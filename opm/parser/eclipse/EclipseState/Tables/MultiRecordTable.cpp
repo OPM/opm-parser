@@ -45,7 +45,8 @@ size_t MultiRecordTable::numTables(Opm::DeckKeywordConstPtr keyword)
 void MultiRecordTable::init(Opm::DeckKeywordConstPtr keyword,
                             const std::vector<std::string> &columnNames,
                             size_t tableIdx,
-                            size_t firstEntityOffset)
+                            size_t firstEntityOffset,
+                            ParserLogPtr parserLog)
 {
     createColumns(columnNames);
 
@@ -62,7 +63,7 @@ void MultiRecordTable::init(Opm::DeckKeywordConstPtr keyword,
     }
 
     if (curTableIdx != tableIdx) {
-        throw std::runtime_error("keyword does not specify enough tables");
+        throw std::runtime_error("Keyword "+keyword->name()+" does not specify enough tables");
     }
 
     // find the number of records in the table
@@ -70,18 +71,19 @@ void MultiRecordTable::init(Opm::DeckKeywordConstPtr keyword,
          m_firstRecordIdx + m_numRecords < keyword->size()
              && getNumFlatItems(keyword->getRecord(m_firstRecordIdx + m_numRecords)) != 0;
          ++ m_numRecords)
-    {
-    }
+    {}
 
     for (size_t  rowIdx = m_firstRecordIdx; rowIdx < m_firstRecordIdx + m_numRecords; ++ rowIdx) {
         // extract the actual data from the records of the keyword of
         // the deck
-        Opm::DeckRecordConstPtr deckRecord =
-            keyword->getRecord(rowIdx);
+        Opm::DeckRecordConstPtr deckRecord = keyword->getRecord(rowIdx);
 
-        if ( (getNumFlatItems(deckRecord) - firstEntityOffset) < numColumns())
-            throw std::runtime_error("Number of columns in the data file is"
-                                     "inconsistent with the ones specified");
+        if ( (getNumFlatItems(deckRecord) - firstEntityOffset) < numColumns()) {
+            std::string msg("Number of columns for table "+keyword->name()+" in the data file is "
+                            "inconsistent with the number expected. Ignoring table.");
+            parserLog->addError(deckRecord->getFileName(), deckRecord->getLineNumber(), msg);
+            return;
+        }
 
         for (size_t colIdx = 0; colIdx < numColumns(); ++colIdx) {
             size_t deckItemIdx = colIdx + firstEntityOffset;

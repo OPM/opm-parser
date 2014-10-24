@@ -38,25 +38,27 @@ namespace Opm {
         void init(Opm::DeckKeywordConstPtr keyword,
                   bool isDirectional,
                   bool hasStressOption,
-                  int recordIdx)
+                  int recordIdx,
+                  ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              isDirectional
                              ? std::vector<std::string>{"PO", "PV_MULT", "TRANSMIS_MULT_X", "TRANSMIS_MULT_Y", "TRANSMIS_MULT_Z"}
                              : std::vector<std::string>{"PO", "PV_MULT", "TRANSMIS_MULT"},
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
             m_isDirectional = isDirectional;
 
-            ParentType::checkNonDefaultable("PO");
-            ParentType::checkMonotonic("PO", /*isAscending=*/hasStressOption);
-            ParentType::applyDefaultsLinear("PV_MULT");
+            ParentType::checkNonDefaultable("PO", parserLog);
+            ParentType::checkMonotonic("PO", /*isAscending=*/hasStressOption, parserLog);
+            ParentType::applyDefaultsLinear("PV_MULT", parserLog);
             if (isDirectional) {
-                ParentType::applyDefaultsLinear("TRANSMIS_MULT");
+                ParentType::applyDefaultsLinear("TRANSMIS_MULT", parserLog);
             } else {
-                ParentType::applyDefaultsLinear("TRANSMIS_MULT_X");
-                ParentType::applyDefaultsLinear("TRANSMIS_MULT_Y");
-                ParentType::applyDefaultsLinear("TRANSMIS_MULT_Z");
+                ParentType::applyDefaultsLinear("TRANSMIS_MULT_X", parserLog);
+                ParentType::applyDefaultsLinear("TRANSMIS_MULT_Y", parserLog);
+                ParentType::applyDefaultsLinear("TRANSMIS_MULT_Z", parserLog);
             }
         }
 

@@ -152,7 +152,7 @@ namespace Opm {
                 }
 
                 tableVector.push_back(TableType());
-                tableVector[tableIdx].init(tableKeyword, tableIdx);
+                tableVector[tableIdx].init(tableKeyword, tableIdx, parserLog);
             }
         }
 
@@ -174,7 +174,7 @@ namespace Opm {
             int numTables = TableType::numTables(tableKeyword);
             for (int tableIdx = 0; tableIdx < numTables; ++tableIdx) {
                 tableVector.push_back(TableType());
-                tableVector[tableIdx].init(tableKeyword, tableIdx);
+                tableVector[tableIdx].init(tableKeyword, tableIdx, parserLog);
             }
         }
 

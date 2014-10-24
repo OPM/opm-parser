@@ -18,6 +18,8 @@
  */
 #include <opm/parser/eclipse/EclipseState/Tables/SingleRecordTable.hpp>
 
+#include <cmath>
+
 namespace Opm {
 size_t SingleRecordTable::numTables(Opm::DeckKeywordConstPtr keyword)
 {
@@ -28,8 +30,11 @@ size_t SingleRecordTable::numTables(Opm::DeckKeywordConstPtr keyword)
 void SingleRecordTable::init(Opm::DeckKeywordConstPtr keyword,
                              const std::vector<std::string> &columnNames,
                              size_t recordIdx,
-                             size_t firstEntityOffset)
+                             size_t firstEntityOffset,
+                             ParserLogPtr parserLog)
 {
+    m_name = keyword->name();
+
     createColumns(columnNames);
 
     // extract the actual data from the deck
@@ -37,9 +42,14 @@ void SingleRecordTable::init(Opm::DeckKeywordConstPtr keyword,
         keyword->getRecord(recordIdx);
 
     size_t numFlatItems = getNumFlatItems(deckRecord);
-    if ( (numFlatItems - firstEntityOffset) % numColumns() != 0)
-        throw std::runtime_error("Number of columns in the data file is"
-                                 "inconsistent with the ones specified");
+    if ( (numFlatItems - firstEntityOffset) % numColumns() != 0) {
+        std::string msg("Number of table columns ("+std::to_string((long long) numColumns())+") is "
+                        "inconsistent with the number of items specified ("+std::to_string((long long) numFlatItems)+", "+
+                        std::to_string((long long) numFlatItems - firstEntityOffset)+" items too much."+
+                        " Ignoring table.");
+        parserLog->addError(deckRecord->getFileName(), deckRecord->getLineNumber(), msg);
+        return;
+    }
 
     for (size_t rowIdx = 0;
          rowIdx*numColumns() < numFlatItems - firstEntityOffset;
@@ -52,6 +62,9 @@ void SingleRecordTable::init(Opm::DeckKeywordConstPtr keyword,
         }
     }
 }
+
+const std::string& SingleRecordTable::getName() const
+{ return m_name; }
 
 size_t SingleRecordTable::numColumns() const
 { return m_columns.size(); }
@@ -125,22 +138,25 @@ double SingleRecordTable::evaluate(const std::string& columnName, double xPos) c
     return yColumn[intervalIdx]*(1-alpha) + yColumn[intervalIdx + 1]*alpha;
 }
 
-void SingleRecordTable::checkNonDefaultable(const std::string& columnName)
+void SingleRecordTable::checkNonDefaultable(const std::string& columnName, ParserLogPtr parserLog)
 {
     int columnIdx = m_columnNames.at(columnName);
 
     int nRows = numRows();
 
     for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
-        if (m_valueDefaulted[columnIdx][rowIdx])
-            throw std::invalid_argument("Column " + columnName + " is not defaultable");
+        if (m_valueDefaulted[columnIdx][rowIdx]) {
+            std::string msg = "Column "+columnName+" in table "+getName()+" is not defaultable";
+            parserLog->addError("", -1, msg);
+        }
     }
 }
 
 
 void SingleRecordTable::checkMonotonic(const std::string& columnName,
-                                        bool isAscending,
-                                        bool isStrictlyMonotonic)
+                                       bool isAscending,
+                                       ParserLogPtr parserLog,
+                                       bool isStrictlyMonotonic)
 {
     int columnIdx = m_columnNames.at(columnName);
 
@@ -148,14 +164,23 @@ void SingleRecordTable::checkMonotonic(const std::string& columnName,
 
     for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
         if (rowIdx > 0) {
-            if (isAscending && m_columns[columnIdx][rowIdx] < m_columns[columnIdx][rowIdx - 1])
-                throw std::invalid_argument("Column " + columnName + " must be monotonically increasing");
-            else if (!isAscending && m_columns[columnIdx][rowIdx] > m_columns[columnIdx][rowIdx - 1])
-                throw std::invalid_argument("Column " + columnName + " must be monotonically decreasing");
+            if (isAscending && m_columns[columnIdx][rowIdx] < m_columns[columnIdx][rowIdx - 1]) {
+                std::string msg("Column "+columnName+" in table "+getName()+" must be monotonically increasing");
+                parserLog->addError("", -1, msg);
+                return;
+            }
+            else if (!isAscending && m_columns[columnIdx][rowIdx] > m_columns[columnIdx][rowIdx - 1]) {
+                std::string msg("Column "+columnName+" in table "+getName()+" must be monotonically decreasing");
+                parserLog->addError("", -1, msg);
+                return;
+            }
 
             if (isStrictlyMonotonic) {
-                if (m_columns[columnIdx][rowIdx] == m_columns[columnIdx][rowIdx - 1])
-                    throw std::invalid_argument("Column " + columnName + " must be strictly monotonic");
+                if (std::abs(m_columns[columnIdx][rowIdx] - m_columns[columnIdx][rowIdx - 1]) < 1e-9) {
+                    std::string msg("Column "+columnName+" in table "+getName()+" must be strictly monotonic");
+                    parserLog->addError("", -1, msg);
+                    return;
+                }
             }
         }
     }
@@ -174,7 +199,7 @@ void SingleRecordTable::applyDefaultsConstant(const std::string& columnName, dou
     }
 }
 
-void SingleRecordTable::applyDefaultsLinear(const std::string& columnName)
+void SingleRecordTable::applyDefaultsLinear(const std::string& columnName, ParserLogPtr parserLog)
 {
     int columnIdx = m_columnNames.at(columnName);
     const std::vector<double>& xColumn = m_columns[0];
@@ -196,8 +221,11 @@ void SingleRecordTable::applyDefaultsLinear(const std::string& columnName)
                     break;
 
             // switch to extrapolation by a constant at the fringes
-            if (rowBeforeIdx < 0 && rowAfterIdx >= static_cast<int>(yColumn.size()))
-                throw std::invalid_argument("Column " + columnName + " can't be fully defaulted");
+            if (rowBeforeIdx < 0 && rowAfterIdx >= static_cast<int>(yColumn.size())) {
+                std::string msg("Column " + columnName + " can't be fully defaulted");
+                parserLog->addWarning("", -1, msg);
+                return;
+            }
             else if (rowBeforeIdx < 0)
                 rowBeforeIdx = rowAfterIdx;
             else if (rowAfterIdx >= static_cast<int>(yColumn.size()))

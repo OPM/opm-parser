@@ -42,17 +42,18 @@ namespace Opm {
          *
          * The first value of the record (-> Rs) is skipped.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx, ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"P", "BO", "MU"},
                              recordIdx,
-                             /*firstEntityOffset=*/1);
+                             /*firstEntityOffset=*/1,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("P");
-            ParentType::checkMonotonic("P", /*isAscending=*/true);
-            ParentType::applyDefaultsLinear("BO");
-            ParentType::applyDefaultsLinear("MU");
+            ParentType::checkNonDefaultable("P", parserLog);
+            ParentType::checkMonotonic("P", /*isAscending=*/true, parserLog);
+            ParentType::applyDefaultsLinear("BO", parserLog);
+            ParentType::applyDefaultsLinear("MU", parserLog);
         }
 
     public:

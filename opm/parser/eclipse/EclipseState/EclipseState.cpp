@@ -450,7 +450,8 @@ namespace Opm {
             m_rocktabTables[tableIdx].init(rocktabKeyword,
                                            isDirectional,
                                            useStressOption,
-                                           tableIdx);
+                                           tableIdx,
+                                           parserLog);
         }
     }
 
