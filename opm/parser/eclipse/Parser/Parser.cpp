@@ -152,9 +152,10 @@ namespace Opm {
         return (m_wildCardKeywords.count(internalKeywordName) > 0);
     }
 
-    bool Parser::canParseDeckKeyword( const std::string& deckKeywordName) const {
-        if (!ParserKeyword::validDeckName(deckKeywordName))
+    bool Parser::isRecognizedKeyword(const std::string& deckKeywordName) const {
+        if (!ParserKeyword::validDeckName(deckKeywordName)) {
             return false;
+        }
 
         if (m_deckParserKeywords.count(deckKeywordName) > 0)
             return true;
@@ -266,14 +267,14 @@ namespace Opm {
                     else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::paths) {
                         for (size_t i = 0; i < parserState->rawKeyword->size(); i++) {
                              RawRecordConstPtr record = parserState->rawKeyword->getRecord(i);
-                             std::string pathName = record->getItem(0);
-                             std::string pathValue = record->getItem(1);
+                             std::string pathName = readValueToken<std::string>(record->getItem(0));
+                             std::string pathValue = readValueToken<std::string>(record->getItem(1));
                              parserState->pathMap.insert(std::pair<std::string, std::string>(pathName, pathValue));
                         }
                     }
                     else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::include) {
                         RawRecordConstPtr firstRecord = parserState->rawKeyword->getRecord(0);
-                        std::string includeFileAsString = firstRecord->getItem(0);
+                        std::string includeFileAsString = readValueToken<std::string>(firstRecord->getItem(0));
                         boost::filesystem::path includeFile = getIncludeFilePath(parserState, includeFileAsString);
 
                         if (verbose)
@@ -285,8 +286,8 @@ namespace Opm {
                     } else {
                         if (verbose)
                             std::cout << parserState->rawKeyword->getKeywordName() << std::endl;
-                        
-                        if (canParseDeckKeyword(parserState->rawKeyword->getKeywordName())) {
+
+                        if (isRecognizedKeyword(parserState->rawKeyword->getKeywordName())) {
                             ParserKeywordConstPtr parserKeyword = getParserKeywordFromDeckName(parserState->rawKeyword->getKeywordName());
                             ParserKeywordActionEnum action = parserKeyword->getAction();
                             if (action == INTERNALIZE) {
@@ -303,7 +304,7 @@ namespace Opm {
 						     parserState->rawKeyword->getLineNR());
                             parserState->deck->addKeyword(deckKeyword);
                             parserState->parserLog.addWarning(parserState->dataFile.string(),
-                                                              parserState->lineNR,
+                                                              parserState->rawKeyword->getLineNR(),
                                                               "The keyword " + parserState->rawKeyword->getKeywordName() + " is not recognized");
                         }
                     }
@@ -330,8 +331,10 @@ namespace Opm {
             throw std::invalid_argument("Input JSON object is not an array");
     }
 
-    RawKeywordPtr Parser::createRawKeyword(const std::string & keywordString, std::shared_ptr<ParserState> parserState) const {
-        if (canParseDeckKeyword(keywordString)) {
+    RawKeywordPtr Parser::createRawKeyword(const std::string& initialLine, std::shared_ptr<ParserState> parserState) const {
+        std::string keywordString = ParserKeyword::getDeckName(initialLine);
+
+        if (isRecognizedKeyword(keywordString)) {
             ParserKeywordConstPtr parserKeyword = getParserKeywordFromDeckName( keywordString );
             ParserKeywordActionEnum action = parserKeyword->getAction();
             
@@ -393,12 +396,12 @@ namespace Opm {
             std::string keywordString;
             parserState->lineNR++;
             if (parserState->rawKeyword == NULL) {
-                if (RawKeyword::tryParseKeyword(line, keywordString)) {
+                if (RawKeyword::isKeywordPrefix(line, keywordString)) {
                     parserState->rawKeyword = createRawKeyword(keywordString, parserState);
                 }
             } else {
                 if (parserState->rawKeyword->getSizeType() == Raw::UNKNOWN) {
-                    if (canParseDeckKeyword(line)) {
+                    if (isRecognizedKeyword(line)) {
                         parserState->rawKeyword->finalizeUnknownSize();
                         parserState->nextKeyword = line;
                         return true;
@@ -464,7 +467,7 @@ namespace Opm {
         deck->initUnitSystem();
         for (size_t index=0; index < deck->size(); ++index) {
             DeckKeywordPtr deckKeyword = deck->getKeyword( index );
-            if (canParseDeckKeyword( deckKeyword->name())) {
+            if (isRecognizedKeyword( deckKeyword->name())) {
                 ParserKeywordConstPtr parserKeyword = getParserKeywordFromDeckName( deckKeyword->name() );
                 if (parserKeyword->hasDimension()) {
                     parserKeyword->applyUnitsToDeck(deck , deckKeyword);
