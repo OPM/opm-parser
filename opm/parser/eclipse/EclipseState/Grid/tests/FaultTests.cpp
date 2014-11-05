@@ -33,22 +33,31 @@
 
 
 BOOST_AUTO_TEST_CASE(CreateInvalidFace) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     // I out of range
-    BOOST_CHECK_THROW( Opm::FaultFace(10,10,10,10 , 10 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(Opm::FaultFace(parserLog, "", -1, 10,10,10,10 , 10 , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 
     // I1 != I2 when face == X
-    BOOST_CHECK_THROW( Opm::FaultFace( 10,10,10, 1 , 3  , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(Opm::FaultFace(parserLog, "", -1, 10,10,10, 1 , 3  , 1 , 1 , 5 , 5 , Opm::FaceDir::XPlus));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 
     // J1 < J2
-    BOOST_CHECK_THROW( Opm::FaultFace(  10,10,10,3 , 3  , 3 , 1 , 5 , 5 , Opm::FaceDir::XPlus) , std::invalid_argument );
-
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(Opm::FaultFace(parserLog, "", -1, 10,10,10,3 , 3  , 3 , 1 , 5 , 5 , Opm::FaceDir::XPlus));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 
 BOOST_AUTO_TEST_CASE(CreateFace) {
-    std::shared_ptr<Opm::FaultFace> face1 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
-    std::shared_ptr<Opm::FaultFace> face2 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
-    std::shared_ptr<Opm::FaultFace> face3 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
+    std::shared_ptr<Opm::FaultFace> face1 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face2 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face3 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
 
     std::vector<size_t> trueValues1{0,1,2};
     std::vector<size_t> trueValues2{10,11,12};
@@ -85,10 +94,12 @@ BOOST_AUTO_TEST_CASE(CreateFault) {
 
 
 BOOST_AUTO_TEST_CASE(AddFaceToFaults) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::Fault fault("FAULT1");
-    std::shared_ptr<Opm::FaultFace> face1 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
-    std::shared_ptr<Opm::FaultFace> face2 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
-    std::shared_ptr<Opm::FaultFace> face3 = std::make_shared<Opm::FaultFace>(10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face1 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 0 , 0 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face2 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 1 , 1 , 0 , 0 , Opm::FaceDir::YPlus);
+    std::shared_ptr<Opm::FaultFace> face3 = std::make_shared<Opm::FaultFace>(parserLog, "", -1, 10,10,10,0, 2  , 0 , 0 , 1 , 1 , Opm::FaceDir::YPlus);
     fault.addFace( face1 );
     fault.addFace( face2 );
     fault.addFace( face3 );

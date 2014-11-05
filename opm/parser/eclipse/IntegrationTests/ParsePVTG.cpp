@@ -62,9 +62,10 @@ PVTG\n\
 
 
 static void check_parser(ParserPtr parser) {
+    ParserLogPtr parserLog =  parser->getParserLog();
     DeckPtr deck =  parser->parseString(pvtgData);
     DeckKeywordConstPtr kw1 = deck->getKeyword("PVTG" , 0);
-    BOOST_CHECK_EQUAL(5U , kw1->size());
+    BOOST_CHECK_EQUAL(6U , kw1->size());
 
     DeckRecordConstPtr record0 = kw1->getRecord(0);
     DeckRecordConstPtr record1 = kw1->getRecord(1);
@@ -113,7 +114,7 @@ static void check_parser(ParserPtr parser) {
     
     {
         Opm::PvtgTable pvtgTable;
-        pvtgTable.initFORUNITTESTONLY(kw1, 0);
+        pvtgTable.initFORUNITTESTONLY(kw1, 0, parserLog);
         
         const auto &outerTable = *pvtgTable.getOuterTable();
         const auto &innerTable0 = *pvtgTable.getInnerTable(0);

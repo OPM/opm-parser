@@ -43,15 +43,17 @@ static Opm::TimeMapPtr createXDaysTimeMap(size_t numDays) {
 }
 
 BOOST_AUTO_TEST_CASE(CreateWell_CorrectNameAndDefaultValues) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     BOOST_CHECK_EQUAL( "WELL1" , well.name() );
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).OilRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).oilRate);
 }
 
 BOOST_AUTO_TEST_CASE(CreateWell_GetProductionPropertiesShouldReturnSameObject) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
 
     BOOST_CHECK_EQUAL(&(well.getProductionProperties(5)), &(well.getProductionProperties(5)));
     BOOST_CHECK_EQUAL(&(well.getProductionProperties(8)), &(well.getProductionProperties(8)));
@@ -59,8 +61,9 @@ BOOST_AUTO_TEST_CASE(CreateWell_GetProductionPropertiesShouldReturnSameObject) {
 }
 
 BOOST_AUTO_TEST_CASE(CreateWell_GetInjectionPropertiesShouldReturnSameObject) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0, parserLog);
 
     BOOST_CHECK_EQUAL(&(well.getInjectionProperties(5)), &(well.getInjectionProperties(5)));
     BOOST_CHECK_EQUAL(&(well.getInjectionProperties(8)), &(well.getInjectionProperties(8)));
@@ -68,8 +71,9 @@ BOOST_AUTO_TEST_CASE(CreateWell_GetInjectionPropertiesShouldReturnSameObject) {
 }
 
 BOOST_AUTO_TEST_CASE(CreateWellCreateTimeStepOK) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 5);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 5, parserLog);
     BOOST_CHECK_EQUAL( false , well.hasBeenDefined(0) );
     BOOST_CHECK_EQUAL( false , well.hasBeenDefined(4) );
     BOOST_CHECK_EQUAL( true , well.hasBeenDefined(5) );
@@ -79,57 +83,61 @@ BOOST_AUTO_TEST_CASE(CreateWellCreateTimeStepOK) {
 
 
 BOOST_AUTO_TEST_CASE(setWellProductionProperties_PropertiesSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
 
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy( 5 ).OilRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy( 5 ).oilRate);
     Opm::WellProductionProperties props;
-    props.OilRate = 99;
-    props.GasRate  = 98;
-    props.WaterRate = 97;
-    props.LiquidRate = 96;
-    props.ResVRate = 95;
+    props.oilRate = 99;
+    props.gasRate  = 98;
+    props.waterRate = 97;
+    props.liquidRate = 96;
+    props.resvRate = 95;
     well.setProductionProperties( 5 , props);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy( 5 ).OilRate);
-    BOOST_CHECK_EQUAL(98 , well.getProductionPropertiesCopy( 5 ).GasRate);
-    BOOST_CHECK_EQUAL(97 , well.getProductionPropertiesCopy( 5 ).WaterRate);
-    BOOST_CHECK_EQUAL(96 , well.getProductionPropertiesCopy( 5 ).LiquidRate);
-    BOOST_CHECK_EQUAL(95 , well.getProductionPropertiesCopy( 5 ).ResVRate);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy( 8 ).OilRate);
-    BOOST_CHECK_EQUAL(98 , well.getProductionPropertiesCopy( 8 ).GasRate);
-    BOOST_CHECK_EQUAL(97 , well.getProductionPropertiesCopy( 8 ).WaterRate);
-    BOOST_CHECK_EQUAL(96 , well.getProductionPropertiesCopy( 8 ).LiquidRate);
-    BOOST_CHECK_EQUAL(95 , well.getProductionPropertiesCopy( 8 ).ResVRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy( 5 ).oilRate);
+    BOOST_CHECK_EQUAL(98 , well.getProductionPropertiesCopy( 5 ).gasRate);
+    BOOST_CHECK_EQUAL(97 , well.getProductionPropertiesCopy( 5 ).waterRate);
+    BOOST_CHECK_EQUAL(96 , well.getProductionPropertiesCopy( 5 ).liquidRate);
+    BOOST_CHECK_EQUAL(95 , well.getProductionPropertiesCopy( 5 ).resvRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy( 8 ).oilRate);
+    BOOST_CHECK_EQUAL(98 , well.getProductionPropertiesCopy( 8 ).gasRate);
+    BOOST_CHECK_EQUAL(97 , well.getProductionPropertiesCopy( 8 ).waterRate);
+    BOOST_CHECK_EQUAL(96 , well.getProductionPropertiesCopy( 8 ).liquidRate);
+    BOOST_CHECK_EQUAL(95 , well.getProductionPropertiesCopy( 8 ).resvRate);
 }
 
 BOOST_AUTO_TEST_CASE(setOilRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).OilRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).oilRate);
     Opm::WellProductionProperties props;
-    props.OilRate = 99;
+    props.oilRate = 99;
     well.setProductionProperties( 5 , props);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(5).OilRate);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(8).OilRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(5).oilRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(8).oilRate);
 }
 
-BOOST_AUTO_TEST_CASE(seLiquidRate_RateSetCorrect) {
+BOOST_AUTO_TEST_CASE(setLiquidRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).LiquidRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).liquidRate);
     Opm::WellProductionProperties props;
-    props.LiquidRate = 99;
+    props.liquidRate = 99;
     well.setProductionProperties( 5 , props);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(5).LiquidRate);
-    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(8).LiquidRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(5).liquidRate);
+    BOOST_CHECK_EQUAL(99 , well.getProductionPropertiesCopy(8).liquidRate);
 }
 
 
 BOOST_AUTO_TEST_CASE(setPredictionModeProduction_ModeSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     
     BOOST_CHECK_EQUAL( true, well.getProductionPropertiesCopy(5).predictionMode);
     Opm::WellProductionProperties props;
@@ -142,8 +150,9 @@ BOOST_AUTO_TEST_CASE(setPredictionModeProduction_ModeSetCorrect) {
 
 
 BOOST_AUTO_TEST_CASE(setpredictionModeInjection_ModeSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0, parserLog);
 
     BOOST_CHECK_EQUAL( true, well.getInjectionPropertiesCopy(5).predictionMode);
     Opm::WellInjectionProperties props;
@@ -156,16 +165,18 @@ BOOST_AUTO_TEST_CASE(setpredictionModeInjection_ModeSetCorrect) {
 
 
 BOOST_AUTO_TEST_CASE(NewWellZeroCompletions) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     Opm::CompletionSetConstPtr completions = well.getCompletions( 0 );
     BOOST_CHECK_EQUAL( 0U , completions->size());
 }
 
 
 BOOST_AUTO_TEST_CASE(UpdateCompletions) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap , 0, parserLog);
     Opm::CompletionSetConstPtr completions = well.getCompletions( 0 );
     BOOST_CHECK_EQUAL( 0U , completions->size());
     
@@ -202,35 +213,38 @@ BOOST_AUTO_TEST_CASE(UpdateCompletions) {
 
 
 BOOST_AUTO_TEST_CASE(setGasRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::GAS, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::GAS, timeMap , 0, parserLog);
     
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).GasRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).gasRate);
     Opm::WellProductionProperties properties;
-    properties.GasRate = 108;
+    properties.gasRate = 108;
     well.setProductionProperties(5, properties);
-    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(5).GasRate);
-    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(8).GasRate);
+    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(5).gasRate);
+    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(8).gasRate);
 }
 
 
 
 BOOST_AUTO_TEST_CASE(setWaterRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0, parserLog);
     
-    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).WaterRate);
+    BOOST_CHECK_EQUAL(0.0 , well.getProductionPropertiesCopy(5).waterRate);
     Opm::WellProductionProperties properties;
-    properties.WaterRate = 108;
+    properties.waterRate = 108;
     well.setProductionProperties(5, properties);
-    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(5).WaterRate);
-    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(8).WaterRate);
+    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(5).waterRate);
+    BOOST_CHECK_EQUAL(108 , well.getProductionPropertiesCopy(8).waterRate);
 }
 
 
 BOOST_AUTO_TEST_CASE(setSurfaceInjectionRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0, parserLog);
     
     BOOST_CHECK_EQUAL(0.0 , well.getInjectionPropertiesCopy(5).surfaceInjectionRate);
     Opm::WellInjectionProperties props(well.getInjectionPropertiesCopy(5));
@@ -242,8 +256,9 @@ BOOST_AUTO_TEST_CASE(setSurfaceInjectionRate_RateSetCorrect) {
 
 
 BOOST_AUTO_TEST_CASE(setReservoirInjectionRate_RateSetCorrect) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap , 0, parserLog);
     
     BOOST_CHECK_EQUAL(0.0 , well.getInjectionPropertiesCopy(5).reservoirInjectionRate);
     Opm::WellInjectionProperties properties(well.getInjectionPropertiesCopy(5));
@@ -255,10 +270,11 @@ BOOST_AUTO_TEST_CASE(setReservoirInjectionRate_RateSetCorrect) {
 
 
 BOOST_AUTO_TEST_CASE(isProducerCorrectlySet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     // HACK: This test checks correctly setting of isProducer/isInjector. This property depends on which of
     //       WellProductionProperties/WellInjectionProperties is set last, independent of actual values.
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap ,0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::OIL, timeMap ,0, parserLog);
 
     /* 1: Well is created as producer */
     BOOST_CHECK_EQUAL( false , well.isInjector(0));
@@ -285,17 +301,17 @@ BOOST_AUTO_TEST_CASE(isProducerCorrectlySet) {
     Opm::WellInjectionProperties injectionProps3;
     well.setInjectionProperties(4, injectionProps3);
     Opm::WellProductionProperties properties(well.getProductionPropertiesCopy(4));
-    properties.OilRate = 100;
-    properties.GasRate = 200;
-    properties.WaterRate = 300;
+    properties.oilRate = 100;
+    properties.gasRate = 200;
+    properties.waterRate = 300;
     well.setProductionProperties(4, properties);
     BOOST_CHECK_EQUAL( false , well.isInjector(4));
     BOOST_CHECK_EQUAL( true , well.isProducer(4));
     BOOST_CHECK_EQUAL( 0 , well.getInjectionPropertiesCopy(4).surfaceInjectionRate);
     BOOST_CHECK_EQUAL( 0 , well.getInjectionPropertiesCopy(4).reservoirInjectionRate);
-    BOOST_CHECK_EQUAL( 100 , well.getProductionPropertiesCopy(4).OilRate);
-    BOOST_CHECK_EQUAL( 200 , well.getProductionPropertiesCopy(4).GasRate);
-    BOOST_CHECK_EQUAL( 300 , well.getProductionPropertiesCopy(4).WaterRate);
+    BOOST_CHECK_EQUAL( 100 , well.getProductionPropertiesCopy(4).oilRate);
+    BOOST_CHECK_EQUAL( 200 , well.getProductionPropertiesCopy(4).gasRate);
+    BOOST_CHECK_EQUAL( 300 , well.getProductionPropertiesCopy(4).waterRate);
     
     /* Set injection rate => Well becomes injector - all produced rates -> 0 */
     Opm::WellProductionProperties prodProps2;
@@ -306,15 +322,16 @@ BOOST_AUTO_TEST_CASE(isProducerCorrectlySet) {
     BOOST_CHECK_EQUAL( true  , well.isInjector(6));
     BOOST_CHECK_EQUAL( false , well.isProducer(6));
     BOOST_CHECK_EQUAL( 50 , well.getInjectionPropertiesCopy(6).reservoirInjectionRate);
-    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).OilRate);
-    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).GasRate);
-    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).WaterRate);
+    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).oilRate);
+    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).gasRate);
+    BOOST_CHECK_EQUAL( 0 , well.getProductionPropertiesCopy(6).waterRate);
 }
 
 
 BOOST_AUTO_TEST_CASE(GroupnameCorretlySet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap ,0);
+    Opm::Well well("WELL1" , 0, 0, 0.0, Opm::Phase::WATER, timeMap ,0, parserLog);
 
     BOOST_CHECK_EQUAL("" , well.getGroupName(2));
 
@@ -327,8 +344,9 @@ BOOST_AUTO_TEST_CASE(GroupnameCorretlySet) {
 
 
 BOOST_AUTO_TEST_CASE(addWELSPECS_setData_dataSet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1", 23, 42, 2334.32, Opm::Phase::WATER, timeMap, 3);
+    Opm::Well well("WELL1", 23, 42, 2334.32, Opm::Phase::WATER, timeMap, 3, parserLog);
 
     BOOST_CHECK(!well.hasBeenDefined(2));
     BOOST_CHECK(well.hasBeenDefined(3));
@@ -340,8 +358,9 @@ BOOST_AUTO_TEST_CASE(addWELSPECS_setData_dataSet) {
 
 
 BOOST_AUTO_TEST_CASE(XHPLimitDefault) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     
 
     Opm::WellProductionProperties productionProps(well.getProductionPropertiesCopy(1));
@@ -361,8 +380,9 @@ BOOST_AUTO_TEST_CASE(XHPLimitDefault) {
 
 
 BOOST_AUTO_TEST_CASE(InjectorType) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     
     Opm::WellInjectionProperties injectionProps(well.getInjectionPropertiesCopy(1));
     injectionProps.injectorType = Opm::WellInjector::WATER;
@@ -376,8 +396,9 @@ BOOST_AUTO_TEST_CASE(InjectorType) {
 
 
 BOOST_AUTO_TEST_CASE(WellStatus) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(10);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     
     well.setStatus( 1 , Opm::WellCommon::OPEN );
     BOOST_CHECK_EQUAL( Opm::WellCommon::OPEN , well.getStatus( 5 ));
@@ -389,33 +410,34 @@ BOOST_AUTO_TEST_CASE(WellStatus) {
 
 
 BOOST_AUTO_TEST_CASE(WellHaveProductionControlLimit) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
 
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::OIL, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::OIL, timeMap, 0, parserLog);
 
     
     BOOST_CHECK( !well.getProductionPropertiesCopy(1).hasProductionControl( Opm::WellProducer::ORAT ));
     BOOST_CHECK( !well.getProductionPropertiesCopy(1).hasProductionControl( Opm::WellProducer::RESV ));
     
     Opm::WellProductionProperties properties(well.getProductionPropertiesCopy(1));
-    properties.OilRate = 100;
+    properties.oilRate = 100;
     properties.addProductionControl(Opm::WellProducer::ORAT);
     well.setProductionProperties(2, properties);
     BOOST_CHECK(  well.getProductionPropertiesCopy(2).hasProductionControl( Opm::WellProducer::ORAT ));
     BOOST_CHECK( !well.getProductionPropertiesCopy(2).hasProductionControl( Opm::WellProducer::RESV ));
 
     Opm::WellProductionProperties properties2(well.getProductionPropertiesCopy(2));
-    properties2.ResVRate = 100;
+    properties2.resvRate = 100;
     properties2.addProductionControl(Opm::WellProducer::RESV);
     well.setProductionProperties(2, properties2);
     BOOST_CHECK( well.getProductionPropertiesCopy(2).hasProductionControl( Opm::WellProducer::RESV ));
     
     Opm::WellProductionProperties properties3(well.getProductionPropertiesCopy(2));
-    properties3.OilRate = 100;
-    properties3.WaterRate = 100;
-    properties3.GasRate = 100;
-    properties3.LiquidRate = 100;
-    properties3.ResVRate = 100;
+    properties3.oilRate = 100;
+    properties3.waterRate = 100;
+    properties3.gasRate = 100;
+    properties3.liquidRate = 100;
+    properties3.resvRate = 100;
     properties3.BHPLimit = 100;
     properties3.THPLimit = 100;
     properties3.addProductionControl(Opm::WellProducer::ORAT);
@@ -439,9 +461,10 @@ BOOST_AUTO_TEST_CASE(WellHaveProductionControlLimit) {
 
 
 BOOST_AUTO_TEST_CASE(WellHaveInjectionControlLimit) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
 
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     
     BOOST_CHECK( !well.getInjectionPropertiesCopy(1).hasInjectionControl( Opm::WellInjector::RATE ));
     BOOST_CHECK( !well.getInjectionPropertiesCopy(1).hasInjectionControl( Opm::WellInjector::RESV ));
@@ -484,8 +507,10 @@ BOOST_AUTO_TEST_CASE(WellHaveInjectionControlLimit) {
 
 
 BOOST_AUTO_TEST_CASE(WellSetAvailableForGroupControl_ControlSet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
+
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
 
     BOOST_CHECK(well.isAvailableForGroupControl(10));
     well.setAvailableForGroupControl(12, false);
@@ -495,8 +520,9 @@ BOOST_AUTO_TEST_CASE(WellSetAvailableForGroupControl_ControlSet) {
 }
 
 BOOST_AUTO_TEST_CASE(WellSetGuideRate_GuideRateSet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
 
     BOOST_CHECK_LT(well.getGuideRate(0), 0);
     well.setGuideRate(1, 32.2);
@@ -505,8 +531,9 @@ BOOST_AUTO_TEST_CASE(WellSetGuideRate_GuideRateSet) {
 }
 
 BOOST_AUTO_TEST_CASE(WellGuideRatePhase_GuideRatePhaseSet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     BOOST_CHECK_EQUAL(Opm::GuideRate::UNDEFINED, well.getGuideRatePhase(0));
     well.setGuideRatePhase(3, Opm::GuideRate::RAT);
     BOOST_CHECK_EQUAL(Opm::GuideRate::UNDEFINED, well.getGuideRatePhase(2));
@@ -515,8 +542,9 @@ BOOST_AUTO_TEST_CASE(WellGuideRatePhase_GuideRatePhaseSet) {
 
 
 BOOST_AUTO_TEST_CASE(WellSetScalingFactor_ScalingFactorSetSet) {
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::TimeMapPtr timeMap = createXDaysTimeMap(20);
-    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0, parserLog);
     BOOST_CHECK_EQUAL(1.0, well.getGuideRateScalingFactor(0));
     well.setGuideRateScalingFactor(4, 0.6);
     BOOST_CHECK_EQUAL(1.0, well.getGuideRateScalingFactor(3));

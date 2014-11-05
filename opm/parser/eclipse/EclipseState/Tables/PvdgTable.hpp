@@ -37,21 +37,23 @@ namespace Opm {
          *        methods for it.
          */
         void init(Opm::DeckKeywordConstPtr keyword,
-                  int recordIdx)
+                  int recordIdx,
+                  Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"P", "BG", "MUG"},
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("P");
-            ParentType::checkMonotonic("P", /*isAscending=*/true);
+            ParentType::checkNonDefaultable("P", parserLog);
+            ParentType::checkMonotonic("P", /*isAscending=*/true, parserLog);
 
-            ParentType::applyDefaultsLinear("BG");
-            ParentType::checkMonotonic("BG", /*isAscending=*/false);
+            ParentType::applyDefaultsLinear("BG", parserLog);
+            ParentType::checkMonotonic("BG", /*isAscending=*/false, parserLog);
 
-            ParentType::applyDefaultsLinear("MUG");
-            ParentType::checkMonotonic("MUG", /*isAscending=*/true, /*strictlyMonotonic=*/false);
+            ParentType::applyDefaultsLinear("MUG", parserLog);
+            ParentType::checkMonotonic("MUG", /*isAscending=*/true, parserLog, /*strictlyMonotonic=*/false);
         }
 
     public:

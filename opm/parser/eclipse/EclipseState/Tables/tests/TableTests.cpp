@@ -51,6 +51,7 @@ BOOST_AUTO_TEST_CASE(CreateSingleRecordTable) {
         " 9 10 11 12 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::DeckConstPtr deck(parser->parseString(deckData));
 
     std::vector<std::string> tooFewColumnNames{"A", "B", "C"};
@@ -59,21 +60,30 @@ BOOST_AUTO_TEST_CASE(CreateSingleRecordTable) {
 
     BOOST_CHECK_EQUAL(Opm::SingleRecordTable::numTables(deck->getKeyword("SWOF")), 2);
     Opm::SingleRecordTable tmpTable;
-    BOOST_CHECK_THROW(tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
-                                                   tooFewColumnNames,
-                                                   /*recordIdx=*/0,
-                                                   /*firstEntryOffset=*/0),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
-                                                   tooManyColumnNames,
-                                                   /*recordIdx=*/0,
-                                                   /*firstEntryOffset=*/0),
-                      std::runtime_error);
 
-    tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
-                                 justRightColumnNames,
-                                 /*recordIdx=*/0,
-                                 /*firstEntryOffset=*/0);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
+                                                      tooFewColumnNames,
+                                                      /*recordIdx=*/0,
+                                                      /*firstEntryOffset=*/0,
+                                                      parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
+                                                      tooManyColumnNames,
+                                                      /*recordIdx=*/0,
+                                                      /*firstEntryOffset=*/0,
+                                                      parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(tmpTable.initFORUNITTESTONLY(deck->getKeyword("SWOF"),
+                                                      justRightColumnNames,
+                                                      /*recordIdx=*/0,
+                                                      /*firstEntryOffset=*/0,
+                                                      parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(CreateMultiTable) {
@@ -91,6 +101,7 @@ BOOST_AUTO_TEST_CASE(CreateMultiTable) {
         "19 20 21 22/\n"
         "/\n";
 
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::ParserPtr parser(new Opm::Parser);
     Opm::DeckConstPtr deck(parser->parseString(deckData));
 
@@ -102,22 +113,28 @@ BOOST_AUTO_TEST_CASE(CreateMultiTable) {
     // this mistake can't be detected as the MultiRecordTable takes
     // the first $N items as the column names...
     /*
-    BOOST_CHECK_THROW(Opm::MultiRecordTable(deck->getKeyword("PVTO"),
+    BOOST_CHECK(Opm::MultiRecordTable(deck->getKeyword("PVTO"),
                                                   tooFewColumnNames,
-                                                  0),
-                      std::runtime_error);
+                                                  0,
+                                                  parserLog));
     */
     Opm::MultiRecordTable mrt;
-    BOOST_CHECK_THROW(mrt.initFORUNITTESTONLY(deck->getKeyword("PVTO"),
-                                              tooManyColumnNames,
-                                              /*tableIdx=*/0,
-                                              /*firstEntryOffset=*/0),
-                      std::runtime_error);
 
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(mrt.initFORUNITTESTONLY(deck->getKeyword("PVTO"),
+                                                 tooManyColumnNames,
+                                                 /*tableIdx=*/0,
+                                                 /*firstEntryOffset=*/0,
+                                                 parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
+
+    parserLog->clear();
     BOOST_CHECK_NO_THROW(mrt.initFORUNITTESTONLY(deck->getKeyword("PVTO"),
                                                  justRightColumnNames,
                                                  /*recordIdx=*/0,
-                                                 /*firstEntryOffset=*/0));
+                                                 /*firstEntryOffset=*/0,
+                                                 parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
@@ -132,6 +149,7 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
         " 13 14 15 16\n"
         " 17 18 19 20/\n";
 
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::ParserPtr parser(new Opm::Parser);
     Opm::DeckConstPtr deck(parser->parseString(deckData));
     Opm::DeckKeywordConstPtr swofKeyword = deck->getKeyword("SWOF");
@@ -141,8 +159,8 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
     Opm::SwofTable swof1Table;
     Opm::SwofTable swof2Table;
 
-    swof1Table.initFORUNITTESTONLY(deck->getKeyword("SWOF"), /*tableIdx=*/0);
-    swof2Table.initFORUNITTESTONLY(deck->getKeyword("SWOF"), /*tableIdx=*/1);
+    swof1Table.initFORUNITTESTONLY(deck->getKeyword("SWOF"), /*tableIdx=*/0, parserLog);
+    swof2Table.initFORUNITTESTONLY(deck->getKeyword("SWOF"), /*tableIdx=*/1, parserLog);
 
     BOOST_CHECK_EQUAL(swof1Table.numRows(), 2);
     BOOST_CHECK_EQUAL(swof2Table.numRows(), 3);
@@ -180,6 +198,7 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
         " 13 14 15 16\n"
         " 17 18 19 20/\n";
 
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::ParserPtr parser(new Opm::Parser);
     Opm::DeckConstPtr deck(parser->parseString(deckData));
     Opm::DeckKeywordConstPtr sgofKeyword = deck->getKeyword("SGOF");
@@ -189,8 +208,8 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
     Opm::SgofTable sgof1Table;
     Opm::SgofTable sgof2Table;
 
-    sgof1Table.initFORUNITTESTONLY(deck->getKeyword("SGOF"), /*tableIdx=*/0);
-    sgof2Table.initFORUNITTESTONLY(deck->getKeyword("SGOF"), /*tableIdx=*/1);
+    sgof1Table.initFORUNITTESTONLY(deck->getKeyword("SGOF"), /*tableIdx=*/0, parserLog);
+    sgof2Table.initFORUNITTESTONLY(deck->getKeyword("SGOF"), /*tableIdx=*/1, parserLog);
 
     BOOST_CHECK_EQUAL(sgof1Table.numRows(), 2);
     BOOST_CHECK_EQUAL(sgof2Table.numRows(), 3);
@@ -232,6 +251,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "1.75    0.000030\n"
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
+        Opm::ParserLogPtr parserLog(new Opm::ParserLog);
         Opm::ParserPtr parser(new Opm::Parser);
         Opm::DeckConstPtr deck(parser->parseString(correctDeckData));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
@@ -239,7 +259,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
 
         Opm::PlyadsTable plyadsTable;
-        plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0);
+        plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0, parserLog);
 
         BOOST_CHECK_CLOSE(plyadsTable.getPolymerConcentrationColumn().front(), 0.0, 1e-6);
         BOOST_CHECK_CLOSE(plyadsTable.getPolymerConcentrationColumn().back(), 3.0, 1e-6);
@@ -264,6 +284,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "1.75    0.000030\n"
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
+        Opm::ParserLogPtr parserLog(new Opm::ParserLog);
         Opm::ParserPtr parser(new Opm::Parser);
         Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
@@ -271,7 +292,10 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
 
         Opm::PlyadsTable plyadsTable;
-        BOOST_CHECK_THROW(plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0), std::invalid_argument);
+
+        parserLog->clear();
+        BOOST_CHECK_NO_THROW(plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0, parserLog));
+        BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
     }
 
     {
@@ -290,6 +314,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "1.75    0.000030\n"
             "2.00    0.000030\n"
             "3.00    0.000029 /\n";
+        Opm::ParserLogPtr parserLog(new Opm::ParserLog);
         Opm::ParserPtr parser(new Opm::Parser);
         Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
@@ -297,7 +322,9 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
 
         Opm::PlyadsTable plyadsTable;
-        BOOST_CHECK_THROW(plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0), std::invalid_argument);
+        parserLog->clear();
+        BOOST_CHECK_NO_THROW(plyadsTable.initFORUNITTESTONLY(plyadsKeyword, /*tableIdx=*/0, parserLog));
+        BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
     }
 }
 
@@ -317,6 +344,7 @@ BOOST_AUTO_TEST_CASE(PvtoTable_Tests) {
         "23 24 25 26/\n"
         "/\n";
 
+    Opm::ParserLogPtr parserLog(new Opm::ParserLog);
     Opm::ParserPtr parser(new Opm::Parser);
     Opm::DeckConstPtr deck(parser->parseString(deckData));
     Opm::DeckKeywordConstPtr pvtoKeyword = deck->getKeyword("PVTO");
@@ -326,8 +354,8 @@ BOOST_AUTO_TEST_CASE(PvtoTable_Tests) {
     Opm::PvtoTable pvto1Table;
     Opm::PvtoTable pvto2Table;
 
-    pvto1Table.initFORUNITTESTONLY(deck->getKeyword("PVTO"), /*tableIdx=*/0);
-    pvto2Table.initFORUNITTESTONLY(deck->getKeyword("PVTO"), /*tableIdx=*/1);
+    pvto1Table.initFORUNITTESTONLY(deck->getKeyword("PVTO"), /*tableIdx=*/0, parserLog);
+    pvto2Table.initFORUNITTESTONLY(deck->getKeyword("PVTO"), /*tableIdx=*/1, parserLog);
 
     const auto pvto1OuterTable = pvto1Table.getOuterTable();
     const auto pvto2OuterTable = pvto2Table.getOuterTable();

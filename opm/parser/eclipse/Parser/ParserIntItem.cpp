@@ -52,7 +52,7 @@ namespace Opm {
         setDefault(defaultValue);
     }
 
-    ParserIntItem::ParserIntItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig)
+    ParserIntItem::ParserIntItem(const std::string& keywordName, const Json::JsonObject& jsonConfig) : ParserItem(keywordName, jsonConfig)
     {
         m_default = -1;
         if (jsonConfig.has_item("default")) 
@@ -83,7 +83,7 @@ namespace Opm {
     
 
     void ParserIntItem::inlineNew(std::ostream& os) const {
-        os << "new ParserIntItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserIntItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();
         os << ")";

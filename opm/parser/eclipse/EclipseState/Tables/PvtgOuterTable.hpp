@@ -40,18 +40,19 @@ namespace Opm {
          * \brief Read the per record table of the PVTG keyword and
          *        provide some convenience methods for it.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"P", "RV", "BG", "MUG"},
                              tableIdx,
-                             /*firstEntryOffset=*/0);
+                             /*firstEntryOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("P");
-            ParentType::checkMonotonic("P", /*isAscending=*/true);
-            ParentType::applyDefaultsLinear("RV");
-            ParentType::applyDefaultsLinear("BG");
-            ParentType::applyDefaultsLinear("MUG");
+            ParentType::checkNonDefaultable("P", parserLog);
+            ParentType::checkMonotonic("P", /*isAscending=*/true, parserLog);
+            ParentType::applyDefaultsLinear("RV", parserLog);
+            ParentType::applyDefaultsLinear("BG", parserLog);
+            ParentType::applyDefaultsLinear("MUG", parserLog);
         }
 
     public:

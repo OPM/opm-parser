@@ -57,8 +57,9 @@ BOOST_AUTO_TEST_CASE(size_noRecords_returnszero) {
 
 
 BOOST_AUTO_TEST_CASE(addRecord_onerecord_recordadded) {
+    ParserLogPtr parserLog(new ParserLog);
     DeckKeywordPtr deckKeyword(new DeckKeyword("KW"));
-    deckKeyword->addRecord(DeckRecordConstPtr(new DeckRecord()));
+    deckKeyword->addRecord(DeckRecordConstPtr(new DeckRecord(parserLog, "", -1)));
     BOOST_CHECK_EQUAL(1U, deckKeyword->size());
     for (auto iter = deckKeyword->begin(); iter != deckKeyword->end(); ++iter) {
         // 
@@ -67,16 +68,18 @@ BOOST_AUTO_TEST_CASE(addRecord_onerecord_recordadded) {
 }
 
 BOOST_AUTO_TEST_CASE(getRecord_onerecord_recordretured) {
+    ParserLogPtr parserLog(new ParserLog);
     DeckKeywordPtr deckKeyword(new DeckKeyword("KW"));
-    DeckRecordConstPtr deckRecord(new DeckRecord());
+    DeckRecordConstPtr deckRecord(new DeckRecord(parserLog, "", -1));
     deckKeyword->addRecord(deckRecord);
     BOOST_CHECK_EQUAL(deckRecord, deckKeyword->getRecord(0));
 }
 
 
 BOOST_AUTO_TEST_CASE(getRecord_outofrange_exceptionthrown) {
+    ParserLogPtr parserLog(new ParserLog);
     DeckKeywordPtr deckKeyword(new DeckKeyword("KW"));
-    DeckRecordConstPtr deckRecord(new DeckRecord());
+    DeckRecordConstPtr deckRecord(new DeckRecord(parserLog, "", -1));
     deckKeyword->addRecord(deckRecord);
     BOOST_CHECK_THROW(deckKeyword->getRecord(1), std::range_error);
 }

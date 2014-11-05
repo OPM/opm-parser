@@ -62,9 +62,10 @@ PVTO\n\
 
 
 static void check_parser(ParserPtr parser) {
+    ParserLogPtr parserLog(new ParserLog);
     DeckPtr deck =  parser->parseString(pvtoData);
     DeckKeywordConstPtr kw1 = deck->getKeyword("PVTO" , 0);
-    BOOST_CHECK_EQUAL(5U , kw1->size());
+    BOOST_CHECK_EQUAL(6U , kw1->size());
 
     DeckRecordConstPtr record0 = kw1->getRecord(0);
     DeckRecordConstPtr record1 = kw1->getRecord(1);
@@ -103,7 +104,7 @@ static void check_parser(ParserPtr parser) {
     BOOST_CHECK_EQUAL(2U , record4->size());
 
     Opm::PvtoTable pvtoTable;
-    pvtoTable.initFORUNITTESTONLY(kw1, /*tableIdx=*/0);
+    pvtoTable.initFORUNITTESTONLY(kw1, /*tableIdx=*/0, parserLog);
     const auto &outerTable = *pvtoTable.getOuterTable();
     const auto &innerTable0 = *pvtoTable.getInnerTable(0);
 

@@ -23,13 +23,15 @@
 #include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
 
 BOOST_AUTO_TEST_CASE(RawRecordGetRecordStringReturnsTrimmedString) {
-    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20                                       /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20                                       /", parserLog));
     const std::string& recordString = record->getRecordString();
     BOOST_CHECK_EQUAL("'NODIR '  'REVERS'  1  20", recordString);
 }
 
 BOOST_AUTO_TEST_CASE(RawRecordGetRecordsCorrectElementsReturned) {
-    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20                                       /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20                                       /", parserLog));
 
     BOOST_CHECK_EQUAL((unsigned) 4, record->size());
 
@@ -52,8 +54,9 @@ BOOST_AUTO_TEST_CASE(RawRecordIsCompleteRecordInCompleteRecordReturnsFalse) {
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_OperatorThis_OK) {
-    Opm::RawRecord record(" 'NODIR '  'REVERS'  1  20  /");
-    Opm::RawRecordPtr recordPtr(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecord record(" 'NODIR '  'REVERS'  1  20  /", parserLog);
+    Opm::RawRecordPtr recordPtr(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /", parserLog));
 
     BOOST_CHECK_EQUAL("'NODIR '", record.getItem(0));
     BOOST_CHECK_EQUAL("'REVERS'", record.getItem(1));
@@ -66,7 +69,8 @@ BOOST_AUTO_TEST_CASE(Rawrecord_OperatorThis_OK) {
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_PushFront_OK) {
-    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /", parserLog));
     record->push_front("String2");
     record->push_front("String1");
 
@@ -76,7 +80,8 @@ BOOST_AUTO_TEST_CASE(Rawrecord_PushFront_OK) {
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_size_OK) {
-    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord(" 'NODIR '  'REVERS'  1  20  /", parserLog));
 
     BOOST_CHECK_EQUAL(4U, record->size());
     record->push_front("String2");
@@ -85,26 +90,30 @@ BOOST_AUTO_TEST_CASE(Rawrecord_size_OK) {
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_sizeEmpty_OK) {
-    Opm::RawRecordPtr record(new Opm::RawRecord("/"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord("/", parserLog));
     BOOST_CHECK_EQUAL(0U, record->size());
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_spaceOnlyEmpty_OK) {
-    Opm::RawRecordPtr record(new Opm::RawRecord("   /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord("   /", parserLog));
     BOOST_CHECK_EQUAL("", record->getRecordString());
     BOOST_CHECK_EQUAL(0U, record->size());
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_noFileAndKeywordGiven_EmptyStringUsed) {
-    Opm::RawRecordPtr record(new Opm::RawRecord("32 33  /"));
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+    Opm::RawRecordPtr record(new Opm::RawRecord("32 33  /", parserLog));
     BOOST_CHECK_EQUAL("", record->getKeywordName());
     BOOST_CHECK_EQUAL("", record->getFileName());
 }
 
 BOOST_AUTO_TEST_CASE(Rawrecord_FileAndKeywordGiven_CorrectStringsReturned) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
     const std::string fileName = "/this/is/it";
     const std::string keywordName = "KEYWD";
-    Opm::RawRecordPtr record(new Opm::RawRecord("32 33  /", fileName, keywordName));
+    Opm::RawRecordPtr record(new Opm::RawRecord("32 33  /", parserLog, fileName, -1, keywordName));
     BOOST_CHECK_EQUAL(keywordName, record->getKeywordName());
     BOOST_CHECK_EQUAL(fileName, record->getFileName());
 }

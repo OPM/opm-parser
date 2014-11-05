@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <vector>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 
 namespace Opm {
@@ -29,7 +30,8 @@ namespace Opm {
 
 class FaultFace {
 public:
-    FaultFace(size_t nx , size_t ny , size_t nz,
+    FaultFace(ParserLogPtr parserLog, const std::string& fileName, int lineNumber,
+              size_t nx , size_t ny , size_t nz,
               size_t I1 , size_t I2,
               size_t J1 , size_t J2,
               size_t K1 , size_t K2,
@@ -40,7 +42,7 @@ public:
     FaceDir::DirEnum getDir() const;
     
 private:    
-    static void checkCoord(size_t dim , size_t l1 , size_t l2);
+    static bool checkCoord(ParserLogPtr parserLog, const std::string& fileName, int lineNumber, size_t dim , size_t l1 , size_t l2);
     FaceDir::DirEnum m_faceDir;
     std::vector<size_t> m_indexList;
 };

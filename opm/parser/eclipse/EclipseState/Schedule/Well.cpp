@@ -20,6 +20,7 @@
 #include <boost/date_time.hpp>
 
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
@@ -28,7 +29,7 @@
 namespace Opm {
 
     Well::Well(const std::string& name_, int headI, int headJ, double refDepth, Phase::PhaseEnum preferredPhase,
-               TimeMapConstPtr timeMap, size_t creationTimeStep)
+               TimeMapConstPtr timeMap, size_t creationTimeStep, ParserLogPtr parserLog)
         : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::OPEN)),
           m_isAvailableForGroupControl(new DynamicState<bool>(timeMap, true)),
           m_guideRate(new DynamicState<double>(timeMap, -1.0)),
@@ -36,7 +37,7 @@ namespace Opm {
           m_guideRateScalingFactor(new DynamicState<double>(timeMap, 1.0)),
           m_isProducer(new DynamicState<bool>(timeMap, true)) ,
           m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
-          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties() )),
+          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties(parserLog) )),
           m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
           m_groupName( new DynamicState<std::string>( timeMap , "" )),
           m_headI(headI),
@@ -50,7 +51,7 @@ namespace Opm {
     }
 
     Well::Well(const std::string& name_, int headI, int headJ, Phase::PhaseEnum preferredPhase,
-               TimeMapConstPtr timeMap, size_t creationTimeStep)
+               TimeMapConstPtr timeMap, size_t creationTimeStep, ParserLogPtr parserLog)
         : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::OPEN)),
           m_isAvailableForGroupControl(new DynamicState<bool>(timeMap, true)),
           m_guideRate(new DynamicState<double>(timeMap, -1.0)),
@@ -58,7 +59,7 @@ namespace Opm {
           m_guideRateScalingFactor(new DynamicState<double>(timeMap, 1.0)),
           m_isProducer(new DynamicState<bool>(timeMap, true)) ,
           m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
-          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties() )),
+          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties(parserLog) )),
           m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
           m_groupName( new DynamicState<std::string>( timeMap , "" )),
           m_headI(headI),

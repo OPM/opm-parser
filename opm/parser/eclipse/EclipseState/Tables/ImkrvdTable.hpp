@@ -36,7 +36,8 @@ namespace Opm {
          *        methods for it.
          */
         void init(Opm::DeckKeywordConstPtr keyword,
-                  int recordIdx)
+                  int recordIdx,
+                  Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"DEPTH",
@@ -48,17 +49,18 @@ namespace Opm {
                                      "KROCRITG",
                                      "KROCRITW" },
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("DEPTH");
-            ParentType::checkMonotonic("DEPTH", /*isAscending=*/true);
-            ParentType::applyDefaultsLinear("KRWMAX");
-            ParentType::applyDefaultsLinear("KRGMAX");
-            ParentType::applyDefaultsLinear("KROMAX");
-            ParentType::applyDefaultsLinear("KRWCRIT");
-            ParentType::applyDefaultsLinear("KRGCRIT");
-            ParentType::applyDefaultsLinear("KROCRITG");
-            ParentType::applyDefaultsLinear("KROCRITW");
+            ParentType::checkNonDefaultable("DEPTH", parserLog);
+            ParentType::checkMonotonic("DEPTH", /*isAscending=*/true, parserLog);
+            ParentType::applyDefaultsLinear("KRWMAX", parserLog);
+            ParentType::applyDefaultsLinear("KRGMAX", parserLog);
+            ParentType::applyDefaultsLinear("KROMAX", parserLog);
+            ParentType::applyDefaultsLinear("KRWCRIT", parserLog);
+            ParentType::applyDefaultsLinear("KRGCRIT", parserLog);
+            ParentType::applyDefaultsLinear("KROCRITG", parserLog);
+            ParentType::applyDefaultsLinear("KROCRITW", parserLog);
         }
 
     public:

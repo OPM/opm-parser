@@ -34,7 +34,7 @@ EclipseState makeState(const std::string& fileName, ParserLogPtr parserLog);
 EclipseState makeState(const std::string& fileName, ParserLogPtr parserLog) {
     ParserPtr parser(new Parser( ));
     boost::filesystem::path boxFile(fileName);
-    DeckPtr deck =  parser->parseFile(boxFile.string() , false);
+    DeckPtr deck =  parser->parseFile(boxFile.string());
     EclipseState state(deck, parserLog);
     return state;
 }
@@ -77,6 +77,7 @@ BOOST_AUTO_TEST_CASE( PERMX ) {
 BOOST_AUTO_TEST_CASE( PARSE_BOX_OK ) {
     ParserLogPtr parserLog(new ParserLog());
     EclipseState state = makeState("testdata/integration_tests/BOX/BOXTEST1", parserLog);
+    parserLog->printAll();
     std::shared_ptr<GridProperty<int> > satnum = state.getIntGridProperty("SATNUM");
     {
         size_t i,j,k;
@@ -132,7 +133,10 @@ BOOST_AUTO_TEST_CASE( INCOMPLETE_KEYWORD_BOX) {
 
 BOOST_AUTO_TEST_CASE( KEYWORD_BOX_TOO_SMALL) {
     ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK_THROW( makeState("testdata/integration_tests/BOX/BOXTEST3", parserLog) , std::invalid_argument);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(makeState("testdata/integration_tests/BOX/BOXTEST3", parserLog));
+    BOOST_CHECK_EQUAL(parserLog->numErrors(), 1);
 }
 
 

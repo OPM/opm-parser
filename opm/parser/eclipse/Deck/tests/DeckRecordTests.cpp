@@ -31,23 +31,27 @@
 using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(Initialize) {
-    BOOST_CHECK_NO_THROW(DeckRecord deckRecord);
+    ParserLogPtr parserLog(new ParserLog);
+    BOOST_CHECK_NO_THROW(DeckRecord deckRecord(parserLog, "", -1));
 }
 
 BOOST_AUTO_TEST_CASE(size_defaultConstructor_sizezero) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     BOOST_CHECK_EQUAL(0U, deckRecord.size());
 }
 
 BOOST_AUTO_TEST_CASE(addItem_singleItem_sizeone) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem);
     BOOST_CHECK_EQUAL(1U, deckRecord.size());
 }
 
 BOOST_AUTO_TEST_CASE(addItem_multipleItems_sizecorrect) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     DeckIntItemPtr intItem2(new DeckIntItem("TEST2"));
     DeckIntItemPtr intItem3(new DeckIntItem("TEST3"));
@@ -60,7 +64,8 @@ BOOST_AUTO_TEST_CASE(addItem_multipleItems_sizecorrect) {
 }
 
 BOOST_AUTO_TEST_CASE(addItem_sameItemTwoTimes_throws) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
 
     deckRecord.addItem(intItem1);
@@ -68,7 +73,8 @@ BOOST_AUTO_TEST_CASE(addItem_sameItemTwoTimes_throws) {
 }
 
 BOOST_AUTO_TEST_CASE(addItem_differentItemsSameName_throws) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     DeckIntItemPtr intItem2(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem1);
@@ -76,35 +82,40 @@ BOOST_AUTO_TEST_CASE(addItem_differentItemsSameName_throws) {
 }
 
 BOOST_AUTO_TEST_CASE(get_byIndex_returnsItem) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem1);
     BOOST_CHECK_NO_THROW(deckRecord.getItem(0U));
 }
 
 BOOST_AUTO_TEST_CASE(get_indexoutofbounds_throws) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem1);
     BOOST_CHECK_THROW(deckRecord.getItem(1), std::range_error);
 }
 
 BOOST_AUTO_TEST_CASE(get_byName_returnsItem) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem1);
     deckRecord.getItem("TEST");
 }
 
 BOOST_AUTO_TEST_CASE(get_byNameNonExisting_throws) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     deckRecord.addItem(intItem1);
     BOOST_CHECK_THROW(deckRecord.getItem("INVALID"), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(get_oneoftwo_returnscorrectitem) {
-    DeckRecord deckRecord;
+    ParserLogPtr parserLog(new ParserLog);
+    DeckRecord deckRecord(parserLog, "", -1);
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
     DeckIntItemPtr intItem2(new DeckIntItem("TEST2"));
     deckRecord.addItem(intItem1);
@@ -115,12 +126,13 @@ BOOST_AUTO_TEST_CASE(get_oneoftwo_returnscorrectitem) {
 
 
 BOOST_AUTO_TEST_CASE(StringsWithSpaceOK) {
+    auto parserLog = std::make_shared<Opm::ParserLog>();
+
     ParserStringItemPtr itemString(new ParserStringItem(std::string("STRINGITEM1")));
-    ParserRecordPtr record1(new ParserRecord());
-    RawRecordPtr rawRecord(new Opm::RawRecord(" ' VALUE ' /"));
+    ParserRecordPtr record1(new ParserRecord(parserLog));
+    RawRecordPtr rawRecord(new Opm::RawRecord(" ' VALUE ' /", parserLog));
     record1->addItem( itemString );
 
-    
     DeckRecordConstPtr deckRecord = record1->parse( rawRecord );
     BOOST_CHECK_EQUAL(" VALUE " , deckRecord->getItem(0)->getString(0));
 }

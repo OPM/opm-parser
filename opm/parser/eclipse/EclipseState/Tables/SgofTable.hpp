@@ -35,18 +35,20 @@ namespace Opm {
          *        methods for it.
          */
         void init(Opm::DeckKeywordConstPtr keyword,
-                  int recordIdx)
+                  int recordIdx,
+                  Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"SG", "KRG", "KROG", "PCOG"},
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("SG");
-            ParentType::checkMonotonic("SG", /*isAscending=*/true);
-            ParentType::applyDefaultsLinear("KRG");
-            ParentType::applyDefaultsLinear("KROG");
-            ParentType::applyDefaultsLinear("PCOG");
+            ParentType::checkNonDefaultable("SG", parserLog);
+            ParentType::checkMonotonic("SG", /*isAscending=*/true, parserLog);
+            ParentType::applyDefaultsLinear("KRG", parserLog);
+            ParentType::applyDefaultsLinear("KROG", parserLog);
+            ParentType::applyDefaultsLinear("PCOG", parserLog);
         }
 
     public:
@@ -54,8 +56,8 @@ namespace Opm {
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
-        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
-        { init(keyword, tableIdx); }
+        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx, Opm::ParserLogPtr parserLog)
+        { init(keyword, tableIdx, parserLog); }
 #endif
 
         using ParentType::numTables;

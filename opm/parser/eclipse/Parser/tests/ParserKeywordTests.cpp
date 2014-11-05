@@ -32,31 +32,36 @@
 using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(construct_withname_nameSet) {
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized("BPR");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "BPR");
     BOOST_CHECK_EQUAL(parserKeyword->getName(), "BPR");
 }
 
 BOOST_AUTO_TEST_CASE(NamedInit) {
+    ParserLogPtr parserLog(new ParserLog());
     std::string keyword("KEYWORD");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFixedSized(keyword, (size_t) 100);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, keyword, (size_t) 100);
     BOOST_CHECK_EQUAL(parserKeyword->getName(), keyword);
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeyword_default_SizeTypedefault) {
+    ParserLogPtr parserLog(new ParserLog());
     std::string keyword("KEYWORD");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(keyword);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, keyword);
     BOOST_CHECK_EQUAL(parserKeyword->getSizeType() , SLASH_TERMINATED);
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeyword_withSize_SizeTypeFIXED) {
+    ParserLogPtr parserLog(new ParserLog());
     std::string keyword("KEYWORD");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFixedSized(keyword, (size_t) 100);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, keyword, (size_t) 100);
     BOOST_CHECK_EQUAL(parserKeyword->getSizeType() , FIXED);
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeyword_withOtherSize_SizeTypeOTHER) {
+    ParserLogPtr parserLog(new ParserLog());
     std::string keyword("KEYWORD");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createTable(keyword, "EQUILDIMS" , "NTEQUIL");
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createTable(parserLog, keyword, "EQUILDIMS" , "NTEQUIL");
     const std::pair<std::string,std::string>& sizeKW = parserKeyword->getSizeDefinitionPair();
     BOOST_CHECK_EQUAL(OTHER_KEYWORD_IN_DECK , parserKeyword->getSizeType() );
     BOOST_CHECK_EQUAL("EQUILDIMS", sizeKW.first );
@@ -100,7 +105,8 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_validInternalName) {
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeywordMatches) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("HELLO", (size_t) 1);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "HELLO", (size_t) 1);
     parserKeyword->clearDeckNames();
     parserKeyword->setMatchRegex("WORLD.+");
     BOOST_CHECK_EQUAL( false , parserKeyword->matches("HELLO"));
@@ -111,7 +117,8 @@ BOOST_AUTO_TEST_CASE(ParserKeywordMatches) {
 }
 
 BOOST_AUTO_TEST_CASE(AddDataKeyword_correctlyConfigured) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("PORO", (size_t) 1);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "PORO", (size_t) 1);
     ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem( "ACTNUM" , ALL));
     BOOST_CHECK_EQUAL( false , parserKeyword->isDataKeyword() );
     parserKeyword->addDataItem( item );
@@ -123,13 +130,15 @@ BOOST_AUTO_TEST_CASE(AddDataKeyword_correctlyConfigured) {
 }
 
 BOOST_AUTO_TEST_CASE(WrongConstructor_addDataItem_throws) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("PORO");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "PORO");
     ParserIntItemConstPtr dataItem = ParserIntItemConstPtr(new ParserIntItem( "ACTNUM" , ALL ));
     BOOST_CHECK_THROW( parserKeyword->addDataItem( dataItem ) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(MixingDataAndItems_throws1) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("PORO", (size_t) 1);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "PORO", (size_t) 1);
     ParserIntItemConstPtr dataItem = ParserIntItemConstPtr(new ParserIntItem( "ACTNUM" , ALL));
     ParserIntItemConstPtr item     = ParserIntItemConstPtr(new ParserIntItem( "XXX" , ALL));
     parserKeyword->addDataItem( dataItem );
@@ -138,7 +147,8 @@ BOOST_AUTO_TEST_CASE(MixingDataAndItems_throws1) {
 }
 
 BOOST_AUTO_TEST_CASE(MixingDataAndItems_throws2) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("PORO", (size_t) 1);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "PORO", (size_t) 1);
     ParserIntItemConstPtr dataItem = ParserIntItemConstPtr(new ParserIntItem( "ACTNUM" , ALL));
     ParserIntItemConstPtr item     = ParserIntItemConstPtr(new ParserIntItem( "XXX" , ALL));
     parserKeyword->addItem( item );
@@ -146,7 +156,8 @@ BOOST_AUTO_TEST_CASE(MixingDataAndItems_throws2) {
 }
 
 BOOST_AUTO_TEST_CASE(DefaultConstructur_setDescription_canReadBack) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("BPR");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "BPR");
     std::string description("This is the description");
     parserKeyword->setDescription(description);
     BOOST_CHECK_EQUAL( description, parserKeyword->getDescription());
@@ -155,13 +166,15 @@ BOOST_AUTO_TEST_CASE(DefaultConstructur_setDescription_canReadBack) {
 /*****************************************************************/
 /* json */
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"XXX\", \"sections\":[], \"size\" : 0}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     BOOST_CHECK_EQUAL("XXX" , parserKeyword->getName());
     BOOST_CHECK_EQUAL( true , parserKeyword->hasFixedSize() );
 }
 
 BOOST_AUTO_TEST_CASE(ConstructMultiNameFromJsonObject) {
+    ParserLogPtr parserLog(new ParserLog());
     const auto jsonString =
         "{"
         "  \"name\": \"XXX\" ,"
@@ -174,7 +187,7 @@ BOOST_AUTO_TEST_CASE(ConstructMultiNameFromJsonObject) {
         "  ]"
         "}";
     Json::JsonObject jsonObject(jsonString);
-    auto parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    auto parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     BOOST_CHECK_EQUAL("XXX" , parserKeyword->getName());
     BOOST_CHECK(parserKeyword->matches("XXA"));
     BOOST_CHECK(parserKeyword->matches("XXB"));
@@ -183,22 +196,25 @@ BOOST_AUTO_TEST_CASE(ConstructMultiNameFromJsonObject) {
     BOOST_CHECK(!parserKeyword->matches("XXX"));
 }
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObjectWithActionInvalidThrows) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"XXX\", \"sections\":[], \"size\" : 0, \"action\" : \"WhatEver?\"}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObjectWithAction) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"XXX\", \"sections\":[], \"size\" : 0, \"action\" : \"IGNORE\"}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     BOOST_CHECK(parserKeyword->matches("XXX"));
     BOOST_CHECK(!parserKeyword->hasMultipleDeckNames());
     BOOST_CHECK_EQUAL( IGNORE , parserKeyword->getAction() );
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withSize) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" :[{\"name\":\"ItemX\" , \"size_type\":\"SINGLE\" , \"value_type\" : \"DOUBLE\"}]}");
 
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     BOOST_CHECK_EQUAL("BPR" , parserKeyword->getName());
     BOOST_CHECK_EQUAL( true , parserKeyword->hasFixedSize() );
     BOOST_CHECK_EQUAL( 100U , parserKeyword->getFixedSize() );
@@ -207,25 +223,29 @@ BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withSize) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_missingItemThrows) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100}");
-    BOOST_CHECK_THROW( ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW( ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_missingItemActionIgnoreOK) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100, \"action\" : \"IGNORE\"}");
-    BOOST_CHECK_NO_THROW( ParserKeyword::createFromJson(jsonObject));
+    BOOST_CHECK_NO_THROW( ParserKeyword::createFromJson(parserLog, jsonObject));
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_nosize_notItems_OK) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     BOOST_CHECK_EQUAL( true , parserKeyword->hasFixedSize() );
     BOOST_CHECK_EQUAL( 0U , parserKeyword->getFixedSize());
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withSizeOther) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : {\"keyword\" : \"Bjarne\" , \"item\": \"BjarneIgjen\"},  \"items\" :[{\"name\":\"ItemX\" ,  \"value_type\" : \"DOUBLE\"}]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     const std::pair<std::string,std::string>& sizeKW = parserKeyword->getSizeDefinitionPair();
     BOOST_CHECK_EQUAL("BPR" , parserKeyword->getName());
     BOOST_CHECK_EQUAL( false , parserKeyword->hasFixedSize() );
@@ -235,39 +255,45 @@ BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withSizeOther) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_missingName_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"nameXX\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 /*
   "items": [{"name" : "I" , "size_type" : "SINGLE" , "value_type" : "int"}]
 */
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_invalidItems_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : 100}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_ItemMissingName_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : [{\"nameX\" : \"I\"  , \"value_type\" : \"INT\"}]}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_ItemMissingValueType_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"SINGLE\" , \"Xvalue_type\" : \"INT\"}]}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_ItemInvalidEnum_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject1("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"XSINGLE\" , \"value_type\" : \"INT\"}]}");
     Json::JsonObject jsonObject2("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"SINGLE\" , \"value_type\" : \"INTX\"}]}");
     
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject1) , std::invalid_argument);
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject2) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject1) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject2) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObjectItemsOK) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" : [{\"name\" : \"I\", \"value_type\" : \"INT\"}]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     ParserRecordConstPtr record = parserKeyword->getRecord();
     ParserItemConstPtr item = record->get( 0 );
     BOOST_CHECK_EQUAL( 1U , record->size( ) );
@@ -276,24 +302,28 @@ BOOST_AUTO_TEST_CASE(ConstructFromJsonObjectItemsOK) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_sizeFromOther) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"EQUILX\", \"sections\":[\"PROPS\"], \"size\" : {\"keyword\":\"EQLDIMS\" , \"item\" : \"NTEQUL\"},  \"items\" :[{\"name\":\"ItemX\" ,\"value_type\" : \"DOUBLE\"}]}");
-    BOOST_CHECK_NO_THROW( ParserKeyword::createFromJson(jsonConfig) );
+    BOOST_CHECK_NO_THROW( ParserKeyword::createFromJson(parserLog, jsonConfig) );
 }
 
 BOOST_AUTO_TEST_CASE(Default_NotData) {
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized("BPR");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "BPR");
     BOOST_CHECK_EQUAL( false , parserKeyword->isDataKeyword());
 }
 
 
 BOOST_AUTO_TEST_CASE(AddDataKeywordFromJson_defaultThrows) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"ACTNUM\", \"sections\":[\"GRID\"], \"data\" : {\"value_type\": \"INT\" , \"default\" : 100}}");
-    BOOST_CHECK_THROW( ParserKeyword::createFromJson(jsonConfig) , std::invalid_argument);
+    BOOST_CHECK_THROW( ParserKeyword::createFromJson(parserLog, jsonConfig) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(AddDataKeywordFromJson_correctlyConfigured) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"ACTNUM\", \"sections\":[\"GRID\"], \"data\" : {\"value_type\": \"INT\"}}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonConfig);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonConfig);
     ParserRecordConstPtr parserRecord = parserKeyword->getRecord();
     ParserItemConstPtr item = parserRecord->get(0);
 
@@ -308,13 +338,15 @@ BOOST_AUTO_TEST_CASE(AddDataKeywordFromJson_correctlyConfigured) {
 }
 
 BOOST_AUTO_TEST_CASE(AddkeywordFromJson_numTables_incoorect_throw) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"PVTG\", \"sections\":[\"PROPS\"], \"num_tables\" : 100}");
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonConfig) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonConfig) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(AddkeywordFromJson_isTableCollection) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonConfig("{\"name\": \"PVTG\", \"sections\":[\"PROPS\"], \"num_tables\" : {\"keyword\": \"TABDIMS\" , \"item\" : \"NTPVT\"} , \"items\" : [{\"name\" : \"data\", \"value_type\" : \"DOUBLE\"}]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonConfig);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonConfig);
     ParserRecordConstPtr parserRecord = parserKeyword->getRecord();
 
 
@@ -324,31 +356,35 @@ BOOST_AUTO_TEST_CASE(AddkeywordFromJson_isTableCollection) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_InvalidSize_throws) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject1("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : \"string\" , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"SINGLE\" , \"value_type\" : \"INT\"}]}");
     Json::JsonObject jsonObject2("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : [1,2,3]    , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"SINGLE\" , \"value_type\" : \"INT\"}]}");
     
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject1) , std::invalid_argument);
-    BOOST_CHECK_THROW(ParserKeyword::createFromJson(jsonObject2) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject1) , std::invalid_argument);
+    BOOST_CHECK_THROW(ParserKeyword::createFromJson(parserLog, jsonObject2) , std::invalid_argument);
 
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_SizeUNKNOWN_OK) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject1("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : \"UNKNOWN\" , \"items\" : [{\"name\" : \"I\" , \"size_type\" : \"SINGLE\" , \"value_type\" : \"INT\"}]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject1);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject1);
     
     BOOST_CHECK_EQUAL( UNKNOWN , parserKeyword->getSizeType() );
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_WithDescription_DescriptionPropertyShouldBePopulated) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"description\" : \"Description\"}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
 
     BOOST_CHECK_EQUAL( "Description", parserKeyword->getDescription() );
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_WithoutDescription_DescriptionPropertyShouldBeEmpty) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"]}");
-    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordConstPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
 
     BOOST_CHECK_EQUAL( "", parserKeyword->getDescription() );
 }
@@ -356,35 +392,41 @@ BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_WithoutDescription_DescriptionPrope
 /* </Json> */
 /*****************************************************************/
 BOOST_AUTO_TEST_CASE(getFixedSize_sizeObjectHasFixedSize_sizeReturned) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("JA", (size_t) 3);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "JA", (size_t) 3);
     BOOST_CHECK_EQUAL(3U, parserKeyword->getFixedSize());
 
 }
 
 BOOST_AUTO_TEST_CASE(getFixedSize_sizeObjectDoesNotHaveFixedSizeObjectSet_ExceptionThrown) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA");
     BOOST_CHECK_THROW(parserKeyword->getFixedSize(), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE(hasFixedSize_hasFixedSizeObject_returnstrue) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized("JA", (size_t) 2);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFixedSized(parserLog, "JA", (size_t) 2);
     BOOST_CHECK(parserKeyword->hasFixedSize());
 }
 
 BOOST_AUTO_TEST_CASE(hasFixedSize_sizeObjectDoesNotHaveFixedSize_returnsfalse) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA");
     BOOST_CHECK(!parserKeyword->hasFixedSize());
 }
 
 /******/
 /* Tables: */
 BOOST_AUTO_TEST_CASE(DefaultIsNot_TableKeyword) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA");
     BOOST_CHECK(!parserKeyword->isTableCollection());
 }
 
 BOOST_AUTO_TEST_CASE(ConstructorIsTableCollection) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createTable("JA" , "TABDIMS" , "NTPVT" , INTERNALIZE , true);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createTable(parserLog, "JA" , "TABDIMS" , "NTPVT" , INTERNALIZE , true);
     const std::pair<std::string,std::string>& sizeKW = parserKeyword->getSizeDefinitionPair();
     BOOST_CHECK(parserKeyword->isTableCollection());
     BOOST_CHECK(!parserKeyword->hasFixedSize());
@@ -395,9 +437,10 @@ BOOST_AUTO_TEST_CASE(ConstructorIsTableCollection) {
 }
 
 BOOST_AUTO_TEST_CASE(ParseEmptyRecord) {
-    ParserKeywordPtr tabdimsKeyword = ParserKeyword::createFixedSized("TEST" , 1);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr tabdimsKeyword = ParserKeyword::createFixedSized(parserLog, "TEST" , 1);
     ParserIntItemConstPtr item(new ParserIntItem(std::string("ITEM") , ALL));
-    RawKeywordPtr rawkeyword(new RawKeyword( tabdimsKeyword->getName() , "FILE" , 10U , 1));
+    RawKeywordPtr rawkeyword(new RawKeyword( tabdimsKeyword->getName() , "FILE" , 10U, parserLog, 1));
 
     BOOST_CHECK_EQUAL( Raw::FIXED , rawkeyword->getSizeType());
     rawkeyword->addRawRecordString("/");
@@ -416,19 +459,22 @@ BOOST_AUTO_TEST_CASE(ParseEmptyRecord) {
 /*****************************************************************/
 /* Action value */
 BOOST_AUTO_TEST_CASE(DefaultActionISINTERNALIZE) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA");
     BOOST_CHECK_EQUAL(INTERNALIZE , parserKeyword->getAction());
 }
 
 BOOST_AUTO_TEST_CASE(CreateWithAction) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA" , UNKNOWN , IGNORE);
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA" , UNKNOWN , IGNORE);
     BOOST_CHECK_EQUAL(IGNORE , parserKeyword->getAction());
 }
 
 /*****************************************************************/
 /* Dimension */
 BOOST_AUTO_TEST_CASE(ParseKeywordHasDimensionCorrect) {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("JA");
+    ParserLogPtr parserLog(new ParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "JA");
     ParserIntItemConstPtr itemI(new ParserIntItem("I", SINGLE));
     ParserDoubleItemPtr item2(new ParserDoubleItem("ID", SINGLE));
     
@@ -445,8 +491,9 @@ BOOST_AUTO_TEST_CASE(ParseKeywordHasDimensionCorrect) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withDimension) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" :[{\"name\":\"ItemX\" , \"size_type\":\"SINGLE\" , \"value_type\" : \"DOUBLE\" , \"dimension\" : \"Length*Length/Time\"}]}");
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     ParserRecordConstPtr record = parserKeyword->getRecord();
     ParserItemConstPtr item = record->get("ItemX");      
 
@@ -461,8 +508,9 @@ BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withDimension) {
 }
 
 BOOST_AUTO_TEST_CASE(ConstructFromJsonObject_withDimensionList) {
+    ParserLogPtr parserLog(new ParserLog());
     Json::JsonObject jsonObject("{\"name\": \"BPR\", \"sections\":[\"SUMMARY\"], \"size\" : 100 , \"items\" :[{\"name\":\"ItemX\" , \"size_type\":\"ALL\" , \"value_type\" : \"DOUBLE\" , \"dimension\" : [\"Length*Length/Time\" , \"Time\", \"1\"]}]}");
-    ParserKeywordPtr parserKeyword = ParserKeyword::createFromJson(jsonObject);
+    ParserKeywordPtr parserKeyword = ParserKeyword::createFromJson(parserLog, jsonObject);
     ParserRecordConstPtr record = parserKeyword->getRecord();
     ParserItemConstPtr item = record->get("ItemX");      
 

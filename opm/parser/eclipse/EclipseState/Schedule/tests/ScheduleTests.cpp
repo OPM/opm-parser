@@ -139,10 +139,11 @@ BOOST_AUTO_TEST_CASE(CreateSchedule_DeckWithoutGRUPTREE_HasRootGroupTreeNodeForT
 
 
 BOOST_AUTO_TEST_CASE(CreateSchedule_DeckWithGRUPTREE_HasRootGroupTreeNodeForTimeStepZero) {
+    ParserLogPtr parserLog(new ParserLog);
     DeckPtr deck = createDeck();
     DeckKeywordPtr gruptreeKeyword(new DeckKeyword("GRUPTREE"));
     
-    DeckRecordPtr recordChildOfField(new DeckRecord());
+    DeckRecordPtr recordChildOfField(new DeckRecord(parserLog, "", -1));
     DeckStringItemPtr itemChild1(new DeckStringItem("CHILD_GROUP"));
     itemChild1->push_back("BARNET");
     DeckStringItemPtr itemParent1(new DeckStringItem("PARENT_GROUP"));

@@ -37,24 +37,32 @@ namespace Opm {
      * exception is thrown.
      * 
      */
-    RawRecord::RawRecord(const std::string& singleRecordString, const std::string& fileName, const std::string& keywordName) : m_fileName(fileName), m_keywordName(keywordName){
+    RawRecord::RawRecord(const std::string& singleRecordString, ParserLogPtr parserLog, const std::string& fileName, int lineNumber, const std::string& keywordName)
+        : m_parserLog(parserLog), m_fileName(fileName), m_lineNumber(lineNumber), m_keywordName(keywordName){
         if (isTerminatedRecordString(singleRecordString)) {
             setRecordString(singleRecordString);
             splitSingleRecordString();
         } else {
-            throw std::invalid_argument("Input string is not a complete record string,"
-                    " offending string: " + singleRecordString);
+            parserLog->addError(m_fileName, m_lineNumber,
+                                "Input string is not a complete record string.");
         }
     }
     
     const std::string& RawRecord::getFileName() const {
         return m_fileName;
     }
-    
+
+    int RawRecord::getLineNumber() const {
+        return m_lineNumber;
+    }
+
     const std::string& RawRecord::getKeywordName() const {
         return m_keywordName;
     }
-    
+
+    ParserLogPtr RawRecord::getParserLog() const {
+        return m_parserLog;
+    }
 
     std::string RawRecord::pop_front() {
         std::string front = m_recordItems.front();

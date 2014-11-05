@@ -69,8 +69,8 @@ namespace Opm
 
 
 
-    ParserDoubleItem::ParserDoubleItem(const Json::JsonObject& jsonConfig) :
-            ParserItem(jsonConfig)
+    ParserDoubleItem::ParserDoubleItem(const std::string& keywordName, const Json::JsonObject& jsonConfig)
+        : ParserItem(keywordName, jsonConfig)
     {
         m_default = std::numeric_limits<double>::quiet_NaN();
         if (jsonConfig.has_item("default")) 
@@ -96,7 +96,7 @@ namespace Opm
 
     void ParserDoubleItem::push_backDimension(const std::string& dimension) {
         if ((sizeType() == SINGLE) && (m_dimensions.size() > 0))
-            throw std::invalid_argument("Internal error - can not add more than one dimension to a Item os size 1");
+            throw std::invalid_argument("Internal error - can not add more than one dimension to an item of size 1");
         
         m_dimensions.push_back( dimension );
     }
@@ -122,7 +122,7 @@ namespace Opm
     }
     
     void ParserDoubleItem::inlineNew(std::ostream& os) const {
-        os << "new ParserDoubleItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserDoubleItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();
         os << ")";

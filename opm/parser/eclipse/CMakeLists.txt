@@ -11,6 +11,7 @@ add_subdirectory(EclipseState/Util/tests)
 add_subdirectory( Applications )
 
 set( rawdeck_source 
+Parser/ParserLog.cpp 
 RawDeck/StarToken.cpp
 RawDeck/RawKeyword.cpp 
 RawDeck/RawRecord.cpp )
@@ -36,7 +37,6 @@ set( parser_source
 Parser/ParserEnums.cpp
 Parser/ParserKeyword.cpp 
 Parser/Parser.cpp 
-Parser/ParserLog.cpp 
 Parser/ParserRecord.cpp
 Parser/ParserItem.cpp
 Parser/ParserIntItem.cpp  

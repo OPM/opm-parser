@@ -30,18 +30,24 @@ namespace Opm {
         m_timeList.push_back( boost::posix_time::ptime(startDate) );
     }
 
-    TimeMap::TimeMap(Opm::DeckConstPtr deck) {
-        // The default start date is not specified in the Eclipse
-        // reference manual. We hence just assume it is same as for
-        // the START keyword for Eclipse R100, i.e., January 1st,
-        // 1983...
+    TimeMap::TimeMap(Opm::DeckConstPtr deck, ParserLogPtr parserLog) {
+        // The default start date is not specified in the Eclipse reference manual. We
+        // hence just assume it is same as for the START keyword for Eclipse-100, i.e.,
+        // January 1st, 1983...
         boost::posix_time::ptime startTime(boost::gregorian::date(1983, 1, 1));
 
         // use the 'START' keyword to find out the start date (if the
         // keyword was specified)
         if (deck->hasKeyword("START")) {
             Opm::DeckKeywordConstPtr keyword = deck->getKeyword("START");
-            startTime = timeFromEclipse(keyword->getRecord(/*index=*/0));
+
+            try {
+                startTime = timeFromEclipse(keyword->getRecord(/*index=*/0));
+            } catch (const std::exception& e) {
+                std::string msg = "Cannot convert to a date: "+std::string(e.what())+". Using 01-JAN-1983.";
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), msg);
+                startTime = boost::posix_time::ptime(boost::gregorian::date(1983, 1, 1));
+            }
         }
 
         m_timeList.push_back( startTime );
@@ -61,9 +67,9 @@ namespace Opm {
             }
 
             if (keyword->name() == "TSTEP")
-                addFromTSTEPKeyword(keyword);
+                addFromTSTEPKeyword(keyword, parserLog);
             else if (keyword->name() == "DATES")
-                addFromDATESKeyword(keyword);
+                addFromDATESKeyword(keyword, parserLog);
         }
     }
     
@@ -147,47 +153,56 @@ namespace Opm {
     }
 
     boost::posix_time::ptime TimeMap::timeFromEclipse(DeckRecordConstPtr dateRecord) {
-        static const std::string errorMsg("The datarecord must consist of the for values "
+        static const std::string errorMsg("The date record must consist of the for values "
                                           "\"DAY(int), MONTH(string), YEAR(int), TIME(string)\".\n");
-        if (dateRecord->size() != 4) {
-            throw std::invalid_argument( errorMsg);
-        }
+        if (dateRecord->size() != 4)
+            throw std::invalid_argument(errorMsg);
 
         DeckItemConstPtr dayItem = dateRecord->getItem( 0 );
         DeckItemConstPtr monthItem = dateRecord->getItem( 1 );
         DeckItemConstPtr yearItem = dateRecord->getItem( 2 );
         DeckItemConstPtr timeItem = dateRecord->getItem( 3 );
 
-        try {
-            int day = dayItem->getInt(0);
-            const std::string& month = monthItem->getString(0);
-            int year = yearItem->getInt(0);
-            std::string eclipseTimeString = timeItem->getString(0);
+        int day = dayItem->getInt(0);
+        const std::string& month = monthItem->getString(0);
+        int year = yearItem->getInt(0);
+        std::string eclipseTimeString = timeItem->getString(0);
 
-            return TimeMap::timeFromEclipse(day, month, year, eclipseTimeString);
-        } catch (...) {
-            throw std::invalid_argument( errorMsg );
-        }
+        return TimeMap::timeFromEclipse(day, month, year, eclipseTimeString);
     }
 
-    void TimeMap::addFromDATESKeyword( DeckKeywordConstPtr DATESKeyword ) {
+    void TimeMap::addFromDATESKeyword(DeckKeywordConstPtr DATESKeyword, ParserLogPtr parserLog) {
         if (DATESKeyword->name() != "DATES")
             throw std::invalid_argument("Method requires DATES keyword input.");
 
         for (size_t recordIndex = 0; recordIndex < DATESKeyword->size(); recordIndex++) {
             DeckRecordConstPtr record = DATESKeyword->getRecord( recordIndex );
-            boost::posix_time::ptime nextTime = TimeMap::timeFromEclipse( record );
-            addTime( nextTime );
+            boost::posix_time::ptime nextTime;
+            try {
+                nextTime = TimeMap::timeFromEclipse( record );
+            } catch (const std::exception& e) {
+                std::string msg("Cannot convert record to date: "+std::string(e.what())+". Ignoring.");
+                parserLog->addError(record->getFileName(), record->getLineNumber(), msg);
+                continue;
+            }
+
+            if (nextTime > m_timeList.back())
+                addTime( nextTime );
+            else {
+                std::string msg("Time steps must be specified in strictly increasing order. Last "
+                                "time step starts at "+boost::posix_time::to_iso_string(m_timeList.back())+". Ignoring.");
+                parserLog->addError(record->getFileName(), record->getLineNumber(), msg);
+            }
         }
     }
 
-    void TimeMap::addFromTSTEPKeyword( DeckKeywordConstPtr TSTEPKeyword ) {
+    void TimeMap::addFromTSTEPKeyword(DeckKeywordConstPtr TSTEPKeyword, ParserLogPtr parserLog) {
         if (TSTEPKeyword->name() != "TSTEP")
             throw std::invalid_argument("Method requires TSTEP keyword input.");
         {
             DeckRecordConstPtr record = TSTEPKeyword->getRecord( 0 );
             DeckItemConstPtr item = record->getItem( 0 );
-            
+
             for (size_t itemIndex = 0; itemIndex < item->size(); itemIndex++) {
                 double days = item->getRawDouble( itemIndex );
                 long int wholeSeconds = static_cast<long int>(days * 24*60*60);
@@ -195,7 +210,15 @@ namespace Opm {
                 boost::posix_time::time_duration step =
                     boost::posix_time::seconds(wholeSeconds) +
                     boost::posix_time::milliseconds(milliSeconds);
-                addTStep( step );
+
+                if (wholeSeconds <= 0) {
+                    std::string msg("Time steps must be specified in strictly increasing order. "
+                                    "Time step has length of "+std::to_string((long long) wholeSeconds)
+                                    +" seconds. Ignoring.");
+                    parserLog->addError(TSTEPKeyword->getFileName(), TSTEPKeyword->getLineNumber(), msg);
+                }
+                else
+                    addTStep( step );
             }
         }
     } 

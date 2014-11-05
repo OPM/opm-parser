@@ -22,6 +22,8 @@
 #include <boost/test/test_tools.hpp>
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState/checkDeck.hpp>
+#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
@@ -33,14 +35,15 @@
 using namespace Opm;
 
 static ParserPtr createWWCTParser() {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("WWCT");
+    ParserPtr parser(new Parser());
+    ParserLogPtr parserLog = parser->getParserLog();
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "WWCT");
     {
         ParserRecordPtr wwctRecord = parserKeyword->getRecord();
         wwctRecord->addItem(ParserStringItemConstPtr(new ParserStringItem("WELL", ALL)));
     }
-    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized("SUMMARY" , (size_t) 0);
+    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized(parserLog, "SUMMARY" , (size_t) 0);
 
-    ParserPtr parser(new Parser());
     parser->addParserKeyword(parserKeyword);
     parser->addParserKeyword(summaryKeyword);
     return parser;
@@ -124,15 +127,16 @@ BOOST_AUTO_TEST_CASE(parser_internal_name_vs_deck_name) {
 }
 
 static ParserPtr createBPRParser() {
-    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized("BPR");
+    ParserPtr parser(new Parser());
+    ParserLogPtr parserLog(parser->getParserLog());
+    ParserKeywordPtr parserKeyword = ParserKeyword::createDynamicSized(parserLog, "BPR");
     {
         ParserRecordPtr bprRecord = parserKeyword->getRecord();
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("I", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("J", SINGLE)));
         bprRecord->addItem(ParserIntItemConstPtr(new ParserIntItem("K", SINGLE)));
     }
-    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized("SUMMARY" , (size_t) 0);
-    ParserPtr parser(new Parser());
+    ParserKeywordPtr summaryKeyword = ParserKeyword::createFixedSized(parserLog, "SUMMARY" , (size_t) 0);
     parser->addParserKeyword(parserKeyword);
     parser->addParserKeyword(summaryKeyword);
     return parser;
@@ -203,17 +207,14 @@ BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_dataiscorrect) {
 
 
 /***************** Testing non-recognized keywords ********************/
-BOOST_AUTO_TEST_CASE(parse_unknownkeywordWithnonstrictparsing_keywordmarked) {
+BOOST_AUTO_TEST_CASE(parse_unknownkeyword) {
     ParserPtr parser(new Parser());
-    DeckPtr deck =  parser->parseFile("testdata/integration_tests/someobscureelements.data", false);
+    DeckPtr deck =  parser->parseFile("testdata/integration_tests/someobscureelements.data");
     BOOST_CHECK_EQUAL(4U, deck->size());
     DeckKeywordConstPtr unknown = deck->getKeyword("GRUDINT");
     BOOST_CHECK(!unknown->isKnown());
-}
-
-BOOST_AUTO_TEST_CASE(parse_unknownkeywordWithstrictparsing_exceptionthrown) {
-    ParserPtr parser(new Parser());
-    BOOST_CHECK_THROW( parser->parseFile("testdata/integration_tests/someobscureelements.data", true), std::invalid_argument);
+    ParserLogPtr parserLog(new ParserLog());
+    BOOST_CHECK(!Opm::checkDeck(deck, parserLog, Opm::UnknownKeywords));
 }
 
 /*********************Testing truncated (default) records ***************************/

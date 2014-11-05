@@ -65,8 +65,9 @@ namespace Opm {
         class InitPORV : public GridPropertyBasePostProcessor<double>
         {
         public:
-            InitPORV(const EclipseState& eclipseState) : 
-                m_eclipseState( eclipseState )
+            InitPORV(const EclipseState& eclipseState, ParserLogPtr parserLog) : 
+                m_eclipseState( eclipseState ),
+                m_parserLog(parserLog)
             { }
             
             
@@ -81,29 +82,32 @@ namespace Opm {
                 if (porv->containsNaN()) {
                     auto poro = m_eclipseState.getDoubleGridProperty("PORO");
                     auto ntg = m_eclipseState.getDoubleGridProperty("NTG");   
-                    if (poro->containsNaN())
-                        throw std::logic_error("Do not have information for the PORV keyword - some defaulted values in PORO");
-                    {
-                        for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
-                            if (std::isnan(porv->iget(globalIndex))) {
-                                double cell_poro = poro->iget(globalIndex);
-                                double cell_ntg = ntg->iget(globalIndex);
-                                double cell_volume = grid->getCellVolume(globalIndex);
-                                porv->iset( globalIndex , cell_poro * cell_volume * cell_ntg);
-                            }
+                    if (poro->containsNaN()) {
+                        std::string msg("PORV cannot be calculated because defaulted values were detected in PORO");
+                        m_parserLog->addError("", -1, msg);
+                        return;
+                    }
+
+                    for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
+                        if (std::isnan(porv->iget(globalIndex))) {
+                            double cell_poro = poro->iget(globalIndex);
+                            double cell_ntg = ntg->iget(globalIndex);
+                            double cell_volume = grid->getCellVolume(globalIndex);
+                            porv->iset( globalIndex , cell_poro * cell_volume * cell_ntg);
                         }
-                    } 
+                    }
                 }
                 
                 if (m_eclipseState.hasDoubleGridProperty("MULTPV")) {
                     auto multpv = m_eclipseState.getDoubleGridProperty("MULTPV");   
-                    porv->multiplyWith( *multpv );
+                    porv->multiplyWith(*multpv);
                 }
             }
             
             
         private:
             const EclipseState& m_eclipseState;
+            mutable ParserLogPtr m_parserLog;
         };
 
         
@@ -249,8 +253,13 @@ namespace Opm {
         schedule = ScheduleConstPtr( new Schedule(deck, parserLog) );
     }
 
-    void EclipseState::initTransMult(ParserLogPtr /*parserLog*/) {
+    void EclipseState::initTransMult(ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping transmissibility multipliers.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
 
         if (hasDoubleGridProperty("MULTX"))
@@ -271,6 +280,11 @@ namespace Opm {
 
     void EclipseState::initFaults(DeckConstPtr deck, ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping fault multipliers.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         m_faults = std::make_shared<FaultCollection>();
         std::shared_ptr<Opm::GRIDSection> gridSection(new Opm::GRIDSection(deck) );
 
@@ -286,7 +300,8 @@ namespace Opm {
                 int K1 = faultRecord->getItem(5)->getInt(0) - 1;
                 int K2 = faultRecord->getItem(6)->getInt(0) - 1;
                 FaceDir::DirEnum faceDir = FaceDir::FromString( faultRecord->getItem(7)->getString(0) );
-                std::shared_ptr<const FaultFace> face = std::make_shared<const FaultFace>(grid->getNX() , grid->getNY() , grid->getNZ(),
+                std::shared_ptr<const FaultFace> face = std::make_shared<const FaultFace>(parserLog, faultsKeyword->getFileName(), faultsKeyword->getLineNumber(),
+                                                                                          grid->getNX() , grid->getNY() , grid->getNZ(),
                                                                                           static_cast<size_t>(I1) , static_cast<size_t>(I2) , 
                                                                                           static_cast<size_t>(J1) , static_cast<size_t>(J2) , 
                                                                                           static_cast<size_t>(K1) , static_cast<size_t>(K2) ,
@@ -330,8 +345,13 @@ namespace Opm {
 
 
     
-    void EclipseState::initMULTREGT(DeckConstPtr deck, ParserLogPtr /*parserLog*/) {
+    void EclipseState::initMULTREGT(DeckConstPtr deck, ParserLogPtr parserLog) {
         EclipseGridConstPtr grid = getEclipseGrid();
+        if (!grid) {
+            std::string msg("Grid could not be initialized. Skipping MULTREGT keyword.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         std::shared_ptr<MULTREGTScanner> scanner = std::make_shared<MULTREGTScanner>();
 
         {
@@ -357,7 +377,12 @@ namespace Opm {
 
 
     void EclipseState::initEclipseGrid(DeckConstPtr deck, ParserLogPtr parserLog) {
-        m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck, parserLog));
+        try {
+            m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck, parserLog));
+        } catch (const std::exception& e) {
+            std::string msg("Could not create a grid: "+std::string(e.what()));
+            parserLog->addWarning("", -1, msg);
+        }
     }
 
 
@@ -412,9 +437,11 @@ namespace Opm {
             if (rocktabKeyword->getRecord(tableIdx)->getItem(0)->size() == 0) {
                 // for ROCKTAB tables, an empty record indicates that the previous table
                 // should be copied...
-                if (tableIdx == 0)
-                    throw std::invalid_argument("The first table for keyword ROCKTAB"
-                                                " must be explicitly defined!");
+                if (tableIdx == 0) {
+                    parserLog->addError(rocktabKeyword->getFileName(), rocktabKeyword->getLineNumber(),
+                                        "The first table for keyword ROCKTAB must be defined explicitly");
+                    return;
+                }
                 m_rocktabTables[tableIdx] = m_rocktabTables[tableIdx - 1];
                 continue;
             }
@@ -423,7 +450,8 @@ namespace Opm {
             m_rocktabTables[tableIdx].init(rocktabKeyword,
                                            isDirectional,
                                            useStressOption,
-                                           tableIdx);
+                                           tableIdx,
+                                           parserLog);
         }
     }
 
@@ -489,23 +517,29 @@ namespace Opm {
         if (m_intGridProperties->supportsKeyword( keyword )) {
             if (enabledTypes & IntProperties) {
                 auto gridProperty = m_intGridProperties->getKeyword( keyword );
-                gridProperty->loadFromDeckKeyword( inputBox , deckKeyword );
+                gridProperty->loadFromDeckKeyword(inputBox, deckKeyword, parserLog);
             }
         } else if (m_doubleGridProperties->supportsKeyword( keyword )) {
             if (enabledTypes & DoubleProperties) {
                 auto gridProperty = m_doubleGridProperties->getKeyword( keyword );
-                gridProperty->loadFromDeckKeyword( inputBox , deckKeyword );
+                gridProperty->loadFromDeckKeyword(inputBox , deckKeyword, parserLog);
             }
         } else {
             parserLog->addError(deckKeyword->getFileName(),
                                 deckKeyword->getLineNumber(),
-                                "Tried to load unsupported grid property from keyword: " + deckKeyword->name());
+                                "Tried to load unsupported grid property from keyword " + deckKeyword->name()
+                                +". Ignoring.");
         }
     }
         
     
 
     void EclipseState::initProperties(DeckConstPtr deck, ParserLogPtr parserLog) {
+        if (!m_eclipseGrid) {
+            std::string msg("Grid could not be initialized. Skipping grid properties.");
+            parserLog->addWarning("", -1, msg);
+            return;
+        }
         typedef GridProperties<int>::SupportedKeywordInfo SupportedIntKeywordInfo;
         std::shared_ptr<std::vector<SupportedIntKeywordInfo> > supportedIntKeywords(new std::vector<SupportedIntKeywordInfo>{
             SupportedIntKeywordInfo( "SATNUM" , 1, "1" ),
@@ -519,9 +553,9 @@ namespace Opm {
             });
 
         double nan = std::numeric_limits<double>::quiet_NaN();
-        const auto eptLookup = std::make_shared<GridPropertyEndpointTableLookupInitializer<>>(*deck, *this);
+        const auto eptLookup = std::make_shared<GridPropertyEndpointTableLookupInitializer<>>(*deck, *this, parserLog);
         const auto distributeTopLayer = std::make_shared<const GridPropertyPostProcessor::DistributeTopLayer>(*this);
-        const auto initPORV = std::make_shared<GridPropertyPostProcessor::InitPORV>(*this);
+        const auto initPORV = std::make_shared<GridPropertyPostProcessor::InitPORV>(*this, parserLog);
 
 
         // Note that the variants of grid keywords for radial grids
@@ -782,7 +816,7 @@ namespace Opm {
 
 
 
-    void EclipseState::handleBOXKeyword(DeckKeywordConstPtr deckKeyword, ParserLogPtr /*parserLog*/, BoxManager& boxManager) {
+    void EclipseState::handleBOXKeyword(DeckKeywordConstPtr deckKeyword, ParserLogPtr parserLog, BoxManager& boxManager) {
         DeckRecordConstPtr record = deckKeyword->getRecord(0);
         int I1 = record->getItem("I1")->getInt(0) - 1;
         int I2 = record->getItem("I2")->getInt(0) - 1;
@@ -791,7 +825,7 @@ namespace Opm {
         int K1 = record->getItem("K1")->getInt(0) - 1;
         int K2 = record->getItem("K2")->getInt(0) - 1;
         
-        boxManager.setInputBox( I1 , I2 , J1 , J2 , K1 , K2 );
+        boxManager.setInputBox(parserLog, deckKeyword->getFileName(), deckKeyword->getLineNumber(), I1, I2, J1, J2, K1, K2);
     }
 
 
@@ -821,8 +855,12 @@ namespace Opm {
                     property->scale( scaleFactor , boxManager.getActiveBox() );
                 }
             } else if (!m_intGridProperties->supportsKeyword(field) &&
-                       !m_doubleGridProperties->supportsKeyword(field))
-                throw std::invalid_argument("Fatal error processing MULTIPLY keyword. Tried to multiply not defined keyword " + field);
+                       !m_doubleGridProperties->supportsKeyword(field)) {
+                std::string msg("Tried to multiply with undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -855,9 +893,12 @@ namespace Opm {
                     property->add(siShiftValue , boxManager.getActiveBox() );
                 }
             } else if (!m_intGridProperties->supportsKeyword(field) &&
-                       !m_doubleGridProperties->supportsKeyword(field))
-                throw std::invalid_argument("Fatal error processing ADD keyword. Tried to shift not defined keyword " + field);
-
+                       !m_doubleGridProperties->supportsKeyword(field)) {
+                std::string msg("Tried to add undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -885,9 +926,12 @@ namespace Opm {
                     double siValue = value * getSIScaling(property->getKeywordInfo().getDimensionString());
                     property->setScalar( siValue , boxManager.getActiveBox() );
                 }
-            } else
-                throw std::invalid_argument("Fatal error processing EQUALS keyword. Tried to set not defined keyword " + field);
-
+            } else {
+                std::string msg("Tried to set from undefined keyword " + field + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -910,8 +954,12 @@ namespace Opm {
                     copyDoubleKeyword( srcField , targetField , boxManager.getActiveBox());
             }
             else if (!m_intGridProperties->supportsKeyword(srcField) &&
-                     !m_doubleGridProperties->supportsKeyword(srcField))
-                throw std::invalid_argument("Fatal error processing COPY keyword. Tried to copy from not defined keyword " + srcField);
+                     !m_doubleGridProperties->supportsKeyword(srcField)){
+                std::string msg("Tried to copy from undefined keyword " + srcField + ". Ignoring statement");
+                parserLog->addWarning(deckKeyword->getFileName(),
+                                      deckKeyword->getLineNumber(),
+                                      msg);
+            }
         }
     }
 
@@ -964,7 +1012,8 @@ namespace Opm {
             setCount++;
         
         if (setCount == 6) {
-            boxManager.setKeywordBox( I1Item->getInt(0) - 1,
+            boxManager.setKeywordBox( parserLog, deckKeyword->getFileName(), deckKeyword->getLineNumber(),
+                                      I1Item->getInt(0) - 1,
                                       I2Item->getInt(0) - 1,
                                       J1Item->getInt(0) - 1,
                                       J2Item->getInt(0) - 1,

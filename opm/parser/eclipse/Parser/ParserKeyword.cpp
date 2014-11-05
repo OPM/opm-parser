@@ -33,32 +33,33 @@
 
 namespace Opm {
 
-    void ParserKeyword::commonInit(const std::string& name, ParserKeywordSizeEnum sizeType , ParserKeywordActionEnum action) {
+    void ParserKeyword::commonInit(ParserLogPtr parserLog, const std::string& name, ParserKeywordSizeEnum sizeType , ParserKeywordActionEnum action) {
+        m_parserLog = parserLog;
         m_isDataKeyword = false;
         m_isTableCollection = false;
         m_name = name;
         m_action = action;
-        m_record = ParserRecordPtr(new ParserRecord);
+        m_record = ParserRecordPtr(new ParserRecord(parserLog));
         m_keywordSizeType = sizeType;
         m_Description = "";
 
         m_deckNames.insert(m_name);
     }
 
-    ParserKeyword::ParserKeyword(const std::string& name, ParserKeywordSizeEnum sizeType, ParserKeywordActionEnum action) {
+    ParserKeyword::ParserKeyword(ParserLogPtr parserLog, const std::string& name, ParserKeywordSizeEnum sizeType, ParserKeywordActionEnum action) {
         if (!(sizeType == SLASH_TERMINATED || sizeType == UNKNOWN)) {
-            throw std::invalid_argument("Size type " + ParserKeywordSizeEnum2String(sizeType) + " can not be set explicitly.");
+            throw std::invalid_argument("Size type " + ParserKeywordSizeEnumToString(sizeType) + " cannot be set explicitly.");
         }
-        commonInit(name, sizeType , action);
+        commonInit(parserLog, name, sizeType , action);
     }
 
-    ParserKeyword::ParserKeyword(const std::string& name, size_t fixedKeywordSize, ParserKeywordActionEnum action) {
-        commonInit(name, FIXED , action);
+    ParserKeyword::ParserKeyword(ParserLogPtr parserLog, const std::string& name, size_t fixedKeywordSize, ParserKeywordActionEnum action) {
+        commonInit(parserLog, name, FIXED , action);
         m_fixedSize = fixedKeywordSize;
     }
 
-    ParserKeyword::ParserKeyword(const std::string& name, const std::string& sizeKeyword, const std::string& sizeItem, ParserKeywordActionEnum action, bool _isTableCollection) {
-        commonInit(name, OTHER_KEYWORD_IN_DECK , action);
+    ParserKeyword::ParserKeyword(ParserLogPtr parserLog, const std::string& name, const std::string& sizeKeyword, const std::string& sizeItem, ParserKeywordActionEnum action, bool _isTableCollection) {
+        commonInit(parserLog, name, OTHER_KEYWORD_IN_DECK , action);
         m_isTableCollection = _isTableCollection;
         initSizeKeyword(sizeKeyword, sizeItem);
     }
@@ -121,7 +122,7 @@ namespace Opm {
         }
     }
 
-    ParserKeyword::ParserKeyword(const Json::JsonObject& jsonConfig) {
+    ParserKeyword::ParserKeyword(ParserLogPtr parserLog, const Json::JsonObject& jsonConfig) {
         ParserKeywordActionEnum action = INTERNALIZE;
 
         if (jsonConfig.has_item("action"))
@@ -129,9 +130,9 @@ namespace Opm {
 
         if (jsonConfig.has_item("name")) {
             ParserKeywordSizeEnum sizeType = UNKNOWN;
-            commonInit(jsonConfig.get_string("name"), sizeType , action);
+            commonInit(parserLog, jsonConfig.get_string("name"), sizeType , action);
         } else
-            throw std::invalid_argument("Json object is missing name: property");
+            throw std::invalid_argument("Json object is missing the 'name' property");
 
         if (jsonConfig.has_item("deck_names") || jsonConfig.has_item("deck_name_regex") )
             // if either the deck names or the regular expression for deck names are
@@ -158,32 +159,35 @@ namespace Opm {
             return;
         else {
             if (numItems() == 0)
-                throw std::invalid_argument("Json object for keyword: " + jsonConfig.get_string("name") + " is missing items specifier");
+                throw std::invalid_argument("Json object for keyword "+getName()+" is missing the 'items' property");
         }
     }
 
-    ParserKeywordPtr ParserKeyword::createFixedSized(const std::string& name,
+    ParserKeywordPtr ParserKeyword::createFixedSized(ParserLogPtr parserLog,
+                                                     const std::string& name,
                                                      size_t fixedKeywordSize,
                                                      ParserKeywordActionEnum action) {
-        return ParserKeywordPtr(new ParserKeyword(name, fixedKeywordSize, action));
+        return ParserKeywordPtr(new ParserKeyword(parserLog, name, fixedKeywordSize, action));
     }
 
-    ParserKeywordPtr ParserKeyword::createDynamicSized(const std::string& name,
+    ParserKeywordPtr ParserKeyword::createDynamicSized(ParserLogPtr parserLog,
+                                                       const std::string& name,
                                                        ParserKeywordSizeEnum sizeType ,
                                                        ParserKeywordActionEnum action) {
-        return ParserKeywordPtr(new ParserKeyword(name, sizeType, action));
+        return ParserKeywordPtr(new ParserKeyword(parserLog, name, sizeType, action));
     }
 
-    ParserKeywordPtr ParserKeyword::createTable(const std::string& name,
+    ParserKeywordPtr ParserKeyword::createTable(ParserLogPtr parserLog,
+                                                const std::string& name,
                                                 const std::string& sizeKeyword,
                                                 const std::string& sizeItem,
                                                 ParserKeywordActionEnum action,
                                                 bool isTableCollection) {
-        return ParserKeywordPtr(new ParserKeyword(name, sizeKeyword, sizeItem, action, isTableCollection));
+        return ParserKeywordPtr(new ParserKeyword(parserLog, name, sizeKeyword, sizeItem, action, isTableCollection));
     }
 
-    ParserKeywordPtr ParserKeyword::createFromJson(const Json::JsonObject& jsonConfig) {
-        return ParserKeywordPtr(new ParserKeyword(jsonConfig));
+    ParserKeywordPtr ParserKeyword::createFromJson(ParserLogPtr parserLog, const Json::JsonObject& jsonConfig) {
+        return ParserKeywordPtr(new ParserKeyword(parserLog, jsonConfig));
     }
 
     void ParserKeyword::initSizeKeyword(const std::string& sizeKeyword, const std::string& sizeItem) {
@@ -202,11 +206,11 @@ namespace Opm {
     }
 
 
-    bool ParserKeyword::validNameStart(const std::string& name) {
+    bool ParserKeyword::validNameStart(const std::string& name, bool acceptLowerCaseLetters) {
         if (name.length() > ParserConst::maxKeywordLength)
             return false;
 
-        if (!isupper(name[0]))
+        if (!isupper(name[0]) && !(acceptLowerCaseLetters && islower(name[0])))
             return false;
         
         return true;
@@ -241,13 +245,14 @@ namespace Opm {
         return result;
     }
 
-    bool ParserKeyword::validDeckName(const std::string& name) {
-        if (!validNameStart(name))
+    bool ParserKeyword::validDeckName(const std::string& name, bool acceptLowerCaseLetters) {
+        if (!validNameStart(name, acceptLowerCaseLetters))
             return false;
 
         for (size_t i = 1; i < name.length(); i++) {
             char c = name[i];
             if (!isupper(c) &&
+                !(acceptLowerCaseLetters && islower(c)) &&
                 !isdigit(c) &&
                 c != '-' &&
                 c != '_' &&
@@ -265,20 +270,20 @@ namespace Opm {
 
     void ParserKeyword::addItem(ParserItemConstPtr item) {
         if (m_isDataKeyword)
-            throw std::invalid_argument("Keyword:" + getName() + " is already configured as data keyword - can not add more items.");
+            throw std::invalid_argument("Keyword " + getName() + " is already configured as a data keyword; cannot add items.");
 
         m_record->addItem(item);
     }
 
     void ParserKeyword::addDataItem(ParserItemConstPtr item) {
         if (m_record->size())
-            throw std::invalid_argument("Keyword:" + getName() + " already has items - can not add a data item.");
+            throw std::invalid_argument("Keyword " + getName() + " already contains all specified items; cannot add a data item.");
 
         if ((m_keywordSizeType == FIXED) && (m_fixedSize == 1U)) {
             addItem(item);
             m_isDataKeyword = true;
         } else
-            throw std::invalid_argument("Keyword:" + getName() + ". When calling addDataItem() the keyword must be configured with fixed size == 1.");
+            throw std::invalid_argument("When calling addDataItem() for keyword " + getName() + ", it must be configured with fixed size == 1.");
     }
 
     void ParserKeyword::initDeckNames(const Json::JsonObject& jsonObject) {
@@ -287,7 +292,7 @@ namespace Opm {
 
         const Json::JsonObject namesObject = jsonObject.get_item("deck_names");
         if (!namesObject.is_array())
-            throw std::invalid_argument("The 'deck_names' JSON item needs to be a list (keyword: '"+m_name+"')");
+            throw std::invalid_argument("The 'deck_names' JSON item of keyword "+m_name+" needs to be a list");
 
         if (namesObject.size() > 0)
             m_deckNames.clear();
@@ -296,7 +301,7 @@ namespace Opm {
             const Json::JsonObject nameObject = namesObject.get_array_item(nameIdx);
 
             if (!nameObject.is_string())
-                throw std::invalid_argument("The items of 'deck_names' need to be strings (keyword: '"+m_name+"')");
+                throw std::invalid_argument("The sub-items of 'deck_names' of keyword "+m_name+" need to be strings");
 
             addDeckName(nameObject.as_string());
         }
@@ -304,19 +309,19 @@ namespace Opm {
 
     void ParserKeyword::initSectionNames(const Json::JsonObject& jsonObject) {
         if (!jsonObject.has_item("sections"))
-            throw std::invalid_argument("The 'sections' JSON item needs to be defined (keyword: '"+m_name+"')");
+            throw std::invalid_argument("The 'sections' JSON item of keyword "+m_name+" needs to be defined");
 
         const Json::JsonObject namesObject = jsonObject.get_item("sections");
 
         if (!namesObject.is_array())
-            throw std::invalid_argument("The 'sections' JSON item needs to be a list (keyword: '"+m_name+"')");
+            throw std::invalid_argument("The 'sections' JSON item of keyword "+m_name+" needs to be a list");
 
         m_validSectionNames.clear();
         for (size_t nameIdx = 0; nameIdx < namesObject.size(); ++ nameIdx) {
             const Json::JsonObject nameObject = namesObject.get_array_item(nameIdx);
 
             if (!nameObject.is_string())
-                throw std::invalid_argument("The items of 'sections' need to be strings (keyword: '"+m_name+"')");
+                throw std::invalid_argument("The sub-items of 'sections' of keyword "+m_name+" need to be strings");
 
             addValidSectionName(nameObject.as_string());
         }
@@ -328,7 +333,7 @@ namespace Opm {
 
         const Json::JsonObject regexStringObject = jsonObject.get_item("deck_name_regex");
         if (!regexStringObject.is_string())
-            throw std::invalid_argument("The 'deck_name_regex' JSON item needs to be a string (keyword: '"+m_name+"')");
+            throw std::invalid_argument("The 'deck_name_regex' JSON item of keyword "+m_name+" need to be a string");
 
         setMatchRegex(regexStringObject.as_string());
     }
@@ -345,38 +350,38 @@ namespace Opm {
                     switch (valueType) {
                     case INT:
                         {
-                            ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem(itemConfig));
+                            ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem(getName(), itemConfig));
                             addItem(item);
                         }
                         break;
                     case STRING:
                         {
-                            ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem(itemConfig));
+                            ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem(getName(), itemConfig));
                             addItem(item);
                         }
                         break;
                     case DOUBLE:
                         {
-                            ParserDoubleItemPtr item = ParserDoubleItemPtr(new ParserDoubleItem(itemConfig));
+                            ParserDoubleItemPtr item = ParserDoubleItemPtr(new ParserDoubleItem(getName(), itemConfig));
                             initDoubleItemDimension( item , itemConfig );
                             addItem(item);
                         }
                         break;
                     case FLOAT:
                         {
-                            ParserFloatItemPtr item = ParserFloatItemPtr(new ParserFloatItem(itemConfig));
+                            ParserFloatItemPtr item = ParserFloatItemPtr(new ParserFloatItem(getName(), itemConfig));
                             initFloatItemDimension( item , itemConfig );
                             addItem(item);
                         }
                         break;
                     default:
-                        throw std::invalid_argument("Not implemented.");
+                        throw std::invalid_argument("While parsing "+getName()+": Values of type "+itemConfig.get_string("value_type")+" are not implemented.");
                     }
                 } else
-                    throw std::invalid_argument("Json config object missing \"value_type\": ... item");
+                    throw std::invalid_argument("'value_type' JSON item missing for keyword "+getName()+".");
             }
         } else
-            throw std::invalid_argument("The items: object must be an array");
+            throw std::invalid_argument("The 'items' JSON item missing must be an array in keyword "+getName()+".");
     }
 
     
@@ -391,7 +396,7 @@ namespace Opm {
                     item->push_backDimension( dimObject.as_string());
                 }
             } else
-                throw std::invalid_argument("The dimension: attribute must be a string/list of strings");
+                throw std::invalid_argument("The 'dimension' attribute of keyword "+getName()+" must be a string or a list of strings");
         } 
     }
 
@@ -407,7 +412,7 @@ namespace Opm {
                     item->push_backDimension( dimObject.as_string());
                 }
             } else
-                throw std::invalid_argument("The dimension: attribute must be a string/list of strings");
+                throw std::invalid_argument("The 'dimension' attribute of keyword "+getName()+" must be a string or a list of strings");
         } 
     }
 
@@ -467,10 +472,10 @@ namespace Opm {
                 }
                 break;
                 default:
-                    throw std::invalid_argument("Not implemented.");
+                    throw std::invalid_argument("While initializing keyword "+getName()+": Values of type "+dataConfig.get_string("value_type")+" are not implemented.");
             }
         } else
-            throw std::invalid_argument("Json config object missing \"value_type\": ... item");
+            throw std::invalid_argument("The 'value_type' JSON item of keyword "+getName()+" is missing");
     }
 
     ParserRecordPtr ParserKeyword::getRecord() const {
@@ -520,7 +525,7 @@ namespace Opm {
     DeckKeywordPtr ParserKeyword::parse(RawKeywordConstPtr rawKeyword) const {
         if (rawKeyword->isFinished()) {
             DeckKeywordPtr keyword(new DeckKeyword(rawKeyword->getKeywordName()));
-	    keyword->setLocation(rawKeyword->getFilename(), rawKeyword->getLineNR());
+            keyword->setLocation(rawKeyword->getFilename(), rawKeyword->getLineNR());
             for (size_t i = 0; i < rawKeyword->size(); i++) {
                 DeckRecordConstPtr deckRecord = m_record->parse(rawKeyword->getRecord(i));
                 keyword->addRecord(deckRecord);
@@ -528,13 +533,12 @@ namespace Opm {
             keyword->setDataKeyword( isDataKeyword() );
             return keyword;
         } else
-            throw std::invalid_argument("Tried to create a deck keyword from an imcomplete rawkeyword: " + rawKeyword->getKeywordName());
+            throw std::invalid_argument("Tried to create a deck keyword from an incomplete raw keyword '" + rawKeyword->getKeywordName()+"'");
     }
 
     size_t ParserKeyword::getFixedSize() const {
-        if (!hasFixedSize()) {
+        if (!hasFixedSize())
             throw std::logic_error("This parser keyword does not have a fixed size!");
-        }
         return m_fixedSize;
     }
 
@@ -568,11 +572,10 @@ namespace Opm {
             m_matchRegexString = deckNameRegexp;
         }
         catch (const std::exception &e) {
-            std::cerr << "Warning: Malformed regular expression for keyword '" << getName() << "':\n"
-                      << "\n"
-                      << e.what() << "\n"
-                      << "\n"
-                      << "Ignoring expression!\n";
+            std::string msg =
+                "Malformed regular expression for keyword '"+getName()+"': "
+                + e.what() + ". Ignoring.";
+            m_parserLog->addError("", -1, msg);
         }
     }
 
@@ -625,25 +628,25 @@ namespace Opm {
             return false;
     }
 
-    void ParserKeyword::inlineNew(std::ostream& os, const std::string& lhs, const std::string& indent) const {
+    void ParserKeyword::inlineNew(std::ostream& os, const std::string& parserLogString, const std::string& lhs, const std::string& indent) const {
         {
-            const std::string actionString(ParserKeywordActionEnum2String(m_action));
-            const std::string sizeString(ParserKeywordSizeEnum2String(m_keywordSizeType));
+            const std::string actionString(ParserKeywordActionEnumToString(m_action));
+            const std::string sizeString(ParserKeywordSizeEnumToString(m_keywordSizeType));
             switch (m_keywordSizeType) {
                 case SLASH_TERMINATED:
-                    os << lhs << " = ParserKeyword::createDynamicSized(\"" << m_name << "\"," << sizeString << "," << actionString << ");" << std::endl;
+                    os << lhs << " = ParserKeyword::createDynamicSized("<<parserLogString << ", \"" << m_name << "\"," << sizeString << "," << actionString << ");" << std::endl;
                     break;
                 case UNKNOWN:
-                    os << lhs << " = ParserKeyword::createDynamicSized(\"" << m_name << "\"," << sizeString << "," << actionString << ");" << std::endl;
+                    os << lhs << " = ParserKeyword::createDynamicSized("<<parserLogString << ", \"" << m_name << "\"," << sizeString << "," << actionString << ");" << std::endl;
                     break;
                 case FIXED:
-                    os << lhs << " = ParserKeyword::createFixedSized(\"" << m_name << "\",(size_t)" << m_fixedSize << "," << actionString << ");" << std::endl;
+                    os << lhs << " = ParserKeyword::createFixedSized("<<parserLogString << ", \"" << m_name << "\",(size_t)" << m_fixedSize << "," << actionString << ");" << std::endl;
                     break;
                 case OTHER_KEYWORD_IN_DECK:
                     if (isTableCollection())
-                        os << lhs << " = ParserKeyword::createTable(\"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\"," << actionString << ", true);" << std::endl;
+                        os << lhs << " = ParserKeyword::createTable("<<parserLogString << ", \"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\"," << actionString << ", true);" << std::endl;
                     else
-                        os << lhs << " = ParserKeyword::createTable(\"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\"," << actionString << ");" << std::endl;
+                        os << lhs << " = ParserKeyword::createTable("<<parserLogString << ", \"" << m_name << "\",\"" << m_sizeDefinitionPair.first << "\",\"" << m_sizeDefinitionPair.second << "\"," << actionString << ");" << std::endl;
                     break;
             }
         }

@@ -21,6 +21,7 @@
 #define	GROUPTREE_HPP
 
 #include <opm/parser/eclipse/EclipseState/Schedule/GroupTreeNode.hpp>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 
 #include <string>
 #include <map>
@@ -32,8 +33,8 @@ namespace Opm {
     class GroupTree {
     public:
         GroupTree();
-        void updateTree(const std::string& childName);
-        void updateTree(const std::string& childName, const std::string& parentName);
+        bool updateTree(const std::string& childName, ParserLogPtr parserLog, const std::string& fileName, int lineNumber);
+        bool updateTree(const std::string& childName, const std::string& parentName, ParserLogPtr parserLog, const std::string& fileName, int lineNumber);
 
         GroupTreeNodePtr getNode(const std::string& nodeName) const;
         std::vector<GroupTreeNodeConstPtr> getNodes() const;

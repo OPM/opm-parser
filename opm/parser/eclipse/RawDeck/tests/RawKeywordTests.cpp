@@ -27,24 +27,28 @@
 using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(RawKeywordGiveKeywordToConstructorKeywordSet) {
-    RawKeyword keyword("KEYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("KEYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     BOOST_CHECK(keyword.getKeywordName() == "KEYYWORD");
     BOOST_CHECK_EQUAL(Raw::SLASH_TERMINATED , keyword.getSizeType());
 }
 
 BOOST_AUTO_TEST_CASE(RawKeywordSizeTypeInvalidThrows) {
-    BOOST_CHECK_THROW( RawKeyword("KEYYWORD", Raw::FIXED , "FILE" , 0U) , std::invalid_argument);
-    BOOST_CHECK_THROW( RawKeyword("KEYYWORD", Raw::TABLE_COLLECTION , "FILE" , 10U) , std::invalid_argument);
+    ParserLogPtr parserLog(new ParserLog());
+    BOOST_CHECK_THROW( RawKeyword("KEYYWORD", Raw::FIXED , "FILE" , 0U, parserLog) , std::invalid_argument);
+    BOOST_CHECK_THROW( RawKeyword("KEYYWORD", Raw::TABLE_COLLECTION , "FILE" , 10U, parserLog) , std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(RawKeywordFinalizeWrongSizeTYpeThrows) {
-    RawKeyword kw("KEYYWORD", Raw::SLASH_TERMINATED , "FILE" , 0U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword kw("KEYYWORD", Raw::SLASH_TERMINATED , "FILE" , 0U, parserLog);
     BOOST_CHECK_THROW(     kw.finalizeUnknownSize() , std::invalid_argument );
 }
 
 
 BOOST_AUTO_TEST_CASE(RawKeywordFinalizeUnknownSize) {
-    RawKeyword kw("KEYYWORD", Raw::UNKNOWN , "FILE" , 0U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword kw("KEYYWORD", Raw::UNKNOWN , "FILE" , 0U, parserLog);
     BOOST_CHECK( !kw.isFinished() );
     kw.finalizeUnknownSize();
     BOOST_CHECK( kw.isFinished() );
@@ -53,41 +57,64 @@ BOOST_AUTO_TEST_CASE(RawKeywordFinalizeUnknownSize) {
 
 
 
-BOOST_AUTO_TEST_CASE(RawKeywordGiveKeywordToConstructorTooLongThrows) {
-    BOOST_CHECK_THROW(RawKeyword keyword("KEYYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U), std::invalid_argument);
+BOOST_AUTO_TEST_CASE(RawKeywordNameTooLong) {
+    ParserLogPtr parserLog(new ParserLog());
+    BOOST_CHECK_NO_THROW(RawKeyword("KEYYYWORD", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(RawKeywordSetKeywordInitialWhitespaceInKeywordThrows) {
-    BOOST_CHECK_THROW(RawKeyword(" TELONG", Raw::SLASH_TERMINATED, "FILE" , 10U), std::invalid_argument);
+BOOST_AUTO_TEST_CASE(RawKeywordNameWithInitialWhitespace) {
+    ParserLogPtr parserLog(new ParserLog());
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword(" TELONG", Raw::SLASH_TERMINATED, "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("\tTELONG", Raw::SLASH_TERMINATED, "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
-BOOST_AUTO_TEST_CASE(constructor_mixedCaseName_throws) {
-    BOOST_CHECK_THROW(RawKeyword("Test", Raw::SLASH_TERMINATED , "FILE" , 10U), std::invalid_argument);
-}
+BOOST_AUTO_TEST_CASE(RawKeywordNameWithLowerCaseLetters) {
+    // raw keywords may be lower-case even if this is not allowed in valid deck
+    // names... (this will produce a warning if the deck is checked.)
+    ParserLogPtr parserLog(new ParserLog());
 
-BOOST_AUTO_TEST_CASE(RawKeywordSetKeywordInitialTabInKeywordThrows) {
-    BOOST_CHECK_THROW( RawKeyword("\tTELONG", Raw::SLASH_TERMINATED , "FILE" , 10U), std::invalid_argument);
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("Test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
+
+    parserLog->clear();
+    BOOST_CHECK_NO_THROW(RawKeyword("1test", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog));
+    BOOST_CHECK_EQUAL(parserLog->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(RawKeywordSetCorrectLenghtKeywordNoError) {
-    RawKeyword keyword("GOODONE", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("GOODONE", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     BOOST_CHECK(keyword.getKeywordName() == "GOODONE");
 }
 
 BOOST_AUTO_TEST_CASE(RawKeywordSet8CharKeywordWithTrailingWhitespaceKeywordTrimmed) {
-    RawKeyword keyword("GOODONEE ", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("GOODONEE ", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     BOOST_CHECK(keyword.getKeywordName() == "GOODONEE");
 }
 
 
 BOOST_AUTO_TEST_CASE(addRecord_singleRecord_recordAdded) {
-    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     keyword.addRawRecordString("test 1 3 4 /");
     BOOST_CHECK_EQUAL(1U, keyword.size());
 }
 
 BOOST_AUTO_TEST_CASE(getRecord_outOfRange_throws) {
-    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     keyword.addRawRecordString("test 1 3 4 /");
     BOOST_CHECK_THROW(keyword.getRecord(1), std::range_error);
 }
@@ -95,7 +122,8 @@ BOOST_AUTO_TEST_CASE(getRecord_outOfRange_throws) {
 
 
 BOOST_AUTO_TEST_CASE(isFinished_undef_size) {
-    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
 
     BOOST_CHECK(  !keyword.isFinished() );
     keyword.addRawRecordString("test 1 3 4 /");
@@ -110,14 +138,16 @@ BOOST_AUTO_TEST_CASE(isFinished_undef_size) {
 
 
 BOOST_AUTO_TEST_CASE(isFinished_Fixedsize0) {
-    RawKeyword keyword("TEST" , "FILE" , 10U , 0U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST" , "FILE" , 10U, parserLog, 0U);
     
     BOOST_CHECK(  keyword.isFinished() );
 }
 
 
 BOOST_AUTO_TEST_CASE(isFinished_Fixedsize1) {
-    RawKeyword keyword("TEST" , "FILE" , 10U, 1U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST" , "FILE" , 10U, parserLog, 1U);
     BOOST_CHECK(  !keyword.isFinished() );
     keyword.addRawRecordString("test 1 3 4 /");
     BOOST_CHECK(  keyword.isFinished() );
@@ -125,7 +155,8 @@ BOOST_AUTO_TEST_CASE(isFinished_Fixedsize1) {
 
 
 BOOST_AUTO_TEST_CASE(isFinished_FixedsizeMulti) {
-    RawKeyword keyword("TEST", "FILE" , 10U , 4U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST", "FILE" , 10U, parserLog, 4U);
     BOOST_CHECK(  !keyword.isFinished() );
     keyword.addRawRecordString("test 1 3 4 /");
     BOOST_CHECK(  !keyword.isFinished() );
@@ -157,39 +188,32 @@ BOOST_AUTO_TEST_CASE(isKeywordTerminator) {
     BOOST_CHECK( !RawKeyword::isTerminator("  X/  "));
 }
 
-
-BOOST_AUTO_TEST_CASE(useLine) {
-    BOOST_CHECK( !RawKeyword::useLine("                   "));
-    BOOST_CHECK( !RawKeyword::useLine("-- ggg"));
-
-    BOOST_CHECK( RawKeyword::useLine("Data -- ggg"));
-    BOOST_CHECK( RawKeyword::useLine("/ -- ggg"));
-    BOOST_CHECK( RawKeyword::useLine("/"));
-}
-
-
 BOOST_AUTO_TEST_CASE(isTableCollection) {
-    RawKeyword keyword1("TEST" , "FILE" , 10U, 4U , false);
-    RawKeyword keyword2("TEST2", Raw::SLASH_TERMINATED , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword1("TEST" , "FILE" , 10U, parserLog, 4U, false);
+    RawKeyword keyword2("TEST2", Raw::SLASH_TERMINATED , "FILE" , 10U, parserLog);
     BOOST_CHECK_EQUAL( Raw::FIXED , keyword1.getSizeType());
     BOOST_CHECK_EQUAL( Raw::SLASH_TERMINATED , keyword2.getSizeType());
  }
 
 
 BOOST_AUTO_TEST_CASE(CreateTableCollection) {
-    RawKeyword keyword1("TEST" , "FILE" , 10U, 2, true);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword1("TEST" , "FILE" , 10U, parserLog, 2, true);
     BOOST_CHECK_EQUAL( Raw::TABLE_COLLECTION , keyword1.getSizeType());
 }
 
 
 BOOST_AUTO_TEST_CASE(CreateWithFileAndLine) {
-    RawKeyword keyword1("TEST" , Raw::SLASH_TERMINATED , "XXX", 100);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword1("TEST" , Raw::SLASH_TERMINATED , "XXX", 100, parserLog);
     BOOST_CHECK_EQUAL( "XXX" , keyword1.getFilename());
     BOOST_CHECK_EQUAL( 100U , keyword1.getLineNR() );
 }
 
 BOOST_AUTO_TEST_CASE(isUnknownSize) {
-    RawKeyword keyword("TEST2", Raw::UNKNOWN , "FILE" , 10U);
+    ParserLogPtr parserLog(new ParserLog());
+    RawKeyword keyword("TEST2", Raw::UNKNOWN , "FILE" , 10U, parserLog);
     BOOST_CHECK_EQUAL( Raw::UNKNOWN  , keyword.getSizeType( ));
  }
 

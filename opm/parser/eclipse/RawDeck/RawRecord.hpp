@@ -24,6 +24,8 @@
 #include <deque>
 #include <memory>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
+
 namespace Opm {
 
     /// Class representing the lowest level of the Raw datatypes, a record. A record is simply
@@ -32,7 +34,7 @@ namespace Opm {
 
     class RawRecord {
     public:
-        RawRecord(const std::string& singleRecordString, const std::string& fileName = "", const std::string& keywordName = "");
+        RawRecord(const std::string& singleRecordString, ParserLogPtr parserLog, const std::string& fileName = "", int lineNumber = -1, const std::string& keywordName = "");
         
         std::string pop_front();
         void push_front(std::string token);
@@ -41,7 +43,9 @@ namespace Opm {
         const std::string& getRecordString() const;
         const std::string& getItem(size_t index) const;
         const std::string& getFileName() const;
+        int getLineNumber() const;
         const std::string& getKeywordName() const;
+        ParserLogPtr getParserLog() const;
 
         static bool isTerminatedRecordString(const std::string& candidateRecordString);
         virtual ~RawRecord();
@@ -50,7 +54,9 @@ namespace Opm {
     private:
         std::string m_sanitizedRecordString;
         std::deque<std::string> m_recordItems;
+        ParserLogPtr m_parserLog;
         const std::string m_fileName;
+        int m_lineNumber;
         const std::string m_keywordName;
         
         void setRecordString(const std::string& singleRecordString);

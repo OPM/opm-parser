@@ -21,6 +21,7 @@
 #ifndef WELL_HPP_
 #define WELL_HPP_
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
@@ -41,10 +42,10 @@ namespace Opm {
     class Well {
     public:
         Well(const std::string& name, int headI, int headJ, double refDepth, Phase::PhaseEnum preferredPhase,
-             TimeMapConstPtr timeMap, size_t creationTimeStep);
+             TimeMapConstPtr timeMap, size_t creationTimeStep, ParserLogPtr parserLog);
         /// Use this constructor when reference depth is defaulted.
         Well(const std::string& name, int headI, int headJ, Phase::PhaseEnum preferredPhase,
-             TimeMapConstPtr timeMap, size_t creationTimeStep);
+             TimeMapConstPtr timeMap, size_t creationTimeStep, ParserLogPtr parserLog);
         const std::string& name() const;
 
         bool hasBeenDefined(size_t timeStep) const;

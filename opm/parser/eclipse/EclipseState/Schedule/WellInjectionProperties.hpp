@@ -23,7 +23,6 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 
 namespace Opm {
-    
     struct WellInjectionProperties {
         double  surfaceInjectionRate;
         double  reservoirInjectionRate;
@@ -35,7 +34,7 @@ namespace Opm {
         WellInjector::ControlModeEnum controlMode;
 
         WellInjectionProperties();
-        
+
         bool hasInjectionControl(WellInjector::ControlModeEnum controlModeArg) const {
             if (injectionControls & controlModeArg)
                 return true;
@@ -44,17 +43,15 @@ namespace Opm {
         }
 
         void dropInjectionControl(WellInjector::ControlModeEnum controlModeArg) {
-            if ((injectionControls & controlModeArg) != 0) {
+            if ((injectionControls & controlModeArg) != 0)
                 injectionControls -= controlModeArg;
-            }
         }
 
         void addInjectionControl(WellInjector::ControlModeEnum controlModeArg) {
-            if ((injectionControls & controlModeArg) == 0) {
+            if ((injectionControls & controlModeArg) == 0)
                 injectionControls += controlModeArg;
-            }
         }
-    }; 
+    };
 }
 
 #endif

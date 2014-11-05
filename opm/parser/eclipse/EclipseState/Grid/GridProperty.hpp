@@ -26,6 +26,7 @@
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridPropertyInitializers.hpp>
@@ -211,8 +212,11 @@ public:
         if ((m_nx == other.m_nx) && (m_ny == other.m_ny) && (m_nz == other.m_nz)) {
             for (size_t g=0; g < m_data.size(); g++)
                 m_data[g] *= other.m_data[g];
-        } else
-            throw std::invalid_argument("Size mismatch between properties in mulitplyWith.");
+        } else {
+            std::string msg("Grid size mismatch between properties when trying to multiply "+getKeywordName()
+                            +" with "+other.getKeywordName());
+            throw std::invalid_argument(msg);
+        }
     }
 
 
@@ -231,8 +235,11 @@ public:
        deckkeyword equals nx*ny*nz. 
     */
 
-    void loadFromDeckKeyword(DeckKeywordConstPtr deckKeyword) {
-        const auto deckItem = getDeckItem(deckKeyword);
+    void loadFromDeckKeyword(DeckKeywordConstPtr deckKeyword, ParserLogPtr parserLog) {
+        const auto deckItem = getDeckItem(deckKeyword, parserLog);
+        if (!deckItem)
+            return;
+
         for (size_t dataPointIdx = 0; dataPointIdx < deckItem->size(); ++dataPointIdx) {
             if (!deckItem->defaultApplied(dataPointIdx))
                 setDataPoint(dataPointIdx, dataPointIdx, deckItem);
@@ -241,11 +248,14 @@ public:
 
 
 
-    void loadFromDeckKeyword(std::shared_ptr<const Box> inputBox, DeckKeywordConstPtr deckKeyword) {
+    void loadFromDeckKeyword(std::shared_ptr<const Box> inputBox, DeckKeywordConstPtr deckKeyword, ParserLogPtr parserLog) {
         if (inputBox->isGlobal())
-            loadFromDeckKeyword( deckKeyword );
+            loadFromDeckKeyword(deckKeyword, parserLog);
         else {
-            const auto deckItem = getDeckItem(deckKeyword);
+            const auto deckItem = getDeckItem(deckKeyword, parserLog);
+            if (!deckItem)
+                return;
+
             const std::vector<size_t>& indexList = inputBox->getIndexList();
             if (indexList.size() == deckItem->size()) {
                 for (size_t sourceIdx = 0; sourceIdx < indexList.size(); sourceIdx++) {
@@ -257,10 +267,9 @@ public:
                         }
                 }
             } else {
-                std::string boxSize = std::to_string(static_cast<long long>(indexList.size()));
-                std::string keywordSize = std::to_string(static_cast<long long>(deckItem->size()));
-                
-                throw std::invalid_argument("Size mismatch: Box:" + boxSize + "  DecKeyword:" + keywordSize);
+                parserLog->addError(deckKeyword->getFileName(), deckKeyword->getLineNumber(),
+                                    "Size mismatch: Box size:"+std::to_string((long long) indexList.size())
+                                    +"  DeckKeyword size:"+std::to_string((long long) deckItem->size())+". Ignoring.");
             }
         }
     }
@@ -355,7 +364,7 @@ public:
 
 
 private:
-    Opm::DeckItemConstPtr getDeckItem(Opm::DeckKeywordConstPtr deckKeyword) {
+    Opm::DeckItemConstPtr getDeckItem(Opm::DeckKeywordConstPtr deckKeyword, ParserLogPtr parserLog) {
         if (deckKeyword->size() != 1)
             throw std::invalid_argument("Grid properties can only have a single record (keyword "
                                         + deckKeyword->name() + ")");
@@ -367,10 +376,13 @@ private:
 
         const auto deckItem = deckKeyword->getRecord(0)->getItem(0);
 
-        if (deckItem->size() > m_data.size())
-            throw std::invalid_argument("Size mismatch when setting data for:" + getKeywordName() +
-                                        " keyword size: " + boost::lexical_cast<std::string>(deckItem->size())
-                                        + " input size: " + boost::lexical_cast<std::string>(m_data.size()));
+        if (deckItem->size() > m_data.size()) {
+            std::string msg("Size mismatch when setting data for:" + getKeywordName() +
+                            " keyword size: " + boost::lexical_cast<std::string>(deckItem->size())
+                            + " input size: " + boost::lexical_cast<std::string>(m_data.size()));
+            parserLog->addError(deckKeyword->getFileName(), deckKeyword->getLineNumber(), msg);
+            return Opm::DeckItemConstPtr();
+        }
 
         return deckItem;
     }

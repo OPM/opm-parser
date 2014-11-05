@@ -37,11 +37,12 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_ACTION_OK ) {
     ParserPtr parser(new Parser( false ));
+    ParserLogPtr parserLog(parser->getParserLog());
     boost::filesystem::path actionFile("testdata/integration_tests/ACTION/ACTION.txt");
     boost::filesystem::path actionFile2("testdata/integration_tests/ACTION/ACTION_EXCEPTION.txt");
-    ParserKeywordConstPtr DIMENS = ParserKeyword::createFixedSized("DIMENS" , (size_t) 1 , IGNORE_WARNING );
-    ParserKeywordConstPtr THROW = ParserKeyword::createFixedSized("THROW" , UNKNOWN , THROW_EXCEPTION );
-    
+    ParserKeywordConstPtr DIMENS = ParserKeyword::createFixedSized(parserLog, "DIMENS" , (size_t) 1 , IGNORE_WARNING );
+    ParserKeywordConstPtr THROW = ParserKeyword::createFixedSized(parserLog, "THROW" , UNKNOWN , THROW_EXCEPTION );
+
     BOOST_REQUIRE( parser->loadKeywordFromFile( boost::filesystem::path( std::string(KEYWORD_DIRECTORY) + std::string("/W/WCONHIST") )) );
     parser->addParserKeyword( DIMENS );
     parser->addParserKeyword( THROW );
@@ -50,10 +51,10 @@ BOOST_AUTO_TEST_CASE( parse_ACTION_OK ) {
     BOOST_REQUIRE( parser->isRecognizedKeyword( "WCONHIST" ));
     BOOST_REQUIRE( parser->isRecognizedKeyword( "THROW" ));
     
-    BOOST_REQUIRE_THROW(  parser->parseFile( actionFile2.string() , false) , std::invalid_argument );
+    BOOST_REQUIRE_THROW(  parser->parseFile( actionFile2.string()) , std::invalid_argument );
+    parserLog->clear();
     
-    ParserLogPtr parserLog(new ParserLog);
-    DeckPtr deck =  parser->parseFile(actionFile.string() , false, parserLog);
+    DeckPtr deck =  parser->parseFile(actionFile.string(), parserLog);
     DeckKeywordConstPtr kw1 = deck->getKeyword("WCONHIST" , 0);
     BOOST_CHECK_EQUAL( 3U , kw1->size() );
 

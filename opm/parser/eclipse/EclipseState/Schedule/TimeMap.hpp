@@ -23,6 +23,7 @@
 
 #include <boost/date_time.hpp>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
@@ -32,11 +33,11 @@ namespace Opm {
     class TimeMap {
     public:
         TimeMap(boost::posix_time::ptime startDate);
-        TimeMap(Opm::DeckConstPtr deck);
+        TimeMap(Opm::DeckConstPtr deck, ParserLogPtr parserLog);
         void addTime(boost::posix_time::ptime newTime);
         void addTStep(boost::posix_time::time_duration step);
-        void addFromDATESKeyword( DeckKeywordConstPtr DATESKeyword );
-        void addFromTSTEPKeyword( DeckKeywordConstPtr TSTEPKeyword );
+        void addFromDATESKeyword(DeckKeywordConstPtr DATESKeyword, ParserLogPtr parserLog);
+        void addFromTSTEPKeyword(DeckKeywordConstPtr TSTEPKeyword, ParserLogPtr parserLog);
         size_t size() const;
         size_t numTimesteps() const;
         double getTotalTime() const;

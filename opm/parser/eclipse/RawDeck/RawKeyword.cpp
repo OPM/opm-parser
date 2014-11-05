@@ -27,17 +27,26 @@
 namespace Opm {
 
 
-    RawKeyword::RawKeyword(const std::string& name, Raw::KeywordSizeEnum sizeType , const std::string& filename, size_t lineNR) {
+    RawKeyword::RawKeyword(const std::string& name,
+                           Raw::KeywordSizeEnum sizeType,
+                           const std::string& filename,
+                           size_t lineNR,
+                           ParserLogPtr parserLog) {
         if (sizeType == Raw::SLASH_TERMINATED || sizeType == Raw::UNKNOWN) {
-            commonInit(name,filename,lineNR);
+            commonInit(name, filename, lineNR, parserLog);
             m_sizeType = sizeType;
         } else
-            throw std::invalid_argument("Error - invalid sizetype on input");
+            throw std::invalid_argument("Invalid sizeType for keyword "+name);
     }
 
 
-    RawKeyword::RawKeyword(const std::string& name , const std::string& filename, size_t lineNR , size_t inputSize, bool isTableCollection ) {
-        commonInit(name,filename,lineNR);
+    RawKeyword::RawKeyword(const std::string& name,
+                           const std::string& filename,
+                           size_t lineNR,
+                           ParserLogPtr parserLog,
+                           size_t inputSize,
+                           bool isTableCollection ) {
+        commonInit(name, filename, lineNR, parserLog);
         if (isTableCollection) {
             m_sizeType = Raw::TABLE_COLLECTION;
             m_numTables = inputSize;
@@ -52,12 +61,16 @@ namespace Opm {
     }
 
 
-    void RawKeyword::commonInit(const std::string& name , const std::string& filename, size_t lineNR) {
-        setKeywordName( name );
+    void RawKeyword::commonInit(const std::string& name,
+                                const std::string& filename,
+                                size_t lineNR,
+                                ParserLogPtr parserLog) {
         m_filename = filename;
         m_lineNR = lineNR;
         m_isFinished = false;
         m_currentNumTables = 0;
+        m_parserLog = parserLog;
+        setKeywordName( name );
     }
 
 
@@ -85,7 +98,7 @@ namespace Opm {
                     m_isFinished = true;
                     m_partialRecordString.clear();
                 }
-            } else {
+            } else if (m_sizeType != Raw::UNKNOWN) {
                 m_isFinished = true;
                 m_partialRecordString.clear();
             }
@@ -93,7 +106,7 @@ namespace Opm {
 
         if (!m_isFinished) {
             if (RawRecord::isTerminatedRecordString(partialRecordString)) {
-                RawRecordPtr record(new RawRecord(m_partialRecordString, m_filename, m_name));
+                RawRecordPtr record(new RawRecord(m_partialRecordString, m_parserLog, m_filename, m_lineNR, m_name));
                 m_records.push_back(record);
                 m_partialRecordString.clear();
                 
@@ -121,47 +134,20 @@ namespace Opm {
             throw std::range_error("Index out of range");
     }
 
-    bool RawKeyword::isKeywordPrefix(const std::string& keywordCandidate, std::string& result) {
-        // get rid of comments
-        size_t commentPos = keywordCandidate.find("--");
-        if (commentPos != std::string::npos)
-            result = keywordCandidate.substr(0, commentPos);
-        else
-            result = keywordCandidate;
-
-        // white space is for dicks!
-        result = boost::trim_right_copy_if(result.substr(0, 8), boost::is_any_of(" \t"));
-        if (isValidKeyword(result))
-            return true;
-        else
-            return false;
+    bool RawKeyword::isKeywordPrefix(const std::string& line, std::string& keywordName) {
+        keywordName = ParserKeyword::getDeckName(line);
+        return isValidName(keywordName);
     }
 
-    bool RawKeyword::isValidKeyword(const std::string& keywordCandidate) {
+    bool RawKeyword::isValidName(const std::string& keywordCandidate) {
         return ParserKeyword::validDeckName(keywordCandidate);
     }
 
-
-    bool RawKeyword::useLine(std::string line) {
-        boost::algorithm::trim_left(line);
-        if (line.length()) {
-            if (line.substr(0,2) == "--")
-                return false;
-            else
-                return true;
-        } else
-            return false;
-    }
-
-
     void RawKeyword::setKeywordName(const std::string& name) {
         m_name = boost::algorithm::trim_right_copy(name);
-        if (!isValidKeyword(m_name)) {
-            throw std::invalid_argument("Not a valid keyword:" + name);
-        } else if (m_name.size() > Opm::RawConsts::maxKeywordLength) {
-            throw std::invalid_argument("Too long keyword:" + name);
-        } else if (boost::algorithm::trim_left_copy(m_name) != m_name) {
-            throw std::invalid_argument("Illegal whitespace start of keyword:" + name);
+        if (!isValidName(m_name)) {
+            std::string msg("'"+name+"' is not a valid keyword name");
+            m_parserLog->addError(m_filename, m_lineNR, msg);
         }
     }
 

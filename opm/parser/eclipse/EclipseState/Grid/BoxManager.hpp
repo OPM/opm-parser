@@ -24,6 +24,7 @@
 #include <vector>
 #include <memory>
 
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 
 /*
@@ -55,8 +56,8 @@ namespace Opm {
     public:
         BoxManager(int nx , int ny , int nz);
 
-        void setInputBox( int i1,int i2 , int j1 , int j2 , int k1 , int k2);
-        void setKeywordBox( int i1,int i2 , int j1 , int j2 , int k1 , int k2);
+        void setInputBox(Opm::ParserLogPtr parserLog, const std::string& fileName, int lineNumber, int i1,int i2 , int j1 , int j2 , int k1 , int k2);
+        void setKeywordBox(Opm::ParserLogPtr parserLog, const std::string& fileName, int lineNumber, int i1,int i2 , int j1 , int j2 , int k1 , int k2);
 
         void endSection();
         void endInputBox();

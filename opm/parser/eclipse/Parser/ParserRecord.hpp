@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
 
@@ -33,7 +34,7 @@ namespace Opm {
 
     class ParserRecord {
     public:
-        ParserRecord();
+        ParserRecord(ParserLogPtr parserLog);
         size_t size() const;
         void addItem( ParserItemConstPtr item );
         ParserItemConstPtr get(size_t index) const;
@@ -45,6 +46,7 @@ namespace Opm {
         std::vector<ParserItemConstPtr>::const_iterator begin() const;
         std::vector<ParserItemConstPtr>::const_iterator end() const;
     private:
+        ParserLogPtr m_parserLog;
         std::vector<ParserItemConstPtr> m_items;
         std::map<std::string , ParserItemConstPtr> m_itemMap;
     };

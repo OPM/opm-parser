@@ -35,16 +35,17 @@ namespace Opm {
          * \brief Read the RSVD keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"DEPTH", "RS"},
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("DEPTH");
-            ParentType::checkMonotonic("DEPTH", /*isAscending=*/true);
-            ParentType::checkNonDefaultable("RS");
+            ParentType::checkNonDefaultable("DEPTH", parserLog);
+            ParentType::checkMonotonic("DEPTH", /*isAscending=*/true, parserLog);
+            ParentType::checkNonDefaultable("RS", parserLog);
         }
 
     public:

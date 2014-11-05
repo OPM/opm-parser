@@ -45,7 +45,7 @@ namespace Opm {
     }
 
 
-    ParserStringItem::ParserStringItem(const Json::JsonObject& jsonConfig) : ParserItem(jsonConfig) {
+    ParserStringItem::ParserStringItem(const std::string& keywordName, const Json::JsonObject& jsonConfig) : ParserItem(keywordName, jsonConfig) {
         m_default = "";
         if (jsonConfig.has_item("default")) 
             setDefault( jsonConfig.get_string("default") );
@@ -68,7 +68,7 @@ namespace Opm {
 
 
     DeckItemPtr ParserStringItem::scan(RawRecordPtr rawRecord) const {
-        return ParserItemScan<ParserStringItem,DeckStringItem,std::string>(this , rawRecord);
+        return ParserItemScan<ParserStringItem,DeckStringItem,std::string>(this, rawRecord);
     }
 
      
@@ -79,7 +79,7 @@ namespace Opm {
     }
     
     void ParserStringItem::inlineNew(std::ostream& os) const {
-        os << "new ParserStringItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserStringItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << ",\"" << getDefault() << "\"";
         os << ")";

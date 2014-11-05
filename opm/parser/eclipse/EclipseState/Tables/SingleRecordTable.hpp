@@ -41,7 +41,8 @@ namespace Opm {
         void init(Opm::DeckKeywordConstPtr keyword,
                   const std::vector<std::string> &columnNames,
                   size_t recordIdx,
-                  size_t firstEntityOffset);
+                  size_t firstEntityOffset,
+                  ParserLogPtr parserLog);
 
     public:
         SingleRecordTable() = default;
@@ -57,11 +58,14 @@ namespace Opm {
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
         void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword,
-                  const std::vector<std::string> &columnNames,
-                  size_t recordIdx,
-                  size_t firstEntityOffset)
-        { init(keyword, columnNames, recordIdx, firstEntityOffset); }
+                                 const std::vector<std::string> &columnNames,
+                                 size_t recordIdx,
+                                 size_t firstEntityOffset,
+                                 ParserLogPtr parserLog)
+        { init(keyword, columnNames, recordIdx, firstEntityOffset, parserLog); }
 #endif
+
+        const std::string& getName() const;
 
         size_t numColumns() const;
         size_t numRows() const;
@@ -76,17 +80,19 @@ namespace Opm {
          */
         double evaluate(const std::string& columnName, double xPos) const;
     protected:
-        void checkNonDefaultable(const std::string& columnName);
+        void checkNonDefaultable(const std::string& columnName, ParserLogPtr parserLog);
         void checkMonotonic(const std::string& columnName,
-                             bool isAscending,
-                             bool isStrictlyMonotonic = true);
+                            bool isAscending,
+                            ParserLogPtr parserLog,
+                            bool isStrictlyMonotonic = true);
         void applyDefaultsConstant(const std::string& columnName, double value);
-        void applyDefaultsLinear(const std::string& columnName);
+        void applyDefaultsLinear(const std::string& columnName, ParserLogPtr parserLog);
         void createColumns(const std::vector<std::string> &columnNames);
         size_t getNumFlatItems(Opm::DeckRecordConstPtr deckRecord) const;
         double getFlatSiDoubleData(Opm::DeckRecordConstPtr deckRecord, size_t flatItemIdx) const;
         bool getFlatIsDefaulted(Opm::DeckRecordConstPtr deckRecord, size_t flatItemIdx) const;
 
+        std::string m_name;
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<double> > m_columns;
         std::vector<std::vector<bool> > m_valueDefaulted;

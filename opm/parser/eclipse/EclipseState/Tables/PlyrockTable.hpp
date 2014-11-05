@@ -35,7 +35,7 @@ namespace Opm {
          * \brief Read the PLYROCK keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{
@@ -46,7 +46,8 @@ namespace Opm {
                                  "MaxAdsorbtion"
                              },
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
             // the entries of this keyword cannot be defaulted except for the
             // forth. ensure this.
@@ -59,8 +60,11 @@ namespace Opm {
                             m_valueDefaulted[colIdx][rowIdx] = false;
                             m_columns[colIdx][rowIdx] = 1.0;
                         }
-                        else
-                            throw std::invalid_argument("The values of the PLYROCK table cannot be defaulted");
+                        else {
+                            std::string msg("The values of the PLYROCK table cannot be defaulted");
+                            parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), msg);
+                            return;
+                        }
                     }
                 }
             }

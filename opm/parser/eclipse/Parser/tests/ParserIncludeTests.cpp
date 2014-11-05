@@ -38,7 +38,10 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeInvalid) {
     boost::filesystem::path inputFilePath("testdata/parser/includeInvalid.data");
 
     Opm::ParserPtr parser(new Opm::Parser());
-    BOOST_CHECK_THROW(parser->parseFile(inputFilePath.string()), std::runtime_error);
+
+    parser->getParserLog()->clear();
+    parser->parseFile(inputFilePath.string());
+    BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeyword_includeWrongCase) {
@@ -53,9 +56,17 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeWrongCase) {
     // exactly the same spelling as their names on disk. Eclipse seems
     // to be a bit more relaxed when it comes to this, so we might
     // have to change the current behavior one not-so-fine day...
-    BOOST_CHECK_THROW(parser->parseFile(inputFile1Path.string()), std::runtime_error);
-    BOOST_CHECK_THROW(parser->parseFile(inputFile2Path.string()), std::runtime_error);
-    BOOST_CHECK_THROW(parser->parseFile(inputFile3Path.string()), std::runtime_error);
+    parser->getParserLog()->clear();
+    parser->parseFile(inputFile1Path.string());
+    BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
+
+    parser->getParserLog()->clear();
+    parser->parseFile(inputFile2Path.string());
+    BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
+
+    parser->getParserLog()->clear();
+    parser->parseFile(inputFile3Path.string());
+    BOOST_CHECK_EQUAL(parser->getParserLog()->size(), 1);
 #else
     // for case-insensitive filesystems, the include statement will
     // always work regardless of how the capitalization of the

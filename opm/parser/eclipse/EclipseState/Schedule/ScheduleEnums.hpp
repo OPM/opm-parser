@@ -33,7 +33,7 @@ namespace Opm {
             AUTO = 4 
         };
 
-        const std::string Status2String(StatusEnum enumValue);
+        const std::string StatusToString(StatusEnum enumValue);
         StatusEnum StatusFromString(const std::string& stringValue);
     }
 
@@ -52,7 +52,7 @@ namespace Opm {
             Z = 3
         };
 
-        std::string   DirectionEnum2String(const DirectionEnum enumValue);
+        std::string   DirectionEnumToString(const DirectionEnum enumValue);
         DirectionEnum DirectionEnumFromString(const std::string& stringValue);
     } // namespace CompletionDirection
 
@@ -64,7 +64,7 @@ namespace Opm {
             WATER = 4
         };
 
-        const std::string PhaseEnum2String( PhaseEnum enumValue );
+        const std::string PhaseEnumToString( PhaseEnum enumValue );
         PhaseEnum PhaseEnumFromString( const std::string& stringValue );
     }
 
@@ -95,10 +95,10 @@ namespace Opm {
         
         
 
-        const std::string ControlMode2String( ControlModeEnum enumValue );
+        const std::string ControlModeToString( ControlModeEnum enumValue );
         ControlModeEnum ControlModeFromString( const std::string& stringValue );
 
-        const std::string Type2String( TypeEnum enumValue );
+        const std::string TypeToString( TypeEnum enumValue );
         TypeEnum TypeFromString( const std::string& stringValue );
     }
 
@@ -130,7 +130,7 @@ namespace Opm {
         */
 
 
-        const std::string ControlMode2String( ControlModeEnum enumValue );
+        const std::string ControlModeToString( ControlModeEnum enumValue );
         ControlModeEnum ControlModeFromString( const std::string& stringValue );
     }
 
@@ -146,7 +146,7 @@ namespace Opm {
             FLD  = 5
         };
 
-        const std::string ControlEnum2String( ControlEnum enumValue );
+        const std::string ControlEnumToString( ControlEnum enumValue );
         ControlEnum ControlEnumFromString( const std::string& stringValue );
     }
 
@@ -161,7 +161,7 @@ namespace Opm {
             RATE = 5
         };
             
-        const std::string ActionEnum2String( ActionEnum enumValue );
+        const std::string ActionEnumToString( ActionEnum enumValue );
         ActionEnum ActionEnumFromString( const std::string& stringValue );
     }
     
@@ -180,7 +180,7 @@ namespace Opm {
             PRBL = 7
         };
         
-        const std::string ControlEnum2String( GroupProduction::ControlEnum enumValue );
+        const std::string ControlEnumToString( GroupProduction::ControlEnum enumValue );
         GroupProduction::ControlEnum ControlEnumFromString( const std::string& stringValue );    
     }
 
@@ -197,11 +197,11 @@ namespace Opm {
             RES = 8,
             UNDEFINED = 9
         };
-        const std::string GuideRatePhaseEnum2String( GuideRatePhaseEnum enumValue );
+        const std::string GuideRatePhaseEnumToString( GuideRatePhaseEnum enumValue );
         GuideRatePhaseEnum GuideRatePhaseEnumFromString( const std::string& stringValue );
     }
 
-    const std::string CompletionStateEnum2String( CompletionStateEnum enumValue );
+    const std::string CompletionStateEnumToString( CompletionStateEnum enumValue );
     CompletionStateEnum CompletionStateEnumFromString( const std::string& stringValue );
 
     

@@ -61,7 +61,14 @@ namespace Opm {
         int J = compdatRecord->getItem("J")->getInt(0) - 1;
         int K1 = compdatRecord->getItem("K1")->getInt(0) - 1;
         int K2 = compdatRecord->getItem("K2")->getInt(0) - 1;
-        CompletionStateEnum state = CompletionStateEnumFromString( compdatRecord->getItem("STATE")->getTrimmedString(0) );
+        CompletionStateEnum state;
+        try {
+            state = CompletionStateEnumFromString( compdatRecord->getItem("STATE")->getTrimmedString(0) );
+        } catch(const std::exception& e) {
+            compdatRecord->getParserLog()->addError(compdatRecord->getFileName(), compdatRecord->getLineNumber(), e.what());
+            return std::pair<std::string , std::vector<CompletionPtr> >("", completions);
+        }
+
         Value<double> connectionTransmissibilityFactor("ConnectionTransmissibilityFactor");
         Value<double> diameter("Diameter");
         Value<double> skinFactor("SkinFactor");
@@ -78,7 +85,14 @@ namespace Opm {
             skinFactor.setValue( skinFactorItem->getRawDouble(0));
         }
         
-        const CompletionDirection::DirectionEnum& direction = CompletionDirection::DirectionEnumFromString(compdatRecord->getItem("DIR")->getTrimmedString(0));
+        CompletionDirection::DirectionEnum direction;
+        try {
+            direction = CompletionDirection::DirectionEnumFromString(compdatRecord->getItem("DIR")->getTrimmedString(0));
+        } catch(const std::exception& e) {
+            compdatRecord->getParserLog()->addError(compdatRecord->getFileName(), compdatRecord->getLineNumber(), e.what());
+            return std::pair<std::string , std::vector<CompletionPtr> >("", completions);
+        }
+
 
         for (int k = K1; k <= K2; k++) {
             CompletionPtr completion(new Completion(I , J , k , state , connectionTransmissibilityFactor, diameter, skinFactor, direction ));

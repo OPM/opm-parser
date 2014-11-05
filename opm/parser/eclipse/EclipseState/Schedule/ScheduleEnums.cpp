@@ -26,7 +26,7 @@
 
 namespace Opm {
 
-    const std::string CompletionStateEnum2String( CompletionStateEnum enumValue ) {
+    const std::string CompletionStateEnumToString( CompletionStateEnum enumValue ) {
         switch( enumValue ) {
         case OPEN:
             return "OPEN";
@@ -57,7 +57,7 @@ namespace Opm {
 
     namespace GroupInjection {
     
-        const std::string ControlEnum2String( ControlEnum enumValue ) {
+        const std::string ControlEnumToString( ControlEnum enumValue ) {
             switch( enumValue ) {
             case NONE:
                 return "NONE";
@@ -103,7 +103,7 @@ namespace Opm {
 
     namespace GroupProduction {
         
-        const std::string ControlEnum2String( ControlEnum enumValue ) {
+        const std::string ControlEnumToString( ControlEnum enumValue ) {
             switch( enumValue ) {
             case NONE:
                 return "NONE";
@@ -152,7 +152,7 @@ namespace Opm {
     /*****************************************************************/
     namespace GroupProductionExceedLimit {
 
-        const std::string ActionEnum2String( ActionEnum enumValue ) {
+        const std::string ActionEnumToString( ActionEnum enumValue ) {
             switch(enumValue) {
             case NONE:
                 return "NONE";
@@ -197,7 +197,7 @@ namespace Opm {
     /*****************************************************************/
     
     namespace Phase {
-        const std::string PhaseEnum2String( PhaseEnum enumValue ) {
+        const std::string PhaseEnumToString( PhaseEnum enumValue ) {
             switch( enumValue ) {
             case OIL:
                 return "OIL";
@@ -229,7 +229,7 @@ namespace Opm {
 
     namespace WellProducer {
         
-        const std::string ControlMode2String( ControlModeEnum enumValue ) {
+        const std::string ControlModeToString( ControlModeEnum enumValue ) {
             switch( enumValue ) {
             case ORAT:
                 return "ORAT";
@@ -284,7 +284,7 @@ namespace Opm {
 
     namespace WellInjector {
 
-        const std::string Type2String( TypeEnum enumValue ) {
+        const std::string TypeToString( TypeEnum enumValue ) {
             switch( enumValue ) {
             case OIL:
                 return "OIL";
@@ -317,7 +317,7 @@ namespace Opm {
 
         /*****************************************************************/
 
-        const std::string ControlMode2String( ControlModeEnum enumValue ) {
+        const std::string ControlModeToString( ControlModeEnum enumValue ) {
             switch( enumValue ) {
             case RESV:
                 return "RESV";
@@ -357,7 +357,7 @@ namespace Opm {
 
     namespace WellCommon {
         
-        const std::string Status2String(StatusEnum enumValue) {
+        const std::string StatusToString(StatusEnum enumValue) {
             switch( enumValue ) {
             case OPEN:
                 return "OPEN";
@@ -393,7 +393,7 @@ namespace Opm {
 
     namespace GuideRate {
 
-        const std::string GuideRatePhaseEnum2String( GuideRatePhaseEnum enumValue ) {
+        const std::string GuideRatePhaseEnumToString( GuideRatePhaseEnum enumValue ) {
             switch( enumValue ) {
             case OIL:
                 return "OIL";
@@ -452,7 +452,7 @@ namespace Opm {
 
     namespace CompletionDirection {
         std::string
-        DirectionEnum2String(const DirectionEnum enumValue)
+        DirectionEnumToString(const DirectionEnum enumValue)
         {
             std::string stringValue;
 

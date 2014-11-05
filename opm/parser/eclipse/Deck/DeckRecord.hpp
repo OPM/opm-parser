@@ -25,19 +25,29 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <opm/parser/eclipse/Parser/ParserLog.hpp>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 
 namespace Opm {
 
     class DeckRecord {
     public:
-        DeckRecord();
+        DeckRecord(ParserLogPtr parserLog, const std::string& fileName, int lineNumber);
         size_t size() const;
         void addItem(DeckItemPtr deckItem);
         DeckItemPtr getItem(size_t index) const;
         DeckItemPtr getItem(const std::string& name) const;
         DeckItemPtr getDataItem() const;
+
+        const std::string& getFileName() const;
+        int getLineNumber() const;
+        ParserLogPtr getParserLog() const;
+
     private:
+        mutable ParserLogPtr m_parserLog;
+        std::string m_fileName;
+        int m_lineNumber;
+
         std::vector<DeckItemPtr> m_items;
         std::map<std::string, DeckItemPtr> m_itemMap;
 

@@ -35,17 +35,18 @@ namespace Opm {
          * \brief Read the PLYMAX keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx)
+        void init(Opm::DeckKeywordConstPtr keyword, int recordIdx, Opm::ParserLogPtr parserLog)
         {
             ParentType::init(keyword,
                              std::vector<std::string>{"C_POLYMER", "C_POLYMER_MAX"},
                              recordIdx,
-                             /*firstEntityOffset=*/0);
+                             /*firstEntityOffset=*/0,
+                             parserLog);
 
-            ParentType::checkNonDefaultable("C_POLYMER");
-            ParentType::checkMonotonic("C_POLYMER", /*isAscending=*/false);
-            ParentType::checkNonDefaultable("C_POLYMER_MAX");
-            ParentType::checkMonotonic("C_POLYMER_MAX", /*isAscending=*/false);
+            ParentType::checkNonDefaultable("C_POLYMER", parserLog);
+            ParentType::checkMonotonic("C_POLYMER", /*isAscending=*/false, parserLog);
+            ParentType::checkNonDefaultable("C_POLYMER_MAX", parserLog);
+            ParentType::checkMonotonic("C_POLYMER_MAX", /*isAscending=*/false, parserLog);
         }
 
     public:

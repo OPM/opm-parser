@@ -71,8 +71,8 @@ namespace Opm
 
 
 
-    ParserFloatItem::ParserFloatItem(const Json::JsonObject& jsonConfig) :
-            ParserItem(jsonConfig)
+    ParserFloatItem::ParserFloatItem(const std::string& keywordName, const Json::JsonObject& jsonConfig)
+        : ParserItem(keywordName, jsonConfig)
     {
         m_default = std::numeric_limits<float>::quiet_NaN();
         if (jsonConfig.has_item("default"))
@@ -123,7 +123,7 @@ namespace Opm
     }
     
     void ParserFloatItem::inlineNew(std::ostream& os) const {
-        os << "new ParserFloatItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnum2String( sizeType() );
+        os << "new ParserFloatItem(" << "\"" << name() << "\"" << "," << ParserItemSizeEnumToString( sizeType() );
         if (m_defaultSet)
             os << "," << getDefault();
         os << ")";
