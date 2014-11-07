@@ -52,14 +52,28 @@ BOOST_AUTO_TEST_CASE( MULTREGT_ECLIPSE_STATE ) {
     EclipseState state(deck);
     auto transMult = state.getTransMult();
 
+
+
+
+#if MULTREGT_USE_NEGATIVE_FACE
     BOOST_CHECK_EQUAL( 0.10 , transMult->getMultiplier( 0 , 0 , 0 , FaceDir::XPlus ));
     BOOST_CHECK_EQUAL( 0.10 , transMult->getMultiplier( 0 , 1 , 0 , FaceDir::XPlus ));
-    BOOST_CHECK_EQUAL( 0.20 , transMult->getMultiplier( 1 , 0 , 0 , FaceDir::XMinus ));
-    BOOST_CHECK_EQUAL( 0.20 , transMult->getMultiplier( 1 , 1 , 0 , FaceDir::XMinus ));
     BOOST_CHECK_EQUAL( 1.50 , transMult->getMultiplier( 0 , 0 , 0 , FaceDir::ZPlus ));
     BOOST_CHECK_EQUAL( 1.50 , transMult->getMultiplier( 0 , 1 , 0 , FaceDir::ZPlus ));
     BOOST_CHECK_EQUAL( 1.00 , transMult->getMultiplier( 1 , 0 , 0 , FaceDir::ZPlus ));
     BOOST_CHECK_EQUAL( 1.00 , transMult->getMultiplier( 1 , 1 , 0 , FaceDir::ZPlus ));
+
+    BOOST_CHECK_EQUAL( 0.20 , transMult->getMultiplier( 1 , 0 , 0 , FaceDir::XMinus ));
+    BOOST_CHECK_EQUAL( 0.20 , transMult->getMultiplier( 1 , 1 , 0 , FaceDir::XMinus ));
     BOOST_CHECK_EQUAL( 0.60 , transMult->getMultiplier( 1 , 0 , 1 , FaceDir::ZMinus ));
     BOOST_CHECK_EQUAL( 0.60 , transMult->getMultiplier( 1 , 1 , 1 , FaceDir::ZMinus ));
+#else  // Eclipse 
+    BOOST_CHECK_CLOSE( 0.02 , transMult->getMultiplier( 0 , 0 , 0 , FaceDir::XPlus ), 0.001);
+    BOOST_CHECK_CLOSE( 0.02 , transMult->getMultiplier( 0 , 1 , 0 , FaceDir::XPlus ), 0.001);
+    BOOST_CHECK_EQUAL( 1.50 , transMult->getMultiplier( 0 , 0 , 0 , FaceDir::ZPlus ));
+    BOOST_CHECK_EQUAL( 1.50 , transMult->getMultiplier( 0 , 1 , 0 , FaceDir::ZPlus ));
+
+    BOOST_CHECK_EQUAL( 0.60 , transMult->getMultiplier( 1 , 0 , 0 , FaceDir::ZPlus ));
+    BOOST_CHECK_EQUAL( 0.60 , transMult->getMultiplier( 1 , 1 , 0 , FaceDir::ZPlus ));
+#endif
 }

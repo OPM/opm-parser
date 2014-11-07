@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(SimpleMULTREGT) {
         auto cell0 = cells[0];
         auto cell1 = cells[1];
 
-        
+#if MULTREGT_USE_NEGATIVE_FACE
         BOOST_CHECK_EQUAL( 1 , std::get<0>(cell0));
         BOOST_CHECK_EQUAL( Opm::FaceDir::XMinus , std::get<1>(cell0));
         BOOST_CHECK_EQUAL( 1.50 , std::get<2>(cell0));
@@ -280,6 +280,15 @@ BOOST_AUTO_TEST_CASE(SimpleMULTREGT) {
         BOOST_CHECK_EQUAL( 3 , std::get<0>(cell1));
         BOOST_CHECK_EQUAL( Opm::FaceDir::XMinus , std::get<1>(cell1));
         BOOST_CHECK_EQUAL( 1.50 , std::get<2>(cell1));
+#else
+        BOOST_CHECK_EQUAL( 0 , std::get<0>(cell0));
+        BOOST_CHECK_EQUAL( Opm::FaceDir::XPlus , std::get<1>(cell0));
+        BOOST_CHECK_EQUAL( 1.50 , std::get<2>(cell0));
+
+        BOOST_CHECK_EQUAL( 2 , std::get<0>(cell1));
+        BOOST_CHECK_EQUAL( Opm::FaceDir::XPlus , std::get<1>(cell1));
+        BOOST_CHECK_EQUAL( 1.50 , std::get<2>(cell1));
+#endif
     }
 
 }
