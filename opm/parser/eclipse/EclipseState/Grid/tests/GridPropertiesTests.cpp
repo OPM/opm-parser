@@ -34,6 +34,9 @@
 
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 
+Opm::EclipseGridPtr createDummyGrid() {
+    return std::make_shared<Opm::EclipseGrid>(10,7,9);
+}
 
 BOOST_AUTO_TEST_CASE(Empty) {
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
@@ -55,13 +58,14 @@ BOOST_AUTO_TEST_CASE(Empty) {
 
 
 BOOST_AUTO_TEST_CASE(addKeyword) {
+    auto grid = createDummyGrid();
+
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
     std::shared_ptr<std::vector<SupportedKeywordInfo> > supportedKeywords(new std::vector<SupportedKeywordInfo>{
         SupportedKeywordInfo("SATNUM" , 0, "1")
     });
-    std::shared_ptr<const Opm::EclipseGrid> grid = std::make_shared<const Opm::EclipseGrid>(10,7,9);
     Opm::GridProperties<int> gridProperties( grid , supportedKeywords);
-    
+
     BOOST_CHECK_THROW( gridProperties.addKeyword("NOT-SUPPORTED") , std::invalid_argument);
 
     BOOST_CHECK(  gridProperties.addKeyword("SATNUM"));
@@ -72,11 +76,12 @@ BOOST_AUTO_TEST_CASE(addKeyword) {
 
 
 BOOST_AUTO_TEST_CASE(getKeyword) {
+    auto grid = createDummyGrid();
+
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
     std::shared_ptr<std::vector<SupportedKeywordInfo> > supportedKeywords(new std::vector<SupportedKeywordInfo>{
         SupportedKeywordInfo("SATNUM" , 0, "1")
     });
-    std::shared_ptr<const Opm::EclipseGrid> grid = std::make_shared<const Opm::EclipseGrid>(10,7,9);
     Opm::GridProperties<int> gridProperties( grid , supportedKeywords);
     std::shared_ptr<Opm::GridProperty<int> > satnum1 = gridProperties.getKeyword("SATNUM");
     std::shared_ptr<Opm::GridProperty<int> > satnum2 = gridProperties.getKeyword("SATNUM");
