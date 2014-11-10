@@ -112,6 +112,24 @@ BOOST_AUTO_TEST_CASE(GetPOROTOPBased) {
     
 }
 
+static DeckPtr createEmptyDeck() {
+    const char *deckData =
+        "";
+
+    ParserPtr parser(new Parser());
+    return parser->parseString(deckData) ;
+}
+
+static DeckPtr createDeckWithoutGrid() {
+    const char *deckData =
+        "PROPS\n"
+        "EQUALS\n"
+        "'PERMX' 1.23 /\n"
+        "/\n";
+
+    ParserPtr parser(new Parser());
+    return parser->parseString(deckData) ;
+}
 
 static DeckPtr createDeck() {
     const char *deckData =
@@ -197,16 +215,7 @@ static DeckPtr createDeckNoFaults() {
     return parser->parseString(deckData) ;
 }
 
-BOOST_AUTO_TEST_CASE(StrictSemantics) {
-    DeckPtr deck = createDeck();
-    EclipseState state(deck);
-
-    // the deck misses a few sections...
-    ParserLogPtr parserLog(new ParserLog());
-    BOOST_CHECK(!checkDeck(deck, parserLog));
-}
-
-BOOST_AUTO_TEST_CASE(CreatSchedule) {
+BOOST_AUTO_TEST_CASE(CreateSchedule) {
     DeckPtr deck = createDeck();
     EclipseState state(deck);
     ScheduleConstPtr schedule = state.getSchedule();
@@ -234,6 +243,22 @@ BOOST_AUTO_TEST_CASE(TitleCorrect) {
     BOOST_CHECK_EQUAL( state.getTitle(), "The title");
 }
 
+BOOST_AUTO_TEST_CASE(SupportsEmptyDeck) {
+    DeckPtr deck = createEmptyDeck();
+    ParserLogPtr parserLog(new ParserLog);
+    BOOST_CHECK_NO_THROW(EclipseState(deck, parserLog));
+
+    // we need to get a warning because no grid could be instantiated
+    BOOST_CHECK_EQUAL(parserLog->numWarnings(), 1);
+}
+
+BOOST_AUTO_TEST_CASE(SupportsDeckWithoutGrid) {
+    DeckPtr deck = createDeckWithoutGrid();
+    ParserLogPtr parserLog(new ParserLog);
+
+    // specifying grid properties without a grid is not supported!
+    BOOST_CHECK_THROW(EclipseState(deck, parserLog), std::logic_error);
+}
 
 BOOST_AUTO_TEST_CASE(IntProperties) {
     DeckPtr deck = createDeck();

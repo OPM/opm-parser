@@ -34,6 +34,25 @@
 
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 
+Opm::EclipseGridPtr createDummyGrid() {
+    const char *gridDeckString =
+        "RUNSPEC\n"
+        "DIMENS\n"
+        "1 1 1 /\n"
+        "GRID\n"
+        "DXV\n"
+        "1 /\n"
+        "DYV\n"
+        "1 /\n"
+        "DZV\n"
+        "1 /\n"
+        "TOPS\n"
+        "1 /\n";
+
+    Opm::Parser parser;
+    auto gridDeck = parser.parseString(gridDeckString);
+    return Opm::EclipseGridPtr(new Opm::EclipseGrid(gridDeck));
+}
 
 BOOST_AUTO_TEST_CASE(Empty) {
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
@@ -41,7 +60,7 @@ BOOST_AUTO_TEST_CASE(Empty) {
             SupportedKeywordInfo("SATNUM" , 0, "1"),
             SupportedKeywordInfo("FIPNUM" , 2, "1")
         });
-    Opm::GridProperties<int> gridProperties( 10, 10, 100 , supportedKeywords);
+    Opm::GridProperties<int> gridProperties( NULL , supportedKeywords);
     
     BOOST_CHECK( gridProperties.supportsKeyword("SATNUM") );
     BOOST_CHECK( gridProperties.supportsKeyword("FIPNUM") );
@@ -53,12 +72,14 @@ BOOST_AUTO_TEST_CASE(Empty) {
 
 
 BOOST_AUTO_TEST_CASE(addKeyword) {
+    auto grid = createDummyGrid();
+
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
     std::shared_ptr<std::vector<SupportedKeywordInfo> > supportedKeywords(new std::vector<SupportedKeywordInfo>{
         SupportedKeywordInfo("SATNUM" , 0, "1")
     });
-    Opm::GridProperties<int> gridProperties( 100, 10 , 10 , supportedKeywords);
-    
+    Opm::GridProperties<int> gridProperties(grid, supportedKeywords);
+
     BOOST_CHECK_THROW( gridProperties.addKeyword("NOT-SUPPORTED") , std::invalid_argument);
 
     BOOST_CHECK(  gridProperties.addKeyword("SATNUM"));
@@ -70,11 +91,13 @@ BOOST_AUTO_TEST_CASE(addKeyword) {
 
 
 BOOST_AUTO_TEST_CASE(getKeyword) {
+    auto grid = createDummyGrid();
+
     typedef Opm::GridProperties<int>::SupportedKeywordInfo SupportedKeywordInfo;
     std::shared_ptr<std::vector<SupportedKeywordInfo> > supportedKeywords(new std::vector<SupportedKeywordInfo>{
         SupportedKeywordInfo("SATNUM" , 0, "1")
     });
-    Opm::GridProperties<int> gridProperties( 100,25,4 , supportedKeywords);
+    Opm::GridProperties<int> gridProperties(grid, supportedKeywords);
     std::shared_ptr<Opm::GridProperty<int> > satnum1 = gridProperties.getKeyword("SATNUM");
     std::shared_ptr<Opm::GridProperty<int> > satnum2 = gridProperties.getKeyword("SATNUM");
     
