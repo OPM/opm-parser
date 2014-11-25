@@ -504,6 +504,24 @@ namespace Opm {
         return m_wells.size();
     }
 
+    size_t Schedule::numWells(size_t timestep) const {
+      size_t numWellsForTimestep = 0;
+
+      if (timestep >= m_timeMap->size()) {
+          throw std::invalid_argument("Timestep to large");
+      }
+
+      std::vector<WellConstPtr> wells;
+      for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
+          WellConstPtr well = *iter;
+          if (well->hasBeenDefined(timestep)) {
+              ++numWellsForTimestep;
+          }
+      }
+      return numWellsForTimestep;
+    }
+
+
     bool Schedule::hasWell(const std::string& wellName) const {
         return m_wells.hasKey( wellName );
     }
@@ -628,5 +646,20 @@ namespace Opm {
             return false;
         }
         else throw std::invalid_argument("String " + eclipseString + " not recognized as a boolean-convertible string.");
+    }
+
+
+    size_t Schedule::getMaxNumCompletionsForWells(size_t timestep) const {
+      size_t ncwmax = 0;
+      const std::vector<WellConstPtr>& wells = getWells();
+      for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
+        WellConstPtr well_ptr = *wellIter;
+        CompletionSetConstPtr completions_set_ptr = well_ptr->getCompletions(timestep);
+
+        if (completions_set_ptr->size() > ncwmax ) {
+          ncwmax = completions_set_ptr->size();
+        }
+      }
+      return ncwmax;
     }
 }
