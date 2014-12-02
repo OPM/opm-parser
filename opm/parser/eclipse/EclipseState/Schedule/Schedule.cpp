@@ -505,20 +505,8 @@ namespace Opm {
     }
 
     size_t Schedule::numWells(size_t timestep) const {
-      size_t numWellsForTimestep = 0;
-
-      if (timestep >= m_timeMap->size()) {
-          throw std::invalid_argument("Timestep to large");
-      }
-
-      std::vector<WellConstPtr> wells;
-      for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
-          WellConstPtr well = *iter;
-          if (well->hasBeenDefined(timestep)) {
-              ++numWellsForTimestep;
-          }
-      }
-      return numWellsForTimestep;
+      std::vector<WellConstPtr> wells = getWells(timepstep);
+      return wells.size();
     }
 
 
