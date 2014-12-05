@@ -26,6 +26,14 @@
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 #include <opm/parser/eclipse/EclipseState/Util/Value.hpp>
 
+/* 
+   See documentation on top of MULTREGTScanner::checkConnection().
+   Setting the compile time symbol MULTREGT_USE_NEGATIVE_FACE to 0 will
+   give Eclipse behaviour.
+*/
+
+#define MULTREGT_USE_NEGATIVE_FACE 0  
+
 
 namespace Opm {
 

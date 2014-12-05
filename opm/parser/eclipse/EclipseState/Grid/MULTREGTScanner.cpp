@@ -154,19 +154,39 @@ namespace Opm {
          1  2   0.10  XYZ  ALL M /
 
       I.e. we are checking for the boundary between regions 1 and
-      2. We assign the transmissibility multiplier to the correct face
-      of the cell with value 1:
+      2. When the transition from region value 1 to region value 2 is
+      in the positive cartesian direction it is obvious:
 
          -----------
          | 1  | 2  |   =>  MultTrans( i,j,k,FaceDir::XPlus ) *= 0.50
          -----------
 
+      The transmissibility multiplier is applied to the correct face
+      of cell (i,j,k). But when the transition from 1 -> 2 is in the
+      negative cartcian direction:
+
          -----------
-         | 2  | 1  |   =>  MultTrans( i+1,j,k,FaceDir::XMinus ) *= 0.50
+         | 2  | 1  |   
          -----------
 
+      It is not obvious in which cell to apply the transmissibility
+      modifier. In principle it seem most correct to apply it the
+      negative face of the cartecian downstream cell:
+
+          =>  MultTrans( i+1,j,k,FaceDir::XMinus ) *= 0.50
+
+      However it seems that ECLIPSE does not use negative cell phases
+      in the implementation of MULTREGT, so instead this will
+      implemented as:
+
+          =>  MultTrans( i,j,k,FaceDir::XPlus ) *= 0.50
+
+      Both alternatives are in the code - regulated by the configure
+      time symbol MULTREGT_USE_NEGATIVE_PHASE.
+
     */
-    void MULTREGTScanner::checkConnection( MULTREGTSearchMap& map , std::vector< MULTREGTConnection >& connections, std::shared_ptr<GridProperty<int> > region, size_t globalIndex1 , size_t globalIndex2 , FaceDir::DirEnum faceDir1 ,FaceDir::DirEnum faceDir2) {
+
+    void MULTREGTScanner::checkConnection( MULTREGTSearchMap& map , std::vector< MULTREGTConnection >& connections, std::shared_ptr<GridProperty<int> > region, size_t globalIndex1 , size_t globalIndex2 , FaceDir::DirEnum faceDir1 ,FaceDir::DirEnum faceDir2) {  
         int regionValue1 = region->iget(globalIndex1);
         int regionValue2 = region->iget(globalIndex2);
         
@@ -181,9 +201,17 @@ namespace Opm {
         pair = std::pair<int,int>{regionValue2 , regionValue1};
         if (map.count(pair) == 1) {
             const MULTREGTRecord * record = map[pair];
+
+#if MULTREGT_USE_NEGATIVE_FACE
             if (record->m_directions & faceDir2) {
                 connections.push_back( MULTREGTConnection{ globalIndex2 , faceDir2 , record->m_transMultiplier } );
             }
+#else       // Eclipse behaviour
+            if (record->m_directions & faceDir1) {
+                connections.push_back( MULTREGTConnection{ globalIndex1 , faceDir1 , record->m_transMultiplier } );
+            }
+#endif
+
         }
     }
 
