@@ -44,17 +44,15 @@ namespace Opm {
         }
 
         void dropInjectionControl(WellInjector::ControlModeEnum controlModeArg) {
-            if ((injectionControls & controlModeArg) != 0) {
+            if ((injectionControls & controlModeArg) != 0)
                 injectionControls -= controlModeArg;
-            }
         }
 
         void addInjectionControl(WellInjector::ControlModeEnum controlModeArg) {
-            if ((injectionControls & controlModeArg) == 0) {
+            if ((injectionControls & controlModeArg) == 0)
                 injectionControls += controlModeArg;
-            }
         }
-    }; 
+    };
 }
 
 #endif
