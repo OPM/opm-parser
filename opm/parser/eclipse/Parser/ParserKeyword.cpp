@@ -349,26 +349,26 @@ namespace Opm {
                     switch (valueType) {
                     case INT:
                         {
-                            ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem(itemConfig));
+                            ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem(getName(), itemConfig));
                             addItem(item);
                         }
                         break;
                     case STRING:
                         {
-                            ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem(itemConfig));
+                            ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem(getName(), itemConfig));
                             addItem(item);
                         }
                         break;
                     case DOUBLE:
                         {
-                            ParserDoubleItemPtr item = ParserDoubleItemPtr(new ParserDoubleItem(itemConfig));
+                            ParserDoubleItemPtr item = ParserDoubleItemPtr(new ParserDoubleItem(getName(), itemConfig));
                             initDoubleItemDimension( item , itemConfig );
                             addItem(item);
                         }
                         break;
                     case FLOAT:
                         {
-                            ParserFloatItemPtr item = ParserFloatItemPtr(new ParserFloatItem(itemConfig));
+                            ParserFloatItemPtr item = ParserFloatItemPtr(new ParserFloatItem(getName(), itemConfig));
                             initFloatItemDimension( item , itemConfig );
                             addItem(item);
                         }

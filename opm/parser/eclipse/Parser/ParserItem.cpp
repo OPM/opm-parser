@@ -49,18 +49,18 @@ namespace Opm {
     }
 
     const std::string& ParserItem::getDimension(size_t /* index */) const {
-        throw std::invalid_argument("Should not call this ... \n");       
+        throw std::invalid_argument("The getDimension() method has not been overwritten by the actual item class\n");
     }
 
     void ParserItem::push_backDimension(const std::string& /* dimension */) {
-        throw std::invalid_argument("Should not call this ... \n");       
+        throw std::invalid_argument("The push_backDimension() method has not been overwritten by the actual item class\n");
     }
     
-    ParserItem::ParserItem(const Json::JsonObject& jsonConfig) {
+    ParserItem::ParserItem(const std::string& keywordName, const Json::JsonObject& jsonConfig) {
         if (jsonConfig.has_item("name"))
             m_name = jsonConfig.get_string("name");
         else
-            throw std::invalid_argument("Json config object missing \"name\": ... item");
+            throw std::invalid_argument("The JSON specification of keyword "+keywordName+" is missing the mandatory 'name' field for an item");
 
         if (jsonConfig.has_item("size_type")) {
             const std::string sizeTypeString = jsonConfig.get_string("size_type");
