@@ -360,26 +360,16 @@ namespace Opm {
 
     void EclipseState::initMULTREGT(DeckConstPtr deck, ParserLogPtr /*parserLog*/) {
         EclipseGridConstPtr grid = getEclipseGrid();
-        std::shared_ptr<MULTREGTScanner> scanner = std::make_shared<MULTREGTScanner>();
 
-        {
-            std::shared_ptr<Opm::GRIDSection> gridSection(new Opm::GRIDSection(deck) );
-            for (size_t index=0; index < gridSection->count("MULTREGT"); index++) {
-                DeckKeywordConstPtr multregtKeyword = gridSection->getKeyword("MULTREGT" , index);
-                scanner->addKeyword( multregtKeyword );
-            }
-        }
+        std::vector<Opm::DeckKeywordConstPtr> multregtKeywords;
+        if (deck->hasKeyword("MULTREGT"))
+            multregtKeywords = deck->getKeywordList("MULTREGT");
 
+        std::shared_ptr<MULTREGTScanner> scanner =
+            std::make_shared<MULTREGTScanner>(m_intGridProperties,
+                                              multregtKeywords);
 
-        if (Section::hasEDIT(deck)) {
-            std::shared_ptr<Opm::EDITSection> editSection(new Opm::EDITSection(deck) );
-            for (size_t index=0; index < editSection->count("MULTREGT"); index++) {
-                DeckKeywordConstPtr multregtKeyword = editSection->getKeyword("MULTREGT" , index);
-                scanner->addKeyword( multregtKeyword );
-            }
-        }
-
-        m_transMult->applyMULTREGT( scanner , m_intGridProperties);
+        m_transMult->setMultregtScanner( scanner );
     }
 
 
