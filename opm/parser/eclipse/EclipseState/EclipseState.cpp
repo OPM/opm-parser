@@ -17,8 +17,12 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opm/parser/eclipse/Log/Logger.hpp>
+#include <iostream>
+#include <sstream>
+#include <math.h>
+#include <boost/algorithm/string/join.hpp>
 
+#include <opm/parser/eclipse/Log/Logger.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
@@ -28,9 +32,6 @@
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
 
-#include <iostream>
-#include <sstream>
-#include <boost/algorithm/string/join.hpp>
 
 namespace Opm {
 
@@ -107,6 +108,16 @@ namespace Opm {
         };
 
 
+    }
+
+
+    static bool isInt(double value) {
+        double diff = fabs(nearbyint(value) - value);
+
+        if (diff < 1e-6)
+            return true;
+        else
+            return false;
     }
 
 
@@ -794,6 +805,18 @@ namespace Opm {
                 if (deckKeyword->name() == "ENDBOX")
                     handleENDBOXKeyword(boxManager);
 
+                if (deckKeyword->name() == "EQUALREG")
+                    handleEQUALREGKeyword(deckKeyword , logger , enabledTypes);
+
+                if (deckKeyword->name() == "ADDREG")
+                    handleADDREGKeyword(deckKeyword , logger , enabledTypes);
+
+                if (deckKeyword->name() == "MULTIREG")
+                    handleMULTIREGKeyword(deckKeyword , logger , enabledTypes);
+
+                if (deckKeyword->name() == "COPYREG")
+                    handleCOPYREGKeyword(deckKeyword , logger , enabledTypes);
+
                 if (deckKeyword->name() == "MULTIPLY")
                     handleMULTIPLYKeyword(deckKeyword, logger, boxManager, enabledTypes);
 
@@ -822,6 +845,183 @@ namespace Opm {
     void EclipseState::handleENDBOXKeyword(BoxManager& boxManager) {
         boxManager.endInputBox();
     }
+
+
+    void EclipseState::handleEQUALREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr , int enabledTypes) {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        for (size_t recordIdx = 0; recordIdx < deckKeyword->size(); ++recordIdx) {
+            DeckRecordConstPtr record = deckKeyword->getRecord(recordIdx);
+            const std::string& targetArray = record->getItem("ARRAY")->getString(0);
+
+            if (!supportsGridProperty( targetArray , IntProperties + DoubleProperties))
+                throw std::invalid_argument("Fatal error processing EQUALREG keyword - invalid/undefined keyword: " + targetArray);
+
+            if (supportsGridProperty( targetArray , enabledTypes)) {
+                double doubleValue = record->getItem("VALUE")->getRawDouble(0);
+                int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
+                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword(regionArray);
+                std::vector<bool> mask;
+                
+                regionProperty->initMask( regionValue , mask);
+                
+                if (m_intGridProperties->supportsKeyword( targetArray )) {
+                    if (enabledTypes & IntProperties) {
+                        if (isInt( doubleValue )) {
+                            std::shared_ptr<Opm::GridProperty<int> > targetProperty = m_intGridProperties->getKeyword(targetArray);
+                            int intValue = static_cast<int>( doubleValue + 0.5 );
+                            targetProperty->maskedSet( intValue , mask);
+                        } else
+                            throw std::invalid_argument("Fatal error processing EQUALREG keyword - expected integer value for: " + targetArray);
+                    }
+                }
+                else if (m_doubleGridProperties->supportsKeyword( targetArray )) {
+                    if (enabledTypes & DoubleProperties) {
+                        std::shared_ptr<Opm::GridProperty<double> > targetProperty = m_doubleGridProperties->getKeyword(targetArray);
+                        const std::string& dimensionString = targetProperty->getDimensionString();
+                        double SIValue = doubleValue * getSIScaling( dimensionString );
+                        targetProperty->maskedSet( SIValue , mask);
+                    }
+                }
+                else {
+                    throw std::invalid_argument("Fatal error processing EQUALREG keyword - invalid/undefined keyword: " + targetArray);
+                }
+            }
+        }
+    }
+
+
+    void EclipseState::handleADDREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr , int enabledTypes) {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        for (size_t recordIdx = 0; recordIdx < deckKeyword->size(); ++recordIdx) {
+            DeckRecordConstPtr record = deckKeyword->getRecord(recordIdx);
+            const std::string& targetArray = record->getItem("ARRAY")->getString(0);
+            
+            if (!supportsGridProperty( targetArray , IntProperties + DoubleProperties))
+                throw std::invalid_argument("Fatal error processing ADDREG keyword - invalid/undefined keyword: " + targetArray);
+            
+            if (supportsGridProperty( targetArray , enabledTypes)) {
+                double doubleValue = record->getItem("SHIFT")->getRawDouble(0);
+                int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
+                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword(regionArray);
+                std::vector<bool> mask;
+                
+                regionProperty->initMask( regionValue , mask);
+                
+                if (m_intGridProperties->hasKeyword( targetArray )) {
+                    if (enabledTypes & IntProperties) {
+                        if (isInt( doubleValue )) {
+                            std::shared_ptr<Opm::GridProperty<int> > targetProperty = m_intGridProperties->getKeyword(targetArray);
+                            int intValue = static_cast<int>( doubleValue + 0.5 );
+                            targetProperty->maskedAdd( intValue , mask);
+                        } else
+                            throw std::invalid_argument("Fatal error processing ADDREG keyword - expected integer value for: " + targetArray);
+                    }
+                }
+                else if (m_doubleGridProperties->hasKeyword( targetArray )) {
+                    if (enabledTypes & DoubleProperties) {
+                        std::shared_ptr<Opm::GridProperty<double> > targetProperty = m_doubleGridProperties->getKeyword(targetArray);
+                        const std::string& dimensionString = targetProperty->getDimensionString();
+                        double SIValue = doubleValue * getSIScaling( dimensionString );
+                        targetProperty->maskedAdd( SIValue , mask);
+                    }
+                }
+                else {
+                    throw std::invalid_argument("Fatal error processing ADDREG keyword - invalid/undefined keyword: " + targetArray);
+                }
+            }
+        }
+    }
+
+
+
+
+    void EclipseState::handleMULTIREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr , int enabledTypes) {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        for (size_t recordIdx = 0; recordIdx < deckKeyword->size(); ++recordIdx) {
+            DeckRecordConstPtr record = deckKeyword->getRecord(recordIdx);
+            const std::string& targetArray = record->getItem("ARRAY")->getString(0);
+
+            if (!supportsGridProperty( targetArray , IntProperties + DoubleProperties))
+                throw std::invalid_argument("Fatal error processing MULTIREG keyword - invalid/undefined keyword: " + targetArray);
+            
+            if (supportsGridProperty( targetArray , enabledTypes)) {
+                double doubleValue = record->getItem("FACTOR")->getRawDouble(0);
+                int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
+                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword( regionArray );
+                std::vector<bool> mask;
+                
+                regionProperty->initMask( regionValue , mask);
+                
+                if (m_intGridProperties->hasKeyword( targetArray )) {
+                    if (enabledTypes & IntProperties) {
+                        if (isInt( doubleValue )) {
+                            std::shared_ptr<Opm::GridProperty<int> > targetProperty = m_intGridProperties->getKeyword( targetArray );
+                            int intValue = static_cast<int>( doubleValue + 0.5 );
+                            targetProperty->maskedMultiply( intValue , mask);
+                        } else
+                            throw std::invalid_argument("Fatal error processing MULTIREG keyword - expected integer value for: " + targetArray);
+                    }
+                }
+                else if (m_doubleGridProperties->hasKeyword( targetArray )) {
+                    if (enabledTypes & DoubleProperties) {
+                        std::shared_ptr<Opm::GridProperty<double> > targetProperty = m_doubleGridProperties->getKeyword(targetArray);
+                        targetProperty->maskedMultiply( doubleValue , mask);
+                    }
+                }
+                else {
+                    throw std::invalid_argument("Fatal error processing MULTIREG keyword - invalid/undefined keyword: " + targetArray);
+                }
+            }
+        }
+    }
+
+
+    void EclipseState::handleCOPYREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr , int enabledTypes) {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        for (size_t recordIdx = 0; recordIdx < deckKeyword->size(); ++recordIdx) {
+            DeckRecordConstPtr record = deckKeyword->getRecord(recordIdx);
+            const std::string& srcArray    = record->getItem("ARRAY")->getString(0);
+            const std::string& targetArray = record->getItem("TARGET_ARRAY")->getString(0);
+
+            if (!supportsGridProperty( targetArray , IntProperties + DoubleProperties))
+                throw std::invalid_argument("Fatal error processing MULTIREG keyword - invalid/undefined keyword: " + targetArray);
+            
+            if (!supportsGridProperty( srcArray , IntProperties + DoubleProperties))
+                throw std::invalid_argument("Fatal error processing MULTIREG keyword - invalid/undefined keyword: " + srcArray);
+            
+            if (supportsGridProperty( srcArray , enabledTypes)) {
+                int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
+                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword( regionArray );
+                std::vector<bool> mask;
+                
+                regionProperty->initMask( regionValue , mask );
+                
+                if (m_intGridProperties->hasKeyword( srcArray )) {
+                    std::shared_ptr<Opm::GridProperty<int> > srcProperty = m_intGridProperties->getInitializedKeyword( srcArray );
+                    if (supportsGridProperty( targetArray , IntProperties)) {
+                        std::shared_ptr<Opm::GridProperty<int> > targetProperty = m_intGridProperties->getKeyword( targetArray );
+                        targetProperty->maskedCopy( *srcProperty , mask );
+                    } else 
+                        throw std::invalid_argument("Fatal error processing COPYREG keyword.");
+                } else if (m_doubleGridProperties->hasKeyword( srcArray )) {
+                    std::shared_ptr<Opm::GridProperty<double> > srcProperty = m_doubleGridProperties->getInitializedKeyword( srcArray );
+                    if (supportsGridProperty( targetArray , DoubleProperties)) {
+                        std::shared_ptr<Opm::GridProperty<double> > targetProperty = m_doubleGridProperties->getKeyword( targetArray );
+                        targetProperty->maskedCopy( *srcProperty , mask );
+                    }
+                }
+                else {
+                    throw std::invalid_argument("Fatal error processing COPYREG keyword - invalid/undefined keyword: " + targetArray);
+                }
+            }
+        }
+    }
+
+
 
 
     void EclipseState::handleMULTIPLYKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr logger, BoxManager& boxManager, int enabledTypes) {
@@ -875,7 +1075,7 @@ namespace Opm {
                 if (enabledTypes & DoubleProperties) {
                     std::shared_ptr<GridProperty<double> > property = m_doubleGridProperties->getKeyword( field );
 
-                    double siShiftValue = shiftValue * getSIScaling(property->getKeywordInfo().getDimensionString());
+                    double siShiftValue = shiftValue * getSIScaling(property->getDimensionString());
                     property->add(siShiftValue , boxManager.getActiveBox() );
                 }
             } else if (!m_intGridProperties->supportsKeyword(field) &&

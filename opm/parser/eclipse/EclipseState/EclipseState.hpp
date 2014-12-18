@@ -200,6 +200,11 @@ namespace Opm {
         void handleEQUALSKeyword(DeckKeywordConstPtr deckKeyword , LoggerPtr logger, BoxManager& boxManager, int enabledTypes);
         void handleMULTIPLYKeyword(DeckKeywordConstPtr deckKeyword , LoggerPtr logger, BoxManager& boxManager, int enabledTypes);
 
+        void handleEQUALREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr logger, int enabledTypes);
+        void handleMULTIREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr logger, int enabledTypes);
+        void handleADDREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr logger, int enabledTypes);
+        void handleCOPYREGKeyword(DeckKeywordConstPtr deckKeyword, LoggerPtr logger, int enabledTypes);
+
         void setKeywordBox(DeckKeywordConstPtr deckKeyword, size_t recordIdx, LoggerPtr logger, BoxManager& boxManager);
 
         void copyIntKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
