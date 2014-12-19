@@ -64,7 +64,7 @@ PVTG\n\
 static void check_parser(ParserPtr parser) {
     DeckPtr deck =  parser->parseString(pvtgData);
     DeckKeywordConstPtr kw1 = deck->getKeyword("PVTG" , 0);
-    BOOST_CHECK_EQUAL(5U , kw1->size());
+    BOOST_CHECK_EQUAL(6U , kw1->size());
 
     DeckRecordConstPtr record0 = kw1->getRecord(0);
     DeckRecordConstPtr record1 = kw1->getRecord(1);

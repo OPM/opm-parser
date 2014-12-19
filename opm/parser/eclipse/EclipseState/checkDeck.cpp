@@ -18,6 +18,7 @@
  */
 #include "checkDeck.hpp"
 
+#include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 
 namespace Opm {
@@ -28,13 +29,71 @@ bool checkDeck(DeckConstPtr deck, LoggerPtr logger, size_t enabledChecks) {
     if (enabledChecks & UnknownKeywords) {
         size_t keywordIdx = 0;
         for (; keywordIdx < deck->size(); keywordIdx++) {
-            const auto& keyword = deck->getKeyword(keywordIdx);
+            const auto keyword = deck->getKeyword(keywordIdx);
             if (!keyword->hasParserKeyword()) {
                 std::string msg("Keyword '" + keyword->name() + "' is unknown.");
                 logger->addWarning(keyword->getFileName(), keyword->getLineNumber(), msg);
                 deckValid = false;
             }
         }
+    }
+
+    // make sure that the sizes of the tables have been specified correctly
+    if (enabledChecks & TableSizes) {
+        size_t keywordIdx = 0;
+        for (; keywordIdx < deck->size(); keywordIdx++) {
+            const auto keyword = deck->getKeyword(keywordIdx);
+            if (!keyword->hasParserKeyword())
+                continue;
+
+            const auto parserKeyword = keyword->getParserKeyword();
+            if (parserKeyword->getSizeType() != OTHER_KEYWORD_IN_DECK)
+                continue;
+
+            const auto& sizeDefPair = parserKeyword->getSizeDefinitionPair();
+            const std::string& sizeKeywordName = sizeDefPair.first;
+            if (!deck->hasKeyword(sizeKeywordName)) {
+                std::string msg("Deck does not feature the keyword '" + sizeKeywordName +
+                                "' which specifies the size of keyword " + keyword->name() + ".");
+                parserLog->addWarning(keyword->getFileName(), keyword->getLineNumber(), msg);
+                deckValid = false;
+                continue;
+            }
+
+            const auto sizeKeyword = deck->getKeyword(sizeKeywordName);
+            const std::string& sizeItemName = sizeDefPair.second;
+            DeckItemConstPtr deckItem;
+            try {
+                deckItem = sizeKeyword->getRecord(0)->getItem(sizeItemName);
+            }
+            catch (const std::invalid_argument& e) {
+                // this error is quite bad: it is an incorrect (or at least inconsistent)
+                // keyword definition. throwing an exception here does not seem
+                // appropriate, though...
+                std::string msg("Keyword '" + sizeKeywordName +
+                                "' does not contain an item named '" + sizeItemName +
+                                "' which is specified as the size of keyword " + keyword->name() + ".");
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(), msg);
+                parserLog->addError(keyword->getFileName(), keyword->getLineNumber(),
+                                    "(this is an error in opm-parser, please create send a bug "
+                                    "report to opm@opm-project.org)" );
+                deckValid = false;
+                continue;
+            }
+
+            int kwMaxSize = sizeKeyword->getRecord(0)->getItem(sizeItemName)->getInt(0);
+            if (static_cast<int>(keyword->size()) > kwMaxSize) {
+                std::string msg("Keyword '" + keyword->name() +
+                                "' has " + std::to_string((long long) keyword->size()) +
+                                " items but at most " + std::to_string((long long) kwMaxSize) +
+                                " are allowed by the " + sizeItemName + " item of keyword " +
+                                sizeKeywordName + ".");
+                parserLog->addWarning(keyword->getFileName(), keyword->getLineNumber(), msg);
+                deckValid = false;
+                continue;
+            }
+        }
+
     }
 
     // make sure all mandatory sections are present and that their order is correct
