@@ -31,6 +31,8 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
 
 
+
+
 namespace Opm {
 
     Schedule::Schedule(DeckConstPtr deck, LoggerPtr logger) {
@@ -388,19 +390,98 @@ namespace Opm {
         }
     }
 
+    static Opm::Value<int> getValueItem(DeckItemPtr item){
+        Opm::Value<int> data(item->name());
+        if(item->hasValue(0)) {
+            int tempValue = item->getInt(0);
+            if( tempValue >0){
+                data.setValue(tempValue-1);
+            }
+        }
+        return data;
+    }
+
     void Schedule::handleWELOPEN(DeckKeywordConstPtr keyword, LoggerPtr /*logger*/, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
-            const std::string& wellName = record->getItem("WELL")->getTrimmedString(0);
-            WellPtr well = getWell(wellName);
 
+            bool haveCompletionData = false;
             for (size_t i=2; i<7; i++) {
-                if (record->getItem(i)->getInt(0) > 0 ) {
-                    throw std::logic_error("Error processing WELOPEN keyword, specifying specific connections is not supported yet.");
+                if (record->getItem(i)->hasValue(0)) {
+                    haveCompletionData = true;
+                    break;
                 }
             }
-            WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
-            well->setStatus(currentStep, status);
+
+
+            const std::string& wellNamePattern = record->getItem("WELL")->getTrimmedString(0);
+            const std::vector<WellPtr>& wells = getWells(wellNamePattern);
+
+
+
+            for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
+                WellPtr well = *wellIter;
+
+                if(haveCompletionData){
+                    CompletionSetConstPtr currentCompletionSet = well->getCompletions(currentStep);
+
+                    CompletionSetPtr newCompletionSet(new CompletionSet( ));
+
+                    Opm::Value<int> I  = getValueItem(record->getItem("I"));
+                    Opm::Value<int> J  = getValueItem(record->getItem("J"));
+                    Opm::Value<int> K  = getValueItem(record->getItem("K"));
+                    Opm::Value<int> C1 = getValueItem(record->getItem("C1"));
+                    Opm::Value<int> C2 = getValueItem(record->getItem("C2"));
+
+                    size_t completionSize = currentCompletionSet->size();
+
+                    for(size_t i = 0; i < completionSize;i++) {
+
+                        CompletionConstPtr currentCompletion = currentCompletionSet->get(i);
+
+                        if (C1.hasValue()) {
+                            if (i < (size_t) C1.getValue()) {
+                                newCompletionSet->add(currentCompletion);
+                                continue;
+                            }
+                        }
+                        if (C2.hasValue()) {
+                            if (i > (size_t) C2.getValue()) {
+                                newCompletionSet->add(currentCompletion);
+                                continue;
+                            }
+                        }
+
+                        int ci = currentCompletion->getI();
+                        int cj = currentCompletion->getJ();
+                        int ck = currentCompletion->getK();
+
+                        if (I.hasValue() && (!(I.getValue() == ci) )) {
+                            newCompletionSet->add(currentCompletion);
+                            continue;
+                        }
+
+                        if (J.hasValue() && (!(J.getValue() == cj) )) {
+                            newCompletionSet->add(currentCompletion);
+                            continue;
+                        }
+
+                        if (K.hasValue() && (!(K.getValue() == ck) )) {
+                            newCompletionSet->add(currentCompletion);
+                            continue;
+                        }
+                        WellCompletion::StateEnum completionStatus = WellCompletion::StateEnumFromString(record->getItem("STATUS")->getTrimmedString(0));
+                        CompletionPtr newCompletion = std::make_shared<Completion>(currentCompletion, completionStatus);
+                        newCompletionSet->add(newCompletion);
+                    }
+                    well->addCompletionSet(currentStep, newCompletionSet);
+                }
+                if(!haveCompletionData) {
+                    WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+                    well->setStatus(currentStep, status);
+                }
+
+            }
         }
     }
 
