@@ -19,6 +19,7 @@
 
 #include <boost/date_time.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Util/Value.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
@@ -27,7 +28,7 @@
 
 namespace Opm {
 
-    Well::Well(const std::string& name_, int headI, int headJ, double refDepth, Phase::PhaseEnum preferredPhase,
+    Well::Well(const std::string& name_, std::shared_ptr<const EclipseGrid> grid , int headI, int headJ, Value<double> refDepth , Phase::PhaseEnum preferredPhase,
                TimeMapConstPtr timeMap, size_t creationTimeStep)
         : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::OPEN)),
           m_isAvailableForGroupControl(new DynamicState<bool>(timeMap, true)),
@@ -40,33 +41,11 @@ namespace Opm {
           m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
           m_polymerProperties( new DynamicState<WellPolymerProperties>(timeMap, WellPolymerProperties() )),
           m_groupName( new DynamicState<std::string>( timeMap , "" )),
+          m_timeMap( timeMap ),
+          m_grid( grid ),
           m_headI(headI),
           m_headJ(headJ),
-          m_refDepthDefaulted(false),
           m_refDepth(refDepth),
-          m_preferredPhase(preferredPhase)
-    {
-        m_name = name_;
-        m_creationTimeStep = creationTimeStep;
-    }
-
-    Well::Well(const std::string& name_, int headI, int headJ, Phase::PhaseEnum preferredPhase,
-               TimeMapConstPtr timeMap, size_t creationTimeStep)
-        : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::OPEN)),
-          m_isAvailableForGroupControl(new DynamicState<bool>(timeMap, true)),
-          m_guideRate(new DynamicState<double>(timeMap, -1.0)),
-          m_guideRatePhase(new DynamicState<GuideRate::GuideRatePhaseEnum>(timeMap, GuideRate::UNDEFINED)),
-          m_guideRateScalingFactor(new DynamicState<double>(timeMap, 1.0)),
-          m_isProducer(new DynamicState<bool>(timeMap, true)) ,
-          m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
-          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties() )),
-          m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
-          m_polymerProperties( new DynamicState<WellPolymerProperties>(timeMap, WellPolymerProperties() )),
-          m_groupName( new DynamicState<std::string>( timeMap , "" )),
-          m_headI(headI),
-          m_headJ(headJ),
-          m_refDepthDefaulted(true),
-          m_refDepth(-1e100),
           m_preferredPhase(preferredPhase)
     {
         m_name = name_;
@@ -190,13 +169,32 @@ namespace Opm {
         return m_headJ;
     }
 
-    bool Well::getRefDepthDefaulted() const {
-        return m_refDepthDefaulted;
+
+    double Well::getRefDepth() const{
+        if (!m_refDepth.hasValue())
+            setRefDepthFromCompletions();
+
+        return m_refDepth.getValue();
     }
 
-    double Well::getRefDepth() const {
-        return m_refDepth;
+
+    void Well::setRefDepthFromCompletions() const {
+        size_t timeStep = m_creationTimeStep;
+        while (true) {
+            auto completions = getCompletions( timeStep );
+            if (completions->size() > 0) {
+                auto firstCompletion = completions->get(0);
+                double depth = m_grid->getCellDepth( firstCompletion->getI() , firstCompletion->getJ() , firstCompletion->getK());
+                m_refDepth.setValue( depth );
+                break;
+            } else {
+                timeStep++;
+                if (timeStep >= m_timeMap->size())
+                    throw std::invalid_argument("No completions defined for well: " + name() + " can not infer reference depth");
+            }
+        }
     }
+
 
     Phase::PhaseEnum Well::getPreferredPhase() const {
         return m_preferredPhase;

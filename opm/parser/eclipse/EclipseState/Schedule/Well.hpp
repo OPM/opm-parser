@@ -28,6 +28,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 
 #include <boost/optional.hpp>
 
@@ -41,10 +42,7 @@ namespace Opm {
 
     class Well {
     public:
-        Well(const std::string& name, int headI, int headJ, double refDepth, Phase::PhaseEnum preferredPhase,
-             TimeMapConstPtr timeMap, size_t creationTimeStep);
-        /// Use this constructor when reference depth is defaulted.
-        Well(const std::string& name, int headI, int headJ, Phase::PhaseEnum preferredPhase,
+        Well(const std::string& name, std::shared_ptr<const EclipseGrid> grid , int headI, int headJ, Value<double> refDepth , Phase::PhaseEnum preferredPhase,
              TimeMapConstPtr timeMap, size_t creationTimeStep);
         const std::string& name() const;
 
@@ -57,7 +55,6 @@ namespace Opm {
 
         int    getHeadI() const;
         int    getHeadJ() const;
-        bool   getRefDepthDefaulted() const;
         double getRefDepth() const;
         Phase::PhaseEnum getPreferredPhase() const;
 
@@ -90,6 +87,7 @@ namespace Opm {
         const WellPolymerProperties&   getPolymerProperties(size_t timeStep) const;
 
     private:
+        void setRefDepthFromCompletions() const;
         size_t m_creationTimeStep;
         std::string m_name;
 
@@ -108,11 +106,13 @@ namespace Opm {
         std::shared_ptr<DynamicState<std::string> > m_groupName;
 
         // WELSPECS data - assumes this is not dynamic
+
+        TimeMapConstPtr m_timeMap;
         int m_headI;
         int m_headJ;
-        bool m_refDepthDefaulted;
-        double m_refDepth;
+        mutable Value<double> m_refDepth;
         Phase::PhaseEnum m_preferredPhase;
+        std::shared_ptr<const EclipseGrid> m_grid;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

@@ -35,7 +35,9 @@
 
 namespace Opm {
 
-    Schedule::Schedule(DeckConstPtr deck, LoggerPtr logger) {
+    Schedule::Schedule(std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck, LoggerPtr logger)
+        : m_grid(grid)
+    {
         initFromDeck(deck, logger);
     }
 
@@ -178,24 +180,6 @@ namespace Opm {
                                 keyword->getLineNumber(),
                                 msg);
             throw std::invalid_argument(msg);
-        }
-        if (well->getRefDepthDefaulted() != record->getItem("REF_DEPTH")->defaultApplied(0)) {
-            std::string msg =
-                "Unable process WELSPECS for well " + well->name() + ", REF_DEPTH defaulted state deviates from existing value";
-            logger->addError(keyword->getFileName(),
-                                keyword->getLineNumber(),
-                                msg);
-            throw std::invalid_argument(msg);
-        }
-        if (!well->getRefDepthDefaulted()) {
-            if (well->getRefDepth() != record->getItem("REF_DEPTH")->getSIDouble(0)) {
-                std::string msg =
-                    "Unable process WELSPECS for well " + well->name() + ", REF_DEPTH deviates from existing value";
-                logger->addError(keyword->getFileName(),
-                                    keyword->getLineNumber(),
-                                    msg);
-                throw std::invalid_argument(msg);
-            }
         }
     }
 
@@ -610,20 +594,18 @@ namespace Opm {
     }
 
     void Schedule::addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep) {
-
         // We change from eclipse's 1 - n, to a 0 - n-1 solution
         int headI = record->getItem("HEAD_I")->getInt(0) - 1;
         int headJ = record->getItem("HEAD_J")->getInt(0) - 1;
         Phase::PhaseEnum preferredPhase = Phase::PhaseEnumFromString(record->getItem("PHASE")->getTrimmedString(0));
+        Value<double> refDepth("REF_DEPTH");
         WellPtr well;
+        auto refDepthItem = record->getItem("REF_DEPTH");
 
-        if (!record->getItem("REF_DEPTH")->defaultApplied(0)) {
-            double refDepth = record->getItem("REF_DEPTH")->getSIDouble(0);
-            well = std::make_shared<Well>(wellName, headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep);
-        } else {
-            well = std::make_shared<Well>(wellName, headI, headJ, preferredPhase, m_timeMap , timeStep);
-        }
+        if (refDepthItem->hasValue(0))
+            refDepth.setValue( refDepthItem->getSIDouble(0));
 
+        well = std::make_shared<Well>(wellName, m_grid , headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep);
         m_wells.insert( wellName  , well);
     }
 
