@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        GasvisctTable() = default;
 
         /*!
          * \brief Read the GASVISCT keyword and provide some convenience
@@ -104,10 +103,16 @@ namespace Opm {
         }
 
     public:
+        GasvisctTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const GasvisctTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getTemperatureColumn() const
         { return ParentType::getColumn(0); }

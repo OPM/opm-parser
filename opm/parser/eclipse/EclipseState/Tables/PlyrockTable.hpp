@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        PlyrockTable() = default;
 
         /*!
          * \brief Read the PLYROCK keyword and provide some convenience
@@ -67,12 +66,18 @@ namespace Opm {
         }
 
     public:
+        PlyrockTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
 
         // since this keyword is not necessarily monotonic, it cannot be evaluated!
         //using ParentType::evaluate;
+
+        void assignFrom(const PlyrockTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getDeadPoreVolumeColumn() const
         { return ParentType::getColumn(0); }

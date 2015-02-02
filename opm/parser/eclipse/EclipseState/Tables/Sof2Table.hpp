@@ -62,6 +62,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const Sof2Table& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getSoColumn() const
         { return ParentType::getColumn(0); }
 

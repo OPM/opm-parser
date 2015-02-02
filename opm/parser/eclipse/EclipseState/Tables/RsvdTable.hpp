@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        RsvdTable() = default;
 
         /*!
          * \brief Read the RSVD keyword and provide some convenience
@@ -48,10 +47,16 @@ namespace Opm {
         }
 
     public:
+        RsvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const RsvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getDepthColumn() const
         { return ParentType::getColumn(0); }

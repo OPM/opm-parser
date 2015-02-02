@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        RocktabTable() = default;
 
         /*!
          * \brief Read the ROCKTAB keyword and provide some convenience
@@ -61,10 +60,16 @@ namespace Opm {
         }
 
     public:
+        RocktabTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const RocktabTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getPressureColumn() const
         { return ParentType::getColumn(0); }

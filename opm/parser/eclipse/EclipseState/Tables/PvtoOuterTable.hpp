@@ -64,6 +64,10 @@ namespace Opm {
         using ParentType::firstRecordIndex;
         using ParentType::numRecords;
 
+        void assignFrom(const PvtoOuterTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getGasSolubilityColumn() const
         { return ParentType::getColumn(0); }
 

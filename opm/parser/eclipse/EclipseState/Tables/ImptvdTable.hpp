@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        ImptvdTable() = default;
 
         /*!
          * \brief Read the IMPTVD keyword and provide some convenience
@@ -63,10 +62,16 @@ namespace Opm {
         }
 
     public:
+        ImptvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const ImptvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getDepthColumn() const
         { return ParentType::getColumn(0); }

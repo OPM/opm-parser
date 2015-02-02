@@ -30,8 +30,6 @@ namespace Opm {
 
         friend class EclipseState;
 
-        RvvdTable() = default;
-
         /*!
          * \brief Read the RSVD keyword and provide some convenience
          *        methods for it.
@@ -49,10 +47,16 @@ namespace Opm {
         }
 
     public:
+        RvvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const RvvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getDepthColumn() const
         { return ParentType::getColumn(0); }

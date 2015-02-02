@@ -30,6 +30,11 @@
 namespace Opm {
     class SingleRecordTable {
     protected:
+#ifdef BOOST_TEST_MODULE
+    public:
+#endif
+        SingleRecordTable() = default;
+    protected:
         SingleRecordTable(const SingleRecordTable&) = default;
 
         /*!
@@ -44,8 +49,6 @@ namespace Opm {
                   size_t firstEntityOffset);
 
     public:
-        SingleRecordTable() = default;
-
         /*!
          * \brief Returns the number of tables in a keyword.
          *
@@ -67,6 +70,12 @@ namespace Opm {
         size_t numRows() const;
         const std::vector<double> &getColumn(const std::string &name) const;
         const std::vector<double> &getColumn(size_t colIdx) const;
+
+        void assignFrom(const SingleRecordTable& other) {
+            m_columnNames = other.m_columnNames;
+            m_columns = other.m_columns;
+            m_valueDefaulted = other.m_valueDefaulted;
+        }
 
         /*!
          * \brief Evaluate a column of the table at a given position.

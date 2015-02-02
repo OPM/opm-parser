@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        EnptvdTable() = default;
 
         /*!
          * \brief Read the ENPTVD keyword and provide some convenience
@@ -64,6 +63,8 @@ namespace Opm {
         }
 
     public:
+        EnptvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
@@ -72,6 +73,10 @@ namespace Opm {
         // using this method is strongly discouraged but the current endpoint scaling
         // code makes it hard to avoid
         using ParentType::getColumn;
+
+        void assignFrom(const EnptvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getDepthColumn() const
         { return ParentType::getColumn(0); }

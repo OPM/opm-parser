@@ -62,6 +62,10 @@ namespace Opm {
         using ParentType::firstRecordIndex;
         using ParentType::numRecords;
 
+        void assignFrom(const PvtgOuterTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getPressureColumn() const
         { return ParentType::getColumn(0); }
 

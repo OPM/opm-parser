@@ -60,6 +60,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const PvtgInnerTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getOilSolubilityColumn() const
         { return ParentType::getColumn(0); }
 

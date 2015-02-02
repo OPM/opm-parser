@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        EnkrvdTable() = default;
 
         /*!
          * \brief Read the ENKRVD keyword and provide some convenience
@@ -62,6 +61,8 @@ namespace Opm {
         }
 
     public:
+        EnkrvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
@@ -70,6 +71,10 @@ namespace Opm {
         // using this method is strongly discouraged but the current endpoint scaling
         // code makes it hard to avoid
         using ParentType::getColumn;
+
+        void assignFrom(const EnkrvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         /*!
          * \brief The datum depth for the remaining columns

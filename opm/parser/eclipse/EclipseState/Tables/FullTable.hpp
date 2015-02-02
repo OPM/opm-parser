@@ -63,7 +63,7 @@ namespace Opm {
                 InnerTable *curRow = new InnerTable;
                 curRow->init(keyword,
                              /*recordIdx=*/m_outerTable->firstRecordIndex() + rowIdx);
-                m_innerTables.push_back(std::shared_ptr<const InnerTable>(curRow));
+                m_innerTables.push_back(std::shared_ptr<InnerTable>(curRow));
             }
         }
 
@@ -85,9 +85,17 @@ namespace Opm {
             return m_innerTables[rowIdx];
         }
 
+        void assignFrom(const FullTable& other) {
+            m_outerTable->assignFrom(*other.m_outerTable);
+            m_innerTables.resize(other.m_innerTables.size());
+
+            for (size_t i = 0; i < other.m_innerTables.size(); ++i)
+                m_innerTables[i]->assignFrom(*other.m_innerTables[i]);
+        }
+
     protected:
-        std::shared_ptr<const OuterTable> m_outerTable;
-        std::vector<std::shared_ptr<const InnerTable> > m_innerTables;
+        std::shared_ptr<OuterTable> m_outerTable;
+        std::vector<std::shared_ptr<InnerTable> > m_innerTables;
 
     };
 

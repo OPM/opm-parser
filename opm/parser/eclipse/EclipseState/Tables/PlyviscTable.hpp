@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        PlyviscTable() = default;
 
         /*!
          * \brief Read the PLYVISC keyword and provide some convenience
@@ -52,10 +51,16 @@ namespace Opm {
         }
 
     public:
+        PlyviscTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const PlyviscTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getPolymerConcentrationColumn() const
         { return ParentType::getColumn(0); }
