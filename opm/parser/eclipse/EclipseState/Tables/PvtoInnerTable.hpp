@@ -61,6 +61,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const PvtoInnerTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getPressureColumn() const
         { return ParentType::getColumn(0); }
 

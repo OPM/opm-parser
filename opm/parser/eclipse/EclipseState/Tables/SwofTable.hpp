@@ -63,6 +63,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const SwofTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getSwColumn() const
         { return ParentType::getColumn(0); }
 

@@ -46,6 +46,10 @@ namespace Opm {
         void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
         { init(keyword, tableIdx); }
 #endif
+
+        void assignFrom(const PvtgTable& other) {
+            ParentType::assignFrom(other);
+        }
     };
 
     typedef std::shared_ptr<PvtgTable> PvtgTablePtr;

@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        ImkrvdTable() = default;
 
         /*!
          * \brief Read the IMKRVD keyword and provide some convenience
@@ -62,10 +61,16 @@ namespace Opm {
         }
 
     public:
+        ImkrvdTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const ImkrvdTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         /*!
          * \brief The datum depth for the remaining columns

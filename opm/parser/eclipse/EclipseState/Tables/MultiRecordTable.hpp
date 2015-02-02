@@ -59,6 +59,13 @@ namespace Opm {
         { init(keyword, columnNames, tableIndex, firstEntityOffset); }
 #endif
 
+        void assignFrom(const MultiRecordTable& other) {
+            SingleRecordTable::assignFrom(other);
+
+            m_firstRecordIdx = other.m_firstRecordIdx;
+            m_numRecords = other.m_numRecords;
+        }
+
         /*!
          * \brief Returns the number of tables which can be found in a
          *        given keyword.

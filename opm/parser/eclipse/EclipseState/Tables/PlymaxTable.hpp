@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        PlymaxTable() = default;
 
         /*!
          * \brief Read the PLYMAX keyword and provide some convenience
@@ -49,10 +48,16 @@ namespace Opm {
         }
 
     public:
+        PlymaxTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const PlymaxTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getPolymerConcentrationColumn() const
         { return ParentType::getColumn(0); }

@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        PvdoTable() = default;
 
         /*!
          * \brief Read the PVDO keyword and provide some convenience
@@ -54,10 +53,16 @@ namespace Opm {
         }
 
     public:
+        PvdoTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const PvdoTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getPressureColumn() const
         { return ParentType::getColumn(0); }

@@ -64,6 +64,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const PlyadsTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getPolymerConcentrationColumn() const
         { return ParentType::getColumn(0); }
 

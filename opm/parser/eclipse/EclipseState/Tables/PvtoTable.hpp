@@ -45,6 +45,9 @@ namespace Opm {
         { init(keyword, tableIdx); }
 #endif
 
+        void assignFrom(const PvtoTable& other) {
+            ParentType::assignFrom(other);
+        }
     };
 
     typedef std::shared_ptr<PvtoTable> PvtoTablePtr;

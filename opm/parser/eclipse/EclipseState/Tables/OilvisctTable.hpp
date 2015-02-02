@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        OilvisctTable() = default;
 
         /*!
          * \brief Read the OILVISCT keyword and provide some convenience
@@ -53,10 +52,16 @@ namespace Opm {
         }
 
     public:
+        OilvisctTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const OilvisctTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getTemperatureColumn() const
         { return ParentType::getColumn(0); }

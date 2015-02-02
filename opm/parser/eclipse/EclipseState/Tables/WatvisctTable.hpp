@@ -29,7 +29,6 @@ namespace Opm {
         typedef SingleRecordTable ParentType;
 
         friend class EclipseState;
-        WatvisctTable() = default;
 
         /*!
          * \brief Read the WATVISCT keyword and provide some convenience
@@ -53,10 +52,16 @@ namespace Opm {
         }
 
     public:
+        WatvisctTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const WatvisctTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getTemperatureColumn() const
         { return ParentType::getColumn(0); }

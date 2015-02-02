@@ -63,6 +63,10 @@ namespace Opm {
         using ParentType::numColumns;
         using ParentType::evaluate;
 
+        void assignFrom(const SgofTable& other) {
+            ParentType::assignFrom(other);
+        }
+
         const std::vector<double> &getSgColumn() const
         { return ParentType::getColumn(0); }
 

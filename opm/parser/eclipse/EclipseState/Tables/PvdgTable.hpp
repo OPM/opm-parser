@@ -30,8 +30,6 @@ namespace Opm {
 
         friend class EclipseState;
 
-        PvdgTable() = default;
-
         /*!
          * \brief Read the PVDG keyword and provide some convenience
          *        methods for it.
@@ -55,10 +53,16 @@ namespace Opm {
         }
 
     public:
+        PvdgTable() = default;
+
         using ParentType::numTables;
         using ParentType::numRows;
         using ParentType::numColumns;
         using ParentType::evaluate;
+
+        void assignFrom(const PvdgTable& other) {
+            ParentType::assignFrom(other);
+        }
 
         const std::vector<double> &getPressureColumn() const
         { return ParentType::getColumn(0); }
