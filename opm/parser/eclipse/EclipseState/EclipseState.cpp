@@ -130,8 +130,8 @@ namespace Opm {
         initEclipseGrid(deck, logger);
         initSchedule(deck, logger);
         initTitle(deck, logger);
-
         initProperties(deck, logger);
+        initSimulationConfig(deck, logger);
         initTransMult(logger);
         initFaults(deck, logger);
         initMULTREGT(deck, logger);
@@ -246,6 +246,10 @@ namespace Opm {
         return schedule;
     }
 
+    SimulationConfigConstPtr EclipseState::getSimulationConfig() const {
+        return m_simulationConfig;
+    }
+
     std::shared_ptr<const FaultCollection> EclipseState::getFaults() const {
         return m_faults;
     }
@@ -303,6 +307,13 @@ namespace Opm {
 
     void EclipseState::initSchedule(DeckConstPtr deck, LoggerPtr logger) {
         schedule = ScheduleConstPtr( new Schedule(getEclipseGrid() , deck, logger) );
+    }
+
+    void EclipseState::initSimulationConfig(DeckConstPtr deck, LoggerPtr logger) {
+        auto eqlnum = getIntGridProperty("EQLNUM")->getData();
+        int maxEqlnum = *max_element(eqlnum.begin(), eqlnum.end());
+
+        m_simulationConfig = SimulationConfigConstPtr(new SimulationConfig(deck, maxEqlnum, logger));
     }
 
     void EclipseState::initTransMult(LoggerPtr /*logger*/) {
