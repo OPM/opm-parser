@@ -54,19 +54,17 @@ static DeckPtr createDeck(const std::string& input) {
 BOOST_AUTO_TEST_CASE(SimulationConfigTest) {
 
     DeckPtr deck = createDeck(inputStr);
-    LoggerPtr logger(new Logger());
     int maxEqlnum = 3;
 
-    BOOST_CHECK_NO_THROW(std::make_shared<const SimulationConfig>(deck, maxEqlnum, logger));
+    BOOST_CHECK_NO_THROW(std::make_shared<const SimulationConfig>(deck, maxEqlnum));
 }
 
 
 BOOST_AUTO_TEST_CASE(SimulationConfigGetThresholdPressureTableTest) {
     DeckPtr deck = createDeck(inputStr);
-    LoggerPtr logger(new Logger());
     int maxEqlnum = 3;
 
-    SimulationConfigConstPtr simulationConfigPtr = std::make_shared<const SimulationConfig>(deck, maxEqlnum, logger);
+    SimulationConfigConstPtr simulationConfigPtr = std::make_shared<const SimulationConfig>(deck, maxEqlnum);
 
     const std::vector<double>& thresholdPressureTable = simulationConfigPtr->getThresholdPressureTable();
 

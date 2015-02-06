@@ -21,7 +21,6 @@
 #define OPM_SIMULATION_CONFIG_HPP
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Log/Logger.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
 
 
@@ -31,7 +30,7 @@ namespace Opm {
 
     public:
 
-        SimulationConfig(DeckConstPtr deck, int maxEqlnum, LoggerPtr logger);
+        SimulationConfig(DeckConstPtr deck, int maxEqlnum);
 
         const std::vector<double>& getThresholdPressureTable() const;
 

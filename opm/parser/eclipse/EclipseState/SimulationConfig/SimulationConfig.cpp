@@ -20,12 +20,11 @@
 
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Log/Logger.hpp>
 
 
 namespace Opm {
 
-    SimulationConfig::SimulationConfig(DeckConstPtr deck, int maxEqlnum, LoggerPtr logger) {
+    SimulationConfig::SimulationConfig(DeckConstPtr deck, int maxEqlnum) {
         initThresholdPressure(deck, maxEqlnum);
     }
 

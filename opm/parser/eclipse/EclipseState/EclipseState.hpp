@@ -130,7 +130,7 @@ namespace Opm {
     private:
         void initTables(DeckConstPtr deck, LoggerPtr logger);
         void initSchedule(DeckConstPtr deck, LoggerPtr logger);
-        void initSimulationConfig(DeckConstPtr deck, LoggerPtr logger);
+        void initSimulationConfig(DeckConstPtr deck);
         void initEclipseGrid(DeckConstPtr deck, LoggerPtr logger);
         void initPhases(DeckConstPtr deck, LoggerPtr logger);
         void initTitle(DeckConstPtr deck, LoggerPtr logger);
