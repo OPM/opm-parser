@@ -51,6 +51,13 @@ const std::string& inputStrNoSolutionSection =  "RUNSPEC\n"
                                                 "\n";
 
 
+const std::string& inputStrNoTHPRESinSolutionNorRUNSPEC = "RUNSPEC\n"
+                                                          "\n"
+                                                          "SOLUTION\n"
+                                                          "\n"
+                                                          "SCHEDULE\n";
+
+
 const std::string& inputStrIrrevers = "RUNSPEC\n"
                                       "EQLOPTS\n"
                                       "THPRES IRREVERS/\n "
@@ -98,6 +105,7 @@ const std::string& inputStrMissingData = "RUNSPEC\n"
 
 
 
+
 static DeckPtr createDeck(const std::string& input) {
     Opm::Parser parser;
     return parser.parseString(input);
@@ -133,6 +141,18 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureEmptyTest) {
 }
 
 
+BOOST_AUTO_TEST_CASE(ThresholdPressureNoTHPREStest) {
+    DeckPtr deck_no_thpres = createDeck(inputStrNoTHPRESinSolutionNorRUNSPEC);
+    int maxEqlnum = 3;
+
+    ThresholdPressureConstPtr tresholdPressurePtr;
+    BOOST_CHECK_NO_THROW(tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck_no_thpres, maxEqlnum));
+
+    const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
+    BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
+}
+
+
 BOOST_AUTO_TEST_CASE(ThresholdPressureThrowTest) {
 
     DeckPtr deck_irrevers      = createDeck(inputStrIrrevers);
@@ -146,3 +166,4 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureThrowTest) {
     BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_highRegNum, maxEqlnum), std::runtime_error);
     BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_missingData, maxEqlnum), std::runtime_error);
 }
+

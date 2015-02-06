@@ -39,6 +39,7 @@ namespace Opm {
                                                   std::shared_ptr<const SOLUTIONSection> solutionSection,
                                                   int maxEqlnum) {
 
+
         bool thpresOption = false;
 
         if (runspecSection->hasKeyword("EQLOPTS")) {
@@ -65,31 +66,33 @@ namespace Opm {
                                       "option of EQLOPTS must be used for the threshold pressure feature.");
         }
 
+        if (thpresKeyword)
+        {
+            // Fill threshold pressure table.
+            auto thpres = solutionSection->getKeyword("THPRES");
 
-        // Create threshold pressure table.
-        auto thpres = solutionSection->getKeyword("THPRES");
+            mThresholdPressureTable.resize(maxEqlnum * maxEqlnum, 0.0);
 
-        mThresholdPressureTable.resize(maxEqlnum * maxEqlnum, 0.0);
+            const int numRecords = thpres->size();
+            for (int rec_ix = 0; rec_ix < numRecords; ++rec_ix) {
+                auto rec = thpres->getRecord(rec_ix);
+                auto region1Item = rec->getItem("REGION1");
+                auto region2Item = rec->getItem("REGION2");
+                auto thpressItem = rec->getItem("THPRES");
 
-        const int numRecords = thpres->size();
-        for (int rec_ix = 0; rec_ix < numRecords; ++rec_ix) {
-            auto rec = thpres->getRecord(rec_ix);
-            auto region1Item = rec->getItem("REGION1");
-            auto region2Item = rec->getItem("REGION2");
-            auto thpressItem = rec->getItem("THPRES");
+                if (region1Item->hasValue(0) && region2Item->hasValue(0) && thpressItem->hasValue(0)) {
+                    const int r1 = region1Item->getInt(0) - 1;
+                    const int r2 = region2Item->getInt(0) - 1;
+                    const double p = thpressItem->getSIDouble(0);
 
-            if (region1Item->hasValue(0) && region2Item->hasValue(0) && thpressItem->hasValue(0)) {
-                const int r1 = region1Item->getInt(0) - 1;
-                const int r2 = region2Item->getInt(0) - 1;
-                const double p = thpressItem->getSIDouble(0);
-
-                if (r1 >= maxEqlnum || r2 >= maxEqlnum) {
-                    throw std::runtime_error("Too high region numbers in THPRES keyword");
+                    if (r1 >= maxEqlnum || r2 >= maxEqlnum) {
+                        throw std::runtime_error("Too high region numbers in THPRES keyword");
+                    }
+                    mThresholdPressureTable[r1 + maxEqlnum*r2] = p;
+                    mThresholdPressureTable[r2 + maxEqlnum*r1] = p;
+                } else {
+                    throw std::runtime_error("Missing data for use of the THPRES keyword");
                 }
-                mThresholdPressureTable[r1 + maxEqlnum*r2] = p;
-                mThresholdPressureTable[r2 + maxEqlnum*r1] = p;
-            } else {
-                throw std::runtime_error("Missing data for use of the THPRES keyword");
             }
         }
     }
