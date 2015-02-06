@@ -23,6 +23,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
+#include <opm/parser/eclipse/EclipseState/checkDeck.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PvtgTable.hpp>
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
@@ -45,17 +46,38 @@ ENDSCALE\n\
      1*     1*     2 /\n\
 \n\
 ENKRVD\n\
-100 1   2  3  4  5  6  7   200 11 22 33 44 55 66 77 /\n\
+100 1   2  3  4  5  6  7\n\
+200 11 22 33 44 55 66 77 /\n\
 ";
 
 
 
-BOOST_AUTO_TEST_CASE( ParseMissingRECORD_THrows) {
+BOOST_AUTO_TEST_CASE( ParseMissingRECORD) {
     ParserPtr parser(new Parser());
-    BOOST_CHECK_THROW( parser->parseString( dataMissingRecord ) , std::invalid_argument);
+    const auto deck = parser->parseString(dataMissingRecord);
+
+    Opm::LoggerPtr logger(new Opm::Logger());
+    BOOST_CHECK( Opm::checkDeck(deck, logger, Opm::TableSizes));
 }
 
+const char *dataWrongTableSize = "\n\
+ENDSCALE\n\
+     1*     1*     1 /\n\
+\n\
+ENKRVD\n\
+100 1   2  3  4  5  6  7 /\n\
+200 11 22 33 44 55 66 77 /\n\
+";
 
+
+
+BOOST_AUTO_TEST_CASE( ParseWrongTableSize) {
+    ParserPtr parser(new Parser());
+    const auto deck = parser->parseString(dataWrongTableSize);
+
+    Opm::LoggerPtr logger(new Opm::Logger());
+    BOOST_CHECK(!Opm::checkDeck(deck, logger, Opm::TableSizes));
+}
 
 
 const char *data = "\n\
