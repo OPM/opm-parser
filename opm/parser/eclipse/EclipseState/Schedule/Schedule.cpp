@@ -124,7 +124,7 @@ namespace Opm {
             if (keyword->name() == "WRFTPLT"){
                 rftProperties.push_back( std::make_pair( keyword , currentStep ));
             }
-                
+
         }
         for (auto rftPair = rftProperties.begin(); rftPair != rftProperties.end(); ++rftPair) {
             DeckKeywordConstPtr keyword = rftPair->first;
@@ -630,12 +630,10 @@ namespace Opm {
             }
         }
 
-        const std::vector<WellPtr> wells = getWells();
-        for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
-            WellPtr well = *wellIter;
+        for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
+            WellPtr well = *iter;
             well->setRFTForWellWhenFirstOpen(m_timeMap->numTimesteps(), currentStep);
         }
-
     }
 
 
@@ -729,45 +727,6 @@ namespace Opm {
         return m_wells.hasKey( wellName );
     }
 
-    WellPtr Schedule::getWell(const std::string& wellName) const {
-        return m_wells.get( wellName );
-    }
-
-    std::vector<WellPtr> Schedule::getWells() {
-        return getWells(m_timeMap->size()-1);
-    }
-
-    std::vector<WellPtr> Schedule::getWells(size_t timeStep) {
-        if (timeStep >= m_timeMap->size()) {
-            throw std::invalid_argument("Timestep to large");
-        }
-
-        std::vector<WellPtr> wells;
-        for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
-            WellPtr well = *iter;
-            if (well->hasBeenDefined(timeStep)) {
-                wells.push_back(well);
-            }
-        }
-        return wells;
-    }
-
-    std::vector<WellPtr> Schedule::getWells(const std::string& wellNamePattern) {
-        std::vector<WellPtr> wells;
-        size_t wildcard_pos = wellNamePattern.find("*");
-        if (wildcard_pos == wellNamePattern.length()-1) {
-            for (auto wellIter = m_wells.begin(); wellIter != m_wells.end(); ++wellIter) {
-                WellPtr well = *wellIter;
-                if (wellNamePattern.compare (0, wildcard_pos, well->name(), 0, wildcard_pos) == 0) {
-                    wells.push_back (well);
-                }
-            }
-        }
-        else {
-            wells.push_back(getWell(wellNamePattern));
-        }
-        return wells;
-    }
 
     std::vector<WellConstPtr> Schedule::getWells() const {
         return getWells(m_timeMap->size()-1);
@@ -788,12 +747,17 @@ namespace Opm {
         return wells;
     }
 
-    std::vector<WellConstPtr> Schedule::getWells(const std::string& wellNamePattern) const {
-        std::vector<WellConstPtr> wells;
+
+    WellPtr Schedule::getWell(const std::string& wellName) const {
+        return m_wells.get( wellName );
+    }
+
+    std::vector<WellPtr> Schedule::getWells(const std::string& wellNamePattern) const {
+        std::vector<WellPtr> wells;
         size_t wildcard_pos = wellNamePattern.find("*");
         if (wildcard_pos == wellNamePattern.length()-1) {
             for (auto wellIter = m_wells.begin(); wellIter != m_wells.end(); ++wellIter) {
-                WellConstPtr well = *wellIter;
+                WellPtr well = *wellIter;
                 if (wellNamePattern.compare (0, wildcard_pos, well->name(), 0, wildcard_pos) == 0) {
                     wells.push_back (well);
                 }
@@ -804,6 +768,8 @@ namespace Opm {
         }
         return wells;
     }
+
+
 
     void Schedule::addGroup(const std::string& groupName, size_t timeStep) {
         if (!m_timeMap) {
