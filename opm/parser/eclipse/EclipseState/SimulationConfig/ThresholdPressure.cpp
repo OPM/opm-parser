@@ -25,23 +25,27 @@
 
 namespace Opm {
 
-    ThresholdPressure::ThresholdPressure(DeckConstPtr deck,int maxEqlnum) {
+    ThresholdPressure::ThresholdPressure(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties) {
 
         if (Section::hasRUNSPEC(deck) && Section::hasSOLUTION(deck)) {
             std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(deck);
             std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(deck);
-            initThresholdPressure(runspecSection, solutionSection, maxEqlnum);
+            initThresholdPressure(runspecSection, solutionSection, gridProperties);
         }
     }
 
 
     void ThresholdPressure::initThresholdPressure(std::shared_ptr<const RUNSPECSection> runspecSection,
                                                   std::shared_ptr<const SOLUTIONSection> solutionSection,
-                                                  int maxEqlnum) {
+                                                  std::shared_ptr<GridProperties<int>> gridProperties) {
+
+        bool       thpresOption     = false;
+        const bool thpresKeyword    = solutionSection->hasKeyword("THPRES");
+        const bool hasEqlnumKeyword = gridProperties->hasKeyword("EQLNUM");
+        int        maxEqlnum        = 0;
 
 
-        bool thpresOption = false;
-
+        //Is THPRES option set?
         if (runspecSection->hasKeyword("EQLOPTS")) {
             auto eqlopts = runspecSection->getKeyword("EQLOPTS");
             auto rec = eqlopts->getRecord(0);
@@ -58,20 +62,27 @@ namespace Opm {
         }
 
 
-        // Do we have the THPRES keyword?
-        // Check for consistency.
-        const bool thpresKeyword = solutionSection->hasKeyword("THPRES");
-        if (thpresKeyword != thpresOption) {
-            throw std::runtime_error("Invalid solution section, the THPRES keyword must be present and the THPRES "
-                                      "option of EQLOPTS must be used for the threshold pressure feature.");
-        }
-
-        if (thpresKeyword)
+        //Option is set and keyword is found
+        if (thpresOption && thpresKeyword)
         {
+            //Find max of eqlnum
+            if (hasEqlnumKeyword) {
+              auto eqlnumKeyword = gridProperties->getKeyword( "EQLNUM" );
+              auto eqlnum = eqlnumKeyword->getData();
+              maxEqlnum = *std::max_element(eqlnum.begin(), eqlnum.end());
+
+              if (0 == maxEqlnum) {
+                  throw std::runtime_error("Error in EQLNUM data: all values are 0");
+              }
+            } else {
+                throw std::runtime_error("Error when internalizing THPRES: EQLNUM keyword not found in deck");
+            }
+
+
             // Fill threshold pressure table.
             auto thpres = solutionSection->getKeyword("THPRES");
 
-            mThresholdPressureTable.resize(maxEqlnum * maxEqlnum, 0.0);
+            m_thresholdPressureTable.resize(maxEqlnum * maxEqlnum, 0.0);
 
             const int numRecords = thpres->size();
             for (int rec_ix = 0; rec_ix < numRecords; ++rec_ix) {
@@ -88,19 +99,24 @@ namespace Opm {
                     if (r1 >= maxEqlnum || r2 >= maxEqlnum) {
                         throw std::runtime_error("Too high region numbers in THPRES keyword");
                     }
-                    mThresholdPressureTable[r1 + maxEqlnum*r2] = p;
-                    mThresholdPressureTable[r2 + maxEqlnum*r1] = p;
+                    m_thresholdPressureTable[r1 + maxEqlnum*r2] = p;
+                    m_thresholdPressureTable[r2 + maxEqlnum*r1] = p;
                 } else {
                     throw std::runtime_error("Missing data for use of the THPRES keyword");
                 }
             }
+        } else if (thpresOption && !thpresKeyword) {
+            throw std::runtime_error("Invalid solution section; the EQLOPTS THPRES option is set in RUNSPEC, but no THPRES keyword is found in SOLUTION");
+
         }
     }
 
 
+
     const std::vector<double>& ThresholdPressure::getThresholdPressureTable() const {
-        return mThresholdPressureTable;
+        return m_thresholdPressureTable;
     }
+
 
 } //namespace Opm
 

@@ -25,6 +25,7 @@
 #include <boost/filesystem.hpp>
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 
 
@@ -33,6 +34,13 @@ using namespace Opm;
 const std::string& inputStr = "RUNSPEC\n"
                               "EQLOPTS\n"
                               "THPRES /\n "
+                              "DIMENS\n"
+                              "10 3 4 /\n"
+                              "\n"
+                              "GRID\n"
+                              "REGIONS\n"
+                              "EQLNUM\n"
+                              "10*1 10*2 100*3 /\n "
                               "\n"
 
                               "SOLUTION\n"
@@ -50,24 +58,25 @@ static DeckPtr createDeck(const std::string& input) {
 }
 
 
-
-BOOST_AUTO_TEST_CASE(SimulationConfigTest) {
-
-    DeckPtr deck = createDeck(inputStr);
-    int maxEqlnum = 3;
-
-    BOOST_CHECK_NO_THROW(std::make_shared<const SimulationConfig>(deck, maxEqlnum));
+static std::shared_ptr<GridProperties<int>> getGridProperties() {
+    GridPropertySupportedKeywordInfo<int> kwInfo = GridPropertySupportedKeywordInfo<int>("EQLNUM", 3, "");
+    std::shared_ptr<std::vector<GridPropertySupportedKeywordInfo<int>>> supportedKeywordsVec = std::make_shared<std::vector<GridPropertySupportedKeywordInfo<int>>>();
+    supportedKeywordsVec->push_back(kwInfo);
+    EclipseGridConstPtr eclipseGrid = std::make_shared<const EclipseGrid>(3, 3, 3);
+    std::shared_ptr<GridProperties<int>> gridProperties = std::make_shared<GridProperties<int>>(eclipseGrid, supportedKeywordsVec);
+    gridProperties->addKeyword("EQLNUM");
+    return gridProperties;
 }
 
 
 BOOST_AUTO_TEST_CASE(SimulationConfigGetThresholdPressureTableTest) {
+
     DeckPtr deck = createDeck(inputStr);
-    int maxEqlnum = 3;
-
-    SimulationConfigConstPtr simulationConfigPtr = std::make_shared<const SimulationConfig>(deck, maxEqlnum);
-
+    SimulationConfigConstPtr simulationConfigPtr;
+    BOOST_CHECK_NO_THROW(simulationConfigPtr = std::make_shared<const SimulationConfig>(deck, getGridProperties()));
     const std::vector<double>& thresholdPressureTable = simulationConfigPtr->getThresholdPressureTable();
     BOOST_CHECK(thresholdPressureTable.size() > 0);
-
 }
+
+
 

@@ -30,14 +30,14 @@ namespace Opm {
 
     public:
 
-        SimulationConfig(DeckConstPtr deck, int maxEqlnum);
+        SimulationConfig(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties);
 
         const std::vector<double>& getThresholdPressureTable() const;
 
 
     private:
 
-        void initThresholdPressure(DeckConstPtr deck, int maxEqlnum);
+        void initThresholdPressure(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties);
 
         ThresholdPressureConstPtr mThresholdPressure;
     };

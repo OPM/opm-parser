@@ -26,8 +26,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
+#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 
 
 using namespace Opm;
@@ -56,6 +58,13 @@ const std::string& inputStrNoTHPRESinSolutionNorRUNSPEC = "RUNSPEC\n"
                                                           "SOLUTION\n"
                                                           "\n"
                                                           "SCHEDULE\n";
+
+const std::string& inputStrTHPRESinRUNSPECnotSoultion = "RUNSPEC\n"
+                                                        "EQLOPTS\n"
+                                                        "ss /\n "
+                                                        "\n"
+                                                        "SOLUTION\n"
+                                                        "\n";
 
 
 const std::string& inputStrIrrevers = "RUNSPEC\n"
@@ -112,13 +121,25 @@ static DeckPtr createDeck(const std::string& input) {
 }
 
 
+static std::shared_ptr<GridProperties<int>> getGridProperties(int defaultEqlnum = 3, bool addKeyword = true) {
+    GridPropertySupportedKeywordInfo<int> kwInfo = GridPropertySupportedKeywordInfo<int>("EQLNUM", defaultEqlnum, "");
+    std::shared_ptr<std::vector<GridPropertySupportedKeywordInfo<int>>> supportedKeywordsVec = std::make_shared<std::vector<GridPropertySupportedKeywordInfo<int>>>();
+    supportedKeywordsVec->push_back(kwInfo);
+    EclipseGridConstPtr eclipseGrid = std::make_shared<const EclipseGrid>(3, 3, 3);
+    std::shared_ptr<GridProperties<int>> gridProperties = std::make_shared<GridProperties<int>>(eclipseGrid, supportedKeywordsVec);
+    if (addKeyword) {
+        gridProperties->addKeyword("EQLNUM");
+    }
+    return gridProperties;
+}
+
 
 BOOST_AUTO_TEST_CASE(ThresholdPressureTest) {
 
     DeckPtr deck = createDeck(inputStr);
-    int maxEqlnum = 3;
+    static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
+    ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck, gridProperties);
 
-    ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck, maxEqlnum);
     const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
 
     double pressureList[] = {0.0, 1200000.0, 500000.0, 1200000.0, 0.0, 700000.0, 500000.0, 700000.0, 0.0};
@@ -132,9 +153,8 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureTest) {
 BOOST_AUTO_TEST_CASE(ThresholdPressureEmptyTest) {
 
     DeckPtr deck = createDeck(inputStrNoSolutionSection);
-    int maxEqlnum = 3;
-
-    ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck, maxEqlnum);
+    static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
+    ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck, gridProperties);
     const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
 
     BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
@@ -142,28 +162,42 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureEmptyTest) {
 
 
 BOOST_AUTO_TEST_CASE(ThresholdPressureNoTHPREStest) {
+
     DeckPtr deck_no_thpres = createDeck(inputStrNoTHPRESinSolutionNorRUNSPEC);
-    int maxEqlnum = 3;
+    DeckPtr deck_no_thpres2 = createDeck(inputStrTHPRESinRUNSPECnotSoultion);
+    static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
 
     ThresholdPressureConstPtr tresholdPressurePtr;
-    BOOST_CHECK_NO_THROW(tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck_no_thpres, maxEqlnum));
+    BOOST_CHECK_NO_THROW(tresholdPressurePtr = std::make_shared<ThresholdPressure>(deck_no_thpres, gridProperties));
+    ThresholdPressureConstPtr tresholdPressurePtr2;
+    BOOST_CHECK_NO_THROW(tresholdPressurePtr2 = std::make_shared<ThresholdPressure>(deck_no_thpres2, gridProperties));
 
     const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
     BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
+
+    const std::vector<double>& thresholdPressureTable2 = tresholdPressurePtr2->getThresholdPressureTable();
+    BOOST_CHECK_EQUAL(0, thresholdPressureTable2.size());
 }
 
 
 BOOST_AUTO_TEST_CASE(ThresholdPressureThrowTest) {
 
+    DeckPtr deck               = createDeck(inputStr);
     DeckPtr deck_irrevers      = createDeck(inputStrIrrevers);
     DeckPtr deck_inconsistency = createDeck(inputStrInconsistency);
     DeckPtr deck_highRegNum    = createDeck(inputStrTooHighRegionNumbers);
     DeckPtr deck_missingData   = createDeck(inputStrMissingData);
-    int maxEqlnum = 3;
+    static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
 
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_irrevers, maxEqlnum), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_inconsistency, maxEqlnum), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_highRegNum, maxEqlnum), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_missingData, maxEqlnum), std::runtime_error);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_irrevers, gridProperties), std::runtime_error);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_inconsistency, gridProperties), std::runtime_error);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_highRegNum, gridProperties), std::runtime_error);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck_missingData, gridProperties), std::runtime_error);
+
+    static std::shared_ptr<GridProperties<int>> gridPropertiesEQLNUMkeywordNotAdded = getGridProperties(3, false);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck, gridPropertiesEQLNUMkeywordNotAdded), std::runtime_error);
+
+    static std::shared_ptr<GridProperties<int>> gridPropertiesEQLNUMall0 = getGridProperties(0);
+    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(deck, gridPropertiesEQLNUMall0), std::runtime_error);
 }
 

@@ -310,10 +310,7 @@ namespace Opm {
     }
 
     void EclipseState::initSimulationConfig(DeckConstPtr deck) {
-        auto eqlnum = getIntGridProperty("EQLNUM")->getData();
-        int maxEqlnum = *max_element(eqlnum.begin(), eqlnum.end());
-
-        m_simulationConfig = SimulationConfigConstPtr(new SimulationConfig(deck, maxEqlnum));
+        m_simulationConfig = std::make_shared<const SimulationConfig>(deck , m_intGridProperties);
     }
 
     void EclipseState::initTransMult(LoggerPtr /*logger*/) {

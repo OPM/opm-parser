@@ -25,6 +25,7 @@
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/Log/Logger.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 
 
 
@@ -34,7 +35,7 @@ namespace Opm {
 
     public:
 
-        ThresholdPressure(DeckConstPtr deck, int maxEqlnum);
+        ThresholdPressure(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties);
 
         const std::vector<double>& getThresholdPressureTable() const;
 
@@ -43,10 +44,10 @@ namespace Opm {
 
         void initThresholdPressure(std::shared_ptr<const RUNSPECSection> runspecSection,
                                    std::shared_ptr<const SOLUTIONSection> solutionSection,
-                                   int maxEqlnum);
+                                   std::shared_ptr<GridProperties<int>> gridProperties);
 
 
-        std::vector<double> mThresholdPressureTable;
+        std::vector<double> m_thresholdPressureTable;
     };
 
 

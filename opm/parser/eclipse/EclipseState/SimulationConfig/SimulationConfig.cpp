@@ -24,13 +24,13 @@
 
 namespace Opm {
 
-    SimulationConfig::SimulationConfig(DeckConstPtr deck, int maxEqlnum) {
-        initThresholdPressure(deck, maxEqlnum);
+    SimulationConfig::SimulationConfig(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties) {
+        initThresholdPressure(deck, gridProperties);
     }
 
 
-    void SimulationConfig::initThresholdPressure(DeckConstPtr deck, int maxEqlnum) {
-        mThresholdPressure = std::make_shared<const ThresholdPressure>(deck, maxEqlnum);
+    void SimulationConfig::initThresholdPressure(DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties) {
+        mThresholdPressure = std::make_shared<const ThresholdPressure>(deck, gridProperties);
     }
 
 
