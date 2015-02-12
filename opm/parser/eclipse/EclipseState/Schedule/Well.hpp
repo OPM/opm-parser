@@ -86,6 +86,15 @@ namespace Opm {
         WellPolymerProperties          getPolymerPropertiesCopy(size_t timeStep) const;
         const WellPolymerProperties&   getPolymerProperties(size_t timeStep) const;
 
+        bool getRFTActive(size_t time_step) const;
+        void setRFTActive(size_t time_step, bool value);
+        bool getPLTActive(size_t time_step) const;
+        void setPLTActive(size_t time_step, bool value);
+        int  findWellFirstOpen(int startTimeStep) const;
+        void setRFTForWellWhenFirstOpen(int numSteps,size_t currentStep);
+
+
+
     private:
         void setRefDepthFromCompletions() const;
         size_t m_creationTimeStep;
@@ -104,6 +113,9 @@ namespace Opm {
         std::shared_ptr<DynamicState<WellInjectionProperties> > m_injectionProperties;
         std::shared_ptr<DynamicState<WellPolymerProperties> > m_polymerProperties;
         std::shared_ptr<DynamicState<std::string> > m_groupName;
+        std::shared_ptr<DynamicState<bool> > m_rft;
+        std::shared_ptr<DynamicState<bool> > m_plt;
+
 
         // WELSPECS data - assumes this is not dynamic
 
