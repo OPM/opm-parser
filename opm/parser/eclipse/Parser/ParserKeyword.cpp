@@ -2,7 +2,6 @@
   Copyright 2013 Statoil ASA.
 
   This file is part of the Open Porous Media project (OPM).
-
   OPM is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -34,16 +33,11 @@
 namespace Opm {
 
     void ParserKeyword::commonInit(const std::string& name, ParserKeywordSizeEnum sizeType) {
-        m_isDataKeyword = false;
         m_isTableCollection = false;
         m_name = name;
         m_keywordSizeType = sizeType;
         m_Description = "";
 
-        {
-            std::shared_ptr<ParserRecord> record = std::make_shared<ParserRecord>();
-            m_records.push_back( record );
-        }
         m_deckNames.insert(m_name);
     }
 
@@ -74,8 +68,11 @@ namespace Opm {
     }
 
     bool ParserKeyword::hasDimension() const {
-        std::shared_ptr<ParserRecord> record = getRecord(0);
-        return record->hasDimension();
+        if (m_records.size() > 0) {
+            std::shared_ptr<ParserRecord> record = getRecord(0);
+            return record->hasDimension();
+        } else
+            return false;
     }
 
 
@@ -102,25 +99,26 @@ namespace Opm {
             } else
                 initSizeKeyword(sizeObject);
 
-        } else
-            if (jsonConfig.has_item("num_tables")) {
-            Json::JsonObject numTablesObject = jsonConfig.get_item("num_tables");
-
-            if (!numTablesObject.is_object())
-                throw std::invalid_argument("The num_tables key must point to a {} object");
-
-            initSizeKeyword(numTablesObject);
-            m_isTableCollection = true;
         } else {
-            if (jsonConfig.has_item("items"))
-                // The number of records is undetermined - the keyword will be '/' terminated.
-                m_keywordSizeType = SLASH_TERMINATED;
-            else {
-                m_keywordSizeType = FIXED;
-                if (jsonConfig.has_item("data"))
-                    m_fixedSize = 1;
-                else
-                    m_fixedSize = 0;
+            if (jsonConfig.has_item("num_tables")) {
+                Json::JsonObject numTablesObject = jsonConfig.get_item("num_tables");
+
+                if (!numTablesObject.is_object())
+                    throw std::invalid_argument("The num_tables key must point to a {} object");
+
+                initSizeKeyword(numTablesObject);
+                m_isTableCollection = true;
+            } else {
+                if (jsonConfig.has_item("items") || jsonConfig.has_item("records"))
+                    // The number of records is undetermined - the keyword will be '/' terminated.
+                    m_keywordSizeType = SLASH_TERMINATED;
+                else {
+                    m_keywordSizeType = FIXED;
+                    if (jsonConfig.has_item("data"))
+                        m_fixedSize = 1;
+                    else
+                        m_fixedSize = 0;
+                }
             }
         }
     }
@@ -144,8 +142,26 @@ namespace Opm {
         initSectionNames(jsonConfig);
         initMatchRegex(jsonConfig);
 
-        if (jsonConfig.has_item("items"))
-            addItems(jsonConfig);
+        if (jsonConfig.has_item("items") && jsonConfig.has_item("records"))
+            throw std::invalid_argument("Fatal error in " + getName() + " configuration. Can NOT have both records: and items:");
+
+        if (jsonConfig.has_item("items")) {
+            const Json::JsonObject itemsConfig = jsonConfig.get_item("items");
+            addItems(itemsConfig);
+        }
+
+        if (jsonConfig.has_item("records")) {
+            const Json::JsonObject recordsConfig = jsonConfig.get_item("records");
+            if (recordsConfig.is_array()) {
+                size_t num_records = recordsConfig.size();
+                for (size_t i = 0; i < num_records; i++) {
+                    const Json::JsonObject itemsConfig = recordsConfig.get_array_item(i);
+                    addItems(itemsConfig);
+                    std::cout << "Adding items record " << i << "/" << num_records << std::endl;
+                }
+            } else
+                throw std::invalid_argument("The records item must point to an array item");
+        }
 
         if (jsonConfig.has_item("data"))
             initData(jsonConfig);
@@ -264,26 +280,6 @@ namespace Opm {
         return m_deckNames.size() > 1;
     }
 
-    void ParserKeyword::addItem(ParserItemConstPtr item) {
-        if (m_isDataKeyword)
-            throw std::invalid_argument("Keyword " + getName() + " is already configured as a data keyword; cannot add items.");
-        {
-            std::shared_ptr<ParserRecord> record = getRecord(0);
-            record->addItem(item);
-        }
-    }
-
-    void ParserKeyword::addDataItem(ParserItemConstPtr item) {
-        std::shared_ptr<ParserRecord> record = getRecord(0);
-        if (record->size())
-            throw std::invalid_argument("Keyword " + getName() + " already contains all specified items; cannot add a data item.");
-
-        if ((m_keywordSizeType == FIXED) && (m_fixedSize == 1U)) {
-            addItem(item);
-            m_isDataKeyword = true;
-        } else
-            throw std::invalid_argument("When calling addDataItem() for keyword " + getName() + ", it must be configured with fixed size == 1.");
-    }
 
     void ParserKeyword::initDeckNames(const Json::JsonObject& jsonObject) {
         if (!jsonObject.has_item("deck_names"))
@@ -337,10 +333,11 @@ namespace Opm {
         setMatchRegex(regexStringObject.as_string());
     }
 
-    void ParserKeyword::addItems(const Json::JsonObject& jsonConfig) {
-        const Json::JsonObject itemsConfig = jsonConfig.get_item("items");
+    void ParserKeyword::addItems(const Json::JsonObject& itemsConfig) {
         if (itemsConfig.is_array()) {
             size_t num_items = itemsConfig.size();
+            std::shared_ptr<ParserRecord> record = std::make_shared<ParserRecord>();
+
             for (size_t i = 0; i < num_items; i++) {
                 const Json::JsonObject itemConfig = itemsConfig.get_array_item(i);
 
@@ -350,27 +347,27 @@ namespace Opm {
                     case INT:
                         {
                             ParserIntItemConstPtr item = ParserIntItemConstPtr(new ParserIntItem(itemConfig));
-                            addItem(item);
+                            record->addItem( item );
                         }
                         break;
                     case STRING:
                         {
                             ParserStringItemConstPtr item = ParserStringItemConstPtr(new ParserStringItem(itemConfig));
-                            addItem(item);
+                            record->addItem(item);
                         }
                         break;
                     case DOUBLE:
                         {
                             ParserDoubleItemPtr item = ParserDoubleItemPtr(new ParserDoubleItem(itemConfig));
                             initDoubleItemDimension( item , itemConfig );
-                            addItem(item);
+                            record->addItem(item);
                         }
                         break;
                     case FLOAT:
                         {
                             ParserFloatItemPtr item = ParserFloatItemPtr(new ParserFloatItem(itemConfig));
                             initFloatItemDimension( item , itemConfig );
-                            addItem(item);
+                            record->addItem(item);
                         }
                         break;
                     default:
@@ -379,6 +376,7 @@ namespace Opm {
                 } else
                     throw std::invalid_argument("'value_type' JSON item missing for keyword "+getName()+".");
             }
+            addRecord(record);
         } else
             throw std::invalid_argument("The 'items' JSON item missing must be an array in keyword "+getName()+".");
     }
@@ -426,6 +424,7 @@ namespace Opm {
             ParserValueTypeEnum valueType = ParserValueTypeEnumFromString(dataConfig.get_string("value_type"));
             const std::string itemName(getName());
             bool hasDefault = dataConfig.has_item("default");
+            std::shared_ptr<ParserRecord> record = std::make_shared<ParserRecord>();
 
             switch (valueType) {
                 case INT:
@@ -435,7 +434,7 @@ namespace Opm {
                         int defaultValue = dataConfig.get_int("default");
                         item->setDefault(defaultValue);
                     }
-                    addDataItem(item);
+                    record->addDataItem( item );
                 }
                 break;
                 case STRING:
@@ -445,7 +444,7 @@ namespace Opm {
                         std::string defaultValue = dataConfig.get_string("default");
                         item->setDefault(defaultValue);
                     }
-                    addDataItem(item);
+                    record->addItem( item );
                 }
                 break;
                 case DOUBLE:
@@ -456,7 +455,7 @@ namespace Opm {
                         item->setDefault(defaultValue);
                     }
                     initDoubleItemDimension( item , dataConfig );
-                    addDataItem(item);
+                    record->addDataItem( item );
                 }
                 break;
                 case FLOAT:
@@ -467,12 +466,13 @@ namespace Opm {
                         item->setDefault((float) defaultValue);
                     }
                     initFloatItemDimension( item , dataConfig );
-                    addDataItem(item);
+                    record->addDataItem( item );
                 }
                 break;
                 default:
                     throw std::invalid_argument("While initializing keyword "+getName()+": Values of type "+dataConfig.get_string("value_type")+" are not implemented.");
             }
+            addDataRecord( record );
         } else
             throw std::invalid_argument("The 'value_type' JSON item of keyword "+getName()+" is missing");
     }
@@ -480,6 +480,20 @@ namespace Opm {
     ParserRecordPtr ParserKeyword::getRecord(size_t recordIndex) const {
         return m_records.get( recordIndex );
     }
+
+
+    void ParserKeyword::addRecord(std::shared_ptr<ParserRecord> record) {
+        m_records.push_back( record );
+    }
+
+
+    void ParserKeyword::addDataRecord(std::shared_ptr<ParserRecord> record) {
+        if ((m_keywordSizeType == FIXED) && (m_fixedSize == 1U))
+            addRecord(record);
+        else
+            throw std::invalid_argument("When calling addDataRecord() for keyword " + getName() + ", it must be configured with fixed size == 1.");
+    }
+
 
 
     const std::string& ParserKeyword::getName() const {
@@ -520,12 +534,13 @@ namespace Opm {
     }
 
     DeckKeywordPtr ParserKeyword::parse(RawKeywordConstPtr rawKeyword) const {
-        std::shared_ptr<ParserRecord> record = getRecord(0);
         if (rawKeyword->isFinished()) {
             DeckKeywordPtr keyword(new DeckKeyword(rawKeyword->getKeywordName()));
             keyword->setLocation(rawKeyword->getFilename(), rawKeyword->getLineNR());
             keyword->setDataKeyword( isDataKeyword() );
+
             for (size_t i = 0; i < rawKeyword->size(); i++) {
+                std::shared_ptr<ParserRecord> record = getRecord(i);
                 DeckRecordConstPtr deckRecord = record->parse(rawKeyword->getRecord(i));
                 keyword->addRecord(deckRecord);
             }
@@ -552,9 +567,15 @@ namespace Opm {
         return m_sizeDefinitionPair;
     }
 
+
     bool ParserKeyword::isDataKeyword() const {
-        return m_isDataKeyword;
+        if (m_records.size() > 0) {
+            auto record = m_records.get(0);
+            return record->isDataRecord();
+        } else
+            return false;
     }
+
 
     bool ParserKeyword::hasMatchRegex() const {
         return !m_matchRegexString.empty();
@@ -599,14 +620,10 @@ namespace Opm {
         if (m_deckNames != other.m_deckNames)
             return false;
         {
-            std::shared_ptr<ParserRecord> record = getRecord(0);
-            std::shared_ptr<ParserRecord> other_record = other.getRecord(0);
-
             if ((m_name == other.m_name) &&
                 (m_matchRegexString == other.m_matchRegexString) &&
-                (record->equal(*(other_record))) &&
                 (m_keywordSizeType == other.m_keywordSizeType) &&
-                (m_isDataKeyword == other.m_isDataKeyword) &&
+                (isDataKeyword() == other.isDataKeyword()) &&
                 (m_isTableCollection == other.m_isTableCollection)) {
 
                 bool equal_ = false;
@@ -624,6 +641,14 @@ namespace Opm {
                     equal_ = true;
                     break;
                 }
+
+                for (size_t recordIndex = 0; recordIndex < m_records.size(); recordIndex++) {
+                    std::shared_ptr<ParserRecord> record = getRecord(recordIndex);
+                    std::shared_ptr<ParserRecord> other_record = other.getRecord(recordIndex);
+
+                    equal_ = equal_ && record->equal( *other_record );
+                }
+
                 return equal_;
             } else
                 return false;
@@ -676,23 +701,34 @@ namespace Opm {
             os << indent << lhs << "->setMatchRegex(\"" << m_matchRegexString << "\");" << std::endl;
 
         {
-            std::shared_ptr<ParserRecord> record = getRecord(0);
-            for (size_t i = 0; i < record->size(); i++) {
-                const std::string local_indent = indent + "   ";
-                ParserItemConstPtr item = record->get(i);
-                os << local_indent << "ParserItemPtr "<<item->name()<<"item(";
-                item->inlineNew(os);
-                os << ");" << std::endl;
-                os << local_indent << item->name()<<"item->setDescription(\"" << item->getDescription() << "\");" << std::endl;
-                for (size_t idim=0; idim < item->numDimensions(); idim++)
-                    os << local_indent <<item->name()<<"item->push_backDimension(\"" << item->getDimension( idim ) << "\");" << std::endl;
-                {
-                    std::string addItemMethod = "addItem";
-                    if (m_isDataKeyword)
-                        addItemMethod = "addDataItem";
+            if (m_records.size() > 0 ) {
+                std::shared_ptr<ParserRecord> record = getRecord(0);
+                os << indent << "{" << std::endl;
+                os << indent << "std::shared_ptr<ParserRecord> record = std::make_shared<ParserRecord>();" << std::endl;
+                for (size_t i = 0; i < record->size(); i++) {
+                    const std::string local_indent = indent + "   ";
+                    ParserItemConstPtr item = record->get(i);
+                    os << local_indent << "ParserItemPtr "<<item->name()<<"item(";
+                    item->inlineNew(os);
+                    os << ");" << std::endl;
+                    os << local_indent << item->name()<<"item->setDescription(\"" << item->getDescription() << "\");" << std::endl;
+                    for (size_t idim=0; idim < item->numDimensions(); idim++)
+                        os << local_indent <<item->name()<<"item->push_backDimension(\"" << item->getDimension( idim ) << "\");" << std::endl;
+                    {
+                        std::string addItemMethod = "addItem";
+                        if (isDataKeyword())
+                            addItemMethod = "addDataItem";
 
-                    os << local_indent << lhs << "->" << addItemMethod << "("<<item->name()<<"item);" << std::endl;
+                        os << local_indent << "record->" << addItemMethod << "("<<item->name()<<"item);" << std::endl;
+                    }
                 }
+
+                if (record->isDataRecord())
+                    os << indent << lhs << "->addDataRecord( record );" << std::endl;
+                else
+                    os << indent << lhs << "->addRecord( record );" << std::endl;
+
+                os << indent << "}" << std::endl;
             }
         }
     }
