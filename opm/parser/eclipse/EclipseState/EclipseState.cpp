@@ -122,12 +122,14 @@ namespace Opm {
 
 
     EclipseState::EclipseState(DeckConstPtr deck, LoggerPtr logger)
+        : m_defaultRegion("FLUXNUM")
     {
         m_deckUnitSystem = deck->getActiveUnitSystem();
 
         initPhases(deck, logger);
         initTables(deck, logger);
         initEclipseGrid(deck, logger);
+        initGridopts(deck);
         initSchedule(deck, logger);
         initTitle(deck, logger);
         initProperties(deck, logger);
@@ -401,10 +403,7 @@ namespace Opm {
         if (deck->hasKeyword("MULTREGT"))
             multregtKeywords = deck->getKeywordList("MULTREGT");
 
-        std::shared_ptr<MULTREGTScanner> scanner =
-            std::make_shared<MULTREGTScanner>(m_intGridProperties,
-                                              multregtKeywords);
-
+        std::shared_ptr<MULTREGTScanner> scanner = std::make_shared<MULTREGTScanner>(m_intGridProperties, multregtKeywords , m_defaultRegion);
         m_transMult->setMultregtScanner( scanner );
     }
 
@@ -412,6 +411,53 @@ namespace Opm {
 
     void EclipseState::initEclipseGrid(DeckConstPtr deck, LoggerPtr logger) {
         m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck, logger));
+    }
+
+
+    void EclipseState::initGridopts(DeckConstPtr deck) {
+        if (deck->hasKeyword("GRIDOPTS")) {
+            /*
+              The EQUALREG, MULTREG, COPYREG, ... keywords are used to
+              manipulate vectors based on region values; for instance
+              the statement
+
+                EQUALREG
+                   PORO  0.25  3    /   -- Region array not specified
+                   PERMX 100   3  F /
+                /
+
+              will set the PORO field to 0.25 for all cells in region
+              3 and the PERMX value to 100 mD for the same cells. The
+              fourth optional argument to the EQUALREG keyword is used
+              to indicate which REGION array should be used for the
+              selection.
+
+              If the REGION array is not indicated (as in the PORO
+              case) above, the default region to use in the xxxREG
+              keywords depends on the GRIDOPTS keyword:
+
+                1. If GRIDOPTS is present, and the NRMULT item is
+                   greater than zero, the xxxREG keywords will default
+                   to use the MULTNUM region.
+
+                2. If the GRIDOPTS keyword is not present - or the
+                   NRMULT item equals zero, the xxxREG keywords will
+                   default to use the FLUXNUM keyword.
+
+              This quite weird behaviour comes from reading the
+              GRIDOPTS and MULTNUM documentation, and practical
+              experience with ECLIPSE simulations. Ufortunately the
+              documentation of the xxxREG keywords does not confirm
+              this.
+            */
+
+            auto gridOpts = deck->getKeyword("GRIDOPTS");
+            auto record = gridOpts->getRecord(0);
+            auto nrmult_item = record->getItem("NRMULT");
+
+            if (nrmult_item->getInt(0) > 0)
+                m_defaultRegion = "MULTNUM";
+        }
     }
 
 
@@ -558,6 +604,20 @@ namespace Opm {
 
         return gridProperty;
     }
+
+    std::shared_ptr<GridProperty<int> > EclipseState::getDefaultRegion() const {
+        return m_intGridProperties->getInitializedKeyword( m_defaultRegion );
+    }
+
+    std::shared_ptr<GridProperty<int> > EclipseState::getRegion(DeckItemConstPtr regionItem) const {
+        if (regionItem->defaultApplied(0))
+            return getDefaultRegion();
+        else {
+            const std::string regionArray = MULTREGT::RegionNameFromDeckValue( regionItem->getString(0) );
+            return m_intGridProperties->getInitializedKeyword( regionArray );
+        }
+    }
+
 
 
     /*
@@ -917,8 +977,7 @@ namespace Opm {
             if (supportsGridProperty( targetArray , enabledTypes)) {
                 double doubleValue = record->getItem("VALUE")->getRawDouble(0);
                 int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
-                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
-                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword(regionArray);
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = getRegion( record->getItem("REGION_NAME") );
                 std::vector<bool> mask;
 
                 regionProperty->initMask( regionValue , mask);
@@ -961,8 +1020,7 @@ namespace Opm {
             if (supportsGridProperty( targetArray , enabledTypes)) {
                 double doubleValue = record->getItem("SHIFT")->getRawDouble(0);
                 int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
-                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
-                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword(regionArray);
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = getRegion( record->getItem("REGION_NAME") );
                 std::vector<bool> mask;
 
                 regionProperty->initMask( regionValue , mask);
@@ -1007,8 +1065,7 @@ namespace Opm {
             if (supportsGridProperty( targetArray , enabledTypes)) {
                 double doubleValue = record->getItem("FACTOR")->getRawDouble(0);
                 int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
-                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
-                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword( regionArray );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = getRegion( record->getItem("REGION_NAME") );
                 std::vector<bool> mask;
 
                 regionProperty->initMask( regionValue , mask);
@@ -1052,8 +1109,7 @@ namespace Opm {
 
             if (supportsGridProperty( srcArray , enabledTypes)) {
                 int regionValue = record->getItem("REGION_NUMBER")->getInt(0);
-                const std::string regionArray = MULTREGT::RegionNameFromDeckValue( record->getItem("REGION_NAME")->getString(0) );
-                std::shared_ptr<Opm::GridProperty<int> > regionProperty = m_intGridProperties->getInitializedKeyword( regionArray );
+                std::shared_ptr<Opm::GridProperty<int> > regionProperty = getRegion( record->getItem("REGION_NAME") );
                 std::vector<bool> mask;
 
                 regionProperty->initMask( regionValue , mask );
