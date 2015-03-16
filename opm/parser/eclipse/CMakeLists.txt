@@ -240,6 +240,8 @@ add_custom_target( keywordlist ALL COMMAND createDefaultKeywordList
 #-----------------------------------------------------------------
 
 add_library(Parser ${rawdeck_source} ${parser_source} ${deck_source} ${state_source} ${unit_source} ${log_source})
+add_dependencies(Parser ${LIBRARY_DEPS})
+
 add_dependencies(Parser keywordlist)
 target_link_libraries(Parser opm-json ${Boost_LIBRARIES}  ${ERT_LIBRARIES})
 

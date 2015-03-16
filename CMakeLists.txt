@@ -58,7 +58,7 @@ endif()
 include("cmake/Modules/CheckCaseSensitiveFileSystem.cmake")
 add_definitions("-DHAVE_CASE_SENSITIVE_FILESYSTEM=${HAVE_CASE_SENSITIVE_FILESYSTEM}")
 
-find_package(ERT)
+find_package(ERT REQUIRED)
 include_directories( ${ERT_INCLUDE_DIRS} )   
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
