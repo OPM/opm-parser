@@ -5,7 +5,50 @@ enable_language(C)
 include(CTest)
 
 
-SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+# project information is in dune.module. Read this file and set variables.
+# we cannot generate dune.module since it is read by dunecontrol before
+# the build starts, so it makes sense to keep the data there then.
+
+
+set( OPM_CMAKE_ROOT "" CACHE PATH "Root directory containing OPM related cmake modules")
+
+include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
+
+if (OPM_INIT) 
+
+   # We actually found the OpmInit module without using the OPM_CMAKE_ROOT variable.
+   # The build needs the variable $OPM_MACROS_ROOT to be set, so here we infer it 
+   # by backtracing from the location of the OpmInit module.
+   get_filename_component( TMP1 ${OPM_INIT} PATH )
+   get_filename_component( TMP2 ${TMP1} PATH )
+   get_filename_component( OPM_MACROS_ROOT ${TMP2} PATH )
+
+else()
+
+   if (OPM_CMAKE_ROOT)
+      list( APPEND CMAKE_MODULE_PATH "${OPM_CMAKE_ROOT}/cmake/Modules")
+      include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
+      set( OPM_MACROS_ROOT ${OPM_CMAKE_ROOT} )
+   endif()
+
+   if (NOT OPM_INIT)
+      message( "" )       
+      message( " /-------------------------------------------------------------------------------\\")
+      message( " |  Could not locate the opm build macros. The opm build macros                  |")
+      message( " |  are in a separate repository - instructions to proceed:                      |")
+      message( " |                                                                               |")
+      message( " |    1. Clone the repository: git clone git@github.com:OPM/opm-cmake.git        |")
+      message( " |                                                                               |")
+      message( " |    2. Run cmake in the current project with -DOPM_CMAKE_ROOT=<path>/opm-cmake |")
+      message( " |                                                                               |") 
+      message( " \\-------------------------------------------------------------------------------/")
+      message( "" )       
+      message( FATAL_ERROR "Could not find OPM Macros")
+   endif()
+
+endif()
+
+
 SET( CMAKE_CXX_FLAGS "-pipe -std=c++0x -pedantic -Wall -Wextra -Wformat-nonliteral -Wcast-align -Wpointer-arith -Wmissing-declarations -Wcast-qual -Wshadow -Wwrite-strings -Wchar-subscripts -Wredundant-decls")
 
 SET( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -O0 -DDEBUG  -ggdb3")
@@ -29,7 +72,7 @@ endif ()
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
-include(cmake/Modules/UseMultiArch.cmake)
+include(UseMultiArch)
 
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
@@ -54,7 +97,7 @@ else()
     include_directories( "${CMAKE_CURRENT_SOURCE_DIR}/opm/json" )   
 endif()
 
-include("cmake/Modules/CheckCaseSensitiveFileSystem.cmake")
+include( cmake/Modules/CheckCaseSensitiveFileSystem.cmake )
 add_definitions("-DHAVE_CASE_SENSITIVE_FILESYSTEM=${HAVE_CASE_SENSITIVE_FILESYSTEM}")
 
 find_package(ERT)
@@ -78,7 +121,6 @@ install(FILES dune.module DESTINATION lib/dunecontrol/opm-parser)
 
 include(OpmProject)
 include(ConfigVars)
-set(OPM_MACROS_ROOT ${PROJECT_SOURCE_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(opm-parser_NAME opm-parser)
 set(opm-parser_LIBRARIES Parser opm-json)
