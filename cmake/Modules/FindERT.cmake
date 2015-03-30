@@ -108,6 +108,30 @@ list (APPEND ERT_LIBRARY
   ${ERT_LIBRARY_GEOMETRY}
   ${ERT_LIBRARY_UTIL}
   )
+
+if(ERT_FIND_REQUIRED AND NOT ERT_LIBRARY)
+    message(STATUS "ERT not found, will be built in source tree")
+    include(ExternalProject)
+    externalproject_add(ert
+                        GIT_REPOSITORY https://github.com/Ensembles/ert
+                        GIT_TAG origin/master
+                        CONFIGURE_COMMAND ${CMAKE_COMMAND} <SOURCE_DIR>/devel
+                                          -DBUILD_SHARED_LIBS=0
+                                          -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                                          -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/ert
+                                          -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+                                          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                                          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                        PREFIX ${CMAKE_BINARY_DIR}/ert)
+    set(ERT_LIBRARY ${CMAKE_BINARY_DIR}/ert/${CMAKE_INSTALL_LIBDIR}/libecl.a
+                    ${CMAKE_BINARY_DIR}/ert/${CMAKE_INSTALL_LIBDIR}/libecl_well.a
+                    ${CMAKE_BINARY_DIR}/ert/${CMAKE_INSTALL_LIBDIR}/libert_geometry.a
+                    ${CMAKE_BINARY_DIR}/ert/${CMAKE_INSTALL_LIBDIR}/libert_util.a)
+    set(ERT_INCLUDE_DIR ${CMAKE_BINARY_DIR}/ert/include)
+    set(ERT_BUILD_INLINE 1)
+    list(APPEND LIBRARY_DEPS ert)
+endif()
+
 list (APPEND ERT_LIBRARIES ${ERT_LIBRARY})
 list (APPEND ERT_INCLUDE_DIRS ${ERT_INCLUDE_DIR})
 
@@ -210,7 +234,7 @@ remove_dup_deps (ERT)
 
 # see if we can compile a minimum example
 # CMake logical test doesn't handle lists (sic)
-if (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND"))
+if (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND" OR ERT_BUILD_INLINE))
   include (CMakePushCheckState)
   include (CheckCSourceCompiles)
   cmake_push_check_state ()
@@ -224,13 +248,16 @@ int main (void) {
   return 0;
 }" HAVE_ERT)
   cmake_pop_check_state ()
-else (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND"))
+else (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND" OR ERT_BUILD_INLINE))
   # clear the cache so the find probe is attempted again if files becomes
   # available (only upon a unsuccessful *compile* should we disable further
   # probing)
   set (HAVE_ERT)
   unset (HAVE_ERT CACHE)
-endif (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND"))
+endif (NOT (ERT_INCLUDE_DIR MATCHES "-NOTFOUND" OR ERT_LIBRARIES MATCHES "-NOTFOUND" OR ERT_BUILD_INLINE))
+if(ERT_BUILD_INLINE)
+  set(HAVE_ERT 1)
+endif()
 
 # if the test program didn't compile, but was required to do so, bail
 # out now and display an error; otherwise limp on
