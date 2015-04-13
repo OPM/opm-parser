@@ -7,7 +7,9 @@ if (NOT HAVE_CJSON)
 endif()
 add_library(opm-json ${json_source})
 target_link_libraries( opm-json ${CJSON_LIBRARY} ${Boost_LIBRARIES} )
-
+set_target_properties (opm-json PROPERTIES
+                       SOVERSION 1.0
+                       VERSION 2015.04)
 
 install( TARGETS opm-json DESTINATION ${CMAKE_INSTALL_LIBDIR} )
 foreach ( header ${json_headers} ) 

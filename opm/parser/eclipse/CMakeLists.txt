@@ -255,6 +255,9 @@ add_custom_target( keywordlist ALL COMMAND createDefaultKeywordList
 add_library(Parser ${rawdeck_source} ${parser_source} ${deck_source} ${state_source} ${unit_source} ${log_source})
 add_dependencies(Parser keywordlist)
 target_link_libraries(Parser opm-json ${Boost_LIBRARIES}  ${ERT_LIBRARIES})
+set_target_properties (Parser PROPERTIES
+                       SOVERSION 1.0
+                       VERSION 2015.04)
 
 include( ${PROJECT_SOURCE_DIR}/cmake/Modules/install_headers.cmake )   
 install_headers( "${HEADER_FILES}" "${CMAKE_INSTALL_PREFIX}" )
