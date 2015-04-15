@@ -24,7 +24,7 @@
 namespace Opm {
 
     Tuning::Tuning(TimeMapConstPtr timemap):
-      /* Hardcoding default here values to support getting defaults before any TUNING keyword has occured */
+      /* Hardcoding default values to support getting defaults before any TUNING keyword has occured */
       m_TSINIT( new DynamicState<double>(timemap, 1.0   * Metric::Time)),
       m_TSMAXZ( new DynamicState<double>(timemap, 365.0 * Metric::Time)),
       m_TSMINZ( new DynamicState<double>(timemap, 0.1   * Metric::Time)),

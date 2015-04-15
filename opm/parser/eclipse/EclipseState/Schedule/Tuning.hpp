@@ -28,6 +28,21 @@ namespace Opm {
 
     class Tuning {
 
+    /*
+    When the TUNING keyword has occured in the Schedule section and
+    has been handled by the Schedule::handleTUNING() method,
+    the value for each TUNING keyword item is either
+    set from the keyword occurence or a default is set if specified in
+    the keyword description. Items that do not have a specified default
+    has got a separate <itemname>hasValue() method.
+
+    Before any TUNING keyword has occured in the Schedule section,
+    the different TUNING keyword items has got hardcoded default values
+    (See Tuning constructor)
+    Hardcoded values are set as the same as specified in the keyword description,
+    or 0 if no default is specified in the description.
+    */
+
     public:
         Tuning(TimeMapConstPtr timemap);
 
