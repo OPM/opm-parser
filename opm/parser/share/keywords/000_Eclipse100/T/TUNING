@@ -1,4 +1,4 @@
-{"name" : "TUNING" , "sections" : ["SCHEDULE"] , "records" : [
+{"name" : "TUNING" , "size" : 3, "sections" : ["SCHEDULE"] , "records" : [
   [{"name" : "TSINIT" , "value_type" : "DOUBLE", "dimension" : "Time" , "default" : 1.0},
    {"name" : "TSMAXZ" , "value_type" : "DOUBLE", "dimension" : "Time" , "default" : 365.0},
    {"name" : "TSMINZ", "value_type" : "DOUBLE" , "dimension" : "Time" , "default" : 0.1},
