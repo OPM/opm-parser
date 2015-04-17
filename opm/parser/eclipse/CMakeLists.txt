@@ -89,6 +89,7 @@ EclipseState/Schedule/CompletionSet.cpp
 EclipseState/Schedule/ScheduleEnums.cpp 
 EclipseState/Schedule/GroupTreeNode.cpp
 EclipseState/Schedule/GroupTree.cpp
+EclipseState/Schedule/Tuning.cpp
 #
 EclipseState/Tables/SingleRecordTable.cpp
 EclipseState/Tables/MultiRecordTable.cpp
@@ -106,6 +107,7 @@ EclipseState/Grid/FaultCollection.cpp
 #
 EclipseState/SimulationConfig/SimulationConfig.cpp
 EclipseState/SimulationConfig/ThresholdPressure.cpp)
+
 
 set( HEADER_FILES
 OpmLog/LogBackend.hpp
@@ -165,6 +167,7 @@ EclipseState/Schedule/CompletionSet.hpp
 EclipseState/Schedule/ScheduleEnums.hpp
 EclipseState/Schedule/GroupTreeNode.hpp 
 EclipseState/Schedule/GroupTree.hpp
+EclipseState/Schedule/Tuning.hpp
 #
 EclipseState/Util/ElasticVector.hpp 
 EclipseState/Util/OrderedMap.hpp 
