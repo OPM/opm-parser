@@ -33,7 +33,8 @@ namespace Opm {
     class DynamicState {
     public:
 
-        DynamicState(const TimeMapConstPtr timeMap, T defaultValue) {
+        DynamicState(const TimeMapConstPtr timeMap, T defaultValue): m_defaultIndex(0),
+                                                                     m_defaultIndexInitialized(false){
             m_timeMap = timeMap;
             m_currentValue = defaultValue;
         }
@@ -86,14 +87,30 @@ namespace Opm {
 
            m_data[index] = value;
            m_currentValue = value;
+
+           if (!m_defaultIndexInitialized) {
+              m_defaultIndex = index;
+              m_defaultIndexInitialized = true;
+           }
+           else if (index < m_defaultIndex) {
+              m_defaultIndex = index;
+           }
         }
 
+
+        void updateDefaults(T value) {
+          for (int index = 0; index < m_defaultIndex; ++index) {
+              m_data[index] = value;
+          }
+        }
 
 
     private:
         std::vector<T> m_data;
         TimeMapConstPtr m_timeMap;
         T m_currentValue;
+        size_t m_defaultIndex;
+        bool m_defaultIndexInitialized;
     };
 }
 
