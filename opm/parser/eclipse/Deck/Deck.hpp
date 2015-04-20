@@ -23,7 +23,8 @@
 #include <vector>
 #include <memory>
 
-#include <opm/parser/eclipse/Deck/KeywordContainer.hpp>
+//#include <opm/parser/eclipse/Deck/KeywordContainer.hpp>
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
 
 namespace Opm {
@@ -31,11 +32,15 @@ namespace Opm {
     class Deck {
     public:
         Deck();
+        bool hasKeyword(DeckKeywordConstPtr keyword) const;
         bool hasKeyword( const std::string& keyword ) const;
         void addKeyword( DeckKeywordConstPtr keyword);
         DeckKeywordConstPtr getKeyword(const std::string& keyword , size_t index) const;
         DeckKeywordConstPtr getKeyword(const std::string& keyword) const;
         DeckKeywordConstPtr getKeyword(size_t index) const;
+
+        size_t getKeywordIndex(DeckKeywordConstPtr keyword) const;
+
 
         size_t numKeywords(const std::string& keyword) const;
         const std::vector<DeckKeywordConstPtr>& getKeywordList(const std::string& keyword) const;
@@ -43,11 +48,16 @@ namespace Opm {
         void initUnitSystem();
         std::shared_ptr<UnitSystem> getDefaultUnitSystem() const;
         std::shared_ptr<UnitSystem> getActiveUnitSystem()  const;
+        std::vector<DeckKeywordConstPtr>::const_iterator begin() const;
+        std::vector<DeckKeywordConstPtr>::const_iterator end() const;
 
     private:
-        KeywordContainerPtr m_keywords;
         std::shared_ptr<UnitSystem> m_defaultUnits;
         std::shared_ptr<UnitSystem> m_activeUnits;
+
+        std::vector<DeckKeywordConstPtr> m_keywordList;
+        std::map<std::string, std::vector<DeckKeywordConstPtr> > m_keywordMap;
+        std::map<const DeckKeyword *, size_t> m_keywordIndex;
     };
 
     typedef std::shared_ptr<Deck> DeckPtr;
