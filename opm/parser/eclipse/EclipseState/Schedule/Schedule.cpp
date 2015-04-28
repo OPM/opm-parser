@@ -40,6 +40,7 @@ namespace Opm {
     }
 
     void Schedule::initFromDeck(DeckConstPtr deck) {
+        initializeNOSIM(deck);
         createTimeMap(deck);
         m_tuning.reset(new Tuning(m_timeMap));
         addGroup( "FIELD", 0 );
@@ -49,6 +50,14 @@ namespace Opm {
 
     void Schedule::initRootGroupTreeNode(TimeMapConstPtr timeMap) {
         m_rootGroupTree.reset(new DynamicState<GroupTreePtr>(timeMap, GroupTreePtr(new GroupTree())));
+    }
+
+    void Schedule::initializeNOSIM(DeckConstPtr deck) {
+        if (deck->hasKeyword("NOSIM")){
+            nosim = true;
+        } else {
+            nosim = false;
+        }
     }
 
     void Schedule::createTimeMap(DeckConstPtr deck) {
@@ -121,6 +130,8 @@ namespace Opm {
             if (keyword->name() == "TUNING")
                 handleTUNING(keyword, currentStep);
 
+            if (keyword->name() == "NOSIM")
+                handleNOSIM();
 
             if (keyword->name() == "WRFT")
                 rftProperties.push_back( std::make_pair( keyword , currentStep ));
@@ -608,7 +619,6 @@ namespace Opm {
         }
     }
 
-
     void Schedule::handleTUNING(DeckKeywordConstPtr keyword, size_t currentStep) {
 
         int numrecords = keyword->size();
@@ -737,6 +747,9 @@ namespace Opm {
     }
 
 
+    void Schedule::handleNOSIM() {
+        nosim = true;
+    }
 
     void Schedule::handleCOMPDAT(DeckKeywordConstPtr keyword, size_t currentStep) {
         std::map<std::string , std::vector< CompletionPtr> > completionMapList = Completion::completionsFromCOMPDATKeyword( keyword );
@@ -957,6 +970,10 @@ namespace Opm {
 
     bool Schedule::hasGroup(const std::string& groupName) const {
         return m_groups.find(groupName) != m_groups.end();
+    }
+
+    bool Schedule::initOnly() const {
+        return nosim;
     }
 
     GroupPtr Schedule::getGroup(const std::string& groupName) const {
