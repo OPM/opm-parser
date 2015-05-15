@@ -4,3 +4,4 @@ Description: Open Porous Media Initiative File Parser Library
 Version: 2.0
 Label: 2015.04
 Maintainer: joaho@statoil.com
+Depends: opm-cmake
