@@ -43,7 +43,7 @@ namespace Opm {
         const std::string& getEclipseInputPath() const;
 
 
-        void setEclipseInputPath(std::string& path);
+        void setEclipseInputPath(const std::string& path);
         void handleRPTRSTBasic(size_t timestep, size_t basic, size_t frequency=1);
 
 

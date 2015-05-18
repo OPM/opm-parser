@@ -178,7 +178,7 @@ namespace Opm {
     }
 
 
-    void IOConfig::setEclipseInputPath(std::string& path) {
+    void IOConfig::setEclipseInputPath(const std::string& path) {
         m_eclipse_input_path = path;
     }
 
