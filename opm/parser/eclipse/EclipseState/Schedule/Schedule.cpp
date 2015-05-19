@@ -33,8 +33,9 @@
 
 namespace Opm {
 
-    Schedule::Schedule(std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck)
-        : m_grid(grid)
+    Schedule::Schedule(std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck, IOConfigPtr ioConfig)
+        : m_grid(grid),
+          m_ioConfig(ioConfig)
     {
         initFromDeck(deck);
     }
@@ -132,6 +133,9 @@ namespace Opm {
 
             if (keyword->name() == "NOSIM")
                 handleNOSIM();
+
+            if (keyword->name() == "RPTRST")
+                handleRPTRST(keyword, currentStep);
 
             if (keyword->name() == "WRFT")
                 rftProperties.push_back( std::make_pair( keyword , currentStep ));
@@ -750,6 +754,36 @@ namespace Opm {
     void Schedule::handleNOSIM() {
         nosim = true;
     }
+
+    void Schedule::handleRPTRST(DeckKeywordConstPtr keyword, size_t currentStep) {
+        DeckRecordConstPtr record = keyword->getRecord(0);
+
+        size_t basic = 1;
+        size_t freq  = 0;
+
+        DeckItemConstPtr item = record->getItem(0);
+
+        for (size_t index = 0; index < item->size(); ++index) {
+
+            if (item->hasValue(index)) {
+                std::string mnemonics = item->getString(index);
+                std::size_t found_basic = mnemonics.find("BASIC=");
+                if (found_basic != std::string::npos) {
+                    std::string basic_no = mnemonics.substr(found_basic+6, found_basic+7);
+                    basic = atoi(basic_no.c_str());
+                }
+
+                std::size_t found_freq = mnemonics.find("FREQ=");
+                if (found_freq != std::string::npos) {
+                    std::string freq_no = mnemonics.substr(found_freq+5, found_freq+6);
+                    freq = atoi(freq_no.c_str());
+                }
+            }
+        }
+
+        m_ioConfig->handleRPTRSTBasic(m_timeMap, currentStep, basic, freq);
+    }
+
 
     void Schedule::handleCOMPDAT(DeckKeywordConstPtr keyword, size_t currentStep) {
         std::map<std::string , std::vector< CompletionPtr> > completionMapList = Completion::completionsFromCOMPDATKeyword( keyword );
