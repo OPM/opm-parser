@@ -37,6 +37,7 @@ namespace Opm {
         void addKeyword( DeckKeywordConstPtr keyword);
         DeckKeywordConstPtr getKeyword(const std::string& keyword , size_t index) const;
         DeckKeywordConstPtr getKeyword(const std::string& keyword) const;
+        DeckKeywordConstPtr getLastKeyword(const std::string& keyword) const;
         DeckKeywordConstPtr getKeyword(size_t index) const;
 
         size_t getKeywordIndex(DeckKeywordConstPtr keyword) const;

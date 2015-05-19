@@ -72,6 +72,11 @@ namespace Opm {
         return keywordList.back();
     }
 
+    DeckKeywordConstPtr Deck::getLastKeyword(const std::string& keyword) const {
+        const std::vector<DeckKeywordConstPtr>& keywordList = getKeywordList( keyword );
+        return keywordList.front();
+    }
+
     DeckKeywordConstPtr Deck::getKeyword(size_t index) const {
         if (index < m_keywordList.size())
             return m_keywordList[index];
