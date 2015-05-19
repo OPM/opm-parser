@@ -67,7 +67,8 @@ BOOST_AUTO_TEST_CASE(TuningTest) {
 
   DeckPtr deck = createDeck(deckStr);
   std::shared_ptr<const EclipseGrid> grid = std::make_shared<const EclipseGrid>( 10 , 10 , 10 );
-  Schedule schedule(grid , deck);
+  IOConfigPtr ioConfig;
+  Schedule schedule(grid , deck, ioConfig);
   TuningPtr tuning = schedule.getTuning();
 
 
