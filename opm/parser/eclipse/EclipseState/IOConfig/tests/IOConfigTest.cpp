@@ -127,9 +127,9 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
 
     DeckPtr deck = createDeck(deckStr);
     std::shared_ptr<const EclipseGrid> grid = std::make_shared<const EclipseGrid>( 10 , 10 , 10 );
-    Schedule schedule(grid , deck);
     IOConfigPtr ioConfigPtr;
-    BOOST_CHECK_NO_THROW(ioConfigPtr = std::make_shared<IOConfig>(deck, schedule.getTimeMap()));
+    BOOST_CHECK_NO_THROW(ioConfigPtr = std::make_shared<IOConfig>(deck));
+    Schedule schedule(grid , deck, ioConfigPtr);
 
     //If no BASIC keyord has been handled, no restart files should be written
     TimeMapConstPtr timemap = schedule.getTimeMap();
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     /*BASIC=1, write restart file for every timestep*/
     size_t timestep = 3;
     int basic       = 1;
-    ioConfigPtr->handleRPTRSTBasic(timestep, basic);
+    ioConfigPtr->handleRPTRSTBasic(schedule.getTimeMap(),timestep, basic);
     for (size_t ts = 0; ts < timemap->numTimesteps(); ++ts) {
         if (ts < 3) {
             BOOST_CHECK_EQUAL(false, ioConfigPtr->getWriteRestartFile(ts));
@@ -172,10 +172,9 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     timestep      = 11;
     basic         = 3;
     int frequency = 3;
-    ioConfigPtr->handleRPTRSTBasic(timestep, basic, frequency);
+    ioConfigPtr->handleRPTRSTBasic(schedule.getTimeMap(),timestep, basic, frequency);
 
     for (size_t ts = timestep ; ts < timemap->numTimesteps(); ++ts) {
-        bool check = ioConfigPtr->getWriteRestartFile(ts);
         if (((ts-timestep) % frequency) == 0) {
             BOOST_CHECK_EQUAL(true, ioConfigPtr->getWriteRestartFile(ts));
         } else {
@@ -200,7 +199,7 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     timestep      = 17;
     basic         = 4;
     frequency     = 0;
-    ioConfigPtr->handleRPTRSTBasic(timestep, basic, frequency);
+    ioConfigPtr->handleRPTRSTBasic(schedule.getTimeMap(),timestep, basic, frequency);
 
     /*Expected results: Write timestep for timestep 17, 20, 22, 23, 26*/
 
@@ -230,7 +229,7 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     timestep      = 27;
     basic         = 4;
     frequency     = 2;
-    ioConfigPtr->handleRPTRSTBasic(timestep, basic, frequency);
+    ioConfigPtr->handleRPTRSTBasic(schedule.getTimeMap(), timestep, basic, frequency);
 
     /*Expected results: Write timestep for timestep 27, 32, 36 */
 
@@ -261,7 +260,7 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     timestep      = 37;
     basic         = 5;
     frequency     = 2;
-    ioConfigPtr->handleRPTRSTBasic(timestep, basic, frequency);
+    ioConfigPtr->handleRPTRSTBasic(schedule.getTimeMap(), timestep, basic, frequency);
 
     /*Expected results: Write timestep for timestep 37, 38, 42, 44 */
 
@@ -288,14 +287,12 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
 
     /*Throw exception if write GRID file is specified*/
     DeckPtr deck2 = createDeck(deckStr2);
-    Schedule schedule2(grid , deck2);
-    BOOST_CHECK_THROW(std::make_shared<IOConfig>(deck2, schedule2.getTimeMap()), std::runtime_error);
+    BOOST_CHECK_THROW(std::make_shared<IOConfig>(deck2), std::runtime_error);
 
     /*If NOGGF keyword is present, no EGRID file is written*/
     DeckPtr deck3 = createDeck(deckStr3);
-    Schedule schedule3(grid , deck3);
     IOConfigPtr ioConfigPtr3;
-    BOOST_CHECK_NO_THROW(ioConfigPtr3 = std::make_shared<IOConfig>(deck3, schedule3.getTimeMap()));
+    BOOST_CHECK_NO_THROW(ioConfigPtr3 = std::make_shared<IOConfig>(deck3));
     BOOST_CHECK_EQUAL(false, ioConfigPtr3->getWriteEGRIDFile());
 
     /*If INIT keyword is specified, verify write of INIT file*/
@@ -309,9 +306,8 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
 
     /*If GRIDFILE 0 0 is specified, no EGRID file is written */
     DeckPtr deck4 = createDeck(deckStr4);
-    Schedule schedule4(grid , deck4);
     IOConfigPtr ioConfigPtr4;
-    BOOST_CHECK_NO_THROW(ioConfigPtr4 = std::make_shared<IOConfig>(deck4, schedule4.getTimeMap()));
+    BOOST_CHECK_NO_THROW(ioConfigPtr4 = std::make_shared<IOConfig>(deck4));
     BOOST_CHECK_EQUAL(false, ioConfigPtr4->getWriteEGRIDFile());
 }
 
