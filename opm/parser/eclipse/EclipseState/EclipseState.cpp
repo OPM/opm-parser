@@ -131,6 +131,7 @@ namespace Opm {
         initGridopts(deck);
         initIOConfig(deck);
         initSchedule(deck);
+        initIOConfigPostSchedule(deck);
         initTitle(deck);
         initProperties(deck);
         initSimulationConfig(deck);
@@ -318,14 +319,26 @@ namespace Opm {
         m_ioConfig = std::make_shared<IOConfig>(deck);
     }
 
+
+    void EclipseState::initIOConfigPostSchedule(DeckConstPtr deck) {
+        if (Section::hasSOLUTION(deck)) {
+            std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(deck);
+            m_ioConfig->handleSolutionSection(solutionSection);
+        }
+    }
+
+
     void EclipseState::initSimulationConfig(DeckConstPtr deck) {
         m_simulationConfig = std::make_shared<const SimulationConfig>(deck , m_intGridProperties);
     }
+
 
     void EclipseState::initSchedule(DeckConstPtr deck) {
         EclipseGridConstPtr grid = getEclipseGrid();
         schedule = ScheduleConstPtr( new Schedule(grid , deck, m_ioConfig) );
     }
+
+
 
     void EclipseState::initTransMult() {
         EclipseGridConstPtr grid = getEclipseGrid();

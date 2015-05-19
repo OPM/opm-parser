@@ -135,6 +135,7 @@ namespace Opm {
         void initTables(DeckConstPtr deck);
         void initIOConfig(DeckConstPtr deck);
         void initSchedule(DeckConstPtr deck);
+        void initIOConfigPostSchedule(DeckConstPtr deck);
         void initSimulationConfig(DeckConstPtr deck);
         void initEclipseGrid(DeckConstPtr deck);
         void initGridopts(DeckConstPtr deck);

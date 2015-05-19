@@ -44,8 +44,8 @@ namespace Opm {
 
 
         void setEclipseInputPath(const std::string& path);
-        void handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency=1);
-
+        void handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency=1, bool update_default=false);
+        void handleSolutionSection(std::shared_ptr<const SOLUTIONSection> solutionSection);
 
     private:
 
@@ -69,10 +69,21 @@ namespace Opm {
 
 
         struct restartConfig {
-          size_t timestep;
-          size_t basic;
-          size_t frequency;
+            size_t timestep;
+            size_t basic;
+            size_t frequency;
+
+            bool operator!=(const restartConfig& rhs) {
+                bool ret = true;
+                if ((this->timestep  == rhs.timestep) &&
+                    (this->basic     == rhs.basic) &&
+                    (this->frequency == rhs.frequency)) {
+                        ret = false;
+                }
+                return ret;
+            }
         };
+
 
         std::shared_ptr<DynamicState<restartConfig>> m_restart_output_config;
 

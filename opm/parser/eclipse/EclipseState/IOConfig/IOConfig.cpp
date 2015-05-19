@@ -124,7 +124,7 @@ namespace Opm {
     }
 
 
-    void IOConfig::handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency) {
+    void IOConfig::handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency, bool update_default) {
         if (NULL == m_timemap) {
             initRestartOutputConfig(timemap);
         }
@@ -134,8 +134,13 @@ namespace Opm {
         rs.basic     = basic;
         rs.frequency = frequency;
 
-        m_restart_output_config->add(timestep, rs);
+        if (!update_default) {
+            m_restart_output_config->add(timestep, rs);
+        } else {
+            m_restart_output_config->updateInitial(rs);
+        }
     }
+
 
     void IOConfig::initRestartOutputConfig(TimeMapConstPtr timemap) {
         restartConfig rs;
@@ -146,6 +151,42 @@ namespace Opm {
         m_timemap = timemap;
         m_restart_output_config = std::make_shared<DynamicState<restartConfig>>(timemap, rs);
     }
+
+    void IOConfig::handleSolutionSection(std::shared_ptr<const SOLUTIONSection> solutionSection) {
+
+        if (m_timemap && solutionSection->hasKeyword("RPTRST")) {
+            auto rptrstkeyword = solutionSection->getLastKeyword("RPTRST");
+            size_t currentStep = 0;
+
+            DeckRecordConstPtr record = rptrstkeyword->getRecord(0);
+
+            size_t basic = 1;
+            size_t freq  = 0;
+
+            DeckItemConstPtr item = record->getItem(0);
+
+            for (size_t index = 0; index < item->size(); ++index) {
+
+                if (item->hasValue(index)) {
+                    std::string mnemonics = item->getString(index);
+                    std::size_t found_basic = mnemonics.find("BASIC=");
+                    if (found_basic != std::string::npos) {
+                        std::string basic_no = mnemonics.substr(found_basic+6, found_basic+7);
+                        basic = atoi(basic_no.c_str());
+                    }
+
+                    std::size_t found_freq = mnemonics.find("FREQ=");
+                    if (found_freq != std::string::npos) {
+                        std::string freq_no = mnemonics.substr(found_freq+5, found_freq+6);
+                        freq = atoi(freq_no.c_str());
+                    }
+                }
+            }
+            handleRPTRSTBasic(m_timemap, currentStep, basic, freq, true);
+        }
+    }
+
+
 
     void IOConfig::handleGridSection(std::shared_ptr<const GRIDSection> gridSection) {
         m_write_INIT_file = gridSection->hasKeyword("INIT");
