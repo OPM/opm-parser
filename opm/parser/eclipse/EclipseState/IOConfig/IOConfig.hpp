@@ -32,7 +32,7 @@ namespace Opm {
 
     public:
 
-        IOConfig(DeckConstPtr deck, TimeMapConstPtr timemap);
+        IOConfig(DeckConstPtr deck);
 
 
         bool getWriteRestartFile(size_t timestep) const;
@@ -44,8 +44,7 @@ namespace Opm {
 
 
         void setEclipseInputPath(const std::string& path);
-        void handleRPTRSTBasic(size_t timestep, size_t basic, size_t frequency=1);
-
+        void handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency=1);
 
 
     private:
@@ -53,6 +52,7 @@ namespace Opm {
         void handleGridSection(std::shared_ptr<const GRIDSection> gridSection);
         void handleRunspecSection(std::shared_ptr<const RUNSPECSection> runspecSection);
 
+        void initRestartOutputConfig(TimeMapConstPtr timemap);
         bool getWriteRestartFileFrequency(size_t timestep,
                                           size_t start_index,
                                           size_t frequency,

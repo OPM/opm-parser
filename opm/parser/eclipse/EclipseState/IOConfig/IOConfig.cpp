@@ -27,20 +27,14 @@
 
 namespace Opm {
 
-    IOConfig::IOConfig(DeckConstPtr deck, TimeMapConstPtr timemap):
-        m_timemap(timemap),
+    IOConfig::IOConfig(DeckConstPtr deck):
+        m_timemap(NULL),
         m_write_INIT_file(false),
         m_write_EGRID_file(true),
         m_UNIFOUT(false),
         m_FMTOUT(false),
-        m_eclipse_input_path(""){
-
-        restartConfig rs;
-        rs.timestep  = 0;
-        rs.basic     = 0;
-        rs.frequency = 1;
-
-        m_restart_output_config = std::make_shared<DynamicState<restartConfig>>(timemap, rs);
+        m_eclipse_input_path(""),
+        m_restart_output_config(NULL){
 
         if (Section::hasGRID(deck)) {
             std::shared_ptr<const GRIDSection> gridSection = std::make_shared<const GRIDSection>(deck);
@@ -63,30 +57,32 @@ namespace Opm {
     bool IOConfig::getWriteRestartFile(size_t timestep) const {
         bool write_restart_ts = false;
 
-        restartConfig ts_restart_config = m_restart_output_config->get(timestep);
+        if (NULL != m_restart_output_config) {
+            restartConfig ts_restart_config = m_restart_output_config->get(timestep);
 
-        switch (ts_restart_config.basic) {
-            case 1: //Write restart file every timestep
-                write_restart_ts = true;
-                break;
-            case 2: //Write restart file every timestep
-                write_restart_ts = true;
-                break;
-            case 3: //Every n'th report time
-                write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency);
-                break;
-            case 4: //First reporttime of every year, or if n > 1, n'th years
-                write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, true);
-                break;
-            case 5: //First reporttime of every month, or if n > 1, n'th months
-                write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, false, true);
-                break;
-            case 6: //Write restart file every timestep
-                write_restart_ts = true;
-                break;
-            default:
-                // do nothing
-                break;
+            switch (ts_restart_config.basic) {
+                case 1: //Write restart file every timestep
+                    write_restart_ts = true;
+                    break;
+                case 2: //Write restart file every timestep
+                    write_restart_ts = true;
+                    break;
+                case 3: //Every n'th report time
+                    write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency);
+                    break;
+                case 4: //First reporttime of every year, or if n > 1, n'th years
+                    write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, true);
+                    break;
+                case 5: //First reporttime of every month, or if n > 1, n'th months
+                    write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, false, true);
+                    break;
+                case 6: //Write restart file every timestep
+                    write_restart_ts = true;
+                    break;
+                default:
+                    // do nothing
+                    break;
+            }
         }
 
 
@@ -128,7 +124,11 @@ namespace Opm {
     }
 
 
-    void IOConfig::handleRPTRSTBasic(size_t timestep, size_t basic, size_t frequency) {
+    void IOConfig::handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency) {
+        if (NULL == m_timemap) {
+            initRestartOutputConfig(timemap);
+        }
+
         restartConfig rs;
         rs.timestep  = timestep;
         rs.basic     = basic;
@@ -137,6 +137,15 @@ namespace Opm {
         m_restart_output_config->add(timestep, rs);
     }
 
+    void IOConfig::initRestartOutputConfig(TimeMapConstPtr timemap) {
+        restartConfig rs;
+        rs.timestep  = 0;
+        rs.basic     = 0;
+        rs.frequency = 1;
+
+        m_timemap = timemap;
+        m_restart_output_config = std::make_shared<DynamicState<restartConfig>>(timemap, rs);
+    }
 
     void IOConfig::handleGridSection(std::shared_ptr<const GRIDSection> gridSection) {
         m_write_INIT_file = gridSection->hasKeyword("INIT");
