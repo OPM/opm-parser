@@ -129,6 +129,7 @@ namespace Opm {
         initTables(deck);
         initEclipseGrid(deck);
         initGridopts(deck);
+        initIOConfig(deck);
         initSchedule(deck);
         initTitle(deck);
         initProperties(deck);
@@ -247,6 +248,10 @@ namespace Opm {
         return schedule;
     }
 
+    IOConfigConstPtr EclipseState::getIOConfig() const {
+        return m_ioConfig;
+    }
+
     SimulationConfigConstPtr EclipseState::getSimulationConfig() const {
         return m_simulationConfig;
     }
@@ -309,6 +314,9 @@ namespace Opm {
         initFullTables(deck, "PVTO", m_pvtoTables);
    }
 
+    void EclipseState::initIOConfig(DeckConstPtr deck) {
+        m_ioConfig = std::make_shared<IOConfig>(deck);
+    }
 
     void EclipseState::initSimulationConfig(DeckConstPtr deck) {
         m_simulationConfig = std::make_shared<const SimulationConfig>(deck , m_intGridProperties);
@@ -316,7 +324,7 @@ namespace Opm {
 
     void EclipseState::initSchedule(DeckConstPtr deck) {
         EclipseGridConstPtr grid = getEclipseGrid();
-        schedule = ScheduleConstPtr( new Schedule(grid , deck) );
+        schedule = ScheduleConstPtr( new Schedule(grid , deck, m_ioConfig) );
     }
 
     void EclipseState::initTransMult() {
