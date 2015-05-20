@@ -28,13 +28,11 @@
 namespace Opm {
 
     IOConfig::IOConfig(DeckConstPtr deck):
-        m_timemap(NULL),
         m_write_INIT_file(false),
         m_write_EGRID_file(true),
         m_UNIFOUT(false),
         m_FMTOUT(false),
-        m_eclipse_input_path(""),
-        m_restart_output_config(NULL){
+        m_eclipse_input_path("") {
 
         if (Section::hasGRID(deck)) {
             std::shared_ptr<const GRIDSection> gridSection = std::make_shared<const GRIDSection>(deck);
