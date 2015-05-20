@@ -26,8 +26,10 @@
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 
+#include <opm/parser/eclipse/ert/EclKW.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridPropertyInitializers.hpp>
 
 /*
@@ -158,7 +160,7 @@ public:
         m_kwInfo = kwInfo;
         m_data.resize( nx * ny * nz );
 
-        m_kwInfo.getInitializer()->apply(m_data, m_kwInfo.getKeywordName());
+        m_kwInfo.getInitializer()->apply(m_data);
         m_hasRunPostProcessor = false;
     }
 
@@ -226,6 +228,7 @@ public:
         return m_data;
     }
 
+    
 
     void maskedSet(T value, const std::vector<bool>& mask) {
         for (size_t g = 0; g < getCartesianSize(); g++) {
@@ -241,7 +244,7 @@ public:
                 m_data[g] *= value;
         }
     }
-    
+
 
     void maskedAdd(T value, const std::vector<bool>& mask) {
         for (size_t g = 0; g < getCartesianSize(); g++) {
@@ -399,6 +402,42 @@ public:
         }
     }
 
+    
+    ERT::EclKW<T> getEclKW() const {
+        ERT::EclKW<T> eclKW( getKeywordName() , getCartesianSize());
+        eclKW.assignVector( getData() );
+        return eclKW;
+    }
+
+
+    ERT::EclKW<T> getEclKW(std::shared_ptr<const EclipseGrid> grid) const {
+        ERT::EclKW<T> eclKW( getKeywordName() , grid->getNumActive());
+        size_t activeIndex = 0;
+        for (size_t g = 0; g < getCartesianSize(); g++) {
+            if (grid->cellActive( g )) {
+                eclKW[activeIndex] = iget(g);
+                activeIndex++;
+            }
+        }
+        
+        return eclKW;
+    }
+
+
+
+    
+    /**
+       Will check that all elements in the property are in the closed
+       interval [min,max].
+    */
+    void checkLimits(T min , T max) const {
+        for (size_t g=0; g < m_data.size(); g++) {
+            T value = m_data[g];
+            if ((value < min) || (value > max))
+                throw std::invalid_argument("Property element outside valid limits");
+        }
+    }
+
 
 private:
     Opm::DeckItemConstPtr getDeckItem(Opm::DeckKeywordConstPtr deckKeyword) {
@@ -429,5 +468,6 @@ private:
     bool m_hasRunPostProcessor;
 };
 
+    
 }
 #endif

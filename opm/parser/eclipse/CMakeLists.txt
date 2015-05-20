@@ -11,6 +11,8 @@ if (BUILD_TESTING)
    add_subdirectory(EclipseState/Grid/tests)
    add_subdirectory(EclipseState/Util/tests)
    add_subdirectory(EclipseState/IOConfig/tests)
+   add_subdirectory(ert/tests)
+
 endif()
 
 add_subdirectory( Applications )
@@ -108,7 +110,11 @@ EclipseState/Grid/FaultCollection.cpp
 EclipseState/SimulationConfig/SimulationConfig.cpp
 EclipseState/SimulationConfig/ThresholdPressure.cpp
 #
-EclipseState/IOConfig/IOConfig.cpp)
+EclipseState/IOConfig/IOConfig.cpp
+#
+ert/EclKW.cpp
+ert/FortIO.cpp)
+
 
 set( HEADER_FILES
 OpmLog/LogBackend.hpp
@@ -177,6 +183,7 @@ EclipseState/Grid/EclipseGrid.hpp
 EclipseState/Grid/GridProperty.hpp
 EclipseState/Grid/GridProperties.hpp
 EclipseState/Grid/GridPropertyInitializers.hpp
+EclipseState/Grid/SatfuncPropertyInitializers.hpp
 EclipseState/Grid/Box.hpp
 EclipseState/Grid/BoxManager.hpp
 EclipseState/Grid/FaceDir.hpp
@@ -192,6 +199,7 @@ EclipseState/SimulationConfig/ThresholdPressure.hpp
 #
 EclipseState/IOConfig/IOConfig.hpp
 #
+EclipseState/Tables/Tabdims.hpp
 EclipseState/Tables/PlyadsTable.hpp
 EclipseState/Tables/PvtoOuterTable.hpp
 EclipseState/Tables/RocktabTable.hpp
@@ -240,6 +248,9 @@ Utility/WelspecsWrapper.hpp
 Utility/EquilWrapper.hpp
 Utility/EndscaleWrapper.hpp
 Utility/ScalecrsWrapper.hpp
+#
+ert/EclKW.hpp
+ert/FortIO.hpp
 )
 
 add_library(buildParser STATIC ${rawdeck_source} ${build_parser_source} ${deck_source} ${unit_source})

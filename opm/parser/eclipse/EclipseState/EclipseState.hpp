@@ -32,6 +32,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/EnkrvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/EnptvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/GasvisctTable.hpp>
@@ -102,6 +103,7 @@ namespace Opm {
         // the tables used by the deck. If the tables had some defaulted data in the
         // deck, the objects returned here exhibit the correct values. If the table is
         // not present in the deck, the corresponding vector is of size zero.
+        std::shared_ptr<const Tabdims> getTabdims() const;
         const std::vector<EnkrvdTable>& getEnkrvdTables() const;
         const std::vector<EnptvdTable>& getEnptvdTables() const;
         const std::vector<GasvisctTable>& getGasvisctTables() const;
@@ -112,6 +114,7 @@ namespace Opm {
         const std::vector<PlymaxTable>& getPlymaxTables() const;
         const std::vector<PlyrockTable>& getPlyrockTables() const;
         const std::vector<PlyviscTable>& getPlyviscTables() const;
+        const std::vector<PlyshlogTable>& getPlyshlogTables() const;
         const std::vector<PvdgTable>& getPvdgTables() const;
         const std::vector<PvdoTable>& getPvdoTables() const;
         const std::vector<PvtgTable>& getPvtgTables() const;
@@ -132,6 +135,7 @@ namespace Opm {
         std::shared_ptr<const UnitSystem> getDeckUnitSystem()  const;
 
     private:
+        void initTabdims(DeckConstPtr deck);
         void initTables(DeckConstPtr deck);
         void initIOConfig(DeckConstPtr deck);
         void initSchedule(DeckConstPtr deck);
@@ -240,6 +244,7 @@ namespace Opm {
         SimulationConfigConstPtr m_simulationConfig;
 
 
+        std::shared_ptr<const Tabdims> m_tabdims;
         std::vector<EnkrvdTable> m_enkrvdTables;
         std::vector<EnptvdTable> m_enptvdTables;
         std::vector<GasvisctTable> m_gasvisctTables;

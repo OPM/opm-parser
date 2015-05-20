@@ -30,6 +30,8 @@
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/SatfuncPropertyInitializers.hpp>
+
 #include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 
@@ -153,6 +155,10 @@ namespace Opm {
         return std::make_shared<EclipseGrid>( m_eclipseGrid->c_ptr() );
     }
 
+    std::shared_ptr<const Tabdims> EclipseState::getTabdims() const {
+        return m_tabdims;
+    }
+
     const std::vector<EnkrvdTable>& EclipseState::getEnkrvdTables() const {
         return m_enkrvdTables;
     }
@@ -191,6 +197,10 @@ namespace Opm {
 
     const std::vector<PlyviscTable>& EclipseState::getPlyviscTables() const {
         return m_plyviscTables;
+    }
+
+    const std::vector<PlyshlogTable>& EclipseState::getPlyshlogTables() const {
+        return m_plyshlogTables;
     }
 
     const std::vector<PvdgTable>& EclipseState::getPvdgTables() const {
@@ -269,7 +279,38 @@ namespace Opm {
         return m_title;
     }
 
+    void EclipseState::initTabdims(DeckConstPtr deck) {
+        /*
+          The default values for the various number of tables is
+          embedded in the ParserKeyword("TABDIMS") instance; however
+          the EclipseState object does not have a dependency on the
+          Parser classes, have therefor decided not to add an explicit
+          dependency here, and instead duplicated all the default
+          values.
+        */
+        size_t ntsfun = 1;
+        size_t ntpvt = 1;
+        size_t nssfun = 1;
+        size_t nppvt = 1;
+        size_t ntfip = 1;
+        size_t nrpvt = 1;
+
+        if (deck->hasKeyword("TABDIMS")) {
+            auto keyword = deck->getKeyword("TABDIMS");
+            auto record = keyword->getRecord(0);
+            ntsfun = record->getItem("NTSFUN")->getInt(0);
+            ntpvt  = record->getItem("NTPVT")->getInt(0);
+            nssfun = record->getItem("NSSFUN")->getInt(0);
+            nppvt  = record->getItem("NPPVT")->getInt(0);
+            ntfip  = record->getItem("NTFIP")->getInt(0);
+            nrpvt  = record->getItem("NRPVT")->getInt(0);
+        }
+        m_tabdims = std::make_shared<Tabdims>(ntsfun , ntpvt , nssfun , nppvt , ntfip , nrpvt);
+    }
+
+
     void EclipseState::initTables(DeckConstPtr deck) {
+        initTabdims( deck );
         initSimpleTables(deck, "ENKRVD", m_enkrvdTables);
         initSimpleTables(deck, "ENPTVD", m_enptvdTables);
         initSimpleTables(deck, "IMKRVD", m_imkrvdTables);
@@ -708,7 +749,26 @@ namespace Opm {
             });
 
         double nan = std::numeric_limits<double>::quiet_NaN();
-        const auto eptLookup = std::make_shared<GridPropertyEndpointTableLookupInitializer<>>(*deck, *this);
+        const auto SGLLookup = std::make_shared<SGLEndpointInitializer<>>(*deck, *this);
+        const auto ISGLLookup = std::make_shared<ISGLEndpointInitializer<>>(*deck, *this);
+        const auto SWLLookup = std::make_shared<SWLEndpointInitializer<>>(*deck, *this);
+        const auto ISWLLookup = std::make_shared<ISWLEndpointInitializer<>>(*deck, *this);
+        const auto SGULookup = std::make_shared<SGUEndpointInitializer<>>(*deck, *this);
+        const auto ISGULookup = std::make_shared<ISGUEndpointInitializer<>>(*deck, *this);
+        const auto SWULookup = std::make_shared<SWUEndpointInitializer<>>(*deck, *this);
+        const auto ISWULookup = std::make_shared<ISWUEndpointInitializer<>>(*deck, *this);
+        const auto SGCRLookup = std::make_shared<SGCREndpointInitializer<>>(*deck, *this);
+        const auto ISGCRLookup = std::make_shared<ISGCREndpointInitializer<>>(*deck, *this);
+        const auto SOWCRLookup = std::make_shared<SOWCREndpointInitializer<>>(*deck, *this);
+        const auto ISOWCRLookup = std::make_shared<ISOWCREndpointInitializer<>>(*deck, *this);
+        const auto SOGCRLookup = std::make_shared<SOGCREndpointInitializer<>>(*deck, *this);
+        const auto ISOGCRLookup = std::make_shared<ISOGCREndpointInitializer<>>(*deck, *this);
+        const auto SWCRLookup = std::make_shared<SWCREndpointInitializer<>>(*deck, *this);
+        const auto ISWCRLookup = std::make_shared<ISWCREndpointInitializer<>>(*deck, *this);
+
+
+
+
         const auto tempLookup = std::make_shared<GridPropertyTemperatureLookupInitializer<>>(*deck, *this);
         const auto distributeTopLayer = std::make_shared<const GridPropertyPostProcessor::DistributeTopLayer>(*this);
         const auto initPORV = std::make_shared<GridPropertyPostProcessor::InitPORV>(*this);
@@ -720,136 +780,136 @@ namespace Opm {
         std::shared_ptr<std::vector<SupportedDoubleKeywordInfo> > supportedDoubleKeywords(new std::vector<SupportedDoubleKeywordInfo>{
             // keywords to specify the scaled connate gas
             // saturations.
-            SupportedDoubleKeywordInfo( "SGL"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGL"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGLZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGLZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGL"    , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLX"   , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLX-"  , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLY"   , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLY-"  , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLZ"   , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGLZ-"  , SGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGL"   , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLX"  , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLX-" , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLY"  , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLY-" , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLZ"  , ISGLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGLZ-" , ISGLLookup, "1" ),
 
             // keywords to specify the connate water saturation.
-            SupportedDoubleKeywordInfo( "SWL"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWL"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWLZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWLZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWL"    , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLX"   , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLX-"  , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLY"   , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLY-"  , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLZ"   , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWLZ-"  , SWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWL"   , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLX"  , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLX-" , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLY"  , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLY-" , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLZ"  , ISWLLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWLZ-" , ISWLLookup, "1" ),
 
             // keywords to specify the maximum gas saturation.
-            SupportedDoubleKeywordInfo( "SGU"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGU"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGUZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGUZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGU"    , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUX"   , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUX-"  , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUY"   , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUY-"  , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUZ"   , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGUZ-"  , SGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGU"   , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUX"  , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUX-" , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUY"  , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUY-" , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUZ"  , ISGULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGUZ-" , ISGULookup, "1" ),
 
             // keywords to specify the maximum water saturation.
-            SupportedDoubleKeywordInfo( "SWU"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWU"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWUZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWUZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWU"    , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUX"   , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUX-"  , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUY"   , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUY-"  , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUZ"   , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWUZ-"  , SWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWU"   , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUX"  , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUX-" , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUY"  , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUY-" , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUZ"  , ISWULookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWUZ-" , ISWULookup, "1" ),
 
             // keywords to specify the scaled critical gas
             // saturation.
-            SupportedDoubleKeywordInfo( "SGCR"     , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCR"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRX"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRX-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRY"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRY-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRZ"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SGCRZ-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISGCRZ-"  , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCR"     , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRX"    , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRX-"   , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRY"    , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRY-"   , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRZ"    , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SGCRZ-"   , SGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCR"    , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRX"   , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRX-"  , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRY"   , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRY-"  , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRZ"   , ISGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISGCRZ-"  , ISGCRLookup, "1" ),
 
             // keywords to specify the scaled critical oil-in-water
             // saturation.
-            SupportedDoubleKeywordInfo( "SOWCR"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCR"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOWCRZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOWCRZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCR"    , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRX"   , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRX-"  , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRY"   , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRY-"  , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRZ"   , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOWCRZ-"  , SOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCR"   , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRX"  , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRX-" , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRY"  , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRY-" , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRZ"  , ISOWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOWCRZ-" , ISOWCRLookup, "1" ),
 
             // keywords to specify the scaled critical oil-in-gas
             // saturation.
-            SupportedDoubleKeywordInfo( "SOGCR"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCR"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRX"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRX-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRY"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRY-" , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SOGCRZ-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRZ"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISOGCRZ-" , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCR"    , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRX"   , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRX-"  , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRY"   , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRY-"  , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRZ"   , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SOGCRZ-"  , SOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCR"   , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRX"  , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRX-" , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRY"  , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRY-" , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRZ"  , ISOGCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISOGCRZ-" , ISOGCRLookup, "1" ),
 
             // keywords to specify the scaled critical water
             // saturation.
-            SupportedDoubleKeywordInfo( "SWCR"     , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCR"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRX"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRX-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRX"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRX-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRY"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRY-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRY"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRY-"  , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRZ"    , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "SWCRZ-"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRZ"   , eptLookup, "1" ),
-            SupportedDoubleKeywordInfo( "ISWCRZ-"  , eptLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCR"     , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRX"    , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRX-"   , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRY"    , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRY-"   , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRZ"    , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "SWCRZ-"   , SWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCR"    , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRX"   , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRX-"  , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRY"   , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRY-"  , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRZ"   , ISWCRLookup, "1" ),
+            SupportedDoubleKeywordInfo( "ISWCRZ-"  , ISWCRLookup, "1" ),
 
             // cell temperature (E300 only, but makes a lot of sense for E100, too)
             SupportedDoubleKeywordInfo( "TEMPI"    , tempLookup, "Temperature" ),
