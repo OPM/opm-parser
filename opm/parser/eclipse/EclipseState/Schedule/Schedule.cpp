@@ -34,19 +34,18 @@
 namespace Opm {
 
     Schedule::Schedule(std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck, IOConfigPtr ioConfig)
-        : m_grid(grid),
-          m_ioConfig(ioConfig)
+        : m_grid(grid)
     {
-        initFromDeck(deck);
+        initFromDeck(deck, ioConfig);
     }
 
-    void Schedule::initFromDeck(DeckConstPtr deck) {
+    void Schedule::initFromDeck(DeckConstPtr deck, IOConfigPtr ioConfig) {
         initializeNOSIM(deck);
         createTimeMap(deck);
         m_tuning.reset(new Tuning(m_timeMap));
         addGroup( "FIELD", 0 );
         initRootGroupTreeNode(getTimeMap());
-        iterateScheduleSection(deck);
+        iterateScheduleSection(deck, ioConfig);
     }
 
     void Schedule::initRootGroupTreeNode(TimeMapConstPtr timeMap) {
@@ -71,7 +70,7 @@ namespace Opm {
         m_timeMap.reset(new TimeMap(startTime));
     }
 
-    void Schedule::iterateScheduleSection(DeckConstPtr deck) {
+    void Schedule::iterateScheduleSection(DeckConstPtr deck, IOConfigPtr ioConfig) {
         size_t currentStep = 0;
         std::vector<std::pair<DeckKeywordConstPtr , size_t> > rftProperties;
 
@@ -135,7 +134,7 @@ namespace Opm {
                 handleNOSIM();
 
             if (keyword->name() == "RPTRST")
-                handleRPTRST(keyword, currentStep);
+                handleRPTRST(keyword, currentStep, ioConfig);
 
             if (keyword->name() == "WRFT")
                 rftProperties.push_back( std::make_pair( keyword , currentStep ));
@@ -755,7 +754,7 @@ namespace Opm {
         nosim = true;
     }
 
-    void Schedule::handleRPTRST(DeckKeywordConstPtr keyword, size_t currentStep) {
+    void Schedule::handleRPTRST(DeckKeywordConstPtr keyword, size_t currentStep, IOConfigPtr ioConfig) {
         DeckRecordConstPtr record = keyword->getRecord(0);
 
         size_t basic = 1;
@@ -781,7 +780,7 @@ namespace Opm {
             }
         }
 
-        m_ioConfig->handleRPTRSTBasic(m_timeMap, currentStep, basic, freq);
+        ioConfig->handleRPTRSTBasic(m_timeMap, currentStep, basic, freq);
     }
 
 

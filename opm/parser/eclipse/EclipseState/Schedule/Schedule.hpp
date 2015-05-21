@@ -73,14 +73,14 @@ namespace Opm
         std::shared_ptr<DynamicState<GroupTreePtr> > m_rootGroupTree;
         TuningPtr m_tuning;
         bool nosim;
-        IOConfigPtr m_ioConfig;
+
 
         void addWellToGroup( GroupPtr newGroup , WellPtr well , size_t timeStep);
-        void initFromDeck(DeckConstPtr deck);
+        void initFromDeck(DeckConstPtr deck, IOConfigPtr ioConfig);
         void initializeNOSIM(DeckConstPtr deck);
         void createTimeMap(DeckConstPtr deck);
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
-        void iterateScheduleSection(DeckConstPtr deck);
+        void iterateScheduleSection(DeckConstPtr deck, IOConfigPtr ioConfig);
         bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
         void addGroup(const std::string& groupName , size_t timeStep);
         void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep);
@@ -100,7 +100,7 @@ namespace Opm
         void handleGCONPROD(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleTUNING(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleNOSIM();
-        void handleRPTRST(DeckKeywordConstPtr keyword, size_t currentStep);
+        void handleRPTRST(DeckKeywordConstPtr keyword, size_t currentStep, IOConfigPtr ioConfig);
         void handleDATES(DeckKeywordConstPtr keyword);
         void handleTSTEP(DeckKeywordConstPtr keyword);
         void handleGRUPTREE(DeckKeywordConstPtr keyword, size_t currentStep);
