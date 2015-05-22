@@ -123,7 +123,7 @@ namespace Opm {
 
 
     void IOConfig::handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency, bool update_default) {
-        if (NULL == m_timemap) {
+        if (!m_timemap) {
             initRestartOutputConfig(timemap);
         }
 
