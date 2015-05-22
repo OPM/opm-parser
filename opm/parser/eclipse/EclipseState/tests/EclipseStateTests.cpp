@@ -462,10 +462,10 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTRST) {
                           " 10 10 10 /\n"
                           "SOLUTION\n"
                           "RPTRST\n"
-                          "BASIC=3 FREQ=5\n"
+                          "BASIC=1\n"
                           "/\n"
                           "RPTRST\n"
-                          "BASIC=1\n"
+                          "BASIC=3 FREQ=5\n"
                           "/\n"
                           "GRID\n"
                           "START             -- 0 \n"
@@ -474,11 +474,11 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTRST) {
                           "DATES             -- 1\n"
                           " 10  OKT 2008 / \n"
                           "/\n"
-                          "RPTRST\n"
-                          "BASIC=3 FREQ=2\n"
-                          "/\n"
                           "DATES             -- 2\n"
                           " 20  JAN 2010 / \n"
+                          "/\n"
+                          "RPTRST\n"
+                          "BASIC=3 FREQ=2\n"
                           "/\n"
                           "DATES             -- 3\n"
                           " 20  JAN 2011 / \n"
@@ -493,9 +493,9 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTRST) {
     IOConfigConstPtr ioConfig = state.getIOConfig();
 
     BOOST_CHECK_EQUAL(true, ioConfig->getWriteRestartFile(0));
-    BOOST_CHECK_EQUAL(true, ioConfig->getWriteRestartFile(1));
-    BOOST_CHECK_EQUAL(false, ioConfig->getWriteRestartFile(2));
-    BOOST_CHECK_EQUAL(true, ioConfig->getWriteRestartFile(3));
+    BOOST_CHECK_EQUAL(false, ioConfig->getWriteRestartFile(1));
+    BOOST_CHECK_EQUAL(true, ioConfig->getWriteRestartFile(2));
+    BOOST_CHECK_EQUAL(false, ioConfig->getWriteRestartFile(3));
 }
 
 
