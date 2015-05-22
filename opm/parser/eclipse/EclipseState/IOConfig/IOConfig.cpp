@@ -149,7 +149,7 @@ namespace Opm {
         }
 
         if (solutionSection->hasKeyword("RPTRST")) {
-            auto rptrstkeyword = solutionSection->getLastKeyword("RPTRST");
+            auto rptrstkeyword = solutionSection->getKeyword("RPTRST");
             size_t currentStep = 0;
 
             DeckRecordConstPtr record = rptrstkeyword->getRecord(0);
@@ -176,6 +176,7 @@ namespace Opm {
                     }
                 }
             }
+            std::cout << "SOLUTION SECTION; BASIC FREQ IS " << basic << "," << freq << std::endl;
             handleRPTRSTBasic(m_timemap, currentStep, basic, freq, true);
         }
     }
