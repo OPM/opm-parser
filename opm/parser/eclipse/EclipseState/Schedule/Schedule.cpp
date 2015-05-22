@@ -766,16 +766,16 @@ namespace Opm {
 
             if (item->hasValue(index)) {
                 std::string mnemonics = item->getString(index);
-                std::size_t found_basic = mnemonics.find("BASIC=");
+                size_t found_basic = mnemonics.find("BASIC=");
                 if (found_basic != std::string::npos) {
-                    std::string basic_no = mnemonics.substr(found_basic+6, found_basic+7);
-                    basic = atoi(basic_no.c_str());
+                    std::string basic_no = mnemonics.substr(found_basic+6, mnemonics.size());
+                    basic = boost::lexical_cast<size_t>(basic_no);
                 }
 
-                std::size_t found_freq = mnemonics.find("FREQ=");
+                size_t found_freq = mnemonics.find("FREQ=");
                 if (found_freq != std::string::npos) {
-                    std::string freq_no = mnemonics.substr(found_freq+5, found_freq+6);
-                    freq = atoi(freq_no.c_str());
+                    std::string freq_no = mnemonics.substr(found_freq+5, mnemonics.size());
+                    freq = boost::lexical_cast<size_t>(freq_no);
                 }
             }
         }
