@@ -100,9 +100,9 @@ namespace Opm {
         } else {
             std::vector<size_t> timesteps;
             if (first_timesteps_years) {
-                m_timemap->getFirstTimestepsYears(timesteps, start_index);
+                m_timemap->initFirstTimestepsYears(timesteps, start_index);
             } else {
-                m_timemap->getFirstTimestepsMonths(timesteps, start_index);
+                m_timemap->initFirstTimestepsMonths(timesteps, start_index);
             }
             std::vector<size_t>::const_iterator ci_timestep = std::find(timesteps.begin(), timesteps.end(), timestep);
 
