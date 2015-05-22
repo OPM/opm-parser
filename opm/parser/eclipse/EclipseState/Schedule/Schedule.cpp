@@ -765,7 +765,8 @@ namespace Opm {
         for (size_t index = 0; index < item->size(); ++index) {
 
             if (item->hasValue(index)) {
-                std::string mnemonics = item->getString(index);
+                const std::string& mnemonics = item->getString(index);
+
                 size_t found_basic = mnemonics.find("BASIC=");
                 if (found_basic != std::string::npos) {
                     std::string basic_no = mnemonics.substr(found_basic+6, mnemonics.size());
