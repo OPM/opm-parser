@@ -844,7 +844,7 @@ BOOST_AUTO_TEST_CASE(createDeckWithRPTRST) {
                           " 10  OKT 2008 / \n"
                           "/\n"
                           "RPTRST\n"
-                          "BASIC=3 FREQ=2\n"
+                          "BASIC=3 FREQ=2 RUBBISH=5\n"
                           "/\n"
                           "DATES             -- 2\n"
                           " 20  JAN 2010 / \n"
