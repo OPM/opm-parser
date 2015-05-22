@@ -763,21 +763,18 @@ namespace Opm {
         DeckItemConstPtr item = record->getItem(0);
 
         for (size_t index = 0; index < item->size(); ++index) {
+            const std::string& mnemonic = item->getString(index);
 
-            if (item->hasValue(index)) {
-                const std::string& mnemonics = item->getString(index);
+            size_t found_basic = mnemonic.find("BASIC=");
+            if (found_basic != std::string::npos) {
+                std::string basic_no = mnemonic.substr(found_basic+6, mnemonic.size());
+                basic = boost::lexical_cast<size_t>(basic_no);
+            }
 
-                size_t found_basic = mnemonics.find("BASIC=");
-                if (found_basic != std::string::npos) {
-                    std::string basic_no = mnemonics.substr(found_basic+6, mnemonics.size());
-                    basic = boost::lexical_cast<size_t>(basic_no);
-                }
-
-                size_t found_freq = mnemonics.find("FREQ=");
-                if (found_freq != std::string::npos) {
-                    std::string freq_no = mnemonics.substr(found_freq+5, mnemonics.size());
-                    freq = boost::lexical_cast<size_t>(freq_no);
-                }
+            size_t found_freq = mnemonic.find("FREQ=");
+            if (found_freq != std::string::npos) {
+                std::string freq_no = mnemonic.substr(found_freq+5, mnemonic.size());
+                freq = boost::lexical_cast<size_t>(freq_no);
             }
         }
 
