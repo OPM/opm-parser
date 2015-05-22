@@ -59,23 +59,23 @@ namespace Opm {
             restartConfig ts_restart_config = m_restart_output_config->get(timestep);
 
             switch (ts_restart_config.basic) {
-                case 1: //Write restart file every timestep
+                case 1: //Write restart file every report time
                     write_restart_ts = true;
                     break;
-                case 2: //Write restart file every timestep
+                case 2: //Write restart file every report time
                     write_restart_ts = true;
                     break;
                 case 3: //Every n'th report time
                     write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency);
                     break;
-                case 4: //First reporttime of every year, or if n > 1, n'th years
+                case 4: //First reportstep of every year, or if n > 1, n'th years
                     write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, true);
                     break;
-                case 5: //First reporttime of every month, or if n > 1, n'th months
+                case 5: //First reportstep of every month, or if n > 1, n'th months
                     write_restart_ts = getWriteRestartFileFrequency(timestep, ts_restart_config.timestep, ts_restart_config.frequency, false, true);
                     break;
                 case 6: //Write restart file every timestep
-                    write_restart_ts = true;
+                    throw std::runtime_error("OPM does not support the RPTRST BASIC=6 setting (write restart file every timestep)");
                     break;
                 default:
                     // do nothing
