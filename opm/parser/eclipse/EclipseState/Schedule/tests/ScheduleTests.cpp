@@ -809,9 +809,6 @@ BOOST_AUTO_TEST_CASE(createDeckWithRPTRST) {
 
     const char *deckData =
                           "RUNSPEC\n"
-                          "GRIDOPTS\n"
-                          "  'YES'   10 /"
-                          "\n"
                           "DIMENS\n"
                           " 10 10 10 /\n"
                           "GRID\n"
@@ -831,9 +828,6 @@ BOOST_AUTO_TEST_CASE(createDeckWithRPTRST) {
 
     const char *deckData2 =
                           "RUNSPEC\n"
-                          "GRIDOPTS\n"
-                          "  'YES'   10 /"
-                          "\n"
                           "DIMENS\n"
                           " 10 10 10 /\n"
                           "GRID\n"
