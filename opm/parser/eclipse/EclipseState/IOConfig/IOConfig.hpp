@@ -45,7 +45,7 @@ namespace Opm {
 
         void setEclipseInputPath(const std::string& path);
         void handleRPTRSTBasic(TimeMapConstPtr timemap, size_t timestep, size_t basic, size_t frequency=1, bool update_default=false);
-        void handleSolutionSection(std::shared_ptr<const SOLUTIONSection> solutionSection);
+        void handleSolutionSection(TimeMapConstPtr timemap, std::shared_ptr<const SOLUTIONSection> solutionSection);
 
     private:
 

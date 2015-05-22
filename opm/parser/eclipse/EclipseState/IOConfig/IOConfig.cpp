@@ -140,6 +140,7 @@ namespace Opm {
     }
 
 
+
     void IOConfig::initRestartOutputConfig(TimeMapConstPtr timemap) {
         restartConfig rs;
         rs.timestep  = 0;
@@ -150,9 +151,12 @@ namespace Opm {
         m_restart_output_config = std::make_shared<DynamicState<restartConfig>>(timemap, rs);
     }
 
-    void IOConfig::handleSolutionSection(std::shared_ptr<const SOLUTIONSection> solutionSection) {
+    void IOConfig::handleSolutionSection(TimeMapConstPtr timemap, std::shared_ptr<const SOLUTIONSection> solutionSection) {
+        if (!m_timemap) {
+            m_timemap = timemap;
+        }
 
-        if (m_timemap && solutionSection->hasKeyword("RPTRST")) {
+        if (solutionSection->hasKeyword("RPTRST")) {
             auto rptrstkeyword = solutionSection->getLastKeyword("RPTRST");
             size_t currentStep = 0;
 
