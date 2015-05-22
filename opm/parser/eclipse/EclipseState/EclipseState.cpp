@@ -364,7 +364,7 @@ namespace Opm {
     void EclipseState::initIOConfigPostSchedule(DeckConstPtr deck) {
         if (Section::hasSOLUTION(deck)) {
             std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(deck);
-            m_ioConfig->handleSolutionSection(solutionSection);
+            m_ioConfig->handleSolutionSection(schedule->getTimeMap(), solutionSection);
         }
     }
 
