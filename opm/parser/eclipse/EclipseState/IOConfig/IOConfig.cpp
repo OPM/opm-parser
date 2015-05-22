@@ -33,15 +33,6 @@ namespace Opm {
         m_UNIFOUT(false),
         m_FMTOUT(false),
         m_eclipse_input_path("") {
-
-        if (Section::hasGRID(deck)) {
-            std::shared_ptr<const GRIDSection> gridSection = std::make_shared<const GRIDSection>(deck);
-            handleGridSection(gridSection);
-        }
-        if (Section::hasRUNSPEC(deck)) {
-            std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(deck);
-            handleRunspecSection(runspecSection);
-        }
     }
 
     bool IOConfig::getWriteEGRIDFile() const {
