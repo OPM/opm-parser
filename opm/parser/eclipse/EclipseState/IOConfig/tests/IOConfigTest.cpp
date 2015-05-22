@@ -64,7 +64,9 @@ const std::string& deckStr2 =  "RUNSPEC\n"
                                "\n";
 
 const std::string& deckStr3 =  "RUNSPEC\n"
+                               "UNIFIN\n"
                                "UNIFOUT\n"
+                               "FMTIN\n"
                                "FMTOUT\n"
                                "\n"
                                "DIMENS\n"
@@ -256,8 +258,14 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     /*If no INIT keyword is specified, verify no write of INIT file*/
     BOOST_CHECK_EQUAL(false, ioConfigPtr->getWriteINITFile());
 
+    /*If no UNIFIN keyword is specified, verify UNIFIN false (default is multiple) */
+    BOOST_CHECK_EQUAL(false, ioConfigPtr->getUNIFIN());
+
     /*If no UNIFOUT keyword is specified, verify UNIFOUT false (default is multiple) */
     BOOST_CHECK_EQUAL(false, ioConfigPtr->getUNIFOUT());
+
+    /*If no FMTIN keyword is specified, verify FMTIN false (default is unformatted) */
+    BOOST_CHECK_EQUAL(false, ioConfigPtr->getFMTIN());
 
     /*If no FMTOUT keyword is specified, verify FMTOUT false (default is unformatted) */
     BOOST_CHECK_EQUAL(false, ioConfigPtr->getFMTOUT());
