@@ -46,7 +46,7 @@ namespace Opm {
     bool IOConfig::getWriteRestartFile(size_t timestep) const {
         bool write_restart_ts = false;
 
-        if (NULL != m_restart_output_config) {
+        if (m_restart_output_config) {
             restartConfig ts_restart_config = m_restart_output_config->get(timestep);
 
             switch (ts_restart_config.basic) {
@@ -77,7 +77,6 @@ namespace Opm {
 
         return write_restart_ts;
     }
-
 
 
     bool IOConfig::getWriteRestartFileFrequency(size_t timestep,
