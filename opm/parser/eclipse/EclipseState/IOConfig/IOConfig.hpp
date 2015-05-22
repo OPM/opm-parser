@@ -39,6 +39,8 @@ namespace Opm {
         bool getWriteEGRIDFile() const;
         bool getWriteINITFile() const;
         bool getUNIFOUT() const;
+        bool getUNIFIN() const;
+        bool getFMTIN() const;
         bool getFMTOUT() const;
         const std::string& getEclipseInputPath() const;
 
@@ -64,7 +66,9 @@ namespace Opm {
         TimeMapConstPtr m_timemap;
         bool            m_write_INIT_file;
         bool            m_write_EGRID_file;
+        bool            m_UNIFIN;
         bool            m_UNIFOUT;
+        bool            m_FMTIN;
         bool            m_FMTOUT;
         std::string     m_eclipse_input_path;
 

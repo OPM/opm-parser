@@ -30,7 +30,9 @@ namespace Opm {
     IOConfig::IOConfig(DeckConstPtr deck):
         m_write_INIT_file(false),
         m_write_EGRID_file(true),
+        m_UNIFIN(false),
         m_UNIFOUT(false),
+        m_FMTIN(false),
         m_FMTOUT(false),
         m_eclipse_input_path("") {
     }
@@ -206,19 +208,28 @@ namespace Opm {
 
 
     void IOConfig::handleRunspecSection(std::shared_ptr<const RUNSPECSection> runspecSection) {
-        m_FMTOUT  = runspecSection->hasKeyword("FMTOUT");  //Output files are formatted
+        m_FMTIN   = runspecSection->hasKeyword("FMTIN");   //Input files are formatted
+        m_FMTOUT  = runspecSection->hasKeyword("FMTOUT");  //Output files are to be formatted
+        m_UNIFIN  = runspecSection->hasKeyword("UNIFIN");  //Input files are unified
         m_UNIFOUT = runspecSection->hasKeyword("UNIFOUT"); //Output files are to be unified
     }
 
+
+    bool IOConfig::getUNIFIN() const {
+        return m_UNIFIN;
+    }
 
     bool IOConfig::getUNIFOUT() const {
         return m_UNIFOUT;
     }
 
+    bool IOConfig::getFMTIN() const {
+        return m_FMTIN;
+    }
+
     bool IOConfig::getFMTOUT() const {
         return m_FMTOUT;
     }
-
 
     void IOConfig::setEclipseInputPath(const std::string& path) {
         m_eclipse_input_path = path;
