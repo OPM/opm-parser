@@ -358,6 +358,14 @@ namespace Opm {
 
     void EclipseState::initIOConfig(DeckConstPtr deck) {
         m_ioConfig = std::make_shared<IOConfig>(deck);
+        if (Section::hasGRID(deck)) {
+            std::shared_ptr<const GRIDSection> gridSection = std::make_shared<const GRIDSection>(deck);
+            m_ioConfig->handleGridSection(gridSection);
+        }
+        if (Section::hasRUNSPEC(deck)) {
+            std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(deck);
+            m_ioConfig->handleRunspecSection(runspecSection);
+        }
     }
 
 
