@@ -10,6 +10,7 @@ include(CTest)
 
 
 set( OPM_CMAKE_ROOT "" CACHE PATH "Root directory containing OPM related cmake modules")
+option(BUILD_TESTING "Build test applications by default?" ON)
 
 include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
 
