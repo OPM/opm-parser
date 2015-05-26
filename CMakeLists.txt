@@ -7,24 +7,14 @@ include(CTest)
 # project information is in dune.module. Read this file and set variables.
 # we cannot generate dune.module since it is read by dunecontrol before
 # the build starts, so it makes sense to keep the data there then.
-
-
 set( OPM_CMAKE_ROOT "" CACHE PATH "Root directory containing OPM related cmake modules")
 option(BUILD_TESTING "Build test applications by default?" ON)
 
-include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
+if(NOT OPM_CMAKE_ROOT)
+  find_package(opm-cmake)
+endif()
 
-if (OPM_INIT) 
-
-   # We actually found the OpmInit module without using the OPM_CMAKE_ROOT variable.
-   # The build needs the variable $OPM_MACROS_ROOT to be set, so here we infer it 
-   # by backtracing from the location of the OpmInit module.
-   get_filename_component( TMP1 ${OPM_INIT} PATH )
-   get_filename_component( TMP2 ${TMP1} PATH )
-   get_filename_component( OPM_MACROS_ROOT ${TMP2} PATH )
-
-else()
-
+if (NOT opm-cmake_FOUND)
    if (OPM_CMAKE_ROOT)
       list( APPEND CMAKE_MODULE_PATH "${OPM_CMAKE_ROOT}/cmake/Modules")
       include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
