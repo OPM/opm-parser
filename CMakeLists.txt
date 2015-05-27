@@ -8,13 +8,17 @@ include(CTest)
 # we cannot generate dune.module since it is read by dunecontrol before
 # the build starts, so it makes sense to keep the data there then.
 set( OPM_CMAKE_ROOT "" CACHE PATH "Root directory containing OPM related cmake modules")
+option(SIBLING_SEARCH "Search for other modules in sibling directories?" ON)
 option(BUILD_TESTING "Build test applications by default?" ON)
 
 if(NOT OPM_CMAKE_ROOT)
-  find_package(opm-cmake)
+  find_package(opm-cmake QUIET)
 endif()
 
 if (NOT opm-cmake_FOUND)
+   if (NOT OPM_CMAKE_ROOT AND SIBLING_SEARCH)
+     set(OPM_CMAKE_ROOT ${PROJECT_SOURCE_DIR}/../opm-cmake)
+   endif()
    if (OPM_CMAKE_ROOT)
       list( APPEND CMAKE_MODULE_PATH "${OPM_CMAKE_ROOT}/cmake/Modules")
       include (OpmInit OPTIONAL RESULT_VARIABLE OPM_INIT)
