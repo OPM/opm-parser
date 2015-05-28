@@ -107,6 +107,13 @@ add_subdirectory(opm/parser)
 add_custom_target(check ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_dependencies(check test-suite)
 
+# use this target to check local git commits
+add_custom_target(check-commits
+                  COMMAND ${CMAKE_COMMAND}
+                          -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+                          -DCMAKE_BINARY_DIR=${CMAKE_BINARY_DIR}
+                          -P ${OPM_MACROS_ROOT}/cmake/Scripts/CheckCommits.cmake)
+
 # This commands should be run unconditionally; i.e. the testdata
 # directory should be copied to the EXECUTABLE_OUTPUT_PATH for each
 # invocation of cmake. This dependencies are currently not correctly
