@@ -114,6 +114,10 @@ add_dependencies(check test-suite)
 
 file(COPY ${PROJECT_SOURCE_DIR}/testdata DESTINATION ${EXECUTABLE_OUTPUT_PATH})
 
+# Copy dummy file in place until real file is generated
+file(COPY ${PROJECT_SOURCE_DIR}/opm/parser/eclipse/Parser/ParserKeywords.hpp
+     DESTINATION ${CMAKE_BINARY_DIR}/opm/parser/eclipse/Parser/)
+
 install(FILES dune.module DESTINATION lib/dunecontrol/opm-parser)
 
 include(OpmProject)
