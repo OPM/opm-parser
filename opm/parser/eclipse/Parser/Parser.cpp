@@ -32,59 +32,69 @@
 namespace Opm {
 
     struct ParserState {
+        bool m_strict;
         DeckPtr deck;
         boost::filesystem::path dataFile;
         boost::filesystem::path rootPath;
         std::map<std::string, std::string> pathMap;
-        bool initSuccessful;
         size_t lineNR;
         std::shared_ptr<std::istream> inputstream;
         RawKeywordPtr rawKeyword;
         std::string nextKeyword;
-        ParserState(const boost::filesystem::path &inputDataFile, DeckPtr deckToFill, const boost::filesystem::path &commonRootPath) {
-            SetValues(inputDataFile, deckToFill, commonRootPath);
+
+
+        ParserState(const ParserState& parent) {
+            m_strict = parent.m_strict;
+            deck = parent.deck;
+            pathMap = parent.pathMap;
+            rootPath = parent.rootPath;
         }
 
-        ParserState(const std::string &inputData, DeckPtr deckToFill) {
+        ParserState(bool strict) {
+            m_strict = strict;
+            deck = std::make_shared<Deck>();
             lineNR = 0;
-            dataFile = "";
-            deck = deckToFill;
-            initSuccessful = true;
-            inputstream.reset(new std::istringstream(inputData));
         }
 
-        ParserState(std::shared_ptr<std::istream> inputStream, DeckPtr deckToFill) {
-            lineNR = 0;
-            dataFile = "";
-            deck = deckToFill;
-            initSuccessful = true;
-            inputstream = inputStream;
+        std::shared_ptr<ParserState> includeState(boost::filesystem::path& filename) {
+            std::shared_ptr<ParserState> childState = std::make_shared<ParserState>( *this );
+            childState->openFile( filename );
+            return childState;
         }
-	
-	    void SetValues(const boost::filesystem::path &inputDataFile, DeckPtr deckToFill, const boost::filesystem::path &commonRootPath){
-	        lineNR = 0;
-            dataFile = inputDataFile;
-            deck = deckToFill;
-            rootPath = commonRootPath;
 
-            std::ifstream *ifs = new std::ifstream(inputDataFile.string().c_str());
-            initSuccessful = ifs->is_open();
-            inputstream.reset(ifs);
+
+        void openString(const std::string& input) {
+            dataFile = "";
+            inputstream.reset(new std::istringstream(input));
+        }
+
+
+        void openStream(std::shared_ptr<std::istream> istream) {
+            dataFile = "";
+            inputstream = istream;
+        }
+
+
+        void openFile(const boost::filesystem::path& inputFile) {
+            std::ifstream *ifs = new std::ifstream(inputFile.string().c_str());
 
             // make sure the file we'd like to parse exists and is
             // readable
             if (!ifs->is_open()) {
                 throw std::runtime_error(std::string("Input file '") +
-                                         inputDataFile.string() +
+                                         inputFile.string() +
                                          std::string("' does not exist or is not readable"));
             }
-	    }
 
-        ParserState(const boost::filesystem::path &inputDataFile, DeckPtr deckToFill, const boost::filesystem::path &commonRootPath, std::map<std::string, std::string> &pathMapRef) {
-		    SetValues(inputDataFile, deckToFill, commonRootPath);
-            pathMap = pathMapRef;
+            inputstream.reset( ifs );
+            dataFile = inputFile;
+
+            if (inputFile.is_absolute())
+                rootPath = inputFile.parent_path();
+            else
+                rootPath = boost::filesystem::current_path() / inputFile.parent_path();
+
         }
-
     };
 
     Parser::Parser(bool addDefault) {
@@ -100,13 +110,9 @@ namespace Opm {
      is retained in the current implementation.
      */
 
-    DeckPtr Parser::parseFile(const std::string &dataFileName) const {
-
-        std::shared_ptr<ParserState> parserState(new ParserState(dataFileName, DeckPtr(new Deck()), getRootPathFromFile(dataFileName)));
-
-        // warn if the file we'd like to parse does not exist or is not readable
-        if (!parserState->initSuccessful)
-            throw std::invalid_argument("Input file '" + dataFileName + "' does not exist or is not readable.");
+    DeckPtr Parser::parseFile(const std::string &dataFileName, bool strict) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+        parserState->openFile( dataFileName );
 
         parseState(parserState);
         applyUnitsToDeck(parserState->deck);
@@ -114,16 +120,19 @@ namespace Opm {
         return parserState->deck;
     }
 
-    DeckPtr Parser::parseString(const std::string &data) const {
+    DeckPtr Parser::parseString(const std::string &data, bool strict) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+        parserState->openString( data );
 
-        std::shared_ptr<ParserState> parserState(new ParserState(data, DeckPtr(new Deck())));
         parseState(parserState);
         applyUnitsToDeck(parserState->deck);
+
         return parserState->deck;
     }
 
-    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream) const {
-        std::shared_ptr<ParserState> parserState(new ParserState(inputStream, DeckPtr(new Deck())));
+    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, bool strict) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+        parserState->openStream( inputStream );
 
         parseState(parserState);
         applyUnitsToDeck(parserState->deck);
@@ -288,10 +297,8 @@ namespace Opm {
                         RawRecordConstPtr firstRecord = parserState->rawKeyword->getRecord(0);
                         std::string includeFileAsString = readValueToken<std::string>(firstRecord->getItem(0));
                         boost::filesystem::path includeFile = getIncludeFilePath(parserState, includeFileAsString);
+                        std::shared_ptr<ParserState> newParserState = parserState->includeState( includeFile );
 
-                        std::shared_ptr<ParserState> newParserState (new ParserState(includeFile.string(), parserState->deck, parserState->rootPath, parserState->pathMap));
-                        if (!newParserState->initSuccessful)
-                            throw std::invalid_argument("Included file '" + includeFile.string() + "' does not exist or is not readable.");
 
                         stopParsing = parseState(newParserState);
                         if (stopParsing) break;
@@ -374,8 +381,12 @@ namespace Opm {
                 }
                 return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , targetSize , parserKeyword->isTableCollection()));
             }
-        } else
-           throw std::invalid_argument("Keyword " + keywordString + " not recognized ");
+        } else {
+            if (parserState->m_strict)
+                throw std::invalid_argument("Keyword " + keywordString + " not recognized ");
+            else
+                return std::shared_ptr<RawKeyword>(  );
+        }
     }
 
 
@@ -476,14 +487,6 @@ namespace Opm {
         }
     }
 
-    boost::filesystem::path Parser::getRootPathFromFile(const boost::filesystem::path &inputDataFile) const {
-        boost::filesystem::path root;
-        if (inputDataFile.is_absolute())
-            root = inputDataFile.parent_path();
-        else
-            root = boost::filesystem::current_path() / inputDataFile.parent_path();
-        return root;
-    }
 
     void Parser::applyUnitsToDeck(DeckPtr deck) const {
         deck->initUnitSystem();
