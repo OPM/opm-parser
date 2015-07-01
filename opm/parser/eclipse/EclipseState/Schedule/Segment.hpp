@@ -20,6 +20,8 @@
 #ifndef SEGMENT_HPP_HEADER_INCLUDED
 #define SEGMENT_HPP_HEADER_INCLUDED
 
+#include <memory>
+
 namespace Opm {
 
     struct Segment {
@@ -58,6 +60,9 @@ namespace Opm {
         // while they are not supported by the keyword at the moment.
 
     };
+
+    typedef std::shared_ptr<Segment> SegmentPtr;
+    typedef std::shared_ptr<const Segment> SegmentConstPtr;
 }
 
 #endif
