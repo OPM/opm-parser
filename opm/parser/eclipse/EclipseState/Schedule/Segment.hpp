@@ -22,38 +22,64 @@
 
 #include <memory>
 
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+
+
 namespace Opm {
 
-    struct Segment {
-
+    class Segment {
+    public:
         Segment();
 
+        Segment(int branch, int outlet_segment, double length, double depth,
+                double internal_diameter, double roughness, double cross_area,
+                double volume, double length_x, double length_y);
+
+    // private: // TODO: make members private
         // branch number
+        // for top segment, it should always be 0
+        // we change everything beging with 0 according to c/c++ conventions
         int m_branch;
         // the outlet junction segment
+        // for top segment, it should be -1
         int m_outlet_segment;
         // length of the nodes
         // depending on item 5 in the record 1
         // 'INC' or 'ABS'
+        // if it is 'INC', for top segment, it will be 0
         double m_length;
         // depth of the nodes
         // depending on item 5 in the record 1
         // 'INC' or 'ABS'
+        // if it is 'INC', for top segment, it will be 0
+        // TODO: to check if it is good to use 'ABS' always.
+        // since it is easy to compute the 'INC' value with the 'ABS' value
+        // while not easy the other way.
         double m_depth;
         // tubing internal diameter
         // or the equivalent diameter for annular cross-sections
+        // for top segment, it is UNDEFINED
+        // we use -1e100 for the top segment
         double m_internal_dimaeter;
         // effective roughness of the tubing
         // used to calculate the Fanning friction factor
+        // for top segment, it is UNDEFINED
+        // we use -1e100 for the top segment
         double m_roughness;
         // cross-sectional area for fluid flow
+        // not defined for the top segment,
+        // we use -1e100 for the top segment.
         double m_cross_area;
         // valume of the segment;
+        // it is defined for top segment.
+        // TODO: to check if the definition is the same with other segments.
         double m_volume;
         // length of segment projected onto the X-axis and Y-axis
         // depending on item 5 in the record 1
         // 'INC' or 'ABS'
         // they are only used for plotting purpose
+        // it is is 'INC', for top segment, they will be 0
         double m_length_x;
         double m_length_y;
         // There are other three properties for segment related to thermal conduction,
@@ -63,6 +89,7 @@ namespace Opm {
 
     typedef std::shared_ptr<Segment> SegmentPtr;
     typedef std::shared_ptr<const Segment> SegmentConstPtr;
+
 }
 
 #endif

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Segment.hpp>
 
 namespace Opm {
 
@@ -31,6 +32,8 @@ namespace Opm {
     class SegmentSet {
     public:
         SegmentSet();
+
+        std::string wellName() const;
         int numberBranch() const;
         int numberSegment() const;
         double depthTopSegment() const;
@@ -40,7 +43,12 @@ namespace Opm {
         WellSegment::CompPresureDropEnum compPressureDrop() const;
         WellSegment::MultiPhaseModelEnum multiPhaseModel() const;
 
+        void segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword);
+
     private:
+
+        // name of the well
+        std::string m_well_name;
         // number of the branches
         int m_number_branch;
         // number of the segments
@@ -65,7 +73,8 @@ namespace Opm {
         // There are other three properties for segment related to thermal conduction,
         // while they are not supported by the keyword at the moment.
 
-        std::vector<SegmentConstPtr> m_segments;
+        // std::vector<SegmentConstPtr> m_segments;
+        std::vector<SegmentPtr> m_segments;
     };
 
     typedef std::shared_ptr<SegmentSet> SegmentSetPtr;
