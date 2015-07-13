@@ -52,7 +52,7 @@ namespace Opm {
         // for the first record, which provides the information for the top segment
         // and information for the whole segment set
         DeckRecordConstPtr record1 = welsegsKeyword->getRecord(0);
-        std::string well_name = record1->getItem("WELL")->getTrimmedString(0);
+        m_well_name = record1->getItem("WELL")->getTrimmedString(0);
 
         const double meaningless_value = -1.e100; // meaningless value to indicate unspecified values
 

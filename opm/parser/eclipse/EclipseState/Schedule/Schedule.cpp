@@ -1216,9 +1216,17 @@ namespace Opm {
     void Schedule::handleWELSEGS(DeckKeywordConstPtr keyword, size_t currentStep) {
         SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
         newSegmentset->segmentsFromWELSEGSKeyword(keyword);
-        // ALSO NEED TO UPDATE THE INFORMATION RELATED TO WELLS.
-        // std::map<std::string , std::vector<SegmentPtr>> segmentMapList = SegmentSet::segmentsFromWELSEGSKeyword(keyword);
+        std::string well_name = newSegmentset->wellName();
 
+        WellPtr well = getWell(well_name);
+        // overwrite the BHP reference depth with the one from WELSEGS keyword.
+        const double ref_depth = newSegmentset->depthTopSegment();
+        well->setRefDepth(ref_depth);
+        // indicate this well is a multi-segment well
+        well->setMultiSegment(true);
+        well->setLengthDepthType(newSegmentset->lengthDepthType());
+        well->setMultiPhaseModel(newSegmentset->multiPhaseModel());
+        well->setCompPressureDrop(newSegmentset->compPressureDrop());
     }
 
     void Schedule::handleWGRUPCON(DeckKeywordConstPtr keyword, size_t currentStep) {

@@ -111,6 +111,18 @@ namespace Opm {
 
 
 
+        // for multi-segment wells
+        bool isMultiSegment() const;
+        void setMultiSegment(const bool is_multi_segment);
+
+        WellSegment::LengthDepthEnum getLengthDepthType() const;
+        void setLengthDepthType(const WellSegment::LengthDepthEnum length_depth_type);
+
+        WellSegment::MultiPhaseModelEnum getMultiPhaseModel() const;
+        void setMultiPhaseModel(const WellSegment::MultiPhaseModelEnum multiphase_model);
+
+        WellSegment::CompPresureDropEnum getCompPressureDrop() const;
+        void setCompPressureDrop(const WellSegment::CompPresureDropEnum comp_pressure_drop);
 
 
     private:
@@ -147,6 +159,12 @@ namespace Opm {
         WellCompletion::CompletionOrderEnum m_comporder;
         bool m_allowCrossFlow;
 
+        // WELSEGS data - for the mutli-segment wells
+        // assumes this is not dynamic either
+        bool m_is_multi_segment; // flag for multi-segment well
+        WellSegment::LengthDepthEnum m_length_depth_type;
+        WellSegment::MultiPhaseModelEnum m_multiphase_model;
+        WellSegment::CompPresureDropEnum m_comp_pressure_drop;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

@@ -57,6 +57,7 @@ namespace Opm {
     {
         m_name = name_;
         m_creationTimeStep = creationTimeStep;
+        m_is_multi_segment = false;
 
 
     }
@@ -307,6 +308,37 @@ namespace Opm {
             wellNameInPattern = true;
         }
         return wellNameInPattern;
+    }
+    bool Well::isMultiSegment() const {
+        return m_is_multi_segment;
+    }
+
+    void Well::setMultiSegment(const bool is_multi_segment) {
+        m_is_multi_segment = is_multi_segment;
+    }
+
+    WellSegment::LengthDepthEnum Well::getLengthDepthType() const {
+        return m_length_depth_type;
+    }
+
+    void Well::setLengthDepthType(const WellSegment::LengthDepthEnum length_depth_type) {
+        m_length_depth_type = length_depth_type;
+    }
+
+    WellSegment::MultiPhaseModelEnum Well::getMultiPhaseModel() const {
+        return m_multiphase_model;
+    }
+
+    void Well::setMultiPhaseModel(const WellSegment::MultiPhaseModelEnum multiphase_model) {
+        m_multiphase_model = multiphase_model;
+    }
+
+    WellSegment::CompPresureDropEnum Well::getCompPressureDrop() const {
+        return m_comp_pressure_drop;
+    }
+
+    void Well::setCompPressureDrop(const WellSegment::CompPresureDropEnum comp_pressure_drop) {
+        m_comp_pressure_drop = comp_pressure_drop;
     }
 
     bool Well::getAllowCrossFlow() const {
