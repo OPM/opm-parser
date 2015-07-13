@@ -194,6 +194,11 @@ namespace Opm {
     }
 
 
+    void Well::setRefDepth(const double ref_depth) {
+        m_refDepth.setValue(ref_depth);
+    }
+
+
     void Well::setRefDepthFromCompletions() const {
         size_t timeStep = m_creationTimeStep;
         while (true) {

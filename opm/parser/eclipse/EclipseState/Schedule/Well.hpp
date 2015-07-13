@@ -62,6 +62,7 @@ namespace Opm {
         int    getHeadI() const;
         int    getHeadJ() const;
         double getRefDepth() const;
+        void   setRefDepth(const double ref_depth);
         Phase::PhaseEnum getPreferredPhase() const;
 
         bool isAvailableForGroupControl(size_t timeStep) const;
