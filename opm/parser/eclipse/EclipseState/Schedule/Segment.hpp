@@ -32,11 +32,27 @@ namespace Opm {
     public:
         Segment();
 
-        Segment(int branch, int outlet_segment, double length, double depth,
+        Segment(int segment_number, int branch, int outlet_segment, double length, double depth,
                 double internal_diameter, double roughness, double cross_area,
-                double volume, double length_x, double length_y);
+                double volume, double length_x, double length_y, bool data_ready);
 
-    // private: // TODO: make members private
+        int& segmentNumber();
+        int& branchNumber();
+        int& outletSegment();
+        double& length();
+        double& depth();
+        double& internalDiameter();
+        double& roughness();
+        double& crossArea();
+        double& volume();
+        double& lengthX();
+        double& lengthY();
+        bool& dataReady();
+
+    private:
+        // segment number
+        // it should work as a ID.
+        int m_segment_number;
         // branch number
         // for top segment, it should always be 0
         // we change everything beging with 0 according to c/c++ conventions
@@ -48,6 +64,7 @@ namespace Opm {
         // depending on item 5 in the record 1
         // 'INC' or 'ABS'
         // if it is 'INC', for top segment, it will be 0
+        // in the class Well, it always stores the 'ABS' value.
         double m_length;
         // depth of the nodes
         // depending on item 5 in the record 1
@@ -56,6 +73,7 @@ namespace Opm {
         // TODO: to check if it is good to use 'ABS' always.
         // since it is easy to compute the 'INC' value with the 'ABS' value
         // while not easy the other way.
+        // in the class Well, it always stores the 'ABS' value.
         double m_depth;
         // tubing internal diameter
         // or the equivalent diameter for annular cross-sections
@@ -80,8 +98,12 @@ namespace Opm {
         // 'INC' or 'ABS'
         // they are only used for plotting purpose
         // it is is 'INC', for top segment, they will be 0
+        // in the class Well, it always stores the 'ABS' value.
         double m_length_x;
         double m_length_y;
+        // indicate if the data related to 'INC' or 'ABS' is ready
+        // the volume will be updated at a final step.
+        bool m_data_ready;
         // There are other three properties for segment related to thermal conduction,
         // while they are not supported by the keyword at the moment.
 

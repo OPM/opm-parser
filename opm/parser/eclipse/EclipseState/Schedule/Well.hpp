@@ -124,6 +124,11 @@ namespace Opm {
         WellSegment::CompPresureDropEnum getCompPressureDrop() const;
         void setCompPressureDrop(const WellSegment::CompPresureDropEnum comp_pressure_drop);
 
+        void addSegmentSet(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void addSegmentSetABS(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
 
     private:
         void setRefDepthFromCompletions() const;
@@ -165,6 +170,8 @@ namespace Opm {
         WellSegment::LengthDepthEnum m_length_depth_type;
         WellSegment::MultiPhaseModelEnum m_multiphase_model;
         WellSegment::CompPresureDropEnum m_comp_pressure_drop;
+
+        std::shared_ptr<DynamicState<SegmentSetPtr>> m_segmentset;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

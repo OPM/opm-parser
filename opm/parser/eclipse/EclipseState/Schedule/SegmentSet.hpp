@@ -21,6 +21,7 @@
 #define SEGMENTSET_HPP_HEADER_INCLUDED
 
 #include <vector>
+#include <map>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Segment.hpp>
@@ -39,11 +40,29 @@ namespace Opm {
         double depthTopSegment() const;
         double lengthTopSegment() const;
         double volumeTopSegment() const;
+        double xTop() const;
+        double yTop() const;
+
         WellSegment::LengthDepthEnum lengthDepthType() const;
         WellSegment::CompPresureDropEnum compPressureDrop() const;
         WellSegment::MultiPhaseModelEnum multiPhaseModel() const;
+        std::vector<SegmentPtr>& Segments();
 
-        void segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword);
+        bool numberToLocation(const int segment_number, int& location) const;
+
+        int numberToLocation(const int segment_number) const;
+
+        void addSegment(SegmentPtr new_segment);
+
+        void addSegmentINC(SegmentPtr new_segment);
+
+        void addSegmentABS(SegmentPtr new_segment);
+
+        void segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, const int nsegmx);
+
+        SegmentSet* shallowCopy() const;
+
+        SegmentPtr& operator[](size_t idx);
 
     private:
 
@@ -68,13 +87,16 @@ namespace Opm {
         // multi-phase flow model
         WellSegment::MultiPhaseModelEnum m_multiphase_model;
         // X and Y cooridnate of the nodal point of the top segment
-        int m_x_top;
-        int m_y_top;
+        double m_x_top;
+        double m_y_top;
         // There are other three properties for segment related to thermal conduction,
         // while they are not supported by the keyword at the moment.
 
         // std::vector<SegmentConstPtr> m_segments;
         std::vector<SegmentPtr> m_segments;
+        // the mapping from the segment number to the
+        // storage location of the vector
+        std::map<int, int> m_number_to_location;
     };
 
     typedef std::shared_ptr<SegmentSet> SegmentSetPtr;

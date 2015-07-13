@@ -147,7 +147,7 @@ namespace Opm {
                 handleCOMPDAT(keyword, currentStep);
 
             if (keyword->name() == "WELSEGS") {
-                handleWELSEGS(keyword, currentStep);
+                handleWELSEGS(deck, keyword, currentStep);
             }
 
             if (keyword->name() == "WELOPEN")
@@ -1213,20 +1213,34 @@ namespace Opm {
         m_events.addEvent(ScheduleEvents::COMPLETION_CHANGE, currentStep);
     }
 
-    void Schedule::handleWELSEGS(DeckKeywordConstPtr keyword, size_t currentStep) {
-        SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
-        newSegmentset->segmentsFromWELSEGSKeyword(keyword);
-        std::string well_name = newSegmentset->wellName();
+    void Schedule::handleWELSEGS(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep) {
+        DeckKeywordConstPtr nsegmxKeyword = deck->getKeyword("WSEGDIMS");
+        assert(nsegmxKeyword->size() == 1);
+        const int nsegmx = nsegmxKeyword->getRecord(0)->getItem("NSEGMX")->getInt(0);
 
+        SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
+        newSegmentset->segmentsFromWELSEGSKeyword(keyword, nsegmx);
+
+        std::string well_name = newSegmentset->wellName();
         WellPtr well = getWell(well_name);
         // overwrite the BHP reference depth with the one from WELSEGS keyword.
         const double ref_depth = newSegmentset->depthTopSegment();
         well->setRefDepth(ref_depth);
         // indicate this well is a multi-segment well
-        well->setMultiSegment(true);
+        bool first_time = false;
+        if (!well->isMultiSegment()) {
+            well->setMultiSegment(true);
+            first_time = true;
+        }
+
+        // TODO: maybe it is not necessary to store these values both for Well
+        // and SegmentSet
+        // we should delete one of them later.
         well->setLengthDepthType(newSegmentset->lengthDepthType());
         well->setMultiPhaseModel(newSegmentset->multiPhaseModel());
         well->setCompPressureDrop(newSegmentset->compPressureDrop());
+
+        well->addSegmentSet(currentStep, newSegmentset, first_time);
     }
 
     void Schedule::handleWGRUPCON(DeckKeywordConstPtr keyword, size_t currentStep) {

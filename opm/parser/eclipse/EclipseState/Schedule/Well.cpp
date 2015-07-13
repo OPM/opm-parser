@@ -25,6 +25,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Completion.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/SegmentSet.hpp>
 
 
 
@@ -53,7 +54,8 @@ namespace Opm {
           m_preferredPhase(preferredPhase),
           m_grid( grid ),
           m_comporder(completionOrdering),
-          m_allowCrossFlow(allowCrossFlow)
+          m_allowCrossFlow(allowCrossFlow),
+          m_segmentset(new DynamicState<SegmentSetPtr>(timeMap, SegmentSetPtr(new SegmentSet())))
     {
         m_name = name_;
         m_creationTimeStep = creationTimeStep;
@@ -244,6 +246,226 @@ namespace Opm {
             mutable_copy->orderCompletions(m_headI, m_headJ, m_grid);
         }
         m_completions->update(time_step, mutable_copy);
+    }
+
+    void Well::addSegmentSet(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time) {
+
+        if (new_segmentset->lengthDepthType() == WellSegment::INC) {
+            addSegmentSetINC(time_step, new_segmentset, first_time);
+        } else if (new_segmentset->lengthDepthType() == WellSegment::ABS) {
+            addSegmentSetABS(time_step, new_segmentset, first_time);
+        } else {
+            throw std::runtime_error(" unknow length_depth_type in the new_segmentset");
+        }
+
+        /* if (first_time) {
+            m_segmentset->add(time_step, new_segmentset);
+        } else {
+            SegmentSetPtr current_segmentset = m_segmentset->get(time_step);
+            SegmentSetPtr temp_segmentset = SegmentSetPtr(current_segmentset->shallowCopy());
+            // TODO: check to make sure the information of the first record from the WELSEGS is consistent
+            // TODO: check if the way to add top_segment is OK
+            for (size_t i = 0; i < new_segmentset->numberSegment(); ++i) {
+                temp_segmentset->addSegment(new_segmentset->Segments()[i]);
+            }
+            m_segmentset->add(time_step, temp_segmentset);
+        } */
+    }
+
+    void Well::addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time) {
+        const double meaningless_value = -1.e100; // meaningless value to indicate unspecified values
+        // The following code only applied when no loop exist.
+        // where loops exist, some modification should be made.
+        if (first_time) {
+            // update the information inside new_segmentset to be in ABS way
+            (*new_segmentset)[0]->length() = new_segmentset->lengthTopSegment();
+            (*new_segmentset)[0]->depth() = new_segmentset->depthTopSegment();
+            (*new_segmentset)[0]->lengthX() = new_segmentset->xTop();
+            (*new_segmentset)[0]->lengthY() = new_segmentset->yTop();
+            (*new_segmentset)[0]->dataReady() = true;
+
+            bool all_ready;
+
+            do {
+                all_ready = true;
+                for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+                    if ((*new_segmentset)[i]->dataReady() == false) {
+                        all_ready = false;
+                        // check the information about the outlet segment
+                        // find the outlet segment with true dataReady()
+                        size_t outlet_segment = (*new_segmentset)[i]->outletSegment();
+                        size_t outlet_location = new_segmentset->numberToLocation(outlet_segment);
+
+                        if ((*new_segmentset)[outlet_location]->dataReady() == true) {
+                            (*new_segmentset)[i]->length() = (*new_segmentset)[i]->length() + (*new_segmentset)[outlet_location]->length();
+                            (*new_segmentset)[i]->depth() = (*new_segmentset)[i]->depth() + (*new_segmentset)[outlet_location]->depth();
+                            (*new_segmentset)[i]->lengthX() = (*new_segmentset)[i]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
+                            (*new_segmentset)[i]->lengthY() = (*new_segmentset)[i]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
+                            (*new_segmentset)[i]->dataReady() = true;
+                            break;
+                        }
+
+                        size_t current_segment;
+                        size_t current_location;
+                        size_t i_depth = 0;
+                        while ((*new_segmentset)[outlet_location]->dataReady() == false) {
+                            current_segment = outlet_segment;
+                            current_location = outlet_location;
+                            outlet_segment = (*new_segmentset)[outlet_location]->outletSegment();
+                            outlet_location = new_segmentset->numberToLocation(outlet_segment);
+
+                            assert((outlet_location > 0) && (outlet_location < new_segmentset->numberSegment()));
+
+                            ++i_depth;
+                            // when it enters dead loop, should throw an exception
+                            // 10000 is a temporary manual here.
+                            if (i_depth > 10000) {
+                                throw std::runtime_error("loop exist or something wrong with the segment structure ");
+                            }
+                        }
+
+                        if ((*new_segmentset)[outlet_location]->dataReady() == true) {
+                            (*new_segmentset)[current_location]->length() = (*new_segmentset)[current_location]->length() + (*new_segmentset)[outlet_location]->length();
+                            (*new_segmentset)[current_location]->depth() = (*new_segmentset)[current_location]->depth() + (*new_segmentset)[outlet_location]->depth();
+                            (*new_segmentset)[current_location]->lengthX() = (*new_segmentset)[current_location]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
+                            (*new_segmentset)[current_location]->lengthY() = (*new_segmentset)[current_location]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
+                            (*new_segmentset)[current_location]->dataReady() = true;
+                            break;
+                        }
+                    }
+                }
+
+            } while (!all_ready);
+            m_segmentset->add(time_step, new_segmentset);
+        } else {
+
+
+        }
+    }
+
+    void Well::addSegmentSetABS(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time) {
+        const double meaningless_value = -1.e100; // meaningless value to indicate unspecified values
+        if (first_time) {
+            // only need to update the volume and the length and depth values specified in the middle of the range
+
+            // top segment is always ready
+            // then looking for range that the information of the first segment whoe outlet segment information are ready.
+            bool all_ready;
+            do {
+                all_ready = true;
+                for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+                    if ((*new_segmentset)[i]->dataReady() == false) {
+                        all_ready = false;
+                        // then looking for unready segment with a ready outlet segment
+                        // and looking for the continous unready segments
+                        // int index_begin = i;
+                        int location_begin = i;
+
+                        int outlet_segment = (*new_segmentset)[i]->outletSegment();
+                        int outlet_location = new_segmentset->numberToLocation(outlet_segment);
+
+                        // assuming no loop
+                        while ((*new_segmentset)[outlet_location]->dataReady() == false) {
+                            location_begin = outlet_location;
+                            assert(location_begin > 0);
+                            outlet_segment = (*new_segmentset)[location_begin]->outletSegment();
+                            outlet_location = new_segmentset->numberToLocation(outlet_segment);
+                        }
+
+                        // begin from location_begin to look for the unready segments continous
+                        int location_end;
+
+                        for (size_t j = location_begin + 1; j < new_segmentset->numberSegment(); ++j) {
+                            if ((*new_segmentset)[j]->dataReady() == true) {
+                                location_end = j;
+                                break;
+                            }
+                        }
+
+                        // set the value for the segments in the range
+                        int number_segments = location_end - location_begin + 1;
+                        assert(number_segments > 1);
+
+                        double length_outlet = (*new_segmentset)[outlet_location]->length();
+                        double depth_outlet = (*new_segmentset)[outlet_location]->depth();
+                        double length_x_outlet = (*new_segmentset)[outlet_location]->lengthX();
+                        double length_y_outlet = (*new_segmentset)[outlet_location]->lengthY();
+
+                        double length_last = (*new_segmentset)[location_end]->length();
+                        double depth_last = (*new_segmentset)[location_end]->depth();
+                        double length_x_last = (*new_segmentset)[location_end]->lengthX();
+                        double length_y_last = (*new_segmentset)[location_end]->lengthY();
+
+                        double length_segment = (length_last - length_outlet) / number_segments;
+                        double depth_segment = (depth_last - depth_outlet) / number_segments;
+                        double length_x_segment = (length_x_last - length_x_outlet) / number_segments;
+                        double length_y_segment = (length_y_last - length_y_outlet) / number_segments;
+
+                        // the segments in the same range should share the same properties
+                        double volume_segment = (*new_segmentset)[location_end]->crossArea() * length_segment;
+
+                        if ((*new_segmentset)[location_end]->volume() < 0.5 * meaningless_value) {
+                            (*new_segmentset)[location_end]->volume() = volume_segment;
+                        }
+
+                        for (int k = location_begin; k < location_end; ++k) {
+                            (*new_segmentset)[k]->length() = length_outlet + (k - location_begin + 1) * length_segment;
+                            (*new_segmentset)[k]->depth() = depth_outlet + (k - location_begin + 1) * depth_segment;
+                            (*new_segmentset)[k]->lengthX() = length_x_outlet + (k - location_begin + 1) * length_x_segment;
+                            (*new_segmentset)[k]->lengthY() = length_y_outlet + (k - location_begin + 1) * length_y_segment;
+                            (*new_segmentset)[k]->dataReady() = true;
+
+                            if ((*new_segmentset)[k]->volume() < 0.5 * meaningless_value) {
+                                (*new_segmentset)[k]->volume() = volume_segment;
+                            }
+                        }
+                    break;
+                    }
+                }
+            } while (!all_ready);
+
+            // then update the volume for all the segments except the top segment
+            for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+               int outlet_segment = (*new_segmentset)[i]->outletSegment();
+               int outlet_location = new_segmentset->numberToLocation(outlet_segment);
+               double segment_length = (*new_segmentset)[i]->length() - (*new_segmentset)[outlet_location]->length();
+               if ((*new_segmentset)[i]->volume() < 0.5 * meaningless_value) {
+                   (*new_segmentset)[i]->volume() = (*new_segmentset)[i]->crossArea() * segment_length;
+               }
+            }
+
+            // for debugging output
+            bool output_debugging = false;
+            if (output_debugging) {
+                std::cout << "segment numbers " << new_segmentset->numberSegment() << std::endl;
+                std::cout << "branch numbers " << new_segmentset->numberBranch() << std::endl;
+                std::cout << "depth of the top segment " << new_segmentset->depthTopSegment() << std::endl;
+                std::cout << "length of the top segement " << new_segmentset->lengthTopSegment() << std::endl;
+                std::cout << "volume of the top segment " << new_segmentset->volumeTopSegment() << std::endl;
+                std::cout << "length x of the top segment " << new_segmentset->xTop() << std::endl;
+                std::cout << "length y of the top segment " << new_segmentset->yTop() << std::endl;
+
+                for (size_t i = 0; i < new_segmentset->numberSegment(); ++i) {
+                    std::cout << " segment number " << (*new_segmentset)[i]->segmentNumber();
+                    std::cout << " branch number " << (*new_segmentset)[i]->branchNumber();
+                    std::cout << " outlet segment " << (*new_segmentset)[i]->outletSegment();
+                    std::cout << " length " << (*new_segmentset)[i]->length();
+                    std::cout << " depth " << (*new_segmentset)[i]->depth();
+                    std::cout << " internal diamter " << (*new_segmentset)[i]->internalDiameter();
+                    std::cout << " volume " << (*new_segmentset)[i]->volume();
+                    std::cout << " length x " << (*new_segmentset)[i]->lengthX();
+                    std::cout << " length y " << (*new_segmentset)[i]->lengthY();
+                    std::cout << " data ready? " << (*new_segmentset)[i]->dataReady();
+                    std::cout << std::endl;
+                }
+            }
+
+            m_segmentset->add(time_step, new_segmentset);
+        } else {
+            // looking for the segments in the new parts that has undefied length information and the outlet segment in the old part.
+            // then update the information.
+            // update the top segment
+        }
     }
 
     const std::string Well::getGroupName(size_t time_step) const {
