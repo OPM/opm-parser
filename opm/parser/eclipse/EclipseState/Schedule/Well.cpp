@@ -571,6 +571,93 @@ namespace Opm {
         return m_allowCrossFlow;
     }
 
+    void Well::processCOMPSEGS(size_t time_step, std::vector<CompsegsPtr>& compsegs) {
+
+        // TODO: make sure the distance information of compsegs is complete.
+        // TODO: for the simplest cases we have at the moment, the distance information is specified explicitly
+        // TODO: the depth information is defaulted though
+        //
+        // process the compsegs to get the segment_information
+        SegmentSetPtr currentSegmentSet = m_segmentset->get(time_step);
+
+        for (size_t i_comp = 0; i_comp < compsegs.size(); ++i_comp) {
+            if (compsegs[i_comp]->m_segment_number == 0) { // need to determine the segment number first
+                const double center_distance = (compsegs[i_comp]->m_distance_start + compsegs[i_comp]->m_distance_end) / 2.0;
+                const int branch_number = compsegs[i_comp]->m_branch_number;
+
+                int segment_number = 0;
+                double min_distance_difference = 1.e100; // begin with a big value
+                for (int i_segment = 0; i_segment < currentSegmentSet->numberSegment(); ++i_segment) {
+                    if (branch_number == (*currentSegmentSet)[i_segment]->branchNumber()) {
+                        const double distance = (*currentSegmentSet)[i_segment]->length();
+                        const double distance_difference = std::abs(center_distance - distance);
+                        if (distance_difference < min_distance_difference) {
+                            min_distance_difference = distance_difference;
+                            segment_number = (*currentSegmentSet)[i_segment]->segmentNumber();
+                        }
+                    }
+                }
+
+                if (segment_number != 0) {
+                    compsegs[i_comp]->m_segment_number = segment_number;
+                    if (compsegs[i_comp]->m_center_depth == 0.) {
+                        // using the depth of the segment node as the depth of the completion
+                        // TODO: now only one completion for one segment is hanlded
+                        // TODO: later trying to handle more than one completion for each segment
+                        int segment_location = currentSegmentSet->numberToLocation(segment_number);
+                        compsegs[i_comp]->m_center_depth = (*currentSegmentSet)[segment_location]->depth();
+                    }
+                } else {
+                   throw std::runtime_error(" the pefomration failed in finding a segment \n");
+                }
+            }
+        }
+
+
+        CompletionSetConstPtr currentCompletionSet = m_completions->get(time_step);
+        // it is necessary to update the segment related information for some completions.
+        CompletionSetPtr newCompletionSet = CompletionSetPtr(currentCompletionSet->shallowCopy());
+
+
+        for (size_t i_comp = 0; i_comp < compsegs.size(); ++i_comp) {
+            const int i = compsegs[i_comp]->m_i;
+            const int j = compsegs[i_comp]->m_j;
+            const int k = compsegs[i_comp]->m_k;
+
+            size_t ic;
+            for (ic = 0; ic < newCompletionSet->size(); ++ic) {
+                if (newCompletionSet->get(ic)->sameCoordinate(i, j, k)) {
+                    break; // the completion is found
+                }
+            }
+
+            if (ic == newCompletionSet->size()) {
+                throw std::runtime_error(" the completion specified in COMPSEGS is not found in the completionSet \n");
+            }
+
+            CompletionPtr new_completion = std::make_shared<Completion>(newCompletionSet->get(ic));
+            new_completion->setSegmentNumber(compsegs[i_comp]->m_segment_number);
+            new_completion->setCenterDepth(compsegs[i_comp]->m_center_depth);
+            newCompletionSet->add(new_completion);
+            // newCompletionSet->get(ic)->setSegmentNumber(compsegs[i_comp]->m_segment_number);
+            // constant pointer can not be changed.
+        }
+
+        for (size_t ic = 0; ic < newCompletionSet->size(); ++ic) {
+            if (newCompletionSet->get(ic)->getSegmentNumber() == -1) {
+                throw std::runtime_error(" not all the completions are specified with a segment,\n the COMPSEGS are not complete");
+            }
+        }
+
+        addCompletionSet(time_step , newCompletionSet);
+
+        // TODO: everytime after updating the segment related information for CompletionSet,
+        // the completion related information also needs to be updated for SegmentSet.
+        // TODO: which way is the good way to mark the completion is a real problem.
+
+        // add also, store the completion number also in segemntSet for each segment.
+        // That means, how many completions for each segment.
+    }
 }
 
 

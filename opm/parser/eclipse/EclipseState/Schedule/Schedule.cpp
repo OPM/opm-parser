@@ -35,6 +35,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Compsegs.hpp>
 
 namespace Opm {
 
@@ -148,6 +149,10 @@ namespace Opm {
 
             if (keyword->name() == "WELSEGS") {
                 handleWELSEGS(deck, keyword, currentStep);
+            }
+
+            if (keyword->name() == "COMPSEGS") {
+                handleCOMPSEGS(keyword, currentStep);
             }
 
             if (keyword->name() == "WELOPEN")
@@ -1262,6 +1267,16 @@ namespace Opm {
 
             well->setGuideRateScalingFactor(currentStep, record->getItem("SCALING_FACTOR")->getRawDouble(0));
         }
+    }
+
+    void Schedule::handleCOMPSEGS(DeckKeywordConstPtr keyword, size_t currentStep) {
+
+        DeckRecordConstPtr record1 = keyword->getRecord(0);
+        std::string well_name = record1->getItem("WELL")->getTrimmedString(0);
+        WellPtr well = getWell(well_name);
+
+        std::vector<CompsegsPtr> compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword(keyword, m_grid);
+        well->processCOMPSEGS(currentStep, compsegs_vector);
     }
 
     void Schedule::handleGRUPTREE(DeckKeywordConstPtr keyword, size_t currentStep) {

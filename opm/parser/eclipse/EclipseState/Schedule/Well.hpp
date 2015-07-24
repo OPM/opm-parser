@@ -27,6 +27,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/Completion.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/SegmentSet.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Segment.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Compsegs.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
@@ -131,6 +132,8 @@ namespace Opm {
         void addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
 
         void addSegmentSetABS(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void processCOMPSEGS(size_t time_step, std::vector<CompsegsPtr>& compsegs);
 
     private:
         void setRefDepthFromCompletions() const;
