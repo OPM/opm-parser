@@ -413,6 +413,39 @@ namespace Opm {
     }
 
 
+    /*
+      There is 'something' rotten which is triggered by through this
+      method. The TOPS keyword can be of any size in the range
+      [nx*ny,nx*ny*nz]. If the keyword has less than nx*ny*nz elements
+      the top of the cells is inferred by adding together the top and
+      thickness of the cell immediately above.
+
+      For some strange reason the code does not work when the TOPS
+      keyword has been fully specified in the input deck. The 'not
+      works' is quite mysterious:
+
+        o The TOPS vector itself is numerically correct.
+
+        o The ert Eclipse grid created with ecl_grid_alloc_dx_dy_dz_tops() in
+          EclipseGrid::initDTOPSGrid() seems to be perfectly right.
+
+        o The COORD, ZCORN and ACTNUM exported from the ert Grid and
+          used as input to the UnstructuredGrid constructor in opm-core
+          is correct.
+
+      The final UnstructuredGrid instance created in
+      GridManager::initFromEclipseGrid() is bogus - presumably some
+      memory is overwritten somewhere - for simple diff based
+      debugging of this the grid_ascii_dump() function in opm-core can
+      be used.
+
+      -----------------------------------------------------------------
+
+      The current 'solution' is just to enforce that the TOPS keyword
+      has exactly nx*ny elements, but this is probably masking a more
+      serious problem somewhere.
+    */
+
 
 
     std::vector<double> EclipseGrid::createTOPSVector(const std::vector<int>& dims , const std::vector<double>& DZ , DeckConstPtr deck) {
@@ -423,6 +456,11 @@ namespace Opm {
 
         if (TOPS.size() >= area) {
             size_t initialTOPSize = TOPS.size();
+
+            /* This test really should not be necessary. */
+            if (initialTOPSize != area)
+                throw std::invalid_argument("Internal error - must have size(TOPS) == nx*ny");
+
             TOPS.resize( volume );
             for (size_t targetIndex = initialTOPSize; targetIndex < volume; targetIndex++) {
                 size_t sourceIndex = targetIndex - area;
