@@ -54,8 +54,7 @@ namespace Opm {
         // it should work as a ID.
         int m_segment_number;
         // branch number
-        // for top segment, it should always be 0
-        // we change everything beging with 0 according to c/c++ conventions
+        // for top segment, it should always be 1
         int m_branch;
         // the outlet junction segment
         // for top segment, it should be -1
