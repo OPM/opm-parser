@@ -336,7 +336,7 @@ namespace Opm {
                 }
 
             } while (!all_ready);
-            m_segmentset->add(time_step, new_segmentset);
+            m_segmentset->update(time_step, new_segmentset);
         } else {
 
 
@@ -460,7 +460,7 @@ namespace Opm {
                 }
             }
 
-            m_segmentset->add(time_step, new_segmentset);
+            m_segmentset->update(time_step, new_segmentset);
         } else {
             // looking for the segments in the new parts that has undefied length information and the outlet segment in the old part.
             // then update the information.
