@@ -539,6 +539,10 @@ namespace Opm {
         m_is_multi_segment = is_multi_segment;
     }
 
+    SegmentSetConstPtr Well::getSegmentSet(size_t time_step) const {
+        return m_segmentset->get(time_step);
+    }
+
     WellSegment::LengthDepthEnum Well::getLengthDepthType() const {
         return m_length_depth_type;
     }

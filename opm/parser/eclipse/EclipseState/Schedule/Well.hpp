@@ -115,6 +115,8 @@ namespace Opm {
         bool isMultiSegment() const;
         void setMultiSegment(const bool is_multi_segment);
 
+        SegmentSetConstPtr getSegmentSet(size_t time_step) const;
+
         WellSegment::LengthDepthEnum getLengthDepthType() const;
         void setLengthDepthType(const WellSegment::LengthDepthEnum length_depth_type);
 
