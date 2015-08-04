@@ -64,6 +64,10 @@ namespace Opm {
         return m_segments[idx];
     }
 
+    SegmentPtr SegmentSet::operator[](size_t idx) const {
+        return m_segments[idx];
+    }
+
     bool SegmentSet::numberToLocation(const int segment_number, int& location) const {
          // std::map<int, int>::iterator it;
          auto it = m_number_to_location.find(segment_number);

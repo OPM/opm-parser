@@ -64,6 +64,8 @@ namespace Opm {
 
         SegmentPtr& operator[](size_t idx);
 
+        SegmentPtr operator[](size_t idx) const;
+
     private:
 
         // name of the well
