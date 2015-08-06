@@ -24,6 +24,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser/ParseMode.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/IOConfig.hpp>
 
@@ -41,9 +42,9 @@ const std::string& deckStr =  "RUNSPEC\n"
                               "START\n"
                               " 21 MAY 1981 /\n"
                               "\n"
+                              "SCHEDULE\n"
                               "TSTEP\n"
                               " 1 2 3 4 5 /\n"
-                              "\n"
                               "DATES\n"
                               " 1 JAN 1982 /\n"
                               " 1 JAN 1982 13:55:44 /\n"
@@ -51,8 +52,7 @@ const std::string& deckStr =  "RUNSPEC\n"
                               "/\n"
                               "TSTEP\n"
                               " 9 10 /\n"
-                              "\n"
-                              "/\n";
+                              "\n";
 
 
 const std::string& deckStr3 =  "RUNSPEC\n"
@@ -82,7 +82,7 @@ const std::string& deckStr4 =  "RUNSPEC\n"
 
 static DeckPtr createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input);
+    return parser.parseString(input, Opm::ParseMode());
 }
 
 
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     ioConfigPtr->handleGridSection(gridSection);
     ioConfigPtr->handleRunspecSection(runspecSection);
 
-    Schedule schedule(grid , deck, ioConfigPtr);
+    Schedule schedule(ParseMode() , grid , deck, ioConfigPtr);
 
     //If no BASIC keyord has been handled, no restart files should be written
     TimeMapConstPtr timemap = schedule.getTimeMap();

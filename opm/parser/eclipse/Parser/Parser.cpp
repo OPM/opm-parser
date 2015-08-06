@@ -21,6 +21,7 @@
 
 #include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
+#include <opm/parser/eclipse/Parser/ParseMode.hpp>
 #include <opm/parser/eclipse/Parser/ParserIntItem.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
@@ -32,7 +33,7 @@
 namespace Opm {
 
     struct ParserState {
-        bool m_strict;
+        const ParseMode& parseMode;
         DeckPtr deck;
         boost::filesystem::path dataFile;
         boost::filesystem::path rootPath;
@@ -43,15 +44,17 @@ namespace Opm {
         std::string nextKeyword;
 
 
-        ParserState(const ParserState& parent) {
-            m_strict = parent.m_strict;
+        ParserState(const ParserState& parent)
+            : parseMode( parent.parseMode )
+        {
             deck = parent.deck;
             pathMap = parent.pathMap;
             rootPath = parent.rootPath;
         }
 
-        ParserState(bool strict) {
-            m_strict = strict;
+        ParserState(const ParseMode& __parseMode)
+            : parseMode( __parseMode )
+        {
             deck = std::make_shared<Deck>();
             lineNR = 0;
         }
@@ -95,6 +98,33 @@ namespace Opm {
                 rootPath = boost::filesystem::current_path() / inputFile.parent_path();
 
         }
+
+        /*
+          We have encountered 'random' characters in the input file which
+          are not correctly formatted as a keyword heading, and not part
+          of the data section of any keyword.
+        */
+
+        void handleRandomText(const std::string& keywordString ) const {
+            std::stringstream msg;
+            InputError::Action action;
+
+            if (keywordString == "/") {
+                action = parseMode.randomSlash;
+                msg << "Extra '/' detected at: " << dataFile << ":" << lineNR;
+            } else {
+                action = parseMode.randomText;
+                msg << "String \'" << keywordString << "\' not formatted/recognized as valid keyword at: " << dataFile << ":" << lineNR;
+            }
+
+            if (action == InputError::THROW_EXCEPTION)
+                throw std::invalid_argument( msg.str() );
+            else {
+                if (action == InputError::WARN)
+                    OpmLog::addMessage(Log::MessageType::Warning , msg.str());
+            }
+        }
+
     };
 
     Parser::Parser(bool addDefault) {
@@ -110,8 +140,8 @@ namespace Opm {
      is retained in the current implementation.
      */
 
-    DeckPtr Parser::parseFile(const std::string &dataFileName, bool strict) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+    DeckPtr Parser::parseFile(const std::string &dataFileName, const ParseMode& parseMode) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseMode);
         parserState->openFile( dataFileName );
 
         parseState(parserState);
@@ -120,8 +150,8 @@ namespace Opm {
         return parserState->deck;
     }
 
-    DeckPtr Parser::parseString(const std::string &data, bool strict) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+    DeckPtr Parser::parseString(const std::string &data, const ParseMode& parseMode) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseMode);
         parserState->openString( data );
 
         parseState(parserState);
@@ -130,8 +160,8 @@ namespace Opm {
         return parserState->deck;
     }
 
-    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, bool strict) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(strict);
+    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, const ParseMode& parseMode) const {
+        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseMode);
         parserState->openStream( inputStream );
 
         parseState(parserState);
@@ -372,22 +402,40 @@ namespace Opm {
                         }
                         targetSize = sizeDefinitionItem->getInt(0);
                     } else {
-                        auto keyword = getKeyword( sizeKeyword.first );
-                        auto record = keyword->getRecord(0);
-                        auto int_item = std::dynamic_pointer_cast<const ParserIntItem>( record->get( sizeKeyword.second ) );
+                        InputError::Action action = parserState->parseMode.missingDIMSKeyword;
+                        if (action == InputError::THROW_EXCEPTION)
+                            throw std::invalid_argument("Excpeted the kewyord: " + sizeKeyword.first + " to infer the number of records in: " + keywordString);
+                        else {
+                            auto keyword = getKeyword( sizeKeyword.first );
+                            auto record = keyword->getRecord(0);
+                            auto int_item = std::dynamic_pointer_cast<const ParserIntItem>( record->get( sizeKeyword.second ) );
 
-                        targetSize = int_item->getDefault( );
+                            targetSize = int_item->getDefault( );
+                            if (action == InputError::WARN)
+                                OpmLog::addMessage(Log::MessageType::Warning , "Excpeted the kewyord: " + sizeKeyword.first + " to infer the number of records in: " + keywordString + " using default");
+                        }
                     }
                 }
                 return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , targetSize , parserKeyword->isTableCollection()));
             }
         } else {
-            if (parserState->m_strict)
-                throw std::invalid_argument("Keyword " + keywordString + " not recognized ");
-            else
+            if (ParserKeyword::validDeckName(keywordString)) {
+                InputError::Action action = parserState->parseMode.unknownKeyword;
+                if (action == InputError::THROW_EXCEPTION)
+                    throw std::invalid_argument("Keyword " + keywordString + " not recognized ");
+                else {
+                    if (action == InputError::WARN)
+                        OpmLog::addMessage(Log::MessageType::Warning , "Keyword " + keywordString + " not recognized");
+                    return std::shared_ptr<RawKeyword>(  );
+                }
+            } else {
+                parserState->handleRandomText( keywordString );
                 return std::shared_ptr<RawKeyword>(  );
+            }
         }
     }
+
+
 
 
     std::string Parser::doSpecialHandlingForTitleKeyword(std::string line, std::shared_ptr<ParserState> parserState) const {
@@ -425,7 +473,9 @@ namespace Opm {
             if (parserState->rawKeyword == NULL) {
                 if (RawKeyword::isKeywordPrefix(line, keywordString)) {
                     parserState->rawKeyword = createRawKeyword(keywordString, parserState);
-                }
+                } else
+                    /* We are looking at some random gibberish?! */
+                    parserState->handleRandomText( line );
             } else {
                 if (parserState->rawKeyword->getSizeType() == Raw::UNKNOWN) {
                     if (isRecognizedKeyword(line)) {

@@ -25,6 +25,7 @@
 #include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser/ParseMode.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 
@@ -64,11 +65,11 @@ int main(int argc, char** argv) {
             printKeywords = true;
     }
     //std::shared_ptr<Opm::StreamLog> streamLog = std::make_shared<Opm::StreamLog>("log.txt" , Opm::Log::MessageType::Warning);
-
+    Opm::ParseMode parseMode;
     Opm::ParserPtr parser(new Opm::Parser());
     std::string file = argv[1];
-    Opm::DeckConstPtr deck = parser->parseFile(file);
-    Opm::EclipseState state(deck);
+    Opm::DeckConstPtr deck = parser->parseFile(file, parseMode);
+    Opm::EclipseState state(deck , parseMode );
 
     printDeckDiagnostics(deck, printKeywords);
 

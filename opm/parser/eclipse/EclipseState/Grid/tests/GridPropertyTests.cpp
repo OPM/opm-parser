@@ -29,6 +29,7 @@
 
 #include <ert/ecl/EclKW.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser/ParseMode.hpp>
 
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
@@ -101,7 +102,7 @@ Opm::DeckKeywordConstPtr createSATNUMKeyword( ) {
     "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    Opm::DeckPtr deck = parser->parseString(deckData);
+    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseMode());
     return deck->getKeyword("SATNUM");
 }
 
@@ -112,7 +113,7 @@ Opm::DeckKeywordConstPtr createTABDIMSKeyword( ) {
     "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    Opm::DeckPtr deck = parser->parseString(deckData);
+    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseMode());
     return deck->getKeyword("TABDIMS");
 }
 
@@ -349,11 +350,12 @@ BOOST_AUTO_TEST_CASE(GridPropertyInitialization) {
         "\n"
         "SCHEDULE\n";
 
+    Opm::ParseMode parseMode;
     Opm::ParserPtr parser(new Opm::Parser);
 
-    auto deck = parser->parseString(deckString);
+    auto deck = parser->parseString(deckString, parseMode);
 
-    auto eclipseState = std::make_shared<Opm::EclipseState>(deck);
+    auto eclipseState = std::make_shared<Opm::EclipseState>(deck , parseMode);
 
     // make sure that EclipseState throws if it is bugged about an _unsupported_ keyword
     BOOST_CHECK_THROW(eclipseState->hasIntGridProperty("ISWU"), std::logic_error);
@@ -426,7 +428,7 @@ static Opm::DeckPtr createDeck() {
         "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    return parser->parseString(deckData) ;
+    return parser->parseString(deckData, Opm::ParseMode()) ;
 }
 
 
