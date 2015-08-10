@@ -71,6 +71,7 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 
 include(UseMultiArch)
 include(OpmSatellites)
+include(UseWarnings)
 
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
