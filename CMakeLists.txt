@@ -71,6 +71,7 @@ set(Boost_USE_STATIC_RUNTIME    OFF)
 
 include(UseMultiArch)
 include(OpmSatellites)
+include(UseWarnings)
 
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
@@ -106,6 +107,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_subdirectory(opm/json)
 add_subdirectory(opm/parser)
+add_subdirectory(opm/core)
 
 add_custom_target(check ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_dependencies(check test-suite)
