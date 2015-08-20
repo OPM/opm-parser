@@ -172,9 +172,8 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureEmptyTest) {
     DeckPtr deck = createDeck(parseMode , inputStrNoSolutionSection);
     static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
     ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(parseMode , deck, gridProperties);
-    const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
+    BOOST_CHECK_THROW(tresholdPressurePtr->getThresholdPressureTable(), std::invalid_argument);
 
-    BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
 }
 
 
@@ -189,40 +188,22 @@ BOOST_AUTO_TEST_CASE(ThresholdPressureNoTHPREStest) {
     ThresholdPressureConstPtr tresholdPressurePtr2;
     BOOST_CHECK_NO_THROW(tresholdPressurePtr2 = std::make_shared<ThresholdPressure>(parseMode , deck_no_thpres2, gridProperties));
 
-    const std::vector<double>& thresholdPressureTable = tresholdPressurePtr->getThresholdPressureTable();
-    BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
+    BOOST_CHECK_THROW(tresholdPressurePtr->getThresholdPressureTable(),std::invalid_argument);
+    //BOOST_CHECK_EQUAL(0, thresholdPressureTable.size());
 
-    const std::vector<double>& thresholdPressureTable2 = tresholdPressurePtr2->getThresholdPressureTable();
-    BOOST_CHECK_EQUAL(0, thresholdPressureTable2.size());
+    BOOST_CHECK_THROW(tresholdPressurePtr2->getThresholdPressureTable(),std::invalid_argument);
 }
 
 
-BOOST_AUTO_TEST_CASE(ThresholdPressureThrowTest) {
+BOOST_AUTO_TEST_CASE(ThresholdPressureMissingThresholdPressureTest) {
     ParseMode parseMode;
-    DeckPtr deck                 = createDeck(parseMode , inputStr);
-    DeckPtr deck_irrevers        = createDeck(parseMode , inputStrIrrevers);
-    DeckPtr deck_inconsistency   = createDeck(parseMode , inputStrInconsistency);
-    DeckPtr deck_highRegNum      = createDeck(parseMode , inputStrTooHighRegionNumbers);
-    DeckPtr deck_missingData     = createDeck(parseMode , inputStrMissingData);
+
     DeckPtr deck_missingPressure = createDeck(parseMode , inputStrMissingPressure);
     static std::shared_ptr<GridProperties<int>> gridProperties = getGridProperties();
 
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode,deck_irrevers, gridProperties), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode,deck_inconsistency, gridProperties), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode,deck_highRegNum, gridProperties), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode,deck_missingData, gridProperties), std::runtime_error);
-    BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode,deck_missingPressure, gridProperties), std::invalid_argument);
-
-    {
-        static std::shared_ptr<GridProperties<int>> gridPropertiesEQLNUMkeywordNotAdded = getGridProperties(3, false);
-        BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode , deck, gridPropertiesEQLNUMkeywordNotAdded), std::runtime_error);
-    }
-    {
-        static std::shared_ptr<GridProperties<int>> gridPropertiesEQLNUMall0 = getGridProperties(0);
-        BOOST_CHECK_THROW(std::make_shared<ThresholdPressure>(parseMode , deck, gridPropertiesEQLNUMall0), std::runtime_error);
-    }
-
-    parseMode.update( ParseMode::UNSUPPORTED_INITIAL_THPRES , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW(ThresholdPressure(parseMode,deck_missingPressure, gridProperties));
+    ThresholdPressureConstPtr tresholdPressurePtr = std::make_shared<ThresholdPressure>(parseMode,deck_missingPressure, gridProperties);
+    BOOST_CHECK_EQUAL(tresholdPressurePtr->hasThresholdPressure(),false);
 }
+
+
 

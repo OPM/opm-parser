@@ -37,17 +37,19 @@ namespace Opm {
         ThresholdPressure(const ParseMode& parseMode , DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties);
 
         const std::vector<double>& getThresholdPressureTable() const;
+        const bool hasThresholdPressure() const;
 
 
     private:
 
-        void initThresholdPressure(const ParseMode& parseMode,
-                                   std::shared_ptr<const RUNSPECSection> runspecSection,
+        void initThresholdPressure(std::shared_ptr<const RUNSPECSection> runspecSection,
                                    std::shared_ptr<const SOLUTIONSection> solutionSection,
                                    std::shared_ptr<GridProperties<int>> gridProperties);
 
 
         std::vector<double> m_thresholdPressureTable;
+        bool m_hasThresholdPressure;
+        ParseMode m_parseMode;
     };
 
 
