@@ -171,6 +171,11 @@ namespace Opm {
         */
         const static std::string UNSUPPORTED_INITIAL_THPRES;
 
+        /*
+         Internal error in the code, you ar asking for values that do not exist.
+        */
+        const static std::string PARSE_INTERNAL_ERROR;
+
     private:
         void initDefault();
         void initEnv();

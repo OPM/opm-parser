@@ -30,6 +30,7 @@ namespace Opm {
         if (Section::hasRUNSPEC(deck) && Section::hasSOLUTION(deck)) {
             std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(deck);
             std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(deck);
+            m_parseMode = parseMode;
             initThresholdPressure(parseMode , runspecSection, solutionSection, gridProperties);
         }
     }
@@ -94,6 +95,7 @@ namespace Opm {
 
                 if (region1Item->hasValue(0) && region2Item->hasValue(0)) {
                     if (thpressItem->hasValue(0)) {
+                        m_hasThresholdPressure = true;
                         const int r1 = region1Item->getInt(0) - 1;
                         const int r2 = region2Item->getInt(0) - 1;
                         const double p = thpressItem->getSIDouble(0);
@@ -104,8 +106,7 @@ namespace Opm {
                         m_thresholdPressureTable[r1 + maxEqlnum*r2] = p;
                         m_thresholdPressureTable[r2 + maxEqlnum*r1] = p;
                     } else {
-                        std::string msg = "Inferring threshold pressure from the initial state is not supported.";
-                        parseMode.handleError( ParseMode::UNSUPPORTED_INITIAL_THPRES , msg );
+                        m_hasThresholdPressure = false;
                     }
                 } else
                     throw std::runtime_error("Missing region data for use of the THPRES keyword");
@@ -117,10 +118,22 @@ namespace Opm {
         }
     }
 
-
+    const bool ThresholdPressure::hasThresholdPressure() const{
+        return m_hasThresholdPressure;
+    }
 
     const std::vector<double>& ThresholdPressure::getThresholdPressureTable() const {
+        if(m_hasThresholdPressure){
+            std::cout << "True" << std::endl;
+            return m_thresholdPressureTable;
+        }else{
+            std::cout << "False" << std::endl;
+            std::string msg = "There is no threshold pressure, please use hasThresholdPressure() to verify before using getThresholdPressureTable().";
+            m_parseMode.handleError( ParseMode::PARSE_INTERNAL_ERROR , msg );
+        }
         return m_thresholdPressureTable;
+
+
     }
 
 
