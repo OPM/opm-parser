@@ -31,6 +31,9 @@
 
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SgfnTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/Sof3Table.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/GridPropertyInitializers.hpp>
 
@@ -54,6 +57,8 @@ public:
         , m_eclipseState(eclipseState)
     { }
 
+    enum SaturationFunctionFamily { noFamily = 0, FamilyI = 1, FamilyII = 2};
+
     /*
       See the "Saturation Functions" chapter in the Eclipse Technical
       Description; there are several alternative families of keywords
@@ -65,12 +70,11 @@ public:
 protected:
 
     /*
-      The method here goes through the SWOF and SGOF tables to
-      determine the critical saturations of the various
-      phases. The code in question has a hard assumption that
-      relperm properties is entered using the SGOF and SWOF
-      keywords, however other keyword combinations can be used -
-      and then this will break.
+      The method here goes through the saturation function tables
+      Either family I (SWOF,SGOF) or family II (SWFN, SGFN and SOF3)
+      must be specified. Other keyword alternatives like SLGOF, SOF2
+      and SGWFN and the two dimensional saturation tables
+      are currently not supported.
 
       ** Must be fixed. **
       */
@@ -78,19 +82,20 @@ protected:
 
     void findSaturationEndpoints( ) const {
 
-        const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
-        const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
         auto tabdims = m_eclipseState.getTabdims();
         size_t numSatTables = tabdims->getNumSatTables();
+        m_minWaterSat.resize( numSatTables , 0 );
+        m_maxWaterSat.resize( numSatTables , 0 );
+        m_minGasSat.resize( numSatTables , 0 );
+        m_maxGasSat.resize( numSatTables , 0 );
 
-        if (swofTables.size() == numSatTables) {
-            assert(swofTables.size() == sgofTables.size());
-
-            m_minWaterSat.resize( numSatTables , 0 );
-            m_maxWaterSat.resize( numSatTables , 0 );
-            m_minGasSat.resize( numSatTables , 0 );
-            m_maxGasSat.resize( numSatTables , 0 );
-
+        switch (getSaturationFunctionFamily()) {
+        case SaturationFunctionFamily::FamilyI:
+        {
+            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+            const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
+            assert(swofTables.size() == numSatTables);
+            assert(swofTables.size() == numSatTables);
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 m_minWaterSat[tableIdx] = swofTables[tableIdx].getSwColumn().front();
                 m_maxWaterSat[tableIdx] = swofTables[tableIdx].getSwColumn().back();
@@ -98,15 +103,32 @@ protected:
                 m_minGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().front();
                 m_maxGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().back();
             }
-        } else
-            throw std::domain_error("Hardcoded assumption absout saturation keyword family has failed");
+            break;
+
+        }
+        case SaturationFunctionFamily::FamilyII:
+        {
+            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
+            assert(swfnTables.size() == numSatTables);
+            assert(sgfnTables.size() == numSatTables);
+            for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                m_minWaterSat[tableIdx] = swfnTables[tableIdx].getSwColumn().front();
+                m_maxWaterSat[tableIdx] = swfnTables[tableIdx].getSwColumn().back();
+
+                m_minGasSat[tableIdx] = sgfnTables[tableIdx].getSgColumn().front();
+                m_maxGasSat[tableIdx] = sgfnTables[tableIdx].getSgColumn().back();
+            }
+            break;
+        }
+        default:
+            throw std::domain_error("No valid saturation keyword family specified");
+        }
     }
 
 
     void findCriticalPoints( ) const {
 
-        const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
-        const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
         auto tabdims = m_eclipseState.getTabdims();
         int numSatTables = tabdims->getNumSatTables();
 
@@ -115,61 +137,130 @@ protected:
         m_criticalOilOGSat.resize( numSatTables , 0 );
         m_criticalOilOWSat.resize( numSatTables , 0 );
 
-        for (int tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-            // find the critical water saturation
-            int numRows = swofTables[tableIdx].numRows();
-            const auto &krwCol = swofTables[tableIdx].getKrwColumn();
-            for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
-                if (krwCol[rowIdx] > 0.0) {
-                    double Sw = 0.0;
-                    if (rowIdx > 0)
-                        Sw = swofTables[tableIdx].getSwColumn()[rowIdx - 1];
-                    m_criticalWaterSat[tableIdx] = Sw;
-                    break;
-                }
-            }
+        switch (getSaturationFunctionFamily()) {
+        case SaturationFunctionFamily::FamilyI:
+        {
+            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+            const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
 
-            // find the critical gas saturation
-            numRows = sgofTables[tableIdx].numRows();
-            const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
-            for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
-                if (krgCol[rowIdx] > 0.0) {
-                    double Sg = 0.0;
-                    if (rowIdx > 0)
-                        Sg = sgofTables[tableIdx].getSgColumn()[rowIdx - 1];
-                    m_criticalGasSat[tableIdx] = Sg;
-                    break;
+            for (int tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                // find the critical water saturation
+                int numRows = swofTables[tableIdx].numRows();
+                const auto &krwCol = swofTables[tableIdx].getKrwColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (krwCol[rowIdx] > 0.0) {
+                        double Sw = 0.0;
+                        if (rowIdx > 0)
+                            Sw = swofTables[tableIdx].getSwColumn()[rowIdx - 1];
+                        m_criticalWaterSat[tableIdx] = Sw;
+                        break;
+                    }
                 }
-            }
 
-            // find the critical oil saturation of the oil-gas system
-            numRows = sgofTables[tableIdx].numRows();
-            const auto &kroOGCol = sgofTables[tableIdx].getKrogColumn();
-            for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
-                if (kroOGCol[rowIdx] > 0.0) {
-                    double Sg = sgofTables[tableIdx].getSgColumn()[rowIdx + 1];
-                    m_criticalOilOGSat[tableIdx] = 1 - Sg;
-                    break;
+                // find the critical gas saturation
+                numRows = sgofTables[tableIdx].numRows();
+                const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (krgCol[rowIdx] > 0.0) {
+                        double Sg = 0.0;
+                        if (rowIdx > 0)
+                            Sg = sgofTables[tableIdx].getSgColumn()[rowIdx - 1];
+                        m_criticalGasSat[tableIdx] = Sg;
+                        break;
+                    }
                 }
-            }
 
-            // find the critical oil saturation of the water-oil system
-            numRows = swofTables[tableIdx].numRows();
-            const auto &kroOWCol = swofTables[tableIdx].getKrowColumn();
-            for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
-                if (kroOWCol[rowIdx] > 0.0) {
-                    double Sw = swofTables[tableIdx].getSwColumn()[rowIdx + 1];
-                    m_criticalOilOWSat[tableIdx] = 1 - Sw;
-                    break;
+                // find the critical oil saturation of the oil-gas system
+                numRows = sgofTables[tableIdx].numRows();
+                const auto &kroOGCol = sgofTables[tableIdx].getKrogColumn();
+                for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
+                    if (kroOGCol[rowIdx] > 0.0) {
+                        double Sg = sgofTables[tableIdx].getSgColumn()[rowIdx + 1];
+                        m_criticalOilOGSat[tableIdx] = 1 - Sg;
+                        break;
+                    }
+                }
+
+                // find the critical oil saturation of the water-oil system
+                numRows = swofTables[tableIdx].numRows();
+                const auto &kroOWCol = swofTables[tableIdx].getKrowColumn();
+                for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
+                    if (kroOWCol[rowIdx] > 0.0) {
+                        double Sw = swofTables[tableIdx].getSwColumn()[rowIdx + 1];
+                        m_criticalOilOWSat[tableIdx] = 1 - Sw;
+                        break;
+                    }
                 }
             }
+            break;
+
         }
+        case SaturationFunctionFamily::FamilyII: {
+            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
+            const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+
+            for (int tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                // find the critical water saturation
+                int numRows = swfnTables[tableIdx].numRows();
+                const auto &krwCol = swfnTables[tableIdx].getKrwColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (krwCol[rowIdx] > 0.0) {
+                        double Sw = 0.0;
+                        if (rowIdx > 0)
+                            Sw = swfnTables[tableIdx].getSwColumn()[rowIdx - 1];
+                        m_criticalWaterSat[tableIdx] = Sw;
+                        break;
+                    }
+                }
+
+                // find the critical gas saturation
+                numRows = sgfnTables[tableIdx].numRows();
+                const auto &krgCol = sgfnTables[tableIdx].getKrgColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (krgCol[rowIdx] > 0.0) {
+                        double Sg = 0.0;
+                        if (rowIdx > 0)
+                            Sg = sgfnTables[tableIdx].getSgColumn()[rowIdx - 1];
+                        m_criticalGasSat[tableIdx] = Sg;
+                        break;
+                    }
+                }
+
+                // find the critical oil saturation of the oil-gas system
+                numRows = sof3Tables[tableIdx].numRows();
+                const auto &kroOGCol = sof3Tables[tableIdx].getKrogColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (kroOGCol[rowIdx] > 0.0) {
+                        double So = sof3Tables[tableIdx].getSoColumn()[rowIdx - 1];
+                        m_criticalOilOGSat[tableIdx] = So;
+                        break;
+                    }
+                }
+
+                // find the critical oil saturation of the water-oil system
+                numRows = sof3Tables[tableIdx].numRows();
+                const auto &kroOWCol = sof3Tables[tableIdx].getKrowColumn();
+                for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                    if (kroOWCol[rowIdx] > 0.0) {
+                        double So = sof3Tables[tableIdx].getSoColumn()[rowIdx - 1];
+                        m_criticalOilOWSat[tableIdx] = So;
+                        break;
+                    }
+                }
+            }
+            break;
+
+        }
+        default:
+            throw std::domain_error("No valid saturation keyword family specified");
+        }
+
+
     }
 
     void findVerticalPoints( ) const {
 
-        const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
-        const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
         auto tabdims = m_eclipseState.getTabdims();
         size_t numSatTables = tabdims->getNumSatTables();
 
@@ -183,46 +274,127 @@ protected:
         m_maxKrw.resize( numSatTables , 0 );
         m_krwr.resize( numSatTables , 0 );
 
-        for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-            // find the maximum output values of the oil-gas system
-            m_maxPcog[tableIdx] = sgofTables[tableIdx].getPcogColumn().front();
-            m_maxKrg[tableIdx] = sgofTables[tableIdx].getKrgColumn().back();
+        switch (getSaturationFunctionFamily()) {
+        case SaturationFunctionFamily::FamilyI:
+        {
+            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+            const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
 
-            m_krgr[tableIdx] = sgofTables[tableIdx].getKrgColumn().front();
-            m_krwr[tableIdx] = swofTables[tableIdx].getKrwColumn().front();
+            for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                // find the maximum output values of the oil-gas system
+                m_maxPcog[tableIdx] = sgofTables[tableIdx].getPcogColumn().front();
+                m_maxKrg[tableIdx] = sgofTables[tableIdx].getKrgColumn().back();
 
-            // find the oil relperm which corresponds to the critical water saturation
-            const auto &krwCol = swofTables[tableIdx].getKrwColumn();
-            const auto &krowCol = swofTables[tableIdx].getKrowColumn();
-            for (size_t rowIdx = 0; rowIdx < krwCol.size(); ++rowIdx) {
-                if (krwCol[rowIdx] > 0.0) {
-                    m_krorw[tableIdx] = krowCol[rowIdx - 1];
-                    break;
+                m_krgr[tableIdx] = sgofTables[tableIdx].getKrgColumn().front();
+                m_krwr[tableIdx] = swofTables[tableIdx].getKrwColumn().front();
+
+                // find the oil relperm which corresponds to the critical water saturation
+                const auto &krwCol = swofTables[tableIdx].getKrwColumn();
+                const auto &krowCol = swofTables[tableIdx].getKrowColumn();
+                for (size_t rowIdx = 0; rowIdx < krwCol.size(); ++rowIdx) {
+                    if (krwCol[rowIdx] > 0.0) {
+                        m_krorw[tableIdx] = krowCol[rowIdx - 1];
+                        break;
+                    }
                 }
-            }
 
-            // find the oil relperm which corresponds to the critical gas saturation
-            const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
-            const auto &krogCol = sgofTables[tableIdx].getKrogColumn();
-            for (size_t rowIdx = 0; rowIdx < krgCol.size(); ++rowIdx) {
-                if (krgCol[rowIdx] > 0.0) {
-                    m_krorg[tableIdx] = krogCol[rowIdx - 1];
-                    break;
+                // find the oil relperm which corresponds to the critical gas saturation
+                const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
+                const auto &krogCol = sgofTables[tableIdx].getKrogColumn();
+                for (size_t rowIdx = 0; rowIdx < krgCol.size(); ++rowIdx) {
+                    if (krgCol[rowIdx] > 0.0) {
+                        m_krorg[tableIdx] = krogCol[rowIdx - 1];
+                        break;
+                    }
                 }
-            }
 
-            // find the maximum output values of the water-oil system. the maximum oil
-            // relperm is possibly wrong because we have two oil relperms in a threephase
-            // system. the documentation is very ambiguos here, though: it says that the
-            // oil relperm at the maximum oil saturation is scaled according to maximum
-            // specified the KRO keyword. the first part of the statement points at
-            // scaling the resultant threephase oil relperm, but then the gas saturation
-            // is not taken into account which means that some twophase quantity must be
-            // scaled.
-            m_maxPcow[tableIdx] = swofTables[tableIdx].getPcowColumn().front();
-            m_maxKro[tableIdx] = swofTables[tableIdx].getKrowColumn().front();
-            m_maxKrw[tableIdx] = swofTables[tableIdx].getKrwColumn().back();
+                // find the maximum output values of the water-oil system. the maximum oil
+                // relperm is possibly wrong because we have two oil relperms in a threephase
+                // system. the documentation is very ambiguos here, though: it says that the
+                // oil relperm at the maximum oil saturation is scaled according to maximum
+                // specified the KRO keyword. the first part of the statement points at
+                // scaling the resultant threephase oil relperm, but then the gas saturation
+                // is not taken into account which means that some twophase quantity must be
+                // scaled.
+                m_maxPcow[tableIdx] = swofTables[tableIdx].getPcowColumn().front();
+                m_maxKro[tableIdx] = swofTables[tableIdx].getKrowColumn().front();
+                m_maxKrw[tableIdx] = swofTables[tableIdx].getKrwColumn().back();
+            }
+            break;
         }
+        case SaturationFunctionFamily::FamilyII: {
+            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
+            const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+
+            for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                // find the maximum output values of the oil-gas system
+                m_maxPcog[tableIdx] = sgfnTables[tableIdx].getPcogColumn().back();
+                m_maxKrg[tableIdx] = sgfnTables[tableIdx].getKrgColumn().back();
+
+                // find the minimum output values of the relperm
+                m_krgr[tableIdx] = sgfnTables[tableIdx].getKrgColumn().front();
+                m_krwr[tableIdx] = swfnTables[tableIdx].getKrwColumn().front();
+
+                // find the oil relperm which corresponds to the critical water saturation
+                const double OilSatAtcritialWaterSat = 1.0 - m_criticalWaterSat[tableIdx] - m_minGasSat[tableIdx];
+                m_krorw[tableIdx] = sof3Tables[tableIdx].evaluate("KROW", OilSatAtcritialWaterSat);
+
+                // find the oil relperm which corresponds to the critical gas saturation
+                const double OilSatAtCritialGasSat = 1.0 - m_criticalGasSat[tableIdx] - m_minWaterSat[tableIdx];
+                m_krorg[tableIdx] = sof3Tables[tableIdx].evaluate("KROG", OilSatAtCritialGasSat);
+
+                // find the maximum output values of the water-oil system. the maximum oil
+                // relperm is possibly wrong because we have two oil relperms in a threephase
+                // system. the documentation is very ambiguos here, though: it says that the
+                // oil relperm at the maximum oil saturation is scaled according to maximum
+                // specified the KRO keyword. the first part of the statement points at
+                // scaling the resultant threephase oil relperm, but then the gas saturation
+                // is not taken into account which means that some twophase quantity must be
+                // scaled.
+                m_maxPcow[tableIdx] = swfnTables[tableIdx].getPcowColumn().front();
+                m_maxKro[tableIdx] = sof3Tables[tableIdx].getKrowColumn().back();
+                m_maxKrw[tableIdx] = swfnTables[tableIdx].getKrwColumn().back();
+            }
+            break;
+        }
+
+        default:
+            throw std::domain_error("No valid saturation keyword family specified");
+        }
+
+    }
+    // The saturation function family.
+    // If SWOF and SGOF are specified in the deck it return FamilyI
+    // If SWFN, SGFN and SOF3 are specified in the deck it return FamilyII
+    // If keywords are missing or mixed, an error is given.
+    const SaturationFunctionFamily getSaturationFunctionFamily() const{
+
+        const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+        const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
+        const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
+        const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
+        const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+
+        bool family1 = !sgofTables.empty() && !swofTables.empty();
+        bool family2 = !swfnTables.empty() && !sgfnTables.empty() && !sof3Tables.empty();
+
+        if (family1 && family2) {
+            throw std::invalid_argument("Saturation families should not be mixed \n"
+                                        "Use either SGOF and SWOF or SGFN, SWFN and SOF3");
+        }
+
+        if (!family1 && !family2) {
+            throw std::invalid_argument("Saturations function must be specified using either "
+                                        "family 1 or family 2 keywords \n"
+                                        "Use either SGOF and SWOF or SGFN, SWFN and SOF3" );
+        }
+
+        if (family1 && !family2)
+            return SaturationFunctionFamily::FamilyI;
+        else if (family2 && !family1)
+            return SaturationFunctionFamily::FamilyII;
+        return SaturationFunctionFamily::noFamily; // no family or two families
     }
 
 
@@ -244,7 +416,7 @@ protected:
 
             if (!std::isfinite(value))
                 // a column can be fully defaulted. In this case, eval() returns a NaN
-                // and we have to use the data from SWOF/SGOF
+                // and we have to use the data from saturation tables
                 value = fallbackValue;
             else if (useOneMinusTableValue)
                 value = 1 - value;
@@ -304,6 +476,10 @@ public:
 
 
         satnum->checkLimits(1 , numSatTables);
+
+        // All table lookup assumes three-phase model
+        assert( this->m_eclipseState.getNumPhases() == 3 );
+
         this->findSaturationEndpoints( );
         this->findCriticalPoints( );
         this->findVerticalPoints( );
@@ -648,7 +824,7 @@ public:
 
     void apply(std::vector<double>& values) const
     {
-        this->satnumApply(values , "SWCRIT" , this->m_criticalOilOWSat , false);
+        this->satnumApply(values , "SWCRIT" , this->m_criticalWaterSat , false);
     }
 };
 
