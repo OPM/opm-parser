@@ -31,13 +31,12 @@ namespace Opm {
             std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(deck);
             std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(deck);
             m_parseMode = parseMode;
-            initThresholdPressure(parseMode , runspecSection, solutionSection, gridProperties);
+            initThresholdPressure( runspecSection, solutionSection, gridProperties);
         }
     }
 
 
-    void ThresholdPressure::initThresholdPressure(const ParseMode& parseMode,
-                                                  std::shared_ptr<const RUNSPECSection> runspecSection,
+    void ThresholdPressure::initThresholdPressure(std::shared_ptr<const RUNSPECSection> runspecSection,
                                                   std::shared_ptr<const SOLUTIONSection> solutionSection,
                                                   std::shared_ptr<GridProperties<int>> gridProperties) {
 
@@ -123,17 +122,11 @@ namespace Opm {
     }
 
     const std::vector<double>& ThresholdPressure::getThresholdPressureTable() const {
-        if(m_hasThresholdPressure){
-            std::cout << "True" << std::endl;
-            return m_thresholdPressureTable;
-        }else{
-            std::cout << "False" << std::endl;
+        if(m_hasThresholdPressure==false){
             std::string msg = "There is no threshold pressure, please use hasThresholdPressure() to verify before using getThresholdPressureTable().";
             m_parseMode.handleError( ParseMode::PARSE_INTERNAL_ERROR , msg );
         }
         return m_thresholdPressureTable;
-
-
     }
 
 

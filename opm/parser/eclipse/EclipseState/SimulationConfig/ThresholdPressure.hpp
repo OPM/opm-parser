@@ -42,8 +42,7 @@ namespace Opm {
 
     private:
 
-        void initThresholdPressure(const ParseMode& parseMode,
-                                   std::shared_ptr<const RUNSPECSection> runspecSection,
+        void initThresholdPressure(std::shared_ptr<const RUNSPECSection> runspecSection,
                                    std::shared_ptr<const SOLUTIONSection> solutionSection,
                                    std::shared_ptr<GridProperties<int>> gridProperties);
 
