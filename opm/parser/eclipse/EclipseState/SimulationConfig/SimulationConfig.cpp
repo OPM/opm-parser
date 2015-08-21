@@ -31,12 +31,16 @@ namespace Opm {
 
 
     void SimulationConfig::initThresholdPressure(const ParseMode& parseMode, DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties) {
-        mThresholdPressure = std::make_shared<const ThresholdPressure>(parseMode , deck, gridProperties);
+        m_ThresholdPressure = std::make_shared<const ThresholdPressure>(parseMode , deck, gridProperties);
     }
 
 
     const std::vector<double>& SimulationConfig::getThresholdPressureTable() const {
-        return mThresholdPressure->getThresholdPressureTable();
+        return m_ThresholdPressure->getThresholdPressureTable();
+    }
+
+    const bool SimulationConfig::hasThresholdPressure() const{
+        return m_ThresholdPressure->hasThresholdPressure();
     }
 
 } //namespace Opm

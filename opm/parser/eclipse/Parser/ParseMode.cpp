@@ -66,6 +66,7 @@ namespace Opm {
         addKey(UNSUPPORTED_SCHEDULE_GEO_MODIFIER);
         addKey(UNSUPPORTED_COMPORD_TYPE);
         addKey(UNSUPPORTED_INITIAL_THPRES);
+        addKey(PARSE_INTERNAL_ERROR);
     }
 
     void ParseMode::initEnv() {
@@ -209,6 +210,7 @@ namespace Opm {
     const std::string ParseMode::UNSUPPORTED_SCHEDULE_GEO_MODIFIER = "UNSUPPORTED_SCHEDULE_GEO_MODIFIER";
     const std::string ParseMode::UNSUPPORTED_COMPORD_TYPE = "UNSUPPORTED_COMPORD_TYPE";
     const std::string ParseMode::UNSUPPORTED_INITIAL_THPRES = "UNSUPPORTED_INITIAL_THPRES";
+    const std::string ParseMode::PARSE_INTERNAL_ERROR = "PARSE_INTERNAL_ERROR";
 }
 
 
