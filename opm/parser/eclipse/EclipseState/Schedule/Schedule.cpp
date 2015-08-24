@@ -55,7 +55,7 @@ namespace Opm {
 
         if (Section::hasSCHEDULE( deck )) {
             std::shared_ptr<SCHEDULESection> scheduleSection = std::make_shared<SCHEDULESection>( deck );
-            iterateScheduleSection(parseMode , scheduleSection , ioConfig);
+            iterateScheduleSection(parseMode , deck , scheduleSection , ioConfig);
         }
     }
 
@@ -85,7 +85,7 @@ namespace Opm {
         m_timeMap.reset(new TimeMap(startTime));
     }
 
-    void Schedule::iterateScheduleSection(const ParseMode& parseMode , std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig) {
+    void Schedule::iterateScheduleSection(const ParseMode& parseMode , DeckConstPtr deck, std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig) {
         const std::map<std::string,bool> unsupportedModifiers = {{"MULTFLT"  , true},
                                                                  {"MULTPV"   , true},
                                                                  {"MULTX"    , true},

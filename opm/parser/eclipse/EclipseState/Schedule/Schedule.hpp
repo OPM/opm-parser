@@ -94,7 +94,7 @@ namespace Opm
         void createTimeMap(DeckConstPtr deck);
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void initOilVaporization(TimeMapConstPtr timeMap);
-        void iterateScheduleSection(const ParseMode& parseMode , std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig);
+        void iterateScheduleSection(const ParseMode& parseMode , DeckConstPtr deck, std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig);
         bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
         void addGroup(const std::string& groupName , size_t timeStep);
         void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep, WellCompletion::CompletionOrderEnum wellCompletionOrder);
