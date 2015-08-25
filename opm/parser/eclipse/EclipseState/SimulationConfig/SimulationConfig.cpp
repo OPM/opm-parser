@@ -35,8 +35,13 @@ namespace Opm {
     }
 
 
-    const std::vector<std::pair<bool,double>>& SimulationConfig::getThresholdPressureTable() const {
-        return m_ThresholdPressure->getThresholdPressureTable();
+    std::shared_ptr<const ThresholdPressure> SimulationConfig::getThresholdPressure() const {
+        return m_ThresholdPressure;
+    }
+
+
+    bool SimulationConfig::hasThresholdPressure() const {
+        return m_ThresholdPressure->size() > 0;
     }
 
 } //namespace Opm
