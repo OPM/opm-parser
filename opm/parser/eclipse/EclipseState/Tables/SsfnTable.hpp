@@ -23,12 +23,12 @@
 
 namespace Opm {
     // forward declaration
-    class EclipseState;
+    class TableManager;
 
     class SsfnTable : protected SingleRecordTable {
         typedef SingleRecordTable ParentType;
 
-        friend class EclipseState;
+        friend class TableManager;
         SsfnTable() = default;
 
         /*!

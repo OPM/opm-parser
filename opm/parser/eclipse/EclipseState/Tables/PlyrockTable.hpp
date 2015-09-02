@@ -23,12 +23,12 @@
 
 namespace Opm {
     // forward declaration
-    class EclipseState;
+    class TableManager;
 
     class PlyrockTable : protected SingleRecordTable {
         typedef SingleRecordTable ParentType;
 
-        friend class EclipseState;
+        friend class TableManager;
         PlyrockTable() = default;
 
         /*!

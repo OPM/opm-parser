@@ -23,12 +23,12 @@
 
 namespace Opm {
     // forward declaration
-    class EclipseState;
+    class TableManager;
 
     class PlyadsTable : protected SingleRecordTable {
         typedef SingleRecordTable ParentType;
 
-        friend class EclipseState;
+        friend class TableManager;
 
         /*!
          * \brief Read the PLYADS keyword and provide some convenience

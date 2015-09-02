@@ -81,8 +81,8 @@ protected:
 
 
     void findSaturationEndpoints( ) const {
-
-        auto tabdims = m_eclipseState.getTabdims();
+        auto tables = m_eclipseState.getTableManager();
+        auto tabdims = tables->getTabdims();
         size_t numSatTables = tabdims->getNumSatTables();
         m_minWaterSat.resize( numSatTables , 0 );
         m_maxWaterSat.resize( numSatTables , 0 );
@@ -92,29 +92,31 @@ protected:
         switch (getSaturationFunctionFamily()) {
         case SaturationFunctionFamily::FamilyI:
         {
-            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+            const std::vector<SwofTable>& swofTables = tables->getSwofTables();
             assert(swofTables.size() == numSatTables);
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 m_minWaterSat[tableIdx] = swofTables[tableIdx].getSwColumn().front();
                 m_maxWaterSat[tableIdx] = swofTables[tableIdx].getSwColumn().back();
             }
 
-            if (!m_eclipseState.getSgofTables().empty()) {
-                const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
-                assert(sgofTables.size() == numSatTables);
-                for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-                    m_minGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().front();
-                    m_maxGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().back();
-                }
-            }
-            else {
-                assert(!m_eclipseState.getSlgofTables().empty());
+            {
+                const std::vector<SgofTable>& sgofTables = tables->getSgofTables();
+                const std::vector<SlgofTable>& slgofTables = tables->getSlgofTables();
 
-                const std::vector<SlgofTable>& slgofTables = m_eclipseState.getSlgofTables();
-                assert(slgofTables.size() == numSatTables);
-                for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-                    m_minGasSat[tableIdx] = 1.0 - slgofTables[tableIdx].getSlColumn().back();
-                    m_maxGasSat[tableIdx] = 1.0 - slgofTables[tableIdx].getSlColumn().front();
+                if (!sgofTables.empty()) {
+                    assert(sgofTables.size() == numSatTables);
+                    for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                        m_minGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().front();
+                        m_maxGasSat[tableIdx] = sgofTables[tableIdx].getSgColumn().back();
+                    }
+                }
+                else {
+                    assert(!slgofTables.empty());
+                    assert(slgofTables.size() == numSatTables);
+                    for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                        m_minGasSat[tableIdx] = 1.0 - slgofTables[tableIdx].getSlColumn().back();
+                        m_maxGasSat[tableIdx] = 1.0 - slgofTables[tableIdx].getSlColumn().front();
+                    }
                 }
             }
 
@@ -122,8 +124,8 @@ protected:
         }
         case SaturationFunctionFamily::FamilyII:
         {
-            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
-            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
+            const std::vector<SwfnTable>& swfnTables = tables->getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = tables->getSgfnTables();
             assert(swfnTables.size() == numSatTables);
             assert(sgfnTables.size() == numSatTables);
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
@@ -142,8 +144,8 @@ protected:
 
 
     void findCriticalPoints( ) const {
-
-        auto tabdims = m_eclipseState.getTabdims();
+        auto tables = m_eclipseState.getTableManager();
+        auto tabdims = tables->getTabdims();
         size_t numSatTables = tabdims->getNumSatTables();
 
         m_criticalWaterSat.resize( numSatTables , 0 );
@@ -154,7 +156,7 @@ protected:
         switch (getSaturationFunctionFamily()) {
         case SaturationFunctionFamily::FamilyI:
         {
-            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
+            const std::vector<SwofTable>& swofTables = tables->getSwofTables();
 
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 // find the critical water saturation
@@ -181,72 +183,73 @@ protected:
                 }
             }
 
-            if (!m_eclipseState.getSgofTables().empty()) {
-                const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
+            {
+                const std::vector<SgofTable>& sgofTables = tables->getSgofTables();
+                const std::vector<SlgofTable>& slgofTables = tables->getSlgofTables();
 
-                for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-                    // find the critical gas saturation
-                    int numRows = sgofTables[tableIdx].numRows();
-                    const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
-                    for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
-                        if (krgCol[rowIdx] > 0.0) {
-                            double Sg = 0.0;
-                            if (rowIdx > 0)
-                                Sg = sgofTables[tableIdx].getSgColumn()[rowIdx - 1];
-                            m_criticalGasSat[tableIdx] = Sg;
-                            break;
+                if (!sgofTables.empty()) {
+                    for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                        // find the critical gas saturation
+                        int numRows = sgofTables[tableIdx].numRows();
+                        const auto &krgCol = sgofTables[tableIdx].getKrgColumn();
+                        for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                            if (krgCol[rowIdx] > 0.0) {
+                                double Sg = 0.0;
+                                if (rowIdx > 0)
+                                    Sg = sgofTables[tableIdx].getSgColumn()[rowIdx - 1];
+                                m_criticalGasSat[tableIdx] = Sg;
+                                break;
+                            }
                         }
-                    }
 
-                    // find the critical oil saturation of the oil-gas system
-                    const auto &kroOGCol = sgofTables[tableIdx].getKrogColumn();
-                    for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
-                        if (kroOGCol[rowIdx] > 0.0) {
-                            double Sg = sgofTables[tableIdx].getSgColumn()[rowIdx + 1];
-                            m_criticalOilOGSat[tableIdx] = 1 - Sg;
-                            break;
-                        }
-                    }
-                }
-            }
-            else {
-                assert(!m_eclipseState.getSlgofTables().empty());
-
-                const std::vector<SlgofTable>& slgofTables = m_eclipseState.getSlgofTables();
-                assert(slgofTables.size() == numSatTables);
-                for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
-                    // find the critical gas saturation
-                    int numRows = slgofTables[tableIdx].numRows();
-                    const auto &krgCol = slgofTables[tableIdx].getKrgColumn();
-                    for (int rowIdx = numRows - 1; rowIdx >= 0; -- rowIdx) {
-                        if (krgCol[rowIdx] > 0.0) {
-                            assert(rowIdx < numRows - 1);
-
-                            m_criticalGasSat[tableIdx] =
-                                1.0 - slgofTables[tableIdx].getSlColumn()[rowIdx + 1];
-                            break;
-                        }
-                    }
-
-                    // find the critical oil saturation of the oil-gas system
-                    const auto &kroOGCol = slgofTables[tableIdx].getKrogColumn();
-                    for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
-                        if (kroOGCol[rowIdx] > 0.0) {
-                            m_criticalOilOGSat[tableIdx] =
-                                slgofTables[tableIdx].getSlColumn()[rowIdx + 1];
-                            break;
+                        // find the critical oil saturation of the oil-gas system
+                        const auto &kroOGCol = sgofTables[tableIdx].getKrogColumn();
+                        for (int rowIdx = numRows - 1; rowIdx >= 0; --rowIdx) {
+                            if (kroOGCol[rowIdx] > 0.0) {
+                                double Sg = sgofTables[tableIdx].getSgColumn()[rowIdx + 1];
+                                m_criticalOilOGSat[tableIdx] = 1 - Sg;
+                                break;
+                            }
                         }
                     }
                 }
+                else {
+                    assert(!slgofTables.empty());
+                    assert(slgofTables.size() == numSatTables);
+                    for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
+                        // find the critical gas saturation
+                        int numRows = slgofTables[tableIdx].numRows();
+                        const auto &krgCol = slgofTables[tableIdx].getKrgColumn();
+                        for (int rowIdx = numRows - 1; rowIdx >= 0; -- rowIdx) {
+                            if (krgCol[rowIdx] > 0.0) {
+                                assert(rowIdx < numRows - 1);
+                                m_criticalGasSat[tableIdx] =
+                                    1.0 - slgofTables[tableIdx].getSlColumn()[rowIdx + 1];
+                                break;
+                            }
+                        }
+
+                        // find the critical oil saturation of the oil-gas system
+                        const auto &kroOGCol = slgofTables[tableIdx].getKrogColumn();
+                        for (int rowIdx = 0; rowIdx < numRows; ++rowIdx) {
+                            if (kroOGCol[rowIdx] > 0.0) {
+                                m_criticalOilOGSat[tableIdx] =
+                                    slgofTables[tableIdx].getSlColumn()[rowIdx + 1];
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                break;
             }
-
-            break;
-
         }
+
         case SaturationFunctionFamily::FamilyII: {
-            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
-            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
-            const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+            auto tables = m_eclipseState.getTableManager();
+            const std::vector<SwfnTable>& swfnTables = tables->getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = tables->getSgfnTables();
+            const std::vector<Sof3Table>& sof3Tables = tables->getSof3Tables();
 
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 // find the critical water saturation
@@ -308,8 +311,8 @@ protected:
     }
 
     void findVerticalPoints( ) const {
-
-        auto tabdims = m_eclipseState.getTabdims();
+        auto tables = m_eclipseState.getTableManager();
+        auto tabdims = tables->getTabdims();
         size_t numSatTables = tabdims->getNumSatTables();
 
         m_maxPcog.resize( numSatTables , 0 );
@@ -325,8 +328,8 @@ protected:
         switch (getSaturationFunctionFamily()) {
         case SaturationFunctionFamily::FamilyI:
         {
-            const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
-            const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
+            const std::vector<SwofTable>& swofTables = tables->getSwofTables();
+            const std::vector<SgofTable>& sgofTables = tables->getSgofTables();
 
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 // find the maximum output values of the oil-gas system
@@ -371,9 +374,10 @@ protected:
             break;
         }
         case SaturationFunctionFamily::FamilyII: {
-            const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
-            const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
-            const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+            auto tables = m_eclipseState.getTableManager();
+            const std::vector<SwfnTable>& swfnTables = tables->getSwfnTables();
+            const std::vector<SgfnTable>& sgfnTables = tables->getSgfnTables();
+            const std::vector<Sof3Table>& sof3Tables = tables->getSof3Tables();
 
             for (size_t tableIdx = 0; tableIdx < numSatTables; ++tableIdx) {
                 // find the maximum output values of the oil-gas system
@@ -417,13 +421,13 @@ protected:
     // If SWFN, SGFN and SOF3 are specified in the deck it return FamilyII
     // If keywords are missing or mixed, an error is given.
     const SaturationFunctionFamily getSaturationFunctionFamily() const{
-
-        const std::vector<SwofTable>& swofTables = m_eclipseState.getSwofTables();
-        const std::vector<SgofTable>& sgofTables = m_eclipseState.getSgofTables();
-        const std::vector<SlgofTable>& slgofTables = m_eclipseState.getSlgofTables();
-        const std::vector<SwfnTable>& swfnTables = m_eclipseState.getSwfnTables();
-        const std::vector<SgfnTable>& sgfnTables = m_eclipseState.getSgfnTables();
-        const std::vector<Sof3Table>& sof3Tables = m_eclipseState.getSof3Tables();
+        auto tables = m_eclipseState.getTableManager( );
+        const std::vector<SwofTable>& swofTables = tables->getSwofTables();
+        const std::vector<SgofTable>& sgofTables = tables->getSgofTables();
+        const std::vector<SlgofTable>& slgofTables = tables->getSlgofTables();
+        const std::vector<SwfnTable>& swfnTables = tables->getSwfnTables();
+        const std::vector<SgfnTable>& sgfnTables = tables->getSgfnTables();
+        const std::vector<Sof3Table>& sof3Tables = tables->getSof3Tables();
 
         bool family1 = (!sgofTables.empty() || !slgofTables.empty()) && !swofTables.empty();
         bool family2 = !swfnTables.empty() && !sgfnTables.empty() && !sof3Tables.empty();
@@ -518,7 +522,8 @@ public:
                       bool useOneMinusTableValue) const
     {
         auto eclipseGrid = this->m_eclipseState.getEclipseGrid();
-        auto tabdims = this->m_eclipseState.getTabdims();
+        auto tables = this->m_eclipseState.getTableManager();
+        auto tabdims = tables->getTabdims();
         auto satnum = this->m_eclipseState.getIntGridProperty("SATNUM");
         auto endnum = this->m_eclipseState.getIntGridProperty("ENDNUM");
         int numSatTables = tabdims->getNumSatTables();
@@ -539,7 +544,7 @@ public:
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
         bool useEnptvd = this->m_deck.hasKeyword("ENPTVD");
-        const auto& enptvdTables = this->m_eclipseState.getEnptvdTables();
+        const auto& enptvdTables = tables->getEnptvdTables();
         for (size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++) {
             int satTableIdx = satnum->iget( cellIdx ) - 1;
             int endNum = endnum->iget( cellIdx ) - 1;
@@ -576,9 +581,11 @@ public:
                       bool useOneMinusTableValue) const
     {
         auto eclipseGrid = this->m_eclipseState.getEclipseGrid();
-        auto tabdims = this->m_eclipseState.getTabdims();
+        auto tables = this->m_eclipseState.getTableManager();
         auto imbnum = this->m_eclipseState.getIntGridProperty("IMBNUM");
         auto endnum = this->m_eclipseState.getIntGridProperty("ENDNUM");
+
+        auto tabdims = tables->getTabdims();
         int numSatTables = tabdims->getNumSatTables();
 
         imbnum->checkLimits(1 , numSatTables);
@@ -592,7 +599,7 @@ public:
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
         bool useImptvd = this->m_deck.hasKeyword("IMPTVD");
-        const auto& imptvdTables = this->m_eclipseState.getImptvdTables();
+        const auto& imptvdTables = tables->getImptvdTables();
         for (size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++) {
             int imbTableIdx = imbnum->iget( cellIdx ) - 1;
             int endNum = endnum->iget( cellIdx ) - 1;
