@@ -76,7 +76,9 @@ include(UseWarnings)
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework regex REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
+
+include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 
 # if we are using dynamic boost, the header file must generate a main() function
 if (NOT Boost_USE_STATIC_LIBS)
