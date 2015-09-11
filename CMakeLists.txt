@@ -3,6 +3,7 @@ project (OPMParser CXX)
 enable_testing()
 enable_language(C)
 include(CTest)
+include(TestCXXAcceptsFlag)
 
 # project information is in dune.module. Read this file and set variables.
 # we cannot generate dune.module since it is read by dunecontrol before
@@ -42,6 +43,23 @@ if (NOT opm-common_FOUND)
 
 endif()
 
+include(UseMultiArch)
+include(OpmSatellites)
+include(UseWarnings)
+
+#-----------------------------------------------------------------
+# This is modified copy & paste from the OpmDefaults.cmake module.
+option (USE_RUNPATH "Embed original dependency paths in installed library" ON)
+if (USE_RUNPATH)
+   check_cxx_accepts_flag("-Wl,--enable-new-dtags" HAVE_RUNPATH)
+   if (HAVE_RUNPATH)
+       SET( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-new-dtags")
+       set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}") 
+       set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+   endif()
+endif (USE_RUNPATH)
+
+
 if (NOT DEFINED CMAKE_CXX_FLAGS)
   SET( CMAKE_CXX_FLAGS "-pipe -std=c++0x -pedantic -Wall -Wextra -Wformat-nonliteral -Wcast-align -Wpointer-arith -Wmissing-declarations -Wcast-qual -Wshadow -Wwrite-strings -Wchar-subscripts -Wredundant-decls")
 endif()
@@ -69,9 +87,6 @@ endif ()
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
-include(UseMultiArch)
-include(OpmSatellites)
-include(UseWarnings)
 
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
