@@ -30,8 +30,6 @@ namespace Opm {
     class PvtgInnerTable;
 
     class PvtgOuterTable : protected MultiRecordTable {
-        typedef MultiRecordTable ParentType;
-
         friend class PvtgTable;
         friend class FullTable<PvtgOuterTable, PvtgInnerTable>;
         PvtgOuterTable() = default;
@@ -42,37 +40,36 @@ namespace Opm {
          */
         void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
         {
-            ParentType::init(keyword,
-                             std::vector<std::string>{"P", "RV", "BG", "MUG"},
-                             tableIdx,
-                             /*firstEntryOffset=*/0);
+            MultiRecordTable::init(keyword,
+                                   std::vector<std::string>{"P", "RV", "BG", "MUG"},
+                                   tableIdx);
 
-            ParentType::checkNonDefaultable("P");
-            ParentType::checkMonotonic("P", /*isAscending=*/true);
-            ParentType::applyDefaultsLinear("RV");
-            ParentType::applyDefaultsLinear("BG");
-            ParentType::applyDefaultsLinear("MUG");
+            MultiRecordTable::checkNonDefaultable("P");
+            MultiRecordTable::checkMonotonic("P", /*isAscending=*/true);
+            MultiRecordTable::applyDefaultsLinear("RV");
+            MultiRecordTable::applyDefaultsLinear("BG");
+            MultiRecordTable::applyDefaultsLinear("MUG");
         }
 
     public:
-        using ParentType::numTables;
-        using ParentType::numRows;
-        using ParentType::numColumns;
-        using ParentType::evaluate;
-        using ParentType::firstRecordIndex;
-        using ParentType::numRecords;
+        using MultiRecordTable::numTables;
+        using MultiRecordTable::numRows;
+        using MultiRecordTable::numColumns;
+        using MultiRecordTable::evaluate;
+        using MultiRecordTable::firstRecordIndex;
+        using MultiRecordTable::numRecords;
 
         const std::vector<double> &getPressureColumn() const
-        { return ParentType::getColumn(0); }
+        { return MultiRecordTable::getColumn(0); }
 
         const std::vector<double> &getOilSolubilityColumn() const
-        { return ParentType::getColumn(1); }
+        { return MultiRecordTable::getColumn(1); }
 
         const std::vector<double> &getGasFormationFactorColumn() const
-        { return ParentType::getColumn(2); }
+        { return MultiRecordTable::getColumn(2); }
 
         const std::vector<double> &getGasViscosityColumn() const
-        { return ParentType::getColumn(3); }
+        { return MultiRecordTable::getColumn(3); }
     };
 }
 
