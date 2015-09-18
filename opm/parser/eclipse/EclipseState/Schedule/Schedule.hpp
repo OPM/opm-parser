@@ -108,7 +108,7 @@ namespace Opm
         void handleCOMPDAT(DeckKeywordConstPtr keyword,  size_t currentStep);
         void handleWELSEGS(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep);
         void handleCOMPSEGS(DeckKeywordConstPtr keyword, size_t currentStep);
-        void handleWCONINJE(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep);
+        void handleWCONINJE(std::shared_ptr<const SCHEDULESection> section, DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWPOLYMER(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWSOLVENT(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWCONINJH(std::shared_ptr<const SCHEDULESection> section, DeckKeywordConstPtr keyword, size_t currentStep);
