@@ -35,6 +35,7 @@
 
 // keyword specific table classes
 #include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/PlyrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PlyadsTable.hpp>
@@ -1066,8 +1067,60 @@ VFPINJ \n\
 }
 
 
+BOOST_AUTO_TEST_CASE( TestPLYROCK ) {
+    const char *data =
+        "TABDIMS\n"
+        "  2 /\n"
+        "\n"
+        "PLYROCK\n"
+        " 1 2 3 4 5 /\n"
+        " 10 20 30 40 50 /\n";
+
+    Opm::ParserPtr parser(new Opm::Parser);
+    Opm::DeckConstPtr deck(parser->parseString(data, Opm::ParseMode()));
+    Opm::TableManager tables( *deck );
+    const std::vector<Opm::PlyrockTable>& plyrock = tables.getPlyrockTables();
+
+    BOOST_CHECK_EQUAL( plyrock.size() , 2 ) ;
+    const Opm::PlyrockTable& table0 = plyrock[0];
+    const Opm::PlyrockTable& table1 = plyrock[1];
+
+    BOOST_CHECK_EQUAL( table0.numColumns() , 5 );
+    BOOST_CHECK_EQUAL( table0.getDeadPoreVolumeColumn()[0] , 1.0 );
+    BOOST_CHECK_EQUAL( table0.getMaxAdsorbtionColumn()[0] , 5.0 );
+
+    BOOST_CHECK_EQUAL( table1.numColumns() , 5 );
+    BOOST_CHECK_EQUAL( table1.getDeadPoreVolumeColumn()[0] , 10.0 );
+    BOOST_CHECK_EQUAL( table1.getMaxAdsorbtionColumn()[0] , 50.0 );
+}
 
 
+BOOST_AUTO_TEST_CASE( TestPLYMAX ) {
+    const char *data =
+        "REGDIMS\n"
+        "  9* 2 /\n"
+        "\n"
+        "PLYMAX\n"
+        " 1 2 /\n"
+        " 10 20 /\n";
+
+    Opm::ParserPtr parser(new Opm::Parser);
+    Opm::DeckConstPtr deck(parser->parseString(data, Opm::ParseMode()));
+    Opm::TableManager tables( *deck );
+    const std::vector<Opm::PlymaxTable>& plymax = tables.getPlymaxTables();
+
+    BOOST_CHECK_EQUAL( plymax.size() , 2 ) ;
+    const Opm::PlymaxTable& table0 = plymax[0];
+    const Opm::PlymaxTable& table1 = plymax[1];
+
+    BOOST_CHECK_EQUAL( table0.numColumns() , 2 );
+    BOOST_CHECK_EQUAL( table0.getPolymerConcentrationColumn()[0] , 1.0 );
+    BOOST_CHECK_EQUAL( table0.getMaxPolymerConcentrationColumn()[0] , 2.0 );
+
+    BOOST_CHECK_EQUAL( table1.numColumns() , 2 );
+    BOOST_CHECK_EQUAL( table1.getPolymerConcentrationColumn()[0] , 10.0 );
+    BOOST_CHECK_EQUAL( table1.getMaxPolymerConcentrationColumn()[0] , 20.0 );
+}
 
 
 
