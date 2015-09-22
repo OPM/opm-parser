@@ -118,6 +118,7 @@ endif()
 include( cmake/Modules/CheckCaseSensitiveFileSystem.cmake )
 add_definitions("-DHAVE_CASE_SENSITIVE_FILESYSTEM=${HAVE_CASE_SENSITIVE_FILESYSTEM}")
 
+include( Findopm-data )
 find_package(ERT)
 include_directories( ${ERT_INCLUDE_DIRS} )   
 
