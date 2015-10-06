@@ -119,6 +119,7 @@ include( cmake/Modules/CheckCaseSensitiveFileSystem.cmake )
 add_definitions("-DHAVE_CASE_SENSITIVE_FILESYSTEM=${HAVE_CASE_SENSITIVE_FILESYSTEM}")
 
 find_package(opm-common)
+include_directories( ${opm-common_INCLUDE_DIR} )   
 include( Findopm-data )
 
 find_package(ERT)
