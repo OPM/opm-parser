@@ -28,8 +28,6 @@
 
 namespace Opm {
 
-    struct Segment;
-
     class SegmentSet {
     public:
         SegmentSet();

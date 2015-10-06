@@ -169,7 +169,7 @@ namespace Opm {
         WellCompletion::CompletionOrderEnum m_comporder;
         bool m_allowCrossFlow;
 
-        // WELSEGS data - for the mutli-segment wells
+        // WELSEGS data - for the multi-segment wells
         // assumes this is not dynamic either
         bool m_is_multi_segment; // flag for multi-segment well
         WellSegment::LengthDepthEnum m_length_depth_type;

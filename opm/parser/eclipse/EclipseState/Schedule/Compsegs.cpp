@@ -40,16 +40,16 @@ namespace Opm {
     }
 
     std::vector<std::shared_ptr<Compsegs>> Compsegs::compsegsFromCOMPSEGSKeyword(DeckKeywordConstPtr compsegsKeyword,
-                                                                                       EclipseGridConstPtr grid) {
+                                                                                 EclipseGridConstPtr grid) {
+        static_cast<void>(grid); // Silence warning about unused argument
+
         // only handle the second record here
         // The first record here only contains the well name
         std::vector<std::shared_ptr<Compsegs>> compsegs;
 
-        double previous_distance_end = 0.;
-
         for (size_t recordIndex = 1; recordIndex < compsegsKeyword->size(); ++recordIndex) {
             DeckRecordConstPtr record = compsegsKeyword->getRecord(recordIndex);
-            // following the corrdinate rule for completions
+            // following the coordinate rule for completions
             int I = record->getItem("I")->getInt(0) - 1;
             int J = record->getItem("J")->getInt(0) - 1;
             int K = record->getItem("K")->getInt(0) - 1;

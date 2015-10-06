@@ -90,7 +90,6 @@ namespace Opm {
 
     void SegmentSet::addSegment(SegmentPtr new_segment) {
         // decide whether to push_back or insert
-        bool insert = false;
         int segment_number = new_segment->segmentNumber();
 
         int segment_location; // storage location
@@ -105,12 +104,12 @@ namespace Opm {
         }
     }
 
-    void SegmentSet::addSegmentINC(SegmentPtr new_segment) {
-
+    void SegmentSet::addSegmentINC(SegmentPtr /* new_segment */) {
+        throw std::logic_error("SegmentSet::addSegmentINC() not implemented yet");
     }
 
-    void SegmentSet::addSegmentABS(SegmentPtr new_segment) {
-
+    void SegmentSet::addSegmentABS(SegmentPtr /* new_segment */) {
+        throw std::logic_error("SegmentSet::addSegmentABS() not implemented yet");
     }
 
     SegmentSet* SegmentSet::shallowCopy() const {
@@ -316,7 +315,8 @@ namespace Opm {
         m_segments.resize(number_segments);
 
         int i_segment = 0;
-        for (int i = 0; i < new_segments.size(); ++i){
+        int num_new_segments = new_segments.size();
+        for (int i = 0; i < num_new_segments; ++i){
             if (new_segments[i] != NULL) {
                 m_segments[i_segment] = new_segments[i];
                 m_number_to_location[m_segments[i_segment]->segmentNumber()] = i_segment;

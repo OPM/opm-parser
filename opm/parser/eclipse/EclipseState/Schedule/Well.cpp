@@ -273,7 +273,6 @@ namespace Opm {
     }
 
     void Well::addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time) {
-        const double meaningless_value = -1.e100; // meaningless value to indicate unspecified values
         // The following code only applied when no loop exist.
         // where loops exist, some modification should be made.
         if (first_time) {
@@ -288,13 +287,13 @@ namespace Opm {
 
             do {
                 all_ready = true;
-                for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+                for (int i = 1; i < new_segmentset->numberSegment(); ++i) {
                     if ((*new_segmentset)[i]->dataReady() == false) {
                         all_ready = false;
                         // check the information about the outlet segment
                         // find the outlet segment with true dataReady()
-                        size_t outlet_segment = (*new_segmentset)[i]->outletSegment();
-                        size_t outlet_location = new_segmentset->numberToLocation(outlet_segment);
+                        int outlet_segment = (*new_segmentset)[i]->outletSegment();
+                        int outlet_location = new_segmentset->numberToLocation(outlet_segment);
 
                         if ((*new_segmentset)[outlet_location]->dataReady() == true) {
                             (*new_segmentset)[i]->length() = (*new_segmentset)[i]->length() + (*new_segmentset)[outlet_location]->length();
@@ -305,9 +304,9 @@ namespace Opm {
                             break;
                         }
 
-                        size_t current_segment;
-                        size_t current_location;
-                        size_t i_depth = 0;
+                        int current_segment;
+                        int current_location;
+                        int i_depth = 0;
                         while ((*new_segmentset)[outlet_location]->dataReady() == false) {
                             current_segment = outlet_segment;
                             current_location = outlet_location;
@@ -349,11 +348,11 @@ namespace Opm {
             // only need to update the volume and the length and depth values specified in the middle of the range
 
             // top segment is always ready
-            // then looking for range that the information of the first segment whoe outlet segment information are ready.
+            // then looking for range that the information of the first segment whose outlet segment information are ready.
             bool all_ready;
             do {
                 all_ready = true;
-                for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+                for (int i = 1; i < new_segmentset->numberSegment(); ++i) {
                     if ((*new_segmentset)[i]->dataReady() == false) {
                         all_ready = false;
                         // then looking for unready segment with a ready outlet segment
@@ -373,13 +372,16 @@ namespace Opm {
                         }
 
                         // begin from location_begin to look for the unready segments continous
-                        int location_end;
+                        int location_end = -1;
 
-                        for (size_t j = location_begin + 1; j < new_segmentset->numberSegment(); ++j) {
+                        for (int j = location_begin + 1; j < new_segmentset->numberSegment(); ++j) {
                             if ((*new_segmentset)[j]->dataReady() == true) {
                                 location_end = j;
                                 break;
                             }
+                        }
+                        if (location_end == -1) {
+                            throw std::logic_error("One of the range records in WELSEGS is wrong.");
                         }
 
                         // set the value for the segments in the range
@@ -419,13 +421,13 @@ namespace Opm {
                                 (*new_segmentset)[k]->volume() = volume_segment;
                             }
                         }
-                    break;
+                        break;
                     }
                 }
             } while (!all_ready);
 
             // then update the volume for all the segments except the top segment
-            for (size_t i = 1; i < new_segmentset->numberSegment(); ++i) {
+            for (int i = 1; i < new_segmentset->numberSegment(); ++i) {
                int outlet_segment = (*new_segmentset)[i]->outletSegment();
                int outlet_location = new_segmentset->numberToLocation(outlet_segment);
                double segment_length = (*new_segmentset)[i]->length() - (*new_segmentset)[outlet_location]->length();
@@ -445,7 +447,7 @@ namespace Opm {
                 std::cout << "length x of the top segment " << new_segmentset->xTop() << std::endl;
                 std::cout << "length y of the top segment " << new_segmentset->yTop() << std::endl;
 
-                for (size_t i = 0; i < new_segmentset->numberSegment(); ++i) {
+                for (int i = 0; i < new_segmentset->numberSegment(); ++i) {
                     std::cout << " segment number " << (*new_segmentset)[i]->segmentNumber();
                     std::cout << " branch number " << (*new_segmentset)[i]->branchNumber();
                     std::cout << " outlet segment " << (*new_segmentset)[i]->outletSegment();
