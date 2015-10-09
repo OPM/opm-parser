@@ -41,7 +41,9 @@ namespace Opm {
     EclipseGrid::EclipseGrid(const std::string& filename )
         : m_minpvValue(0),
           m_minpvMode(MinpvMode::ModeEnum::Inactive),
-          m_pinch("PINCH")
+          m_pinch("PINCH"),
+          m_pinchoutMode(PinchMode::ModeEnum::TOPBOT),
+          m_multzMode(PinchMode::ModeEnum::TOP)
     {
         ecl_grid_type * new_ptr = ecl_grid_load_case( filename.c_str() );
         if (new_ptr)
@@ -57,7 +59,9 @@ namespace Opm {
     EclipseGrid::EclipseGrid(const ecl_grid_type * src_ptr)
         : m_minpvValue(0),
           m_minpvMode(MinpvMode::ModeEnum::Inactive),
-          m_pinch("PINCH")
+          m_pinch("PINCH"),
+          m_pinchoutMode(PinchMode::ModeEnum::TOPBOT),
+          m_multzMode(PinchMode::ModeEnum::TOP)
     {
         m_grid.reset( ecl_grid_alloc_copy( src_ptr ) , ecl_grid_free );
 
@@ -77,7 +81,9 @@ namespace Opm {
                              double dx, double dy, double dz)
         : m_minpvValue(0),
           m_minpvMode(MinpvMode::ModeEnum::Inactive),
-          m_pinch("PINCH")
+          m_pinch("PINCH"),
+          m_pinchoutMode(PinchMode::ModeEnum::TOPBOT),
+          m_multzMode(PinchMode::ModeEnum::TOP)
     {
         m_nx = nx;
         m_ny = ny;
@@ -102,7 +108,9 @@ namespace Opm {
     EclipseGrid::EclipseGrid(std::shared_ptr<const Deck> deck)
         : m_minpvValue(0),
           m_minpvMode(MinpvMode::ModeEnum::Inactive),
-          m_pinch("PINCH")
+          m_pinch("PINCH"),
+          m_pinchoutMode(PinchMode::ModeEnum::TOPBOT),
+          m_multzMode(PinchMode::ModeEnum::TOP)
     {
         const bool hasRUNSPEC = Section::hasRUNSPEC(deck);
         const bool hasGRID = Section::hasGRID(deck);
@@ -164,6 +172,12 @@ namespace Opm {
             auto record = deck->getKeyword<ParserKeywords::PINCH>( )->getRecord(0);
             auto item = record->getItem<ParserKeywords::PINCH::THRESHOLD_THICKNESS>( );
             m_pinch.setValue( item->getSIDouble(0) );
+
+            auto pinchoutString = record->getItem<ParserKeywords::PINCH::PINCHOUT_OPTION>()->getString(0);
+            m_pinchoutMode = PinchMode::PinchModeFromString(pinchoutString);
+            
+            auto multzString = record->getItem<ParserKeywords::PINCH::MULTZ_OPTION>()->getString(0);
+            m_multzMode = PinchMode::PinchModeFromString(multzString);
         }
 
         if (deck->hasKeyword<ParserKeywords::MINPV>() && deck->hasKeyword<ParserKeywords::MINPVFIL>()) {
@@ -210,6 +224,14 @@ namespace Opm {
 
     double EclipseGrid::getPinchThresholdThickness( ) const {
         return m_pinch.getValue();
+    }
+
+    PinchMode::ModeEnum EclipseGrid::getPinchOption( ) const {
+        return m_pinchoutMode;
+    }
+
+    PinchMode::ModeEnum EclipseGrid::getMultzOption( ) const {
+        return m_multzMode;
     }
 
     MinpvMode::ModeEnum EclipseGrid::getMinpvMode() const {
