@@ -125,7 +125,7 @@ namespace Opm {
 
         if (rawRecord->size() > 0) {
             std::string msg = "The RawRecord for keyword \""  + rawRecord->getKeywordName() + "\" in file\"" + rawRecord->getFileName() + "\" contained " +
-                std::to_string(rawRecord->size()) +
+                std::to_string(static_cast<long long>(rawRecord->size())) +
                 " too many items according to the spec. RawRecord was: " + recordBeforeParsing;
             parseMode.handleError(ParseMode::PARSE_EXTRA_DATA , msg);
         }

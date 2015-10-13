@@ -196,7 +196,7 @@ namespace Opm {
 
 
             if (unsupportedModifiers.find( keyword->name() ) != unsupportedModifiers.end()) {
-                std::string msg = "OPM does not support grid property modifier " + keyword->name() + " in the Schedule section. Error at report: " + std::to_string( currentStep );
+                std::string msg = "OPM does not support grid property modifier " + keyword->name() + " in the Schedule section. Error at report: " + std::to_string( static_cast<long long>(currentStep) );
                 parseMode.handleError( ParseMode::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , msg );
             }
         }
@@ -253,8 +253,8 @@ namespace Opm {
 
 
     void Schedule::handleCOMPORD(const ParseMode& parseMode, std::shared_ptr<const DeckKeyword> compordKeyword, size_t /* currentStep */) {
-        for (const auto record : (*compordKeyword)) {
-            auto methodItem = record->getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
+        for (auto it = compordKeyword->begin(); it != compordKeyword->end(); ++it) {
+            auto methodItem = (*it)->getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
             if ((methodItem->getString(0) != "TRACK")  && (methodItem->getString(0) != "INPUT")) {
                 std::string msg = "The COMPORD keyword only handles 'TRACK' or 'INPUT' order.";
                 parseMode.handleError( ParseMode::UNSUPPORTED_COMPORD_TYPE , msg );
@@ -413,7 +413,7 @@ namespace Opm {
 
                     std::string msg =
                             "Well " + well->name() + " is a history matched well with zero rate where crossflow is banned. " +
-                            "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                            "This well will be closed at " + std::to_string ( static_cast<long double>(m_timeMap->getTimePassedUntil(currentStep) / (60*60*24)) ) + " days";
                     OpmLog::addMessage(Log::MessageType::Info , Log::prefixMessage(Log::MessageType::Info, msg));
                     updateWellStatus(well, currentStep, WellCommon::StatusEnum::SHUT );
                 }
@@ -588,7 +588,7 @@ namespace Opm {
                 if ( ! well->getAllowCrossFlow() && (properties.surfaceInjectionRate == 0) ) {
                     std::string msg =
                             "Well " + well->name() + " is an injector with zero rate where crossflow is banned. " +
-                            "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                            "This well will be closed at " + std::to_string ( static_cast<long double>(m_timeMap->getTimePassedUntil(currentStep) / (60*60*24)) ) + " days";
                     OpmLog::addMessage(Log::MessageType::Info , Log::prefixMessage(Log::MessageType::Info, msg));
                     updateWellStatus(well, currentStep, WellCommon::StatusEnum::SHUT );
                 }
@@ -679,7 +679,7 @@ namespace Opm {
             if ( ! well->getAllowCrossFlow() && (injectionRate == 0) ) {
                 std::string msg =
                         "Well " + well->name() + " is an injector with zero rate where crossflow is banned. " +
-                        "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                        "This well will be closed at " + std::to_string ( static_cast<long double>(m_timeMap->getTimePassedUntil(currentStep) / (60*60*24)) ) + " days";
                 OpmLog::addMessage(Log::MessageType::Info , Log::prefixMessage(Log::MessageType::Info, msg));
                 updateWellStatus(well, currentStep, WellCommon::StatusEnum::SHUT );
             }

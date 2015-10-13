@@ -239,6 +239,8 @@ BOOST_AUTO_TEST_CASE(TestNew) {
 }
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( test_constructor_with_values) {
     ParseMode parseMode( {{ParseMode::PARSE_RANDOM_SLASH , InputError::IGNORE},
                 {"UNSUPPORTED_*" , InputError::WARN},
@@ -249,6 +251,7 @@ BOOST_AUTO_TEST_CASE( test_constructor_with_values) {
     BOOST_CHECK_EQUAL( parseMode.get(ParseMode::UNSUPPORTED_INITIAL_THPRES) , InputError::WARN );
     BOOST_CHECK_EQUAL( parseMode.get(ParseMode::UNSUPPORTED_COMPORD_TYPE) , InputError::WARN );
 }
+#endif
 
 
 

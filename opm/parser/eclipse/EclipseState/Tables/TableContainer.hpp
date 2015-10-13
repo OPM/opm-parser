@@ -59,6 +59,7 @@ namespace Opm {
             container.gteTable(10 ) ==> exception
         */
     public:
+        TableContainer();
         explicit TableContainer( size_t maxTables );
         bool empty() const;
 
