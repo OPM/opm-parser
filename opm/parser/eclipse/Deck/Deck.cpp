@@ -65,7 +65,7 @@ namespace Opm {
             if (index < keywordList.size())
                 return keywordList[index];
             else
-                throw std::out_of_range("Keyword " + keyword + ":" + std::to_string( index ) + " not in deck.");
+                throw std::out_of_range("Keyword " + keyword + ":" + std::to_string( static_cast<long long>(index) ) + " not in deck.");
         } else
             throw std::invalid_argument("Keyword " + keyword + " not in deck.");
     }
@@ -82,7 +82,7 @@ namespace Opm {
         if (index < m_keywordList.size())
             return m_keywordList[index];
         else
-            throw std::out_of_range("Keyword index " + std::to_string( index ) + " is out of range.");
+            throw std::out_of_range("Keyword index " + std::to_string( static_cast<long long>(index) ) + " is out of range.");
     }
 
     size_t Deck::numKeywords(const std::string& keyword) const {

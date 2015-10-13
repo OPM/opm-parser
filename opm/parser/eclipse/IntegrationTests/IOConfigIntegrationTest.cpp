@@ -36,10 +36,10 @@ using namespace Opm;
 
 void verifyRestartConfig(IOConfigConstPtr ioconfig, std::vector<std::tuple<int , bool, boost::gregorian::date>>& rptConfig) {
 
-    for (auto rptrst : rptConfig) {
-        int report_step                    = std::get<0>(rptrst);
-        bool save                          = std::get<1>(rptrst);
-        boost::gregorian::date report_date = std::get<2>(rptrst);
+    for (auto it = rptConfig.begin(); it != rptConfig.end(); ++it) {
+        int report_step                    = std::get<0>(*it);
+        bool save                          = std::get<1>(*it);
+        boost::gregorian::date report_date = std::get<2>(*it);
 
         BOOST_CHECK_EQUAL( save , ioconfig->getWriteRestartFile( report_step ));
         if (save) {
@@ -308,6 +308,8 @@ BOOST_AUTO_TEST_CASE( NorneResttartConfig ) {
 
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( RestartConfig2 ) {
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
 
@@ -349,6 +351,7 @@ BOOST_AUTO_TEST_CASE( RestartConfig2 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
 
@@ -604,7 +607,8 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_SET_ON_TIMESTEP_37 ) {
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
 
-
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ10_SET_ON_TIMESTEP_10 ) {
     //Write reportfile every first day of each month, with frequency 10
 
@@ -655,8 +659,11 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ10_SET_ON_TIMESTEP_10 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ40_SET_ON_TIMESTEP_1 ) {
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
 
@@ -690,11 +697,13 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ40_SET_ON_TIMESTEP_1 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ40_SET_ON_TIMESTEP_14 ) {
-
     //Write reportfile every first day of a month, with frequency 40
     ParseMode parseMode;
     ParserPtr parser(new Parser());
@@ -724,14 +733,16 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC5_FREQ40_SET_ON_TIMESTEP_14 ) {
         }
     }
 
-
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
 
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_1 ) {
     //Write reportfile every first day of each year
 
@@ -776,10 +787,12 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_1 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_12 ) {
-
     //Write reportfile every first day of each year
 
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
@@ -824,10 +837,12 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_12 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_13 ) {
-
     //Write reportfile every first day of each year
 
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
@@ -870,12 +885,14 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_SET_ON_TIMESTEP_13 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_FREQ3_SET_ON_TIMESTEP_13 ) {
-
     //Write reportfile every first day of each year
 
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
@@ -910,12 +927,14 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC4_FREQ3_SET_ON_TIMESTEP_13 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
+#endif
 
 
 
 
+// disable this unit test on GCC 4.4 because it does not compile there
+#if !defined __GNUC__ || (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 4))
 BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC3_FREQ5_SET_ON_TIMESTEP_11 ) {
-
     //Write reportfile every first day of each year
     std::vector<std::tuple<int, bool, boost::gregorian::date>> rptConfig;
 
@@ -987,13 +1006,4 @@ BOOST_AUTO_TEST_CASE( SPE1CASE2_BASIC3_FREQ5_SET_ON_TIMESTEP_11 ) {
 
     verifyRestartConfig(state.getIOConfigConst(), rptConfig);
 }
-
-
-
-
-
-
-
-
-
-
+#endif

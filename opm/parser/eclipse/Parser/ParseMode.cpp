@@ -51,8 +51,8 @@ namespace Opm {
     ParseMode::ParseMode(const std::vector<std::pair<std::string , InputError::Action>> initial) {
         initDefault();
 
-        for (const auto& pair : initial)
-            update( pair.first , pair.second );
+        for (auto it = initial.begin(); it != initial.end(); ++it)
+            update( it->first , it->second );
 
         initEnv();
     }
@@ -151,8 +151,8 @@ namespace Opm {
 
 
     void ParseMode::update(InputError::Action action) {
-        for (const auto& pair : m_errorModes) {
-            const std::string& key = pair.first;
+        for (auto it = m_errorModes.begin(); it != m_errorModes.end(); ++it) {
+            const std::string& key = it->first;
             updateKey( key , action );
          }
     }
@@ -160,8 +160,8 @@ namespace Opm {
 
     void ParseMode::patternUpdate( const std::string& pattern , InputError::Action action) {
         const char * c_pattern = pattern.c_str();
-        for (const auto& pair : m_errorModes) {
-            const std::string& key = pair.first;
+        for (auto it = m_errorModes.begin(); it != m_errorModes.end(); ++it) {
+            const std::string& key = it->first;
             if (util_fnmatch( c_pattern , key.c_str()) == 0)
                 updateKey( key , action );
          }
@@ -191,15 +191,15 @@ namespace Opm {
     void ParseMode::update(const std::string& keyString , InputError::Action action) {
         std::vector<std::string> keys;
         boost::split( keys , keyString , boost::is_any_of(":|"));
-        for (const auto& input_key : keys) {
+        for (auto it = keys.begin(); it != keys.end(); ++it) {
             std::vector<std::string> matching_keys;
-            size_t wildcard_pos = input_key.find("*");
+            size_t wildcard_pos = it->find("*");
 
             if (wildcard_pos == std::string::npos) {
-                if (hasKey( input_key ))
-                    updateKey( input_key , action );
+                if (hasKey( *it ))
+                    updateKey( *it , action );
             } else
-                patternUpdate( input_key , action );
+                patternUpdate( *it , action );
 
         }
     }

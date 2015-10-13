@@ -79,7 +79,7 @@ namespace Opm {
 
 
     void TableManager::addTables( const std::string& tableName , size_t numTables) {
-        m_simpleTables.emplace(std::make_pair(tableName , TableContainer( numTables )));
+        m_simpleTables[tableName] = TableContainer( numTables );
     }
 
 

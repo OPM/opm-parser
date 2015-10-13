@@ -56,7 +56,7 @@ void MultiRecordTable::init(Opm::DeckKeywordConstPtr keyword,
 {
     auto ranges = recordRanges(keyword);
     if (tableIdx >= ranges.size())
-        throw std::invalid_argument("Asked for table: " + std::to_string( tableIdx ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( ranges.size() ) + " tables");
+        throw std::invalid_argument("Asked for table: " + std::to_string( static_cast<long long>(tableIdx) ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( static_cast<long long>(ranges.size()) ) + " tables");
 
     createColumns(columnNames);
     m_recordRange = ranges[ tableIdx ];

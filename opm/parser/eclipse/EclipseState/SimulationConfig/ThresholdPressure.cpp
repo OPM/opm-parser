@@ -157,7 +157,7 @@ namespace Opm {
             if (valid)
                 return value;
             else {
-                std::string msg = "The THPRES value for regions " + std::to_string(r1) + " and " + std::to_string(r2) + " has not been initialized. Using 0.0";
+                std::string msg = "The THPRES value for regions " + std::to_string(static_cast<long long>(r1)) + " and " + std::to_string(static_cast<long long>(r2)) + " has not been initialized. Using 0.0";
                 m_parseMode.handleError(ParseMode::INTERNAL_ERROR_UNINITIALIZED_THPRES, msg);
                 return 0;
             }

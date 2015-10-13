@@ -23,6 +23,10 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 
 namespace Opm {
+    TableContainer::TableContainer() :
+        m_maxTables(0)
+    {
+    }
 
     TableContainer::TableContainer(size_t maxTables) :
         m_maxTables(maxTables)
@@ -59,7 +63,7 @@ namespace Opm {
             if (tableNumber > 0)
                 return getTable(tableNumber -1);
             else
-                throw std::invalid_argument("TableContainer does not have any table in the range 0..." + std::to_string( tableNumber ));
+                throw std::invalid_argument("TableContainer does not have any table in the range 0..." + std::to_string( static_cast<long long>(tableNumber) ));
         }
     }
 
@@ -70,7 +74,7 @@ namespace Opm {
 
     void TableContainer::addTable(size_t tableNumber , std::shared_ptr<const SimpleTable> table) {
         if (tableNumber >= m_maxTables)
-            throw std::invalid_argument("TableContainer has max: " + std::to_string( m_maxTables ) + " tables. Table number: " + std::to_string( tableNumber ) + " illegal.");
+            throw std::invalid_argument("TableContainer has max: " + std::to_string( static_cast<long long>(m_maxTables) ) + " tables. Table number: " + std::to_string( static_cast<long long>(tableNumber) ) + " illegal.");
 
         m_tables[tableNumber] = table;
     }
