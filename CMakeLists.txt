@@ -43,6 +43,8 @@ if (NOT opm-common_FOUND)
       message( FATAL_ERROR "Could not find OPM Macros")
    endif()
 
+else()
+   include(OpmInit)
 endif()
 
 include(UseMultiArch)
