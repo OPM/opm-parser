@@ -134,7 +134,6 @@ namespace Opm {
     }
 
     void SegmentSet::segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, const int nsegmx) {
-        std::map<std::string, std::vector<SegmentPtr>> segmentMapList;
         // for the first record, which provides the information for the top segment
         // and information for the whole segment set
         DeckRecordConstPtr record1 = welsegsKeyword->getRecord(0);
@@ -170,11 +169,6 @@ namespace Opm {
                                                meaningless_value, m_volume_top, m_x_top, m_y_top, true));
             new_segments[0] = top_segment;
         }
-
-        // TODO: This assume all the segments are given with a continuous segment number
-        // which means, if N segments are specified, the segment number will be 1...N.
-        // which is not necessarily true. theoretically, it can be any number from 1 to NSEGMX.
-        // m_segments.resize(number_segments);
 
         // read all the information out from the DECK first then process to get all the required information
         for (size_t recordIndex = 1; recordIndex < welsegsKeyword->size(); ++recordIndex) {
@@ -237,69 +231,6 @@ namespace Opm {
                 }
             }
         }
-
-        // process to make all the values ready.
-        // only required when the m_length_depth_type is ABS
-        // TODO: VERIFYING THIS PART OF CODE.
-        // TODO: IT IS ONLY WORKING FOR THE FIRST TIME HAVE WELSEGS FOR THE WELL
-        // TODO: IT WILL BE MOVED TO Schedule.cpp or SegmentSet.cpp AS A PROCESSING PROCESS
-        /* if (m_length_depth_type == WellSegment::ABS) {
-            bool all_ready;
-            do {
-                all_ready = true;
-                // skip the top segment
-                for (size_t i = 1; i < new_segments.size(); ++i) {
-                    if (new_segments[i]->m_length < 0.5 * meaningless_value) {
-                        all_ready = false;
-                        // check the outlet_segment value
-                        size_t index_begin = i;
-                        size_t outlet_segment = new_segments[i]->m_outlet_segment;
-                        while ( new_segments[outlet_segment]->m_length < 0.5 * meaningless_value) {
-                            index_begin = outlet_segment;
-                            outlet_segment = new_segments[outlet_segment]->m_outlet_segment;
-                        }
-
-                        // the values from the outlet segment
-                        double length_outlet = new_segments[outlet_segment]->m_length;
-                        double depth_outlet = new_segments[outlet_segment]->m_depth;
-                        double length_x_outlet = new_segments[outlet_segment]->m_length_x;
-                        double length_y_outlet = new_segments[outlet_segment]->m_length_y;
-
-                        // look for the last segment in the range
-                        int index_end;
-                        for (size_t j = index_begin+1; j < new_segments.size(); ++j) {
-                            if (new_segments[j]->m_length > 0.5 * meaningless_value) {
-                                index_end = j;
-                                break;
-                            }
-                        }
-
-                        // set the values for the segments in the range
-                        int number_segments = index_end - index_begin + 1;
-
-                        double length_last = new_segments[index_end]->m_length;
-                        double depth_last = new_segments[index_end]->m_depth;
-                        double length_x_last = new_segments[index_end]->m_length_x;
-                        double length_y_last = new_segments[index_end]->m_length_y;
-
-                        double length_segment = (length_last - length_outlet) / number_segments;
-                        double depth_segment = (depth_last - depth_outlet) / number_segments;
-                        double length_x_segment = (length_x_last - length_x_outlet) / number_segments;
-                        double length_y_segment = (length_y_last - length_y_outlet) / number_segments;
-
-                        for(size_t index = index_begin; index < index_end; ++index) {
-                            new_segments[index]->m_length = length_outlet + (index - index_begin + 1) * length_segment;
-                            new_segments[index]->m_depth = depth_outlet + (index - index_begin + 1) * depth_segment;
-                            new_segments[index]->m_length_x = length_x_outlet + (index - index_begin + 1) * length_x_segment;
-                            new_segments[index]->m_length_y = length_y_outlet + (index - index_begin + 1) * length_y_segment;
-
-                        }
-                    }
-                    break;
-                }
-
-            } while (!all_ready);
-        } */
 
         // compress new_segments to m_segments in a orderly way and generate the mapping.
         // TODO: The segment number is not necessarily reduced by 1
