@@ -291,11 +291,9 @@ namespace Opm {
                             break;
                         }
 
-                        int current_segment;
                         int current_location;
                         int i_depth = 0;
                         while ((*new_segmentset)[outlet_location]->dataReady() == false) {
-                            current_segment = outlet_segment;
                             current_location = outlet_location;
                             outlet_segment = (*new_segmentset)[outlet_location]->outletSegment();
                             outlet_location = new_segmentset->numberToLocation(outlet_segment);
