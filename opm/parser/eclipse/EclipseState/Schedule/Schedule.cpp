@@ -1231,16 +1231,17 @@ namespace Opm {
         // overwrite the BHP reference depth with the one from WELSEGS keyword.
         const double ref_depth = newSegmentset->depthTopSegment();
         well->setRefDepth(ref_depth);
-        // indicate this well is a multi-segment well
+        // indicate if this is the frist WELSEGS entry for this well
+        // not sure if a well can switch between mutli-segment well and other
+        // type of well.
         bool first_time = false;
         if (!well->isMultiSegment()) {
+            // indicate this well is a multi-segment well
             well->setMultiSegment(true);
             first_time = true;
         }
 
-        // TODO: maybe it is not necessary to store these values both for Well
-        // and SegmentSet
-        // we should delete one of them later.
+        // maybe it is not necessary to store these values both for Well and SegmentSet
         well->setLengthDepthType(newSegmentset->lengthDepthType());
         well->setMultiPhaseModel(newSegmentset->multiPhaseModel());
         well->setCompPressureDrop(newSegmentset->compPressureDrop());

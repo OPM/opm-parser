@@ -257,19 +257,6 @@ namespace Opm {
         } else {
             throw std::runtime_error(" unknow length_depth_type in the new_segmentset");
         }
-
-        /* if (first_time) {
-            m_segmentset->add(time_step, new_segmentset);
-        } else {
-            SegmentSetPtr current_segmentset = m_segmentset->get(time_step);
-            SegmentSetPtr temp_segmentset = SegmentSetPtr(current_segmentset->shallowCopy());
-            // TODO: check to make sure the information of the first record from the WELSEGS is consistent
-            // TODO: check if the way to add top_segment is OK
-            for (size_t i = 0; i < new_segmentset->numberSegment(); ++i) {
-                temp_segmentset->addSegment(new_segmentset->Segments()[i]);
-            }
-            m_segmentset->add(time_step, temp_segmentset);
-        } */
     }
 
     void Well::addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time) {
@@ -337,8 +324,7 @@ namespace Opm {
             } while (!all_ready);
             m_segmentset->update(time_step, new_segmentset);
         } else {
-
-
+            throw std::logic_error("re-entering WELSEGS for a well is not supported yet!!.");
         }
     }
 
@@ -346,7 +332,6 @@ namespace Opm {
         const double meaningless_value = -1.e100; // meaningless value to indicate unspecified values
         if (first_time) {
             // only need to update the volume and the length and depth values specified in the middle of the range
-
             // top segment is always ready
             // then looking for range that the information of the first segment whose outlet segment information are ready.
             bool all_ready;
@@ -464,9 +449,7 @@ namespace Opm {
 
             m_segmentset->update(time_step, new_segmentset);
         } else {
-            // looking for the segments in the new parts that has undefied length information and the outlet segment in the old part.
-            // then update the information.
-            // update the top segment
+            throw std::logic_error("re-entering WELSEGS for a well is not supported yet!!.");
         }
     }
 
@@ -576,9 +559,8 @@ namespace Opm {
     void Well::processCOMPSEGS(size_t time_step, std::vector<CompsegsPtr>& compsegs) {
 
         // TODO: make sure the distance information of compsegs is complete.
-        // TODO: for the simplest cases we have at the moment, the distance information is specified explicitly
-        // TODO: the depth information is defaulted though
-        //
+        // TODO: for the current cases we have at the moment, the distance information is specified explicitly,
+        // TODO: while the depth information is defaulted though
         // process the compsegs to get the segment_information
         SegmentSetPtr currentSegmentSet = m_segmentset->get(time_step);
 
@@ -604,8 +586,10 @@ namespace Opm {
                     compsegs[i_comp]->m_segment_number = segment_number;
                     if (compsegs[i_comp]->m_center_depth == 0.) {
                         // using the depth of the segment node as the depth of the completion
-                        // TODO: now only one completion for one segment is hanlded
-                        // TODO: later trying to handle more than one completion for each segment
+                        // TODO: now only one completion for one segment is hanlded,
+                        // TODO: later we will try to handle more than one completion for each segment,
+                        // TODO: which will be a linear interpolation based on the segment node depth
+                        // TODO: in the same branch.
                         int segment_location = currentSegmentSet->numberToLocation(segment_number);
                         compsegs[i_comp]->m_center_depth = (*currentSegmentSet)[segment_location]->depth();
                     }
@@ -641,8 +625,6 @@ namespace Opm {
             new_completion->setSegmentNumber(compsegs[i_comp]->m_segment_number);
             new_completion->setCenterDepth(compsegs[i_comp]->m_center_depth);
             newCompletionSet->add(new_completion);
-            // newCompletionSet->get(ic)->setSegmentNumber(compsegs[i_comp]->m_segment_number);
-            // constant pointer can not be changed.
         }
 
         for (size_t ic = 0; ic < newCompletionSet->size(); ++ic) {
@@ -654,11 +636,11 @@ namespace Opm {
         addCompletionSet(time_step , newCompletionSet);
 
         // TODO: everytime after updating the segment related information for CompletionSet,
-        // the completion related information also needs to be updated for SegmentSet.
+        //       the completion related information also needs to be updated for SegmentSet.
         // TODO: which way is the good way to mark the completion is a real problem.
 
-        // add also, store the completion number also in segemntSet for each segment.
-        // That means, how many completions for each segment.
+        // TODO: add also, store the number of completions for each segment in SegmentSet.
+        //       wichi means, how many completions for each segment.
     }
 }
 
