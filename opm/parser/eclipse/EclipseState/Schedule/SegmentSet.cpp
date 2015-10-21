@@ -179,12 +179,15 @@ namespace Opm {
             DeckRecordConstPtr record = welsegsKeyword->getRecord(recordIndex);
             int K1 = record->getItem("SEGMENT1")->getInt(0);
             int K2 = record->getItem("SEGMENT2")->getInt(0);
-            assert((K1 >= 2) && (K2 >= K1) && (K2 <= nsegmx));
+            if ((K1 < 2) || (K2 < K1) || (K2 > nsegmx)) {
+                throw std::logic_error("illegal segment number input is found in WELSEGS!\n");
+            }
+
             // how to handle the logical relations between lateral branches and parent branches.
             // so far, the branch number has not been used.
             int branch = record->getItem("BRANCH")->getInt(0);
             if ((branch < 1) || (branch > nlbrmx)) {
-                throw std::logic_error("illegal branch number is found!\n");
+                throw std::logic_error("illegal branch number input is found in WELSEGS!\n");
             }
             int outlet_segment = record->getItem("JOIN_SEGMENT")->getInt(0);
             double diameter = record->getItem("DIAMETER")->getRawDouble(0);
