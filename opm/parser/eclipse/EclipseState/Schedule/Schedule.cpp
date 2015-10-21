@@ -1221,10 +1221,9 @@ namespace Opm {
     void Schedule::handleWELSEGS(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep) {
         DeckKeywordConstPtr nsegmxKeyword = deck->getKeyword("WSEGDIMS");
         assert(nsegmxKeyword->size() == 1);
-        const int nsegmx = nsegmxKeyword->getRecord(0)->getItem("NSEGMX")->getInt(0);
 
         SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
-        newSegmentset->segmentsFromWELSEGSKeyword(keyword, nsegmx);
+        newSegmentset->segmentsFromWELSEGSKeyword(keyword, nsegmxKeyword);
 
         std::string well_name = newSegmentset->wellName();
         WellPtr well = getWell(well_name);

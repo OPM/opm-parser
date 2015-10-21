@@ -133,7 +133,11 @@ namespace Opm {
         return copy;
     }
 
-    void SegmentSet::segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, const int nsegmx) {
+    void SegmentSet::segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, DeckKeywordConstPtr nsegmxKeyword) {
+        // get the required information for multi-segment wells
+        const int nsegmx = nsegmxKeyword->getRecord(0)->getItem("NSEGMX")->getInt(0);
+        const int nlbrmx = nsegmxKeyword->getRecord(0)->getItem("NLBRMX")->getInt(0);
+
         // for the first record, which provides the information for the top segment
         // and information for the whole segment set
         DeckRecordConstPtr record1 = welsegsKeyword->getRecord(0);
@@ -176,7 +180,12 @@ namespace Opm {
             int K1 = record->getItem("SEGMENT1")->getInt(0);
             int K2 = record->getItem("SEGMENT2")->getInt(0);
             assert((K1 >= 2) && (K2 >= K1) && (K2 <= nsegmx));
+            // how to handle the logical relations between lateral branches and parent branches.
+            // so far, the branch number has not been used.
             int branch = record->getItem("BRANCH")->getInt(0);
+            if ((branch < 1) || (branch > nlbrmx)) {
+                throw std::logic_error("illegal branch number is found!\n");
+            }
             int outlet_segment = record->getItem("JOIN_SEGMENT")->getInt(0);
             double diameter = record->getItem("DIAMETER")->getRawDouble(0);
             DeckItemConstPtr itemArea = record->getItem("AREA");

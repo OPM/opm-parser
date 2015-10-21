@@ -56,7 +56,7 @@ namespace Opm {
 
         void addSegmentABS(SegmentPtr new_segment);
 
-        void segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, const int nsegmx);
+        void segmentsFromWELSEGSKeyword(DeckKeywordConstPtr welsegsKeyword, DeckKeywordConstPtr nsegmxKeyword);
 
         SegmentSet* shallowCopy() const;
 
