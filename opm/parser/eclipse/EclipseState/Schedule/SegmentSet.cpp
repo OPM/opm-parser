@@ -219,6 +219,11 @@ namespace Opm {
                     outlet_segment = i - 1;
                 }
 
+                // if a segment with same segment number is already there.
+                if (new_segments[i - 1] != NULL) {
+                    throw std::logic_error("Segments with same segment number are found!\n");
+                }
+
                 if (m_length_depth_type == WellSegment::INC) {
                     new_segments[i - 1].reset(new Segment(i, branch, outlet_segment, segment_length, depth_change,
                                                         diameter, roughness, area, volume, length_x, length_y, false));
