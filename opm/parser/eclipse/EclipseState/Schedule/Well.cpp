@@ -526,29 +526,6 @@ namespace Opm {
         return m_segmentset->get(time_step);
     }
 
-    WellSegment::LengthDepthEnum Well::getLengthDepthType() const {
-        return m_length_depth_type;
-    }
-
-    void Well::setLengthDepthType(const WellSegment::LengthDepthEnum length_depth_type) {
-        m_length_depth_type = length_depth_type;
-    }
-
-    WellSegment::MultiPhaseModelEnum Well::getMultiPhaseModel() const {
-        return m_multiphase_model;
-    }
-
-    void Well::setMultiPhaseModel(const WellSegment::MultiPhaseModelEnum multiphase_model) {
-        m_multiphase_model = multiphase_model;
-    }
-
-    WellSegment::CompPresureDropEnum Well::getCompPressureDrop() const {
-        return m_comp_pressure_drop;
-    }
-
-    void Well::setCompPressureDrop(const WellSegment::CompPresureDropEnum comp_pressure_drop) {
-        m_comp_pressure_drop = comp_pressure_drop;
-    }
 
     bool Well::getAllowCrossFlow() const {
         return m_allowCrossFlow;

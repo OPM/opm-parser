@@ -118,15 +118,6 @@ namespace Opm {
 
         SegmentSetConstPtr getSegmentSet(size_t time_step) const;
 
-        WellSegment::LengthDepthEnum getLengthDepthType() const;
-        void setLengthDepthType(const WellSegment::LengthDepthEnum length_depth_type);
-
-        WellSegment::MultiPhaseModelEnum getMultiPhaseModel() const;
-        void setMultiPhaseModel(const WellSegment::MultiPhaseModelEnum multiphase_model);
-
-        WellSegment::CompPresureDropEnum getCompPressureDrop() const;
-        void setCompPressureDrop(const WellSegment::CompPresureDropEnum comp_pressure_drop);
-
         void addSegmentSet(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
 
         void addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
@@ -172,9 +163,6 @@ namespace Opm {
         // WELSEGS data - for the multi-segment wells
         // assumes this is not dynamic either
         bool m_is_multi_segment; // flag for multi-segment well
-        WellSegment::LengthDepthEnum m_length_depth_type;
-        WellSegment::MultiPhaseModelEnum m_multiphase_model;
-        WellSegment::CompPresureDropEnum m_comp_pressure_drop;
 
         std::shared_ptr<DynamicState<SegmentSetPtr>> m_segmentset;
     };

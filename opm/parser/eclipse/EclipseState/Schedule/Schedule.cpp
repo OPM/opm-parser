@@ -1241,11 +1241,6 @@ namespace Opm {
             first_time = true;
         }
 
-        // maybe it is not necessary to store these values both for Well and SegmentSet
-        well->setLengthDepthType(newSegmentset->lengthDepthType());
-        well->setMultiPhaseModel(newSegmentset->multiPhaseModel());
-        well->setCompPressureDrop(newSegmentset->compPressureDrop());
-
         well->addSegmentSet(currentStep, newSegmentset, first_time);
     }
 
