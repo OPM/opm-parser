@@ -95,7 +95,7 @@ namespace Opm {
         // std::vector<SegmentConstPtr> m_segments;
         std::vector<SegmentPtr> m_segments;
         // the mapping from the segment number to the
-        // storage location of the vector
+        // storage location in the vector
         std::map<int, int> m_number_to_location;
     };
 

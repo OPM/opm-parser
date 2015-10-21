@@ -78,7 +78,7 @@ namespace Opm {
         // or the equivalent diameter for annular cross-sections
         // for top segment, it is UNDEFINED
         // we use -1e100 for the top segment
-        double m_internal_dimaeter;
+        double m_internal_diameter;
         // effective roughness of the tubing
         // used to calculate the Fanning friction factor
         // for top segment, it is UNDEFINED

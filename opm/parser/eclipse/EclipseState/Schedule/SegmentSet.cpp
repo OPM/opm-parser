@@ -237,7 +237,7 @@ namespace Opm {
             }
         }
 
-        // compress new_segments to m_segments in a orderly way and generate the mapping.
+        // compress new_segments to m_segments in an orderly way and generate the mapping.
         // TODO: The segment number is not necessarily reduced by 1
         // it is just a number like a name
         // counting the number of the segments

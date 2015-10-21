@@ -9,7 +9,7 @@ namespace Opm {
       m_outlet_segment(-1),
       m_length(-1.e100),
       m_depth(-1.e100),
-      m_internal_dimaeter(-1.e100),
+      m_internal_diameter(-1.e100),
       m_roughness(-1.e100),
       m_cross_area(-1.e100),
       m_volume(-1.e100),
@@ -28,7 +28,7 @@ namespace Opm {
       m_outlet_segment(outlet_segment),
       m_length(length),
       m_depth(depth),
-      m_internal_dimaeter(internal_diameter),
+      m_internal_diameter(internal_diameter),
       m_roughness(roughness),
       m_cross_area(cross_area),
       m_volume(volume),
@@ -65,7 +65,7 @@ namespace Opm {
 
 
     double& Segment::internalDiameter() {
-        return m_internal_dimaeter;
+        return m_internal_diameter;
     }
 
 

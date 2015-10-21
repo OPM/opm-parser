@@ -161,7 +161,6 @@ namespace Opm {
         bool m_allowCrossFlow;
 
         // WELSEGS data - for the multi-segment wells
-        // assumes this is not dynamic either
         bool m_is_multi_segment; // flag for multi-segment well
 
         std::shared_ptr<DynamicState<SegmentSetPtr>> m_segmentset;
