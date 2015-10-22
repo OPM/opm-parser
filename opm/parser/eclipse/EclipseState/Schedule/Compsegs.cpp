@@ -50,10 +50,10 @@ namespace Opm {
         for (size_t recordIndex = 1; recordIndex < compsegsKeyword->size(); ++recordIndex) {
             DeckRecordConstPtr record = compsegsKeyword->getRecord(recordIndex);
             // following the coordinate rule for completions
-            int I = record->getItem("I")->getInt(0) - 1;
-            int J = record->getItem("J")->getInt(0) - 1;
-            int K = record->getItem("K")->getInt(0) - 1;
-            int branch = record->getItem("BRANCH")->getInt(0);
+            const int I = record->getItem("I")->getInt(0) - 1;
+            const int J = record->getItem("J")->getInt(0) - 1;
+            const int K = record->getItem("K")->getInt(0) - 1;
+            const int branch = record->getItem("BRANCH")->getInt(0);
 
             double distance_start;
             double distance_end;
@@ -100,12 +100,6 @@ namespace Opm {
                 center_depth = 0.;
             }
 
-            /* if (center_depth == 0.){ // dangerous?
-                //TODO: get the depth from the segement data
-                // throw std::runtime_error("this way to obtain CENTER_DISTANCE not implemented yet!");
-                center_depth = 1.e100;
-            } else */
-
             if (center_depth < 0.) {
                 //TODO: get the depth from COMPDAT data.
                 throw std::runtime_error("this way to obtain CENTER_DISTANCE not implemented yet either!");
@@ -116,8 +110,7 @@ namespace Opm {
                 thermal_length = record->getItem("THERMAL_LENGTH")->getRawDouble(0);
             } else {
                 //TODO: get the thickness of the grid block in the direction of penetration
-                // throw std::runtime_error("this way to obtain THERMAL_LENGTH not implemented yet!");
-                thermal_length = -1.e100;
+                throw std::runtime_error("this way to obtain THERMAL_LENGTH not implemented yet!");
             }
 
             int segment_number;
@@ -125,7 +118,7 @@ namespace Opm {
                 segment_number = record->getItem("SEGMENT_NUMBER")->getInt(0);
             } else {
                 segment_number = 0;
-                //TODO: decide the segment number based on the distance in a process later.
+                // will decide the segment number based on the distance in a process later.
             }
 
             if (end_IJK < 0) { // only one compsegs
@@ -133,7 +126,7 @@ namespace Opm {
                                                                       direction, center_depth, thermal_length, segment_number);
                 compsegs.push_back(new_compsegs);
             } else { // a range is defined. genrate a range of Compsegs
-                // throw std::runtime_error("this way to obtain THERMAL_LENGTH not implemented yet!");
+                throw std::runtime_error("entering COMPSEGS entries with a range is not supported yet!");
             }
         }
 

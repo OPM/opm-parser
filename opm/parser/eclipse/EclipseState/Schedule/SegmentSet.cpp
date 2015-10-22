@@ -250,8 +250,6 @@ namespace Opm {
         }
 
         // compress new_segments to m_segments in an orderly way and generate the mapping.
-        // TODO: The segment number is not necessarily reduced by 1
-        // it is just a number like a name
         // counting the number of the segments
         int number_segments = 1;
         for (size_t recordIndex = 1; recordIndex < welsegsKeyword->size(); ++recordIndex) {
