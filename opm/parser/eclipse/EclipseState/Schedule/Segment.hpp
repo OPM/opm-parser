@@ -32,22 +32,36 @@ namespace Opm {
     public:
         Segment();
 
-        Segment(int segment_number, int branch, int outlet_segment, double length, double depth,
-                double internal_diameter, double roughness, double cross_area,
-                double volume, double length_x, double length_y, bool data_ready);
+        Segment(int segment_number_in, int branch_in, int outlet_segment_in, double length_in, double depth_in,
+                double internal_diameter_in, double roughness_in, double cross_area_in,
+                double volume_in, double length_x_in, double length_y_in, bool data_ready_in);
 
-        int& segmentNumber();
-        int& branchNumber();
-        int& outletSegment();
-        double& length();
-        double& depth();
-        double& internalDiameter();
-        double& roughness();
-        double& crossArea();
-        double& volume();
-        double& lengthX();
-        double& lengthY();
-        bool& dataReady();
+        int segmentNumber() const;
+        int branchNumber() const;
+        int outletSegment() const;
+        double length() const;
+        double depth() const;
+        double internalDiameter() const;
+        double roughness() const;
+        double crossArea() const;
+        double volume() const;
+        double lengthX() const;
+        double lengthY() const;
+        bool dataReady() const;
+
+        void setSegmentNumber(const int segment_number_in);
+        void setBrachNumber(const int branch_number_in);
+        void setOutletSegment(const int outlet_segment_in);
+        void setLength(const double length_in);
+        void setDepth(const double depth_in);
+        void setInternalDiameter(const double internal_diameter_in);
+        void setRoughness(const double roughness_in);
+        void setCrossArea(const double cross_area_in);
+        void setVolume(const double volume_in);
+        void setLengthX(const int length_x_in);
+        void setLengthY(const int length_y_in);
+        void setDataReady(const bool data_ready_in);
+
 
     private:
         // segment number

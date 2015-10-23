@@ -264,11 +264,11 @@ namespace Opm {
         // where loops exist, some modification should be made.
         if (first_time) {
             // update the information inside new_segmentset to be in ABS way
-            (*new_segmentset)[0]->length() = new_segmentset->lengthTopSegment();
-            (*new_segmentset)[0]->depth() = new_segmentset->depthTopSegment();
-            (*new_segmentset)[0]->lengthX() = new_segmentset->xTop();
-            (*new_segmentset)[0]->lengthY() = new_segmentset->yTop();
-            (*new_segmentset)[0]->dataReady() = true;
+            (*new_segmentset)[0]->setLength(new_segmentset->lengthTopSegment());
+            (*new_segmentset)[0]->setDepth(new_segmentset->depthTopSegment());
+            (*new_segmentset)[0]->setLengthX(new_segmentset->xTop());
+            (*new_segmentset)[0]->setLengthY(new_segmentset->yTop());
+            (*new_segmentset)[0]->setDataReady(true);
 
             bool all_ready;
 
@@ -283,11 +283,15 @@ namespace Opm {
                         int outlet_location = new_segmentset->numberToLocation(outlet_segment);
 
                         if ((*new_segmentset)[outlet_location]->dataReady() == true) {
-                            (*new_segmentset)[i]->length() = (*new_segmentset)[i]->length() + (*new_segmentset)[outlet_location]->length();
-                            (*new_segmentset)[i]->depth() = (*new_segmentset)[i]->depth() + (*new_segmentset)[outlet_location]->depth();
-                            (*new_segmentset)[i]->lengthX() = (*new_segmentset)[i]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
-                            (*new_segmentset)[i]->lengthY() = (*new_segmentset)[i]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
-                            (*new_segmentset)[i]->dataReady() = true;
+                            const double temp_length = (*new_segmentset)[i]->length() + (*new_segmentset)[outlet_location]->length();
+                            (*new_segmentset)[i]->setLength(temp_length);
+                            const double temp_depth = (*new_segmentset)[i]->depth() + (*new_segmentset)[outlet_location]->depth();
+                            (*new_segmentset)[i]->setDepth(temp_depth);
+                            const double temp_length_x = (*new_segmentset)[i]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
+                            (*new_segmentset)[i]->setLengthX(temp_length_x);
+                            const double temp_length_y = (*new_segmentset)[i]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
+                            (*new_segmentset)[i]->setLengthY(temp_length_y);
+                            (*new_segmentset)[i]->setDataReady(true);
                             break;
                         }
 
@@ -309,11 +313,15 @@ namespace Opm {
                         }
 
                         if ((*new_segmentset)[outlet_location]->dataReady() == true) {
-                            (*new_segmentset)[current_location]->length() = (*new_segmentset)[current_location]->length() + (*new_segmentset)[outlet_location]->length();
-                            (*new_segmentset)[current_location]->depth() = (*new_segmentset)[current_location]->depth() + (*new_segmentset)[outlet_location]->depth();
-                            (*new_segmentset)[current_location]->lengthX() = (*new_segmentset)[current_location]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
-                            (*new_segmentset)[current_location]->lengthY() = (*new_segmentset)[current_location]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
-                            (*new_segmentset)[current_location]->dataReady() = true;
+                            const double temp_length = (*new_segmentset)[current_location]->length() + (*new_segmentset)[outlet_location]->length();
+                            (*new_segmentset)[current_location]->setLength(temp_length);
+                            const double temp_depth = (*new_segmentset)[current_location]->depth() + (*new_segmentset)[outlet_location]->depth();
+                            (*new_segmentset)[current_location]->setDepth(temp_depth);
+                            const double temp_length_x = (*new_segmentset)[current_location]->lengthX() + (*new_segmentset)[outlet_location]->lengthX();
+                            (*new_segmentset)[current_location]->setLengthX(temp_length_x);
+                            const double temp_length_y = (*new_segmentset)[current_location]->lengthY() + (*new_segmentset)[outlet_location]->lengthY();
+                            (*new_segmentset)[current_location]->setLengthY(temp_length_y);
+                            (*new_segmentset)[current_location]->setDataReady(true);
                             break;
                         }
                     }
@@ -390,18 +398,22 @@ namespace Opm {
                         double volume_segment = (*new_segmentset)[location_end]->crossArea() * length_segment;
 
                         if ((*new_segmentset)[location_end]->volume() < 0.5 * meaningless_value) {
-                            (*new_segmentset)[location_end]->volume() = volume_segment;
+                            (*new_segmentset)[location_end]->setVolume(volume_segment);
                         }
 
                         for (int k = location_begin; k < location_end; ++k) {
-                            (*new_segmentset)[k]->length() = length_outlet + (k - location_begin + 1) * length_segment;
-                            (*new_segmentset)[k]->depth() = depth_outlet + (k - location_begin + 1) * depth_segment;
-                            (*new_segmentset)[k]->lengthX() = length_x_outlet + (k - location_begin + 1) * length_x_segment;
-                            (*new_segmentset)[k]->lengthY() = length_y_outlet + (k - location_begin + 1) * length_y_segment;
-                            (*new_segmentset)[k]->dataReady() = true;
+                            const double temp_length = length_outlet + (k - location_begin + 1) * length_segment;
+                            (*new_segmentset)[k]->setLength(temp_length);
+                            const double temp_depth = depth_outlet + (k - location_begin + 1) * depth_segment;
+                            (*new_segmentset)[k]->setDepth(temp_depth);
+                            const double temp_length_x = length_x_outlet + (k - location_begin + 1) * length_x_segment;
+                            (*new_segmentset)[k]->setLengthX(temp_length_x);
+                            const double temp_length_y = length_y_outlet + (k - location_begin + 1) * length_y_segment;
+                            (*new_segmentset)[k]->setLengthY(temp_length_y);
+                            (*new_segmentset)[k]->setDataReady(true);
 
                             if ((*new_segmentset)[k]->volume() < 0.5 * meaningless_value) {
-                                (*new_segmentset)[k]->volume() = volume_segment;
+                                (*new_segmentset)[k]->setVolume(volume_segment);
                             }
                         }
                         break;
@@ -415,7 +427,7 @@ namespace Opm {
                int outlet_location = new_segmentset->numberToLocation(outlet_segment);
                double segment_length = (*new_segmentset)[i]->length() - (*new_segmentset)[outlet_location]->length();
                if ((*new_segmentset)[i]->volume() < 0.5 * meaningless_value) {
-                   (*new_segmentset)[i]->volume() = (*new_segmentset)[i]->crossArea() * segment_length;
+                   (*new_segmentset)[i]->setVolume((*new_segmentset)[i]->crossArea() * segment_length);
                }
             }
 

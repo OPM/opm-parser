@@ -20,81 +20,130 @@ namespace Opm {
     }
 
 
-    Segment::Segment(int segment_number, int branch, int outlet_segment, double length, double depth,
-                     double internal_diameter, double roughness, double cross_area,
-                     double volume, double length_x, double length_y, bool data_ready)
-    : m_segment_number(segment_number),
-      m_branch(branch),
-      m_outlet_segment(outlet_segment),
-      m_length(length),
-      m_depth(depth),
-      m_internal_diameter(internal_diameter),
-      m_roughness(roughness),
-      m_cross_area(cross_area),
-      m_volume(volume),
-      m_length_x(length_x),
-      m_length_y(length_y),
-      m_data_ready(data_ready)
+    Segment::Segment(int segment_number_in, int branch_in, int outlet_segment_in, double length_in, double depth_in,
+                     double internal_diameter_in, double roughness_in, double cross_area_in,
+                     double volume_in, double length_x_in, double length_y_in, bool data_ready_in)
+    : m_segment_number(segment_number_in),
+      m_branch(branch_in),
+      m_outlet_segment(outlet_segment_in),
+      m_length(length_in),
+      m_depth(depth_in),
+      m_internal_diameter(internal_diameter_in),
+      m_roughness(roughness_in),
+      m_cross_area(cross_area_in),
+      m_volume(volume_in),
+      m_length_x(length_x_in),
+      m_length_y(length_y_in),
+      m_data_ready(data_ready_in)
     {
     }
 
 
-    int& Segment::segmentNumber() {
+    int Segment::segmentNumber() const {
         return m_segment_number;
     }
 
 
-    int& Segment::branchNumber() {
+    int Segment::branchNumber() const {
         return m_branch;
     }
 
 
-    int& Segment::outletSegment() {
+    int Segment::outletSegment() const {
         return m_outlet_segment;
     }
 
 
-    double& Segment::length() {
+    double Segment::length() const {
         return m_length;
     }
 
 
-    double& Segment::depth() {
+    double Segment::depth() const {
         return m_depth;
     }
 
 
-    double& Segment::internalDiameter() {
+    double Segment::internalDiameter() const {
         return m_internal_diameter;
     }
 
 
-    double& Segment::roughness() {
+    double Segment::roughness() const {
         return m_roughness;
     }
 
 
-    double& Segment::crossArea() {
+    double Segment::crossArea() const {
         return m_cross_area;
     }
 
 
-    double& Segment::volume() {
+    double Segment::volume() const {
         return m_volume;
     }
 
 
-    double& Segment::lengthX() {
+    double Segment::lengthX() const {
         return m_length_x;
     }
 
 
-    double& Segment::lengthY() {
+    double Segment::lengthY() const {
         return m_length_y;
     }
 
 
-    bool& Segment::dataReady() {
+    bool Segment::dataReady() const {
         return m_data_ready;
     }
+
+    void Segment::setSegmentNumber(const int segment_number_in) {
+        m_segment_number = segment_number_in;
+    }
+
+    void Segment::setBrachNumber(const int branch_number_in) {
+        m_branch = branch_number_in;
+    }
+
+    void Segment::setOutletSegment(const int outlet_segment_in) {
+        m_outlet_segment = outlet_segment_in;
+    }
+
+    void Segment::setLength(const double length_in) {
+        m_length = length_in;
+    }
+
+    void Segment::setDepth(const double depth_in) {
+        m_depth = depth_in;
+    }
+
+    void Segment::setInternalDiameter(const double internal_diameter_in) {
+        m_internal_diameter = internal_diameter_in;
+    }
+
+    void Segment::setRoughness(const double roughness_in) {
+        m_roughness = roughness_in;
+    }
+
+    void Segment::setCrossArea(const double cross_area_in) {
+        m_cross_area = cross_area_in;
+    }
+
+    void Segment::setVolume(const double volume_in) {
+        m_volume = volume_in;
+    }
+
+    void Segment::setLengthX(const int length_x_in) {
+        m_length_x = length_x_in;
+    }
+
+    void Segment::setLengthY(const int length_y_in) {
+        m_length_y = length_y_in;
+    }
+
+    void Segment::setDataReady(const bool data_ready_in) {
+        m_data_ready = data_ready_in;
+    }
+
 }
