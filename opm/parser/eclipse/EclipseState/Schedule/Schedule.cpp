@@ -35,6 +35,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Compsegs.hpp>
 
 namespace Opm {
 
@@ -54,7 +55,7 @@ namespace Opm {
 
         if (Section::hasSCHEDULE( deck )) {
             std::shared_ptr<SCHEDULESection> scheduleSection = std::make_shared<SCHEDULESection>( deck );
-            iterateScheduleSection(parseMode , scheduleSection , ioConfig);
+            iterateScheduleSection(parseMode , deck , scheduleSection , ioConfig);
         }
     }
 
@@ -84,7 +85,7 @@ namespace Opm {
         m_timeMap.reset(new TimeMap(startTime));
     }
 
-    void Schedule::iterateScheduleSection(const ParseMode& parseMode , std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig) {
+    void Schedule::iterateScheduleSection(const ParseMode& parseMode , DeckConstPtr deck, std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig) {
         const std::map<std::string,bool> unsupportedModifiers = {{"MULTFLT"  , true},
                                                                  {"MULTPV"   , true},
                                                                  {"MULTX"    , true},
@@ -145,6 +146,14 @@ namespace Opm {
 
             if (keyword->name() == "COMPDAT")
                 handleCOMPDAT(keyword, currentStep);
+
+            if (keyword->name() == "WELSEGS") {
+                handleWELSEGS(deck, keyword, currentStep);
+            }
+
+            if (keyword->name() == "COMPSEGS") {
+                handleCOMPSEGS(keyword, currentStep);
+            }
 
             if (keyword->name() == "WELOPEN")
                 handleWELOPEN(keyword, currentStep , section->hasKeyword("COMPLUMP"));
@@ -1209,6 +1218,31 @@ namespace Opm {
         m_events.addEvent(ScheduleEvents::COMPLETION_CHANGE, currentStep);
     }
 
+    void Schedule::handleWELSEGS(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep) {
+        DeckKeywordConstPtr nsegmxKeyword = deck->getKeyword("WSEGDIMS");
+        assert(nsegmxKeyword->size() == 1);
+
+        SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
+        newSegmentset->segmentsFromWELSEGSKeyword(keyword, nsegmxKeyword);
+
+        std::string well_name = newSegmentset->wellName();
+        WellPtr well = getWell(well_name);
+        // overwrite the BHP reference depth with the one from WELSEGS keyword.
+        const double ref_depth = newSegmentset->depthTopSegment();
+        well->setRefDepth(ref_depth);
+        // indicate if this is the frist WELSEGS entry for this well
+        // not sure if a well can switch between mutli-segment well and other
+        // type of well.
+        bool first_time = false;
+        if (!well->isMultiSegment()) {
+            // indicate this well is a multi-segment well
+            well->setMultiSegment(true);
+            first_time = true;
+        }
+
+        well->addSegmentSet(currentStep, newSegmentset, first_time);
+    }
+
     void Schedule::handleWGRUPCON(DeckKeywordConstPtr keyword, size_t currentStep) {
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
@@ -1228,6 +1262,16 @@ namespace Opm {
 
             well->setGuideRateScalingFactor(currentStep, record->getItem("SCALING_FACTOR")->getRawDouble(0));
         }
+    }
+
+    void Schedule::handleCOMPSEGS(DeckKeywordConstPtr keyword, size_t currentStep) {
+
+        DeckRecordConstPtr record1 = keyword->getRecord(0);
+        std::string well_name = record1->getItem("WELL")->getTrimmedString(0);
+        WellPtr well = getWell(well_name);
+
+        std::vector<CompsegsPtr> compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword(keyword, m_grid);
+        well->processCOMPSEGS(currentStep, compsegs_vector);
     }
 
     void Schedule::handleGRUPTREE(DeckKeywordConstPtr keyword, size_t currentStep) {

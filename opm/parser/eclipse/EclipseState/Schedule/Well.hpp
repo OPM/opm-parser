@@ -25,6 +25,9 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Completion.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/SegmentSet.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Segment.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Compsegs.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
@@ -60,6 +63,7 @@ namespace Opm {
         int    getHeadI() const;
         int    getHeadJ() const;
         double getRefDepth() const;
+        void   setRefDepth(const double ref_depth);
         Phase::PhaseEnum getPreferredPhase() const;
 
         bool isAvailableForGroupControl(size_t timeStep) const;
@@ -108,7 +112,19 @@ namespace Opm {
 
 
 
+        // for multi-segment wells
+        bool isMultiSegment() const;
+        void setMultiSegment(const bool is_multi_segment);
 
+        SegmentSetConstPtr getSegmentSet(size_t time_step) const;
+
+        void addSegmentSet(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void addSegmentSetINC(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void addSegmentSetABS(size_t time_step, const SegmentSetPtr new_segmentset, const bool first_time);
+
+        void processCOMPSEGS(size_t time_step, std::vector<CompsegsPtr>& compsegs);
 
     private:
         void setRefDepthFromCompletions() const;
@@ -144,6 +160,10 @@ namespace Opm {
         WellCompletion::CompletionOrderEnum m_comporder;
         bool m_allowCrossFlow;
 
+        // WELSEGS data - for the multi-segment wells
+        bool m_is_multi_segment; // flag for multi-segment well
+
+        std::shared_ptr<DynamicState<SegmentSetPtr>> m_segmentset;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

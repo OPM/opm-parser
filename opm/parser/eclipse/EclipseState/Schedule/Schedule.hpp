@@ -94,7 +94,7 @@ namespace Opm
         void createTimeMap(DeckConstPtr deck);
         void initRootGroupTreeNode(TimeMapConstPtr timeMap);
         void initOilVaporization(TimeMapConstPtr timeMap);
-        void iterateScheduleSection(const ParseMode& parseMode , std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig);
+        void iterateScheduleSection(const ParseMode& parseMode , DeckConstPtr deck, std::shared_ptr<const SCHEDULESection> section, IOConfigPtr ioConfig);
         bool handleGroupFromWELSPECS(const std::string& groupName, GroupTreePtr newTree) const;
         void addGroup(const std::string& groupName , size_t timeStep);
         void addWell(const std::string& wellName, DeckRecordConstPtr record, size_t timeStep, WellCompletion::CompletionOrderEnum wellCompletionOrder);
@@ -106,6 +106,8 @@ namespace Opm
         void handleWCONPROD(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWGRUPCON(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleCOMPDAT(DeckKeywordConstPtr keyword,  size_t currentStep);
+        void handleWELSEGS(DeckConstPtr deck, DeckKeywordConstPtr keyword, size_t currentStep);
+        void handleCOMPSEGS(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWCONINJE(std::shared_ptr<const SCHEDULESection> section, DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWPOLYMER(DeckKeywordConstPtr keyword, size_t currentStep);
         void handleWSOLVENT(DeckKeywordConstPtr keyword, size_t currentStep);
