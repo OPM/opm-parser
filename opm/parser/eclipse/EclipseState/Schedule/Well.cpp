@@ -551,7 +551,7 @@ namespace Opm {
         // process the compsegs to get the segment_information
         SegmentSetPtr currentSegmentSet = m_segmentset->get(time_step);
 
-        for (size_t i_comp = 0; i_comp < compsegs.size(); ++i_comp) {
+        for (int i_comp = 0; i_comp < int(compsegs.size()); ++i_comp) {
             if (compsegs[i_comp]->m_segment_number == 0) { // need to determine the segment number first
                 const double center_distance = (compsegs[i_comp]->m_distance_start + compsegs[i_comp]->m_distance_end) / 2.0;
                 const int branch_number = compsegs[i_comp]->m_branch_number;
@@ -592,19 +592,19 @@ namespace Opm {
         CompletionSetPtr newCompletionSet = CompletionSetPtr(currentCompletionSet->shallowCopy());
 
 
-        for (size_t i_comp = 0; i_comp < compsegs.size(); ++i_comp) {
+        for (int i_comp = 0; i_comp < int(compsegs.size()); ++i_comp) {
             const int i = compsegs[i_comp]->m_i;
             const int j = compsegs[i_comp]->m_j;
             const int k = compsegs[i_comp]->m_k;
 
-            size_t ic;
-            for (ic = 0; ic < newCompletionSet->size(); ++ic) {
+            int ic;
+            for (ic = 0; ic < int(newCompletionSet->size()); ++ic) {
                 if (newCompletionSet->get(ic)->sameCoordinate(i, j, k)) {
                     break; // the completion is found
                 }
             }
 
-            if (ic == newCompletionSet->size()) {
+            if (ic == int(newCompletionSet->size())) {
                 throw std::runtime_error(" the completion specified in COMPSEGS is not found in the completionSet \n");
             }
 
@@ -614,7 +614,7 @@ namespace Opm {
             newCompletionSet->add(new_completion);
         }
 
-        for (size_t ic = 0; ic < newCompletionSet->size(); ++ic) {
+        for (int ic = 0; ic < int(newCompletionSet->size()); ++ic) {
             if (newCompletionSet->get(ic)->getSegmentNumber() == -1) {
                 throw std::runtime_error(" not all the completions are specified with a segment,\n the COMPSEGS are not complete");
             }

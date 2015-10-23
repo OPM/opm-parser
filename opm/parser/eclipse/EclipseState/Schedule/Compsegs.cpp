@@ -47,7 +47,7 @@ namespace Opm {
         // The first record here only contains the well name
         std::vector<std::shared_ptr<Compsegs>> compsegs;
 
-        for (size_t recordIndex = 1; recordIndex < compsegsKeyword->size(); ++recordIndex) {
+        for (int recordIndex = 1; recordIndex < int(compsegsKeyword->size()); ++recordIndex) {
             DeckRecordConstPtr record = compsegsKeyword->getRecord(recordIndex);
             // following the coordinate rule for completions
             const int I = record->getItem("I")->getInt(0) - 1;

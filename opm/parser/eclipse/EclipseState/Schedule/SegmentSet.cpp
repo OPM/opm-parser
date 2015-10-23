@@ -127,7 +127,7 @@ namespace Opm {
         copy->m_y_top = m_y_top;
         copy->m_number_to_location = m_number_to_location;
         copy->m_segments.resize(m_segments.size());
-        for (size_t i = 0; i < m_segments.size(); ++i) {
+        for (int i = 0; i < int(m_segments.size()); ++i) {
             copy->m_segments[i] = m_segments[i];
         }
         return copy;
@@ -148,7 +148,7 @@ namespace Opm {
         std::vector<SegmentPtr> new_segments;
         new_segments.resize(nsegmx);
 
-        for (size_t i = 0; i < new_segments.size(); ++i) {
+        for (int i = 0; i < int(new_segments.size()); ++i) {
             new_segments[i] = NULL;
         }
 
@@ -175,7 +175,7 @@ namespace Opm {
         }
 
         // read all the information out from the DECK first then process to get all the required information
-        for (size_t recordIndex = 1; recordIndex < welsegsKeyword->size(); ++recordIndex) {
+        for (int recordIndex = 1; recordIndex < int(welsegsKeyword->size()); ++recordIndex) {
             DeckRecordConstPtr record = welsegsKeyword->getRecord(recordIndex);
             int K1 = record->getItem("SEGMENT1")->getInt(0);
             int K2 = record->getItem("SEGMENT2")->getInt(0);
@@ -252,7 +252,7 @@ namespace Opm {
         // compress new_segments to m_segments in an orderly way and generate the mapping.
         // counting the number of the segments
         int number_segments = 1;
-        for (size_t recordIndex = 1; recordIndex < welsegsKeyword->size(); ++recordIndex) {
+        for (int recordIndex = 1; recordIndex < int(welsegsKeyword->size()); ++recordIndex) {
             DeckRecordConstPtr record = welsegsKeyword->getRecord(recordIndex);
             int K1 = record->getItem("SEGMENT1")->getInt(0);
             int K2 = record->getItem("SEGMENT2")->getInt(0);
