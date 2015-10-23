@@ -1,7 +1,7 @@
 Module: opm-parser
 Description: Open Porous Media Initiative File Parser Library
 # if you change this, make sure to also change opm/parser/version.h
-Version: 2.0
-Label: 2015.04
+Version: 2015.10
+Label: 2015.10
 Maintainer: joaho@statoil.com
 Depends: opm-common

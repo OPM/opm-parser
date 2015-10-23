@@ -1,5 +1,5 @@
-opm-parser (2015.01-1~trusty) trusty; urgency=low
+opm-parser (2015.10-rc1-1~trusty) trusty; urgency=medium
 
-  * New release
+  * New version
 
- -- Arne Morten Kvarving <arne.morten.kvarving@sintef.no>  Tue, 22 Oct 2013 12:22:29 +0200
+ -- Arne Morten Kvarving <arne.morten.kvarving@sintef.no>  Fri, 23 Oct 2015 10:07:05 +0200
