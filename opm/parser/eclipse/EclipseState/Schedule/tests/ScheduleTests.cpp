@@ -348,25 +348,23 @@ BOOST_AUTO_TEST_CASE(TestCrossFlowHandling) {
     IOConfigPtr ioConfig;
     Schedule schedule(ParseMode() , grid , deck, ioConfig);
 
-    std::vector<WellPtr> well_default = schedule.getWells("DEFAULT");
-    BOOST_CHECK_EQUAL(well_default[0]->getAllowCrossFlow(), true);
-    std::vector<WellPtr> well_allow = schedule.getWells("ALLOW");
-    BOOST_CHECK_EQUAL(well_allow[0]->getAllowCrossFlow(), true);
-    std::vector<WellPtr> well_ban = schedule.getWells("BAN");
-    BOOST_CHECK_EQUAL(well_ban[0]->getAllowCrossFlow(), false);
-
-    size_t currentStep = 0;
-    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::SHUT, well_ban[0]->getStatus(currentStep));
-    currentStep = 1;
-    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban[0]->getStatus(currentStep));
-    currentStep = 2;
-    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban[0]->getStatus(currentStep));
-    currentStep = 3;
-    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::SHUT, well_ban[0]->getStatus(currentStep));
-    currentStep = 4;
-    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban[0]->getStatus(currentStep));
+    WellPtr well_ban = schedule.getWell("BAN");
+    BOOST_CHECK_EQUAL(well_ban->getAllowCrossFlow(), false);
 
 
+    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::SHUT, well_ban->getStatus(0));
+    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban->getStatus(1));
+    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban->getStatus(2));
+    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::SHUT, well_ban->getStatus(3));
+    BOOST_CHECK_EQUAL(WellCommon::StatusEnum::OPEN, well_ban->getStatus(4));
+
+    {
+        WellPtr well_allow = schedule.getWell("ALLOW");
+        WellPtr well_default = schedule.getWell("DEFAULT");
+
+        BOOST_CHECK_EQUAL(well_default->getAllowCrossFlow(), true);
+        BOOST_CHECK_EQUAL(well_allow->getAllowCrossFlow(), true);
+    }
 }
 
 static DeckPtr createDeckWithWellsAndCompletionDataWithWELOPEN() {
@@ -1347,3 +1345,81 @@ BOOST_AUTO_TEST_CASE(createDeckWithOutOilVaporizationProperties) {
 
 
 }
+
+BOOST_AUTO_TEST_CASE(changeBhpLimitInHistoryModeWithWeltarg) {
+    Opm::Parser parser;
+    std::string input =
+            "START             -- 0 \n"
+            "19 JUN 2007 / \n"
+            "SCHEDULE\n"
+            "DATES             -- 1\n"
+            " 10  OKT 2008 / \n"
+            "/\n"
+            "WELSPECS\n"
+            "    'P'       'OP'   9   9 1*     'OIL' 1*      1*  1*   1*  1*   1*  1*  / \n"
+            "    'I'       'OP'   1   1 1*     'WATER' 1*      1*  1*   1*  1*   1*  1*  / \n"
+            "/\n"
+            "COMPDAT\n"
+            " 'P'  9  9   1   1 'OPEN' 1*   32.948   0.311  3047.839 1*  1*  'X'  22.100 / \n"
+            " 'P'  9  9   2   2 'OPEN' 1*   46.825   0.311  4332.346 1*  1*  'X'  22.123 / \n"
+            " 'I'  1  1   1   1 'OPEN' 1*   32.948   0.311  3047.839 1*  1*  'X'  22.100 / \n"
+            "/\n"
+            "WCONHIST\n"
+            " 'P' 'OPEN' 'RESV' 6*  500 / \n"
+            "/\n"
+            "WCONINJH\n"
+            " 'I' 'WATER' 1* 100 250 / \n"
+            "/\n"
+            "WELTARG\n"
+            "   'P' 'BHP' 50 / \n"
+            "   'I' 'BHP' 600 / \n"
+            "/\n"
+            "DATES             -- 2\n"
+            " 15  OKT 2008 / \n"
+            "/\n"
+            "WCONHIST\n"
+            "   'P' 'OPEN' 'RESV' 6*  500/\n/\n"
+            "WCONINJH\n"
+            " 'I' 'WATER' 1* 100 250 / \n"
+            "/\n"
+            "DATES             -- 3\n"
+            " 18  OKT 2008 / \n"
+            "/\n"
+            "WCONHIST\n"
+            "   'I' 'OPEN' 'RESV' 6*  /\n/\n"
+            "DATES             -- 3\n"
+            " 20  OKT 2008 / \n"
+            "/\n"
+            "WCONINJH\n"
+            " 'I' 'WATER' 1* 100 250 / \n"
+            "/\n"
+            ;
+
+    ParseMode parseMode;
+    DeckPtr deck = parser.parseString(input, parseMode);
+    std::shared_ptr<const EclipseGrid> grid = std::make_shared<const EclipseGrid>(10, 10, 10);
+    IOConfigPtr ioConfig;
+    Schedule schedule(parseMode , grid, deck, ioConfig);
+    WellPtr well_p = schedule.getWell("P");
+
+    BOOST_CHECK_EQUAL(well_p->getProductionProperties(0).BHPLimit, 0); //start
+    BOOST_CHECK_EQUAL(well_p->getProductionProperties(1).BHPLimit, 50 * 1e5); // 1
+    // The BHP limit should not be effected by WCONHIST
+    BOOST_CHECK_EQUAL(well_p->getProductionProperties(2).BHPLimit, 50 * 1e5); // 2
+
+    WellPtr well_i = schedule.getWell("I");
+
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(0).BHPLimit, 0); //start
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(1).BHPLimit, 600 * 1e5); // 1
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(2).BHPLimit, 600 * 1e5); // 2
+
+    // Check that the BHP limit is reset when changing between injector and producer.
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(3).BHPLimit, 0); // 3
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(4).BHPLimit, 0); // 4
+
+    BOOST_CHECK_EQUAL( true  , well_i->getInjectionProperties(2).hasInjectionControl(Opm::WellInjector::BHP) );
+    BOOST_CHECK_EQUAL( false , well_i->getInjectionProperties(3).hasInjectionControl(Opm::WellInjector::BHP) );
+    BOOST_CHECK_EQUAL( false , well_i->getInjectionProperties(4).hasInjectionControl(Opm::WellInjector::BHP) );
+}
+
+

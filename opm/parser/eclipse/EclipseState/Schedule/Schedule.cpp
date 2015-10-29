@@ -309,7 +309,7 @@ namespace Opm {
             m_events.addEvent( ScheduleEvents::GROUP_CHANGE , currentStep);
         }
     }
-    
+
     void Schedule::handleVAPPARS(DeckKeywordConstPtr keyword, size_t currentStep){
         for (size_t recordNr = 0; recordNr < keyword->size(); recordNr++) {
             DeckRecordConstPtr record = keyword->getRecord(recordNr);
@@ -370,15 +370,19 @@ namespace Opm {
             const WellCommon::StatusEnum status =
                 WellCommon::StatusFromString(record->getItem("STATUS")->getTrimmedString(0));
 
-            WellProductionProperties properties =
-                ((isPredictionMode)
-                 ? WellProductionProperties::prediction(record)
-                 : WellProductionProperties::history   (record));
-
             const std::vector<WellPtr> wells = getWells(wellNamePattern);
 
             for (auto wellIter=wells.begin(); wellIter != wells.end(); ++wellIter) {
                 WellPtr well = *wellIter;
+                WellProductionProperties properties;
+
+                if (isPredictionMode)
+                    properties = WellProductionProperties::prediction( record );
+                else {
+                    const WellProductionProperties& prev_properties = well->getProductionProperties(currentStep);
+                    double BHPLimit = prev_properties.BHPLimit;
+                    properties = WellProductionProperties::history( BHPLimit , record );
+                }
 
                 if (well->isAvailableForGroupControl(currentStep)) {
                     properties.addProductionControl(WellProducer::GRUP);
@@ -828,6 +832,13 @@ namespace Opm {
                     }
                     else if (cMode == "BHP"){
                         prop.BHPLimit = newValue * siFactorP;
+                        /* For wells controlled by WCONHIST the BHP value given by the
+                           WCHONHIST keyword can not be used to control the well - i.e BHP
+                           control is not natively available - however when BHP has been
+                           specified with WELTARG we can enable BHP control.
+                        */
+                        if (prop.predictionMode == false)
+                            prop.addProductionControl(WellProducer::BHP);
                     }
                     else if (cMode == "THP"){
                         prop.THPLimit = newValue * siFactorP;
@@ -847,6 +858,13 @@ namespace Opm {
                     WellInjectionProperties prop = well->getInjectionPropertiesCopy(currentStep);
                     if (cMode == "BHP"){
                         prop.BHPLimit = newValue * siFactorP;
+                        /* For wells controlled by WCONINJH the BHP value given by the
+                           WCHONINJH keyword can not be used to control the well - i.e BHP
+                           control is not natively available - however when BHP has been
+                           specified with WELTARG we can enable BHP control.
+                        */
+                        if (prop.predictionMode == false)
+                            prop.addInjectionControl(WellInjector::BHP);
                     }
                     else if (cMode == "ORAT"){
                         if(prop.injectorType == WellInjector::TypeEnum::OIL){
