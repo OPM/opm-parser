@@ -247,7 +247,9 @@ void SimpleTable::createColumns(const std::vector<std::string> &columnNames)
 
     {
         for (const std::string& name : columnNames) {
-            m_columns2.emplace_back( name , true );
+            bool ascending;
+            bool strict;
+            m_columns2.emplace_back( name , ascending , strict );
         }
     }
 }

@@ -22,9 +22,10 @@
 
 namespace Opm {
 
-    TableColumn::TableColumn(const std::string& name , bool ascending) :
+    TableColumn::TableColumn(const std::string& name , bool ascending , bool strictlyMonotonic) :
         m_name( name ),
-        m_ascending( ascending )
+        m_ascending( ascending ),
+        m_strictlyMonotonic( strictlyMonotonic ) 
     {
 
     }
@@ -41,11 +42,19 @@ namespace Opm {
 
 
     void TableColumn::assertOrder(double value1 , double value2) const {
-        if (m_ascending && (value1 >= value2))
-            throw std::invalid_argument("Should be strictly ascending");
+        if (m_strictlyMonotonic) {
+            if (m_ascending && (value1 >= value2))
+                throw std::invalid_argument("Should be strictly ascending");
 
-        if (!m_ascending && (value1 <= value2))
-            throw std::invalid_argument("Should be srictly descending");
+            if (!m_ascending && (value1 <= value2))
+                throw std::invalid_argument("Should be srictly descending");
+        } else {
+            if (m_ascending && (value1 > value2))
+                throw std::invalid_argument("Should be weakly ascending");
+
+            if (!m_ascending && (value1 < value2))
+                throw std::invalid_argument("Should be weakly descending");
+        }
     }
 
 

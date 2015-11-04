@@ -29,7 +29,7 @@ namespace Opm {
 
     class TableColumn {
     public:
-        TableColumn(const std::string& name , bool ascending);
+        TableColumn(const std::string& name , bool ascending , bool strictlyMonotonic);
         size_t size( ) const;
         const std::string& name() const;
         void addValue(double);
@@ -45,6 +45,7 @@ namespace Opm {
 
         std::string m_name;
         bool m_ascending;
+        bool m_strictlyMonotonic;
         std::vector<double> m_values;
         std::vector<bool> m_default;
     };

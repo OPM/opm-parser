@@ -30,7 +30,7 @@ using namespace Opm;
 
 
 BOOST_AUTO_TEST_CASE( CreateTest ) {
-    TableColumn column("COLUMN" , true);
+    TableColumn column("COLUMN" , true , true);
     BOOST_CHECK_EQUAL( column.size() , 0 );
     BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE( CreateTest ) {
 
 
 BOOST_AUTO_TEST_CASE( TestDefault ) {
-    TableColumn column("COLUMN" , true);
+    TableColumn column("COLUMN" , true , true);
 
     column.addDefault( );
     column.addDefault( );
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( TestDefault ) {
 
 
 BOOST_AUTO_TEST_CASE( TestAscending ) {
-    TableColumn column("COLUMN" , true);
+    TableColumn column("COLUMN" , true , true);
     BOOST_CHECK_EQUAL( column.size() , 0 );
     BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
@@ -87,9 +87,15 @@ BOOST_AUTO_TEST_CASE( TestAscending ) {
 }
 
 
+BOOST_AUTO_TEST_CASE( TestWeaklyAscending ) {
+    TableColumn column("COLUMN" , true , false);
+    column.addValue(1);
+    column.addValue(1);
+}
+
 
 BOOST_AUTO_TEST_CASE( TestDescending ) {
-    TableColumn column("COLUMN" , false);
+    TableColumn column("COLUMN" , false , true);
     BOOST_CHECK_EQUAL( column.size() , 0 );
     BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
