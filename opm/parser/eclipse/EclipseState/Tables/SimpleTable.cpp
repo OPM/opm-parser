@@ -40,6 +40,15 @@ void SimpleTable::init(Opm::DeckItemConstPtr deckItem,
                 size_t deckItemIdx = rowIdx*numColumns() + colIdx;
                 m_columns[colIdx].push_back( deckItem->getSIDouble(deckItemIdx) );
                 m_valueDefaulted[colIdx].push_back( deckItem->defaultApplied(deckItemIdx) );
+
+                /*{
+                    auto& column = m_columns2[colIdx];
+                    if (deckItem->defaultApplied(deckItemIdx))
+                        column.addDefault(  );
+                    else
+                        column.addValue( deckItem->getSIDouble(deckItemIdx) );
+                }
+                */
             }
         }
     }
@@ -233,6 +242,14 @@ void SimpleTable::createColumns(const std::vector<std::string> &columnNames)
     }
     m_columns.resize(columnIdx);
     m_valueDefaulted.resize(columnIdx);
+
+
+
+    {
+        for (const std::string& name : columnNames) {
+            m_columns2.emplace_back( name , true );
+        }
+    }
 }
 
 }

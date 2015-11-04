@@ -20,6 +20,7 @@
 #define	OPM_PARSER_SIMPLE_TABLE_HPP
 
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
 
 #include <map>
 #include <memory>
@@ -87,6 +88,7 @@ namespace Opm {
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<double> > m_columns;
         std::vector<std::vector<bool> > m_valueDefaulted;
+        std::vector<TableColumn> m_columns2;
     };
 
     typedef std::shared_ptr<SimpleTable> SimpleTablePtr;
