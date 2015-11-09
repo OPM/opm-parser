@@ -25,6 +25,8 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Completion.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/SegmentSet.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Segment.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
@@ -111,8 +113,11 @@ namespace Opm {
         bool canOpen(size_t time_step) const;
 
 
+        // for multi-segment wells
+        bool isMultiSegment(size_t time_step) const;
+        SegmentSetConstPtr getSegmentSet(size_t time_step) const;
 
-
+        void addSegmentSet(size_t time_step, SegmentSetConstPtr new_segmentset);
 
     private:
         void setRefDepthFromCompletions() const;
@@ -148,6 +153,9 @@ namespace Opm {
         WellCompletion::CompletionOrderEnum m_comporder;
         bool m_allowCrossFlow;
 
+        // WELSEGS DATA - for mutli-segment wells
+        // flag indicating if the well is a multi-segment well
+        std::shared_ptr<DynamicState<SegmentSetConstPtr>> m_segmentset;
     };
     typedef std::shared_ptr<Well> WellPtr;
     typedef std::shared_ptr<const Well> WellConstPtr;

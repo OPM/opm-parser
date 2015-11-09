@@ -53,7 +53,8 @@ namespace Opm {
           m_preferredPhase(preferredPhase),
           m_grid( grid ),
           m_comporder(completionOrdering),
-          m_allowCrossFlow(allowCrossFlow)
+          m_allowCrossFlow(allowCrossFlow),
+          m_segmentset(new DynamicState<SegmentSetConstPtr>(timeMap, SegmentSetPtr(new SegmentSet())))
     {
         m_name = name_;
         m_creationTimeStep = creationTimeStep;
@@ -348,6 +349,42 @@ namespace Opm {
             }
         }
         return canOpen;
+    }
+
+
+    SegmentSetConstPtr Well::getSegmentSet(size_t time_step) const {
+        return m_segmentset->get(time_step);
+    }
+
+    bool Well::isMultiSegment(size_t time_step) const {
+        return (getSegmentSet(time_step)->numberSegment() > 0);
+    }
+
+    void Well::addSegmentSet(size_t time_step, SegmentSetConstPtr new_segmentset_in) {
+        // to see if it is the first time entering WELSEGS input to this well.
+        // if the well is not multi-segment well, it will be the first time
+        // not sure if a well can switch between mutli-segment well and other
+        // type of well
+        // Here, we assume not
+        const bool first_time = !isMultiSegment(time_step);
+
+        if (first_time) {
+            // overwrite the BHP reference depth with the one from WELSEGS keyword
+            const double ref_depth = new_segmentset_in->depthTopSegment();
+            m_refDepth.setValue(ref_depth);
+            SegmentSetPtr new_segmentset = SegmentSetPtr(new_segmentset_in->shallowCopy());
+            if (new_segmentset->lengthDepthType() == WellSegment::ABS) {
+                new_segmentset->processABS();
+            } else if (new_segmentset->lengthDepthType() == WellSegment::INC) {
+                new_segmentset->processINC(first_time);
+            } else {
+                throw std::logic_error(" unknown length_depth_type in the new_segmentset");
+            }
+            m_segmentset->update(time_step, new_segmentset);
+        } else {
+            // checking the consistency of the input WELSEGS information
+            throw std::logic_error("re-entering WELSEGS for a well is not supported yet!!.");
+        }
     }
 
 }
