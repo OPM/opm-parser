@@ -242,16 +242,11 @@ void SimpleTable::createColumns(const std::vector<std::string> &columnNames)
     }
     m_columns.resize(columnIdx);
     m_valueDefaulted.resize(columnIdx);
-
-
-
-    {
-        for (const std::string& name : columnNames) {
-            bool ascending;
-            bool strict;
-            m_columns2.emplace_back( name , ascending , strict );
-        }
-    }
 }
+
+    void SimpleTable::addColumn(std::shared_ptr<const ColumnSchema> schema) {
+        m_schema.push_back( schema );
+        m_columns2.emplace_back( schema );
+    }
 
 }

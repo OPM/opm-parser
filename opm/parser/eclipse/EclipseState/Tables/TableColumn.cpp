@@ -22,18 +22,11 @@
 
 namespace Opm {
 
-    TableColumn::TableColumn(const std::string& name , bool ascending , bool strictlyMonotonic) :
-        m_name( name ),
-        m_ascending( ascending ),
-        m_strictlyMonotonic( strictlyMonotonic ) 
+    TableColumn::TableColumn(std::shared_ptr<const ColumnSchema> schema) :
+        m_schema( schema )
     {
-
     }
 
-
-    const std::string& TableColumn::name() const {
-        return m_name;
-    }
 
 
     size_t TableColumn::size() const {
@@ -42,19 +35,8 @@ namespace Opm {
 
 
     void TableColumn::assertOrder(double value1 , double value2) const {
-        if (m_strictlyMonotonic) {
-            if (m_ascending && (value1 >= value2))
-                throw std::invalid_argument("Should be strictly ascending");
-
-            if (!m_ascending && (value1 <= value2))
-                throw std::invalid_argument("Should be srictly descending");
-        } else {
-            if (m_ascending && (value1 > value2))
-                throw std::invalid_argument("Should be weakly ascending");
-
-            if (!m_ascending && (value1 < value2))
-                throw std::invalid_argument("Should be weakly descending");
-        }
+        if (!m_schema->validOrder( value1 , value2) )
+            throw std::invalid_argument("Incorrect ordering of values");
     }
 
 

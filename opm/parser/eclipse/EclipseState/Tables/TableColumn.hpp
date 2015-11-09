@@ -23,29 +23,30 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
+#include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
 namespace Opm {
 
     class TableColumn {
     public:
-        TableColumn(const std::string& name , bool ascending , bool strictlyMonotonic);
+        TableColumn( std::shared_ptr<const ColumnSchema> schma);
         size_t size( ) const;
         const std::string& name() const;
+        void assertOrder(double value1 , double value2) const;
         void addValue(double);
         void addDefault();
         void updateValue(size_t index, double value);
         double operator[](size_t index) const;
 
     private:
-        void assertOrder(double value1 , double value2) const;
         void assertUpdate(size_t index, double value) const;
         void assertPrevious(size_t index , double value) const;
         void assertNext(size_t index , double value) const;
 
+        std::shared_ptr<const ColumnSchema> m_schema;
         std::string m_name;
-        bool m_ascending;
-        bool m_strictlyMonotonic;
         std::vector<double> m_values;
         std::vector<bool> m_default;
     };

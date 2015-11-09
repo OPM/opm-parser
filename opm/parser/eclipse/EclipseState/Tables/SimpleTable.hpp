@@ -21,6 +21,7 @@
 
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
 #include <map>
 #include <memory>
@@ -84,11 +85,13 @@ namespace Opm {
         void applyDefaultsConstant(const std::string& columnName, double value);
         void applyDefaultsLinear(const std::string& columnName);
         void createColumns(const std::vector<std::string> &columnNames);
+        void addColumn(std::shared_ptr<const ColumnSchema> schema);
 
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<double> > m_columns;
         std::vector<std::vector<bool> > m_valueDefaulted;
         std::vector<TableColumn> m_columns2;
+        std::vector<std::shared_ptr<const ColumnSchema>> m_schema;
     };
 
     typedef std::shared_ptr<SimpleTable> SimpleTablePtr;

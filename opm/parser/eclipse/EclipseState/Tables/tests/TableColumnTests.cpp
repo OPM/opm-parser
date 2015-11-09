@@ -25,14 +25,15 @@
 
 
 #include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
 using namespace Opm;
 
 
 BOOST_AUTO_TEST_CASE( CreateTest ) {
-    TableColumn column("COLUMN" , true , true);
+    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    TableColumn column( schema );
     BOOST_CHECK_EQUAL( column.size() , 0 );
-    BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
     column.addValue( 0 );
     column.addValue( 1 );
@@ -50,7 +51,9 @@ BOOST_AUTO_TEST_CASE( CreateTest ) {
 
 
 BOOST_AUTO_TEST_CASE( TestDefault ) {
-    TableColumn column("COLUMN" , true , true);
+    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    TableColumn column( schema );
+
 
     column.addDefault( );
     column.addDefault( );
@@ -64,9 +67,10 @@ BOOST_AUTO_TEST_CASE( TestDefault ) {
 
 
 BOOST_AUTO_TEST_CASE( TestAscending ) {
-    TableColumn column("COLUMN" , true , true);
+    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    TableColumn column( schema );
+
     BOOST_CHECK_EQUAL( column.size() , 0 );
-    BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
     column.addValue( 10 );
     BOOST_CHECK_THROW( column.addValue( 9 ) , std::invalid_argument );
@@ -88,16 +92,19 @@ BOOST_AUTO_TEST_CASE( TestAscending ) {
 
 
 BOOST_AUTO_TEST_CASE( TestWeaklyAscending ) {
-    TableColumn column("COLUMN" , true , false);
+    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::INCREASING );
+    TableColumn column( schema );
+
     column.addValue(1);
     column.addValue(1);
 }
 
 
 BOOST_AUTO_TEST_CASE( TestDescending ) {
-    TableColumn column("COLUMN" , false , true);
+    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_DECREASING);
+    TableColumn column( schema );
+
     BOOST_CHECK_EQUAL( column.size() , 0 );
-    BOOST_CHECK_EQUAL( column.name() , "COLUMN");
 
     column.addValue( -10 );
     BOOST_CHECK_THROW( column.addValue( -9 ) , std::invalid_argument );
