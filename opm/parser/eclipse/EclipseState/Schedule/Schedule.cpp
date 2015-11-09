@@ -777,6 +777,13 @@ namespace Opm {
                 }
                 else if(!haveCompletionData) {
                     WellCommon::StatusEnum status = WellCommon::StatusFromString( record->getItem("STATUS")->getTrimmedString(0));
+                    if (status == WellCommon::StatusEnum::OPEN && !well->canOpen(currentStep)) {
+                        std::string msg =
+                                "Well " + well->name() + " where crossflow is banned has zero total rate. " +
+                                "This well is prevented from opening at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                        OpmLog::addMessage(Log::MessageType::Info , Log::prefixMessage(Log::MessageType::Info, msg));
+                        continue;
+                    }
                     updateWellStatus( well , currentStep , status );
                 }
             }
