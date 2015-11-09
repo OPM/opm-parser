@@ -58,8 +58,7 @@ namespace Opm {
 
 
         const T& operator[](size_t index) const {
-            if (index >= m_timeMap->size())
-                throw std::range_error("Index value is out range.");
+            assertSize( index );
 
             if (index < m_data.size())
                 return m_data[index];
@@ -68,9 +67,14 @@ namespace Opm {
         }
 
 
+        const T& iget(size_t index) const {
+            return (*this)[index];
+        }
+
+
+
         T& operator[](size_t index) {
-            if (index >= m_timeMap->size())
-                throw std::range_error("Index value is out range.");
+            assertSize( index );
 
             if (index >= m_data.size())
                 m_data.resize( index + 1 , m_defaultValue);
@@ -78,9 +82,17 @@ namespace Opm {
             return m_data[index];
         }
 
+        void iset(size_t index, T value) {
+            (*this)[index] = value;
+        }
 
 
     private:
+        void assertSize(size_t index) const {
+            if (index >= m_timeMap->size())
+                throw std::range_error("Index value is out range.");
+        }
+
 
         std::vector<T> m_data;
         TimeMapConstPtr m_timeMap;
