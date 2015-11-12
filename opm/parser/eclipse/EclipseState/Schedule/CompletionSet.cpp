@@ -40,6 +40,16 @@ namespace Opm {
     }
 
 
+    CompletionConstPtr CompletionSet::getFromIJK(const int i, const int j, const int k) const {
+        for (size_t ic = 0; ic < size(); ++ic) {
+            if (get(ic)->sameCoordinate(i, j, k)) {
+                return get(ic);
+            }
+        }
+        throw std::runtime_error(" the completion is not found! \n ");
+    }
+
+
     void CompletionSet::add(CompletionConstPtr completion) {
         bool inserted = false;
 

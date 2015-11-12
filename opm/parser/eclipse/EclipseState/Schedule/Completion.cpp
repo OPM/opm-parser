@@ -34,7 +34,9 @@ namespace Opm {
           m_wellPi(1.0),
           m_skinFactor(skinFactor),
           m_state(state),
-          m_direction(direction)
+          m_direction(direction),
+          m_segment_number(-1),
+          m_center_depth(-1.e100)
     {}
 
     Completion::Completion(std::shared_ptr<const Completion> oldCompletion, WellCompletion::StateEnum newStatus)
@@ -47,8 +49,15 @@ namespace Opm {
         m_wellPi(oldCompletion->getWellPi()),
         m_skinFactor(oldCompletion->getSkinFactorAsValueObject()),
         m_state(newStatus),
-        m_direction(oldCompletion->getDirection())
-    {}
+        m_direction(oldCompletion->getDirection()),
+        m_center_depth(oldCompletion->getCenterDepth())
+    {
+        if (oldCompletion->attachedToSegment()) {
+            m_segment_number = oldCompletion->getSegmentNumber();
+        } else {
+            m_segment_number = -1;
+        }
+    }
 
     Completion::Completion(std::shared_ptr<const Completion> oldCompletion, double wellPi)
             :
@@ -60,8 +69,15 @@ namespace Opm {
             m_wellPi(oldCompletion->getWellPi()),
             m_skinFactor(oldCompletion->getSkinFactorAsValueObject()),
             m_state(oldCompletion->getState()),
-            m_direction(oldCompletion->getDirection())
+            m_direction(oldCompletion->getDirection()),
+            m_center_depth(oldCompletion->getCenterDepth())
     {
+        if (oldCompletion->attachedToSegment()) {
+            m_segment_number = oldCompletion->getSegmentNumber();
+        } else {
+            m_segment_number = -1;
+        }
+
         if(m_wellPi!=0){
             m_wellPi*=wellPi;
         }else{
@@ -69,6 +85,25 @@ namespace Opm {
         }
     }
 
+    Completion::Completion(std::shared_ptr<const Completion> oldCompletion)
+            :
+            m_i(oldCompletion->getI()),
+            m_j(oldCompletion->getJ()),
+            m_k(oldCompletion->getK()),
+            m_diameter(oldCompletion->getDiameterAsValueObject()),
+            m_connectionTransmissibilityFactor(oldCompletion->getConnectionTransmissibilityFactorAsValueObject()),
+            m_wellPi(oldCompletion->getWellPi()),
+            m_skinFactor(oldCompletion->getSkinFactorAsValueObject()),
+            m_state(oldCompletion->getState()),
+            m_direction(oldCompletion->getDirection()),
+            m_center_depth(oldCompletion->getCenterDepth())
+    {
+        if (oldCompletion->attachedToSegment()) {
+            m_segment_number = oldCompletion->getSegmentNumber();
+        } else {
+            m_segment_number = -1;
+        }
+    }
 
     bool Completion::sameCoordinate(const Completion& other) const {
         if ((m_i == other.m_i) &&
@@ -78,6 +113,15 @@ namespace Opm {
         else
             return false;
     }
+
+    bool Completion::sameCoordinate(const int i, const int j, const int k) const {
+        if ((m_i == i) && (m_j == j) && (m_k == k)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /**
        This will break up one record and return a pair: <name ,
@@ -210,6 +254,28 @@ namespace Opm {
 
     double Completion::getWellPi() const {
         return m_wellPi;
+    }
+
+    int Completion::getSegmentNumber() const {
+        if (!attachedToSegment()) {
+            throw std::runtime_error(" the completion is not attached to a segment!\n ");
+        }
+        return m_segment_number;
+    }
+
+    double Completion::getCenterDepth() const {
+        return m_center_depth;
+    }
+
+    void Completion::attachSegment(int segmentNumber , double centerDepth) {
+        assert(segmentNumber > 0);
+
+        m_segment_number = segmentNumber;
+        m_center_depth = centerDepth;
+    }
+
+    bool Completion::attachedToSegment() const {
+        return (m_segment_number > 0);
     }
 
 
