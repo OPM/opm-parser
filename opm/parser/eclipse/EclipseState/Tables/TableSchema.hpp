@@ -18,42 +18,36 @@
  */
 
 
-#ifndef _TABLE_COLUMN_HPP_
-#define _TABLE_COLUMN_HPP_
+#ifndef _TABLE_SCHEMA_HPP_
+#define _TABLE_SCHEMA_HPP_
 
 #include <string>
 #include <vector>
-#include <memory>
+
+#include <opm/parser/eclipse/EclipseState/Util/OrderedMap.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
 namespace Opm {
 
-    class TableColumn {
+    class TableSchema {
     public:
-        TableColumn( const ColumnSchema& schema );
-        size_t size( ) const;
-        const std::string& name() const;
-        void assertOrder(double value1 , double value2) const;
-        void addValue(double);
-        void addDefault();
-        void updateValue(size_t index, double value);
-        double operator[](size_t index) const;
-        bool defaultApplied(size_t index) const;
-        double front() const;
-        double back() const;
+        TableSchema(const std::string& name);
+        void addColumn(const ColumnSchema& column);
+        const ColumnSchema&& getColumn( const std::string& name ) const;
+        const ColumnSchema&& getColumn( size_t columnIndex ) const;
 
+        /*
+          std::vector<const ColumnSchema>::const_iterator begin() const;
+          std::vector<const ColumnSchema>::const_iterator end() const;
+        */
+        /* Number of columns */
+        size_t size() const;
     private:
-        void assertUpdate(size_t index, double value) const;
-        void assertPrevious(size_t index , double value) const;
-        void assertNext(size_t index , double value) const;
-
-        const ColumnSchema& m_schema;
+        OrderedMap<ColumnSchema> m_columns;
         std::string m_name;
-        std::vector<double> m_values;
-        std::vector<bool> m_default;
     };
 }
 
-
 #endif
+

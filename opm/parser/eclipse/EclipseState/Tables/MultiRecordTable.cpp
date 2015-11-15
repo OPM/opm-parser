@@ -65,11 +65,20 @@ void MultiRecordTable::init(Opm::DeckKeywordConstPtr keyword,
         Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
         Opm::DeckItemConstPtr dataItem = deckRecord->getItem(1);
 
-        m_columns[0].push_back(indexItem->getSIDouble(0));
-        m_valueDefaulted[0].push_back(indexItem->defaultApplied(0));
+        {
+            auto column0 = getColumn( 0 );
+            if (indexItem->defaultApplied(0))
+                column0.addDefault( );
+            else
+                column0.addValue( indexItem->getSIDouble( 0 ));
+        }
+
         for (size_t colIdx = 1; colIdx < numColumns(); ++colIdx) {
-            m_columns[colIdx].push_back(dataItem->getSIDouble(colIdx - 1));
-            m_valueDefaulted[colIdx].push_back(dataItem->defaultApplied(colIdx - 1));
+            auto column = getColumn( colIdx - 1 );
+            if (dataItem->defaultApplied(colIdx - 1))
+                column.addDefault( );
+            else
+                column.addValue( dataItem->getSIDouble(colIdx - 1) );
         }
     }
 }

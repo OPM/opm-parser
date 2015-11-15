@@ -22,6 +22,8 @@
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableSchema.hpp>
+
 
 #include <map>
 #include <memory>
@@ -42,11 +44,11 @@ namespace Opm {
          * This requires all data to be a list of doubles in the first
          * item of a given record index.
          */
-        void init(Opm::DeckItemConstPtr deckItem,
-                  const std::vector<std::string> &columnNames);
+        void init(Opm::DeckItemConstPtr deckItem);
 
     public:
-        SimpleTable() = default;
+        SimpleTable( const TableSchema& schema);
+        void addColumns();
 
         /*!
          * \brief Returns the number of tables in a keyword.
@@ -64,9 +66,12 @@ namespace Opm {
 #endif
 
         size_t numColumns() const;
-        size_t numRows() const;
-        const std::vector<double> &getColumn(const std::string &name) const;
-        const std::vector<double> &getColumn(size_t colIdx) const;
+        size_t numRows();
+        const TableColumn&& getColumn(const std::string &name) const;
+        const TableColumn&& getColumn(size_t colIdx) const;
+
+        TableColumn&& getColumn(const std::string &name);
+        TableColumn&& getColumn(size_t colIdx);
 
         /*!
          * \brief Evaluate a column of the table at a given position.
@@ -84,14 +89,15 @@ namespace Opm {
         void assertUnitRange(const std::string& columnName);
         void applyDefaultsConstant(const std::string& columnName, double value);
         void applyDefaultsLinear(const std::string& columnName);
-        void createColumns(const std::vector<std::string> &columnNames);
+        void createColumns(const TableSchema& tableSchema);
+        void createColumns(const std::vector<std::string>& columnNames);
         void addColumn(std::shared_ptr<const ColumnSchema> schema);
 
         std::map<std::string, size_t> m_columnNames;
-        std::vector<std::vector<double> > m_columns;
         std::vector<std::vector<bool> > m_valueDefaulted;
         std::vector<TableColumn> m_columns2;
-        std::vector<std::shared_ptr<const ColumnSchema>> m_schema;
+        TableSchema m_schema;
+        OrderedMap<TableColumn> m_columns;
     };
 
     typedef std::shared_ptr<SimpleTable> SimpleTablePtr;

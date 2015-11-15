@@ -27,7 +27,8 @@ namespace Opm {
             INCREASING          = 1,
             STRICTLY_INCREASING = 2,
             DECREASING          = 3,
-            STRICTLY_DECREASING = 4
+            STRICTLY_DECREASING = 4,
+            RANDOM              = 5
         };
     }
 }

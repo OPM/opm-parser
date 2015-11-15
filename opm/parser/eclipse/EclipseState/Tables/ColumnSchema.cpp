@@ -38,6 +38,9 @@ namespace Opm {
 
     bool ColumnSchema::validOrder( double value1 , double value2) const {
         switch (m_order) {
+        case Table::RANDOM:
+            return true;
+            break;
         case Table::INCREASING:
             return (value2 >= value1);
             break;

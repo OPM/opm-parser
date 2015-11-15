@@ -22,7 +22,7 @@
 
 namespace Opm {
 
-    TableColumn::TableColumn(std::shared_ptr<const ColumnSchema> schema) :
+    TableColumn::TableColumn(const ColumnSchema& schema) :
         m_schema( schema )
     {
     }
@@ -35,7 +35,7 @@ namespace Opm {
 
 
     void TableColumn::assertOrder(double value1 , double value2) const {
-        if (!m_schema->validOrder( value1 , value2) )
+        if (!m_schema.validOrder( value1 , value2) )
             throw std::invalid_argument("Incorrect ordering of values");
     }
 
@@ -91,6 +91,12 @@ namespace Opm {
         m_default[index] = false;
     }
 
+    bool TableColumn::defaultApplied(size_t index) const {
+        if (index >= m_values.size())
+            throw std::invalid_argument("Value: " + std::to_string( index ) + " out of range: [0," + std::to_string( m_values.size()) + ")");
+
+        return m_default[index];
+    }
 
     double TableColumn::operator[](size_t index) const {
         if (index >= m_values.size())
@@ -100,6 +106,15 @@ namespace Opm {
             throw std::invalid_argument("Value at index " + std::to_string( index ) + " is defaulted - can not ask!");
 
         return m_values[index];
+    }
+
+    double TableColumn::back() const {
+        return m_values.back( );
+    }
+
+
+    double TableColumn::front() const {
+        return m_values.front( );
     }
 
 }

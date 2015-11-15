@@ -28,13 +28,24 @@ namespace Opm {
     class RtempvdTable : public SimpleTable {
     public:
         friend class TableManager;
-        RtempvdTable() = default;
+
+        RtempvdTable(Opm::DeckItemConstPtr item)
+        {
+
+            m_schema.addColumn( ColumnSchema( "Depth"       , TableOrder::INCREASING ) );
+            m_schema.addColumn( ColumnSchema( "Temperature" , TableOrder::RANDOM ) );
+
+            SimpleTable::init( item );
+        }
+
 
         /*!
          * \brief Read the RTEMPVD keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckItemConstPtr item)
+
+        /*
+          void init(Opm::DeckItemConstPtr item)
         {
             SimpleTable::init(item,
                               std::vector<std::string>{
@@ -43,10 +54,11 @@ namespace Opm {
 
 
             SimpleTable::checkNonDefaultable("Depth");
-            SimpleTable::checkMonotonic("Depth", /*isAscending=*/true);
+            SimpleTable::checkMonotonic("Depth", true);
 
             SimpleTable::checkNonDefaultable("Temperature");
         }
+        */
 
         using SimpleTable::numTables;
         using SimpleTable::numRows;
