@@ -27,16 +27,12 @@ size_t SimpleTable::numTables(Opm::DeckKeywordConstPtr keyword)
 }
 
 void SimpleTable::addColumns() {
-    for (size_t colIdx = 0; colIdx < m_schema.size(); ++colIdx) {
-        const auto& schemaColumn = m_schema.getColumn( colIdx );
+    for (size_t colIdx = 0; colIdx < m_schema->size(); ++colIdx) {
+        const auto& schemaColumn = m_schema->getColumn( colIdx );
         TableColumn column(schemaColumn); // SOme move trickery here ...
         //m_columns.insert( schemaColumn.name() , column );
     }
 }
-
-SimpleTable::SimpleTable( const TableSchema& schema ) :
-    m_schema( schema )
-{ }
 
 
 // create table from single record
@@ -65,7 +61,7 @@ size_t SimpleTable::numColumns() const {
     return m_columns.size();
 }
 
-size_t SimpleTable::numRows() {
+size_t SimpleTable::numRows() const {
     const auto column0 = getColumn(0);
     return column0.size();
 }
@@ -156,12 +152,12 @@ void SimpleTable::checkNonDefaultable(const std::string& columnName)
 
 void SimpleTable::assertUnitRange(const std::string& columnName)
 {
-    int columnIdx = m_columnNames.at(columnName);
-    int nRows = numRows();
-    if (m_columns[columnIdx][0] != 0.0 || m_columns[columnIdx][nRows-1] != 1.0) {
+    const auto& column = getColumn( columnName );
+    if (column.front() != 0.0)
         throw std::invalid_argument("Column " + columnName + " must span range [0 1]");
-    }
 
+    if (column.back() != 1.0)
+        throw std::invalid_argument("Column " + columnName + " must span range [0 1]");
 }
 
 void SimpleTable::applyDefaultsConstant(const std::string& columnName, double value)
@@ -219,11 +215,9 @@ void SimpleTable::applyDefaultsLinear(const std::string& columnName)
     }
 }
 
-    void SimpleTable::createColumns(const std::vector<std::string>& columnNames) {}
 
-
-void SimpleTable::createColumns(const TableSchema& tableSchema)
-{
+    //void SimpleTable::createColumns(const TableSchema& tableSchema)
+    //{
 
 //    size_t columnIndex = 0;
 //    for (columnIndex = 0; columnIndex < tableSchema.size(); columnIndex++) {
@@ -243,7 +237,7 @@ void SimpleTable::createColumns(const TableSchema& tableSchema)
     m_columns.resize(columnIdx);
     m_valueDefaulted.resize(columnIdx);
     */
-}
+    //}
 
 
 }

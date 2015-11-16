@@ -28,26 +28,18 @@ namespace Opm {
     class Sof3Table : public SimpleTable {
         friend class TableManager;
 
-        /*!
-         * \brief Read the SOF3 keyword and provide some convenience
-         *        methods for it.
-         */
-        void init(Opm::DeckItemConstPtr item)
+        Sof3Table(Opm::DeckItemConstPtr item)
         {
-            SimpleTable::init(item,
-                              std::vector<std::string>{"SO", "KROW", "KROG"});
+            m_schema = std::make_shared<TableSchema>();
 
+            m_schema->addColumn( ColumnSchema("SO" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
+            m_schema->addColumn( ColumnSchema("KROW" , Table::INCREASING , Table::DEFAULT_LINEAR ));
+            m_schema->addColumn( ColumnSchema("KROG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
 
-            SimpleTable::checkNonDefaultable("SO");
-            SimpleTable::applyDefaultsLinear("KROW");
-            SimpleTable::applyDefaultsLinear("KROG");
-            SimpleTable::checkMonotonic("SO", /*isAscending=*/true);
-            SimpleTable::checkMonotonic("KROW", /*isAscending=*/true, /*strict*/false);
-            SimpleTable::checkMonotonic("KROG", /*isAscending=*/true, /*strict*/false);
+            SimpleTable::init( item );
         }
 
     public:
-        Sof3Table() = default;
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
@@ -60,13 +52,13 @@ namespace Opm {
         using SimpleTable::numColumns;
         using SimpleTable::evaluate;
 
-        const std::vector<double> &getSoColumn() const
+        const TableColumn& getSoColumn() const
         { return SimpleTable::getColumn(0); }
 
-        const std::vector<double> &getKrowColumn() const
+        const TableColumn& getKrowColumn() const
         { return SimpleTable::getColumn(1); }
 
-        const std::vector<double> &getKrogColumn() const
+        const TableColumn& getKrogColumn() const
         { return SimpleTable::getColumn(2); }
     };
 }

@@ -47,7 +47,6 @@ namespace Opm {
         void init(Opm::DeckItemConstPtr deckItem);
 
     public:
-        SimpleTable( const TableSchema& schema);
         void addColumns();
 
         /*!
@@ -66,7 +65,7 @@ namespace Opm {
 #endif
 
         size_t numColumns() const;
-        size_t numRows();
+        size_t numRows() const;
         const TableColumn&& getColumn(const std::string &name) const;
         const TableColumn&& getColumn(size_t colIdx) const;
 
@@ -82,6 +81,8 @@ namespace Opm {
         double evaluate(const std::string& columnName, double xPos) const;
 
     protected:
+        SimpleTable() {};
+        
         void checkNonDefaultable(const std::string& columnName);
         void checkMonotonic(const std::string& columnName,
                              bool isAscending,
@@ -89,14 +90,14 @@ namespace Opm {
         void assertUnitRange(const std::string& columnName);
         void applyDefaultsConstant(const std::string& columnName, double value);
         void applyDefaultsLinear(const std::string& columnName);
-        void createColumns(const TableSchema& tableSchema);
-        void createColumns(const std::vector<std::string>& columnNames);
+        //void createColumns(const TableSchema& tableSchema);
+        //void createColumns(const std::vector<std::string>& columnNames);
         void addColumn(std::shared_ptr<const ColumnSchema> schema);
 
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<bool> > m_valueDefaulted;
         std::vector<TableColumn> m_columns2;
-        TableSchema m_schema;
+        std::shared_ptr<TableSchema> m_schema;
         OrderedMap<TableColumn> m_columns;
     };
 

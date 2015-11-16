@@ -30,12 +30,13 @@ namespace Opm {
 
     class ColumnSchema {
     public:
-        ColumnSchema(const std::string& name , Table::ColumnOrderEnum order);
+        ColumnSchema(const std::string& name , Table::ColumnOrderEnum order, Table::DefaultAction defaultAction);
         const std::string& name() const;
         bool validOrder( double value1 , double value2) const;
     private:
         std::string m_name;
         Table::ColumnOrderEnum m_order;
+        Table::DefaultAction m_defaultAction;
     };
 }
 

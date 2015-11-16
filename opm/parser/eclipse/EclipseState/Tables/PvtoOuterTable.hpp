@@ -60,16 +60,16 @@ namespace Opm {
         using MultiRecordTable::firstRecordIndex;
         using MultiRecordTable::numRecords;
 
-        const std::vector<double> &getGasSolubilityColumn() const
+        const TableColumn& getGasSolubilityColumn() const
         { return MultiRecordTable::getColumn(0); }
 
-        const std::vector<double> &getPressureColumn() const
+        const TableColumn& getPressureColumn() const
         { return MultiRecordTable::getColumn(1); }
 
-        const std::vector<double> &getOilFormationFactorColumn() const
+        const TableColumn& getOilFormationFactorColumn() const
         { return MultiRecordTable::getColumn(2); }
 
-        const std::vector<double> &getOilViscosityColumn() const
+        const TableColumn& getOilViscosityColumn() const
         { return MultiRecordTable::getColumn(3); }
     };
 }

@@ -20,6 +20,7 @@
 #define OPM_PARSER_SGFN_TABLE_HPP
 
 #include "SimpleTable.hpp"
+#include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
     // forward declaration
@@ -33,17 +34,15 @@ namespace Opm {
          * \brief Read the SGFN keyword and provide some convenience
          *        methods for it.
          */
-        void init(Opm::DeckItemConstPtr item)
+        SgfnTable(Opm::DeckItemConstPtr item)
         {
-            SimpleTable::init(item,
-                              std::vector<std::string>{"SG", "KRG", "PCOG"});
+            m_schema = std::make_shared<TableSchema>();
 
-            SimpleTable::checkNonDefaultable("SG");
-            SimpleTable::checkMonotonic("SG",   /*isAscending=*/true);
-            SimpleTable::applyDefaultsLinear("KRG");
-            SimpleTable::applyDefaultsLinear("PCOG");
-            SimpleTable::checkMonotonic("KRG",  /*isAscending=*/true,  /*strict=*/false);
-            SimpleTable::checkMonotonic("PCOG", /*isAscending=*/true, /*strict=*/false);
+            m_schema->addColumn( ColumnSchema("SG"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ) );
+            m_schema->addColumn( ColumnSchema("KRG" , Table::INCREASING , Table::DEFAULT_LINEAR));
+            m_schema->addColumn( ColumnSchema("PCOG" , Table::INCREASING , Table::DEFAULT_LINEAR));
+
+            SimpleTable::init(item);
         }
 
     public:
@@ -60,15 +59,15 @@ namespace Opm {
         using SimpleTable::numColumns;
         using SimpleTable::evaluate;
 
-        const std::vector<double> &getSgColumn() const
+        const TableColumn& getSgColumn() const
         { return SimpleTable::getColumn(0); }
 
-        const std::vector<double> &getKrgColumn() const
+        const TableColumn& getKrgColumn() const
         { return SimpleTable::getColumn(1); }
 
         // this column is p_g - p_o (non-wetting phase pressure minus
         // wetting phase pressure for a given gas saturation)
-        const std::vector<double> &getPcogColumn() const
+        const TableColumn& getPcogColumn() const
         { return SimpleTable::getColumn(2); }
     };
 }

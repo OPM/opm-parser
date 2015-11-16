@@ -30,6 +30,13 @@ namespace Opm {
             STRICTLY_DECREASING = 4,
             RANDOM              = 5
         };
+
+        enum DefaultAction {
+            DEFAULT_NONE = 1,
+            DEFAULT_CONST = 2,
+            DEFAULT_LINEAR = 3,
+        };
+
     }
 }
 

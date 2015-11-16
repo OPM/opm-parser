@@ -29,21 +29,12 @@ namespace Opm {
     public:
         friend class TableManager;
 
-        RvvdTable() = default;
-
-        /*!
-         * \brief Read the RSVD keyword and provide some convenience
-         *        methods for it.
-         */
-        void init(Opm::DeckItemConstPtr item)
+        RvvdTable(Opm::DeckItemConstPtr item)
         {
-            SimpleTable::init(item,
-                              std::vector<std::string>{"DEPTH", "RV"});
-
-
-            SimpleTable::checkNonDefaultable("DEPTH");
-            SimpleTable::checkMonotonic("DEPTH", /*isAscending=*/true);
-            SimpleTable::checkNonDefaultable("RV");
+            m_schema = std::make_shared<TableSchema>( );
+            m_schema->addColumn( ColumnSchema( "DEPTH" ,  Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ) );
+            m_schema->addColumn( ColumnSchema( "RV"    ,  Table::RANDOM , Table::DEFAULT_LINEAR ) );
+            SimpleTable::init(item);
         }
 
         using SimpleTable::numTables;
@@ -51,10 +42,10 @@ namespace Opm {
         using SimpleTable::numColumns;
         using SimpleTable::evaluate;
 
-        const std::vector<double> &getDepthColumn() const
+        const TableColumn& getDepthColumn() const
         { return SimpleTable::getColumn(0); }
 
-        const std::vector<double> &getRvColumn() const
+        const TableColumn& getRvColumn() const
         { return SimpleTable::getColumn(1); }
     };
 }
