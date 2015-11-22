@@ -33,7 +33,6 @@ namespace Opm {
 
         friend class PvtoTable;
         friend class FullTable<PvtoOuterTable, PvtoInnerTable>;
-        PvtoInnerTable() = default;
 
         /*!
          * \brief Read the per record table of the PVTO keyword and
@@ -41,16 +40,19 @@ namespace Opm {
          *
          * The first value of the record (-> Rs) is skipped.
          */
-        void init(Opm::DeckItemConstPtr item)
-        {
-            SimpleTable::init(item,
-                              std::vector<std::string>{"P", "BO", "MU"});
 
-            SimpleTable::checkNonDefaultable("P");
-            SimpleTable::checkMonotonic("P", /*isAscending=*/true);
-            SimpleTable::applyDefaultsLinear("BO");
-            SimpleTable::applyDefaultsLinear("MU");
+        PvtoInnerTable(Opm::DeckItemConstPtr item)
+        {
+            m_schema = std::make_shared<TableSchema>( );
+
+            m_schema->addColumn( ColumnSchema( "P"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
+            m_schema->addColumn( ColumnSchema( "BO" , Table::RANDOM , Table::DEFAULT_LINEAR ));
+            m_schema->addColumn( ColumnSchema( "MU" , Table::RANDOM , Table::DEFAULT_LINEAR ));
+
+            SimpleTable::init( item );
         }
+
+
 
     public:
         using SimpleTable::numTables;
@@ -58,13 +60,13 @@ namespace Opm {
         using SimpleTable::numColumns;
         using SimpleTable::evaluate;
 
-        const std::vector<double> &getPressureColumn() const
+        const TableColumn& getPressureColumn() const
         { return SimpleTable::getColumn(0); }
 
-        const std::vector<double> &getOilFormationFactorColumn() const
+        const TableColumn& getOilFormationFactorColumn() const
         { return SimpleTable::getColumn(1); }
 
-        const std::vector<double> &getOilViscosityColumn() const
+        const TableColumn& getOilViscosityColumn() const
         { return SimpleTable::getColumn(2); }
     };
 }

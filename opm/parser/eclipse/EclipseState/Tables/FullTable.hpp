@@ -60,10 +60,9 @@ namespace Opm {
             m_outerTable.reset(outerTable);
 
             for (size_t rowIdx = 0; rowIdx < m_outerTable->numRecords(); ++rowIdx) {
-                InnerTable *curRow = new InnerTable;
                 auto record = keyword->getRecord( m_outerTable->firstRecordIndex() + rowIdx );
                 auto item = record->getItem( 1 );
-                curRow->init(item);
+                InnerTable *curRow = new InnerTable( item );
                 m_innerTables.push_back(std::shared_ptr<const InnerTable>(curRow));
             }
         }

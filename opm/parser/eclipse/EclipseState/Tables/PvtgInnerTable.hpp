@@ -20,6 +20,7 @@
 #define	OPM_PARSER_PVTG_INNER_TABLE_HPP
 
 #include "SimpleTable.hpp"
+#include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
     // forward declarations
@@ -34,7 +35,6 @@ namespace Opm {
 
         friend class PvtgTable;
         friend class FullTable<PvtgOuterTable, PvtgInnerTable>;
-        PvtgInnerTable() = default;
 
         /*!
          * \brief Read the per record table of the PVTG keyword and
@@ -42,15 +42,15 @@ namespace Opm {
          *
          * The first value of the record (-> Rv) is skipped.
          */
-        void init(Opm::DeckItemConstPtr item)
+        PvtgInnerTable(Opm::DeckItemConstPtr item)
         {
-            SimpleTable::init(item,
-                              std::vector<std::string>{"RV", "BG", "MUG"});
+            m_schema = std::make_shared<TableSchema>( );
 
-            SimpleTable::checkNonDefaultable("RV");
-            SimpleTable::checkMonotonic("RV", /*isAscending=*/false);
-            SimpleTable::applyDefaultsLinear("BG");
-            SimpleTable::applyDefaultsLinear("MUG");
+            m_schema->addColumn( ColumnSchema( "RV"  , Table::STRICTLY_DECREASING , Table::DEFAULT_NONE ));
+            m_schema->addColumn( ColumnSchema( "BG"  , Table::RANDOM , Table::DEFAULT_LINEAR ));
+            m_schema->addColumn( ColumnSchema( "MUG" , Table::RANDOM , Table::DEFAULT_LINEAR ));
+
+            SimpleTable::init( item );
         }
 
     public:
@@ -59,13 +59,13 @@ namespace Opm {
         using SimpleTable::numColumns;
         using SimpleTable::evaluate;
 
-        const std::vector<double> &getOilSolubilityColumn() const
+        const TableColumn& getOilSolubilityColumn() const
         { return SimpleTable::getColumn(0); }
 
-        const std::vector<double> &getGasFormationFactorColumn() const
+        const TableColumn& getGasFormationFactorColumn() const
         { return SimpleTable::getColumn(1); }
 
-        const std::vector<double> &getGasViscosityColumn() const
+        const TableColumn& getGasViscosityColumn() const
         { return SimpleTable::getColumn(2); }
     };
 }
