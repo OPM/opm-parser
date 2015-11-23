@@ -28,6 +28,7 @@ namespace Opm {
 
     class Sof2Table : public SimpleTable {
         friend class TableManager;
+    public:
 
         Sof2Table(Opm::DeckItemConstPtr item)
         {
@@ -38,7 +39,6 @@ namespace Opm {
             SimpleTable::init(item);
         }
 
-    public:
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

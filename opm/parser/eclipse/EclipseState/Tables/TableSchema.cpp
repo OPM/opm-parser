@@ -22,8 +22,7 @@
 
 namespace Opm {
 
-    TableSchema::TableSchema(const std::string& name) :
-        m_name( name )
+    TableSchema::TableSchema()
     {
 
     }

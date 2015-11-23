@@ -30,38 +30,39 @@ using namespace Opm;
 
 
 BOOST_AUTO_TEST_CASE( CreateTest ) {
-    ColumnSchema schema("Name" , Table::INCREASING );
+    ColumnSchema schema("Name" , Table::INCREASING , Table::DEFAULT_NONE);
     BOOST_CHECK_EQUAL( schema.name() , "Name");
 }
 
 
 BOOST_AUTO_TEST_CASE( TestOrder) {
     {
-        ColumnSchema schema("Name" , Table::INCREASING );
+        ColumnSchema schema("Name" , Table::INCREASING , Table::DEFAULT_NONE);
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 0 , 0 ) );
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 0 , 1 ) );
         BOOST_CHECK_EQUAL( false , schema.validOrder( 1 , 0 ) );
     }
 
     {
-        ColumnSchema schema("Name" , Table::DECREASING );
+        ColumnSchema schema("Name" , Table::DECREASING , Table::DEFAULT_NONE);
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 0 , 0 ) );
         BOOST_CHECK_EQUAL( false , schema.validOrder( 0 , 1 ) );
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 1 , 0 ) );
     }
 
     {
-        ColumnSchema schema("Name" , Table::STRICTLY_INCREASING );
+        ColumnSchema schema("Name" , Table::STRICTLY_INCREASING  , Table::DEFAULT_NONE);
         BOOST_CHECK_EQUAL( false , schema.validOrder( 0 , 0 ) );
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 0 , 1 ) );
         BOOST_CHECK_EQUAL( false , schema.validOrder( 1 , 0 ) );
     }
 
     {
-        ColumnSchema schema("Name" , Table::STRICTLY_DECREASING );
+        ColumnSchema schema("Name" , Table::STRICTLY_DECREASING  , Table::DEFAULT_NONE);
         BOOST_CHECK_EQUAL( false , schema.validOrder( 0 , 0 ) );
         BOOST_CHECK_EQUAL( false , schema.validOrder( 0 , 1 ) );
         BOOST_CHECK_EQUAL( true  , schema.validOrder( 1 , 0 ) );
     }
 }
+
 

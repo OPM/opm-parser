@@ -29,47 +29,47 @@ namespace Opm {
     class PvtgOuterTable;
     class PvtgInnerTable;
 
-    class PvtgOuterTable : protected MultiRecordTable {
+    class PvtgOuterTable {
         friend class PvtgTable;
         friend class FullTable<PvtgOuterTable, PvtgInnerTable>;
-        PvtgOuterTable() = default;
-
-        /*!
-         * \brief Read the per record table of the PVTG keyword and
-         *        provide some convenience methods for it.
-         */
-        void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
-        {
-            MultiRecordTable::init(keyword,
-                                   std::vector<std::string>{"P", "RV", "BG", "MUG"},
-                                   tableIdx);
-
-            MultiRecordTable::checkNonDefaultable("P");
-            MultiRecordTable::checkMonotonic("P", /*isAscending=*/true);
-            MultiRecordTable::applyDefaultsLinear("RV");
-            MultiRecordTable::applyDefaultsLinear("BG");
-            MultiRecordTable::applyDefaultsLinear("MUG");
-        }
 
     public:
-        using MultiRecordTable::numTables;
-        using MultiRecordTable::numRows;
-        using MultiRecordTable::numColumns;
-        using MultiRecordTable::evaluate;
-        using MultiRecordTable::firstRecordIndex;
-        using MultiRecordTable::numRecords;
+
+        PvtgOuterTable(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) :
+            m_columnSchema( "P" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
+            m_column( m_columnSchema )
+        {
+            auto ranges = MultiRecordTable::recordRanges( keyword );
+            if (tableIdx >= ranges.size())
+                throw std::invalid_argument("Asked for table: " + std::to_string( tableIdx ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( ranges.size() ) + " tables");
+
+            m_recordRange = ranges[ tableIdx ];
+            for (size_t  rowIdx = m_recordRange.first; rowIdx < m_recordRange.second; rowIdx++) {
+                Opm::DeckRecordConstPtr deckRecord = keyword->getRecord(rowIdx);
+                Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
+                m_column.addValue( indexItem->getSIDouble( 0 ));
+            }
+        }
 
         const TableColumn& getPressureColumn() const
-        { return MultiRecordTable::getColumn(0); }
+        {
+            return m_column;
+        }
 
-        const TableColumn& getOilSolubilityColumn() const
-        { return MultiRecordTable::getColumn(1); }
 
-        const TableColumn& getGasFormationFactorColumn() const
-        { return MultiRecordTable::getColumn(2); }
+        size_t size() const {
+            return m_column.size();
+        }
 
-        const TableColumn& getGasViscosityColumn() const
-        { return MultiRecordTable::getColumn(3); }
+        const std::pair<size_t, size_t>& recordRange() const {
+            return m_recordRange;
+        }
+
+
+    private:
+        ColumnSchema m_columnSchema;
+        TableColumn m_column;
+        std::pair<size_t, size_t> m_recordRange;
     };
 }
 

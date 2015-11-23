@@ -28,7 +28,7 @@ namespace Opm {
 
     class SwfnTable : public SimpleTable {
 
-
+    public:
         friend class TableManager;
         SwfnTable(Opm::DeckItemConstPtr item)
         {
@@ -40,9 +40,6 @@ namespace Opm {
 
             SimpleTable::init(item);
         }
-
-    public:
-        SwfnTable() = default;
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

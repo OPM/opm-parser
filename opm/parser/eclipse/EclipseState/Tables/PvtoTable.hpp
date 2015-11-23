@@ -27,17 +27,13 @@ namespace Opm {
     // forward declaration
     class TableManager;
 
-    /*!
-     * \brief Read the table for the PVTO and provide convenient access to it.
-     */
     class PvtoTable : public Opm::FullTable<Opm::PvtoOuterTable, Opm::PvtoInnerTable>
     {
+    public:
         typedef Opm::FullTable<Opm::PvtoOuterTable, Opm::PvtoInnerTable> ParentType;
         friend class TableManager;
         using ParentType::init;
 
-    public:
-        PvtoTable() = default;
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

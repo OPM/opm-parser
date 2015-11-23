@@ -30,6 +30,7 @@ namespace Opm {
     class SgofTable : public SimpleTable {
         friend class TableManager;
 
+    public:
         SgofTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>();
@@ -40,8 +41,6 @@ namespace Opm {
 
             SimpleTable::init( item );
         }
-
-    public:
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

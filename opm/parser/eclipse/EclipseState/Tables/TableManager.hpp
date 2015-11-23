@@ -166,8 +166,7 @@ namespace Opm {
                 const auto tableRecord = tableKeyword->getRecord( tableIdx );
                 const auto dataItem = tableRecord->getItem( 0 );
                 if (dataItem->size() > 0) {
-                    std::shared_ptr<TableType> table = std::make_shared<TableType>();
-                    table->init(dataItem);
+                    std::shared_ptr<TableType> table = std::make_shared<TableType>( dataItem );
                     container.addTable( tableIdx , table );
                 }
             }

@@ -31,7 +31,7 @@ using namespace Opm;
 
 
 BOOST_AUTO_TEST_CASE( CreateTest ) {
-    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    ColumnSchema schema("COLUMN" , Table::STRICTLY_INCREASING , Table::DEFAULT_LINEAR );
     TableColumn column( schema );
     BOOST_CHECK_EQUAL( column.size() , 0 );
 
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( CreateTest ) {
 
 
 BOOST_AUTO_TEST_CASE( TestDefault ) {
-    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    ColumnSchema schema("COLUMN" , Table::STRICTLY_INCREASING , Table::DEFAULT_LINEAR );
     TableColumn column( schema );
 
 
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE( TestDefault ) {
 
 
 BOOST_AUTO_TEST_CASE( TestAscending ) {
-    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_INCREASING );
+    ColumnSchema schema("COLUMN" , Table::STRICTLY_INCREASING , Table::DEFAULT_LINEAR);
     TableColumn column( schema );
 
     BOOST_CHECK_EQUAL( column.size() , 0 );
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE( TestAscending ) {
 
 
 BOOST_AUTO_TEST_CASE( TestWeaklyAscending ) {
-    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::INCREASING );
+    ColumnSchema schema("COLUMN" , Table::INCREASING  , Table::DEFAULT_LINEAR);
     TableColumn column( schema );
 
     column.addValue(1);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( TestWeaklyAscending ) {
 
 
 BOOST_AUTO_TEST_CASE( TestDescending ) {
-    std::shared_ptr<ColumnSchema> schema = std::make_shared<ColumnSchema>("COLUMN" , Table::STRICTLY_DECREASING);
+    ColumnSchema schema("COLUMN" , Table::STRICTLY_DECREASING , Table::DEFAULT_LINEAR);
     TableColumn column( schema );
 
     BOOST_CHECK_EQUAL( column.size() , 0 );
@@ -124,3 +124,10 @@ BOOST_AUTO_TEST_CASE( TestDescending ) {
     column.updateValue( 5,-15 );
 }
 
+
+BOOST_AUTO_TEST_CASE( TestDEFAULT_NONE) {
+    ColumnSchema schema("COLUMN" , Table::STRICTLY_DECREASING , Table::DEFAULT_NONE);
+    TableColumn column( schema );
+
+    BOOST_CHECK_THROW( column.addDefault(  ) , std::invalid_argument );
+}

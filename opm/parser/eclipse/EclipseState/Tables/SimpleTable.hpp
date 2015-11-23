@@ -37,16 +37,10 @@ namespace Opm {
         friend class PlyshlogTable;
     protected:
         SimpleTable(const SimpleTable&) = default;
-
-        /*!
-         * \brief Read simple tables from keywords like SWOF
-         *
-         * This requires all data to be a list of doubles in the first
-         * item of a given record index.
-         */
         void init(Opm::DeckItemConstPtr deckItem);
 
     public:
+        SimpleTable();
         void addColumns();
 
         /*!
@@ -56,13 +50,6 @@ namespace Opm {
          * records.
          */
         static size_t numTables(Opm::DeckKeywordConstPtr keyword);
-
-#ifdef BOOST_TEST_MODULE
-        // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
-        void initFORUNITTESTONLY(Opm::DeckItemConstPtr item,
-                                 const std::vector<std::string> &columnNames)
-        { init(item , columnNames ); }
-#endif
 
         size_t numColumns() const;
         size_t numRows() const;
@@ -81,8 +68,6 @@ namespace Opm {
         double evaluate(const std::string& columnName, double xPos) const;
 
     protected:
-        SimpleTable() {};
-        
         void checkNonDefaultable(const std::string& columnName);
         void checkMonotonic(const std::string& columnName,
                              bool isAscending,

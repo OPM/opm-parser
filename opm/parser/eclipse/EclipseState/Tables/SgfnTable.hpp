@@ -27,13 +27,9 @@ namespace Opm {
     class TableManager;
 
     class SgfnTable : public SimpleTable {
-
         friend class TableManager;
 
-        /*!
-         * \brief Read the SGFN keyword and provide some convenience
-         *        methods for it.
-         */
+    public:
         SgfnTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>();
@@ -45,8 +41,6 @@ namespace Opm {
             SimpleTable::init(item);
         }
 
-    public:
-        SgfnTable() = default;
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

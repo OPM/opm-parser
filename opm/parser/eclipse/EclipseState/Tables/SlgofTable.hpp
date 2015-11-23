@@ -30,7 +30,9 @@ namespace Opm {
     class SlgofTable : public SimpleTable {
         friend class TableManager;
 
-        void init(Opm::DeckItemConstPtr item)
+    public:
+
+        SlgofTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>();
             m_schema->addColumn( ColumnSchema("SL"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
@@ -44,9 +46,6 @@ namespace Opm {
                 throw std::invalid_argument("The last saturation of the SLGOF keyword must be 1!");
             }
         }
-
-    public:
-        SlgofTable() = default;
 
 #ifdef BOOST_TEST_MODULE
         // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!

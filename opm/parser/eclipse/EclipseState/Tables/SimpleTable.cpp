@@ -21,6 +21,13 @@
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
 
 namespace Opm {
+
+    SimpleTable::SimpleTable()
+    {
+
+    }
+
+
 size_t SimpleTable::numTables(Opm::DeckKeywordConstPtr keyword)
 {
     return keyword->size();

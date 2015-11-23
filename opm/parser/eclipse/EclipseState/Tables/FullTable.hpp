@@ -55,12 +55,11 @@ namespace Opm {
          */
         void init(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
         {
-            OuterTable* outerTable = new OuterTable;
-            outerTable->init(keyword, tableIdx);
-            m_outerTable.reset(outerTable);
+            m_outerTable = std::make_shared<OuterTable>(keyword, tableIdx);
+            auto range = m_outerTable->recordRange();
 
-            for (size_t rowIdx = 0; rowIdx < m_outerTable->numRecords(); ++rowIdx) {
-                auto record = keyword->getRecord( m_outerTable->firstRecordIndex() + rowIdx );
+            for (size_t rowIdx = range.first; rowIdx < range.second; ++rowIdx) {
+                auto record = keyword->getRecord( rowIdx );
                 auto item = record->getItem( 1 );
                 InnerTable *curRow = new InnerTable( item );
                 m_innerTables.push_back(std::shared_ptr<const InnerTable>(curRow));
@@ -74,7 +73,10 @@ namespace Opm {
         typedef std::shared_ptr<const Self> ConstPointer;
 
         static size_t numTables(Opm::DeckKeywordConstPtr keyword)
-        { return OuterTable::numTables(keyword); }
+        {
+            throw std::invalid_argument("Fucked ..");
+            //return OuterTable::numTables(keyword);
+        }
 
         std::shared_ptr<const OuterTable> getOuterTable() const
         { return m_outerTable; }

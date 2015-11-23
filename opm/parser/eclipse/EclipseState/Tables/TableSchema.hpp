@@ -32,7 +32,7 @@ namespace Opm {
 
     class TableSchema {
     public:
-        TableSchema(const std::string& name);
+        TableSchema();
         void addColumn(const ColumnSchema& column);
         const ColumnSchema&& getColumn( const std::string& name ) const;
         const ColumnSchema&& getColumn( size_t columnIndex ) const;
@@ -45,7 +45,7 @@ namespace Opm {
         size_t size() const;
     private:
         OrderedMap<ColumnSchema> m_columns;
-        std::string m_name;
+        //std::string m_name;
     };
 }
 
