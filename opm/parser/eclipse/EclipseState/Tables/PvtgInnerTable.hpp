@@ -23,19 +23,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declarations
-    template <class OuterTable, class InnerTable>
-    class FullTable;
-    class PvtgTable;
-    class PvtgOuterTable;
-    class PvtgInnerTable;
-
-    class PvtgInnerTable : protected MultiRecordTable {
-
-
-        friend class PvtgTable;
-        friend class FullTable<PvtgOuterTable, PvtgInnerTable>;
-
+    class PvtgInnerTable : public SimpleTable {
+    public:
         /*!
          * \brief Read the per record table of the PVTG keyword and
          *        provide some convenience methods for it.
@@ -52,12 +41,6 @@ namespace Opm {
 
             SimpleTable::init( item );
         }
-
-    public:
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getOilSolubilityColumn() const
         { return SimpleTable::getColumn(0); }

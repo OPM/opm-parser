@@ -368,28 +368,49 @@ BOOST_AUTO_TEST_CASE(PvtoTable_Tests) {
     const auto pvto1OuterTable = pvto1Table.getOuterTable();
     const auto pvto2OuterTable = pvto2Table.getOuterTable();
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->numRows(), 2);
-    BOOST_CHECK_EQUAL(pvto2OuterTable->numRows(), 3);
+    BOOST_CHECK_EQUAL(pvto1OuterTable->size(), 2);
+    BOOST_CHECK_EQUAL(pvto2OuterTable->size(), 3);
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->numColumns(), 4);
-    BOOST_CHECK_EQUAL(pvto2OuterTable->numColumns(), 4);
+    BOOST_CHECK_THROW( pvto1OuterTable->getInnerTable(2), std::invalid_argument);
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getGasSolubilityColumn().front(), 1.0);
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getGasSolubilityColumn().back(), 8.0);
+    const auto& innerTable1 = pvto1OuterTable->getInnerTable(1);
+    BOOST_CHECK_EQUAL( innerTable1.numRows() , 1 );
+    BOOST_CHECK_EQUAL( innerTable1.numColumns() , 3 );
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getPressureColumn().front(), 2.0e5);
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getPressureColumn().back(), 9.0e5);
+    {
+        const auto& col0 = innerTable1.getColumn(0);
+        BOOST_CHECK_EQUAL(col0[0] , 9 );
+    }
+    {
+        const auto& col1 = innerTable1.getColumn(1);
+        BOOST_CHECK_EQUAL(col1[0] , 10 );
+    }
+    {
+        const auto& col2 = innerTable1.getColumn(2);
+        BOOST_CHECK_EQUAL(col2[0] , 11 );
+    }
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getOilFormationFactorColumn().front(), 3.0);
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getOilFormationFactorColumn().back(), 10.0);
+    /*
+      BOOST_CHECK_EQUAL(pvto1OuterTable->numColumns(), 4);
+      BOOST_CHECK_EQUAL(pvto2OuterTable->numColumns(), 4);
 
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getOilViscosityColumn().front(), 4.0e-3);
-    BOOST_CHECK_EQUAL(pvto1OuterTable->getOilViscosityColumn().back(), 11.0e-3);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getGasSolubilityColumn().front(), 1.0);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getGasSolubilityColumn().back(), 8.0);
 
-    // for the second table, we only check the first column and trust
-    // that everything else is fine...
-    BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().front(), 12.0);
-    BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().back(), 23.0);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getPressureColumn().front(), 2.0e5);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getPressureColumn().back(), 9.0e5);
+
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getOilFormationFactorColumn().front(), 3.0);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getOilFormationFactorColumn().back(), 10.0);
+
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getOilViscosityColumn().front(), 4.0e-3);
+      BOOST_CHECK_EQUAL(pvto1OuterTable->getOilViscosityColumn().back(), 11.0e-3);
+
+      // for the second table, we only check the first column and trust
+      // that everything else is fine...
+      BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().front(), 12.0);
+      BOOST_CHECK_EQUAL(pvto2OuterTable->getGasSolubilityColumn().back(), 23.0);
+    */
 }
 
 

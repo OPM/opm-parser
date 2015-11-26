@@ -111,7 +111,7 @@ static void check_parser(ParserPtr parser) {
     BOOST_CHECK_EQUAL(9U , item4_1->size());
     BOOST_CHECK_EQUAL(2U , record4->size());
 
-
+    /*
     {
         Opm::PvtgTable pvtgTable;
         pvtgTable.initFORUNITTESTONLY(kw1, 0);
@@ -132,6 +132,7 @@ static void check_parser(ParserPtr parser) {
         BOOST_CHECK_EQUAL(1.299e-5, outerTable.getGasViscosityColumn()[0]);
         BOOST_CHECK_EQUAL(outerTable.getGasViscosityColumn()[0], innerTable0.getGasViscosityColumn()[0]);
     }
+    */
 }
 
 

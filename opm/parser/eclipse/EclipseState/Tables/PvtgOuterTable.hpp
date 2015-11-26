@@ -19,19 +19,10 @@
 #ifndef OPM_PARSER_PVTG_OUTER_TABLE_HPP
 #define	OPM_PARSER_PVTG_OUTER_TABLE_HPP
 
-#include "MultiRecordTable.hpp"
+#include <opm/parser/eclipse/EclipseState/Tables/PvtgInnerTable.hpp>
 
 namespace Opm {
-    // forward declarations
-    template <class OuterTable, class InnerTable>
-    class FullTable;
-    class PvtgTable;
-    class PvtgOuterTable;
-    class PvtgInnerTable;
-
     class PvtgOuterTable {
-        friend class PvtgTable;
-        friend class FullTable<PvtgOuterTable, PvtgInnerTable>;
 
     public:
 
@@ -46,10 +37,25 @@ namespace Opm {
             m_recordRange = ranges[ tableIdx ];
             for (size_t  rowIdx = m_recordRange.first; rowIdx < m_recordRange.second; rowIdx++) {
                 Opm::DeckRecordConstPtr deckRecord = keyword->getRecord(rowIdx);
-                Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
-                m_column.addValue( indexItem->getSIDouble( 0 ));
+                {
+                    Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
+                    m_column.addValue( indexItem->getSIDouble( 0 ));
+                }
+                {
+                    Opm::DeckItemConstPtr dataItem = deckRecord->getItem(1);
+                    //m_tables.emplace_back( dataItem );
+                    m_tables.push_back( std::make_shared<const PvtgInnerTable>( dataItem ));
+                }
             }
         }
+
+
+        const PvtgInnerTable& getInnerTable(size_t tableNumber) const {
+            if (tableNumber >= size())
+                throw std::invalid_argument("Invalid table number: " + std::to_string( tableNumber) + " max: " + std::to_string( size() - 1 ));
+            return *m_tables[ tableNumber ];
+        }
+
 
         const TableColumn& getPressureColumn() const
         {
@@ -70,6 +76,8 @@ namespace Opm {
         ColumnSchema m_columnSchema;
         TableColumn m_column;
         std::pair<size_t, size_t> m_recordRange;
+        std::vector<std::shared_ptr<const PvtgInnerTable> > m_tables;
+        //std::vector<PvtoInnerTable> m_tables;
     };
 }
 

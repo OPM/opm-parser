@@ -22,17 +22,9 @@
 #include "SimpleTable.hpp"
 
 namespace Opm {
-    // forward declarations
-    template <class OuterTable, class InnerTable>
-    class FullTable;
-    class PvtoTable;
-    class PvtoOuterTable;
-    class PvtoInnerTable;
 
-    class PvtoInnerTable : protected MultiRecordTable {
-
-        friend class PvtoTable;
-        friend class FullTable<PvtoOuterTable, PvtoInnerTable>;
+    class PvtoInnerTable : public SimpleTable {
+    public:
 
         /*!
          * \brief Read the per record table of the PVTO keyword and
@@ -51,14 +43,6 @@ namespace Opm {
 
             SimpleTable::init( item );
         }
-
-
-
-    public:
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getPressureColumn() const
         { return SimpleTable::getColumn(0); }
