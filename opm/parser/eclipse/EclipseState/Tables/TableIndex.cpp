@@ -1,4 +1,6 @@
-/*
+
+
+    /*
   Copyright 2015 Statoil ASA.
 
   This file is part of the Open Porous Media project (OPM).
@@ -18,29 +20,17 @@
  */
 
 
-#ifndef _COLUMN_SCHEMA_HPP_
-#define _COLUMN_SCHEMA_HPP_
 
-#include <string>
-#include <vector>
-
-#include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableIndex.hpp>
 
 namespace Opm {
 
-    class ColumnSchema {
-    public:
-        ColumnSchema(const std::string& name , Table::ColumnOrderEnum order, Table::DefaultAction defaultAction);
-        const std::string& name() const;
-        bool validOrder( double value1 , double value2) const;
-        bool lookupValid( ) const;
-        bool acceptsDefault( ) const;
-    private:
-        std::string m_name;
-        Table::ColumnOrderEnum m_order;
-        Table::DefaultAction m_defaultAction;
-    };
+    TableIndex::TableIndex( size_t index1 , double weight1 , double weight2) :
+        m_index1( index1 ),
+        m_weight1( weight1 ),
+        m_weight2( weight2 )
+    {
+
+    }
+
 }
-
-#endif
-

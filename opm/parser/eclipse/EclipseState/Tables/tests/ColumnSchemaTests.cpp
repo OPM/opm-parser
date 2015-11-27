@@ -66,3 +66,12 @@ BOOST_AUTO_TEST_CASE( TestOrder) {
 }
 
 
+BOOST_AUTO_TEST_CASE( CanLookup ) {
+    ColumnSchema schema1("Name" , Table::INCREASING , Table::DEFAULT_NONE);
+    ColumnSchema schema2("Name" , Table::RANDOM , Table::DEFAULT_NONE);
+
+    BOOST_CHECK( schema1.lookupValid( ) );
+    BOOST_CHECK( !schema2.lookupValid( ) );
+}
+
+

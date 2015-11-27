@@ -24,6 +24,7 @@
 #include <opm/common/utility/platform_dependent/reenable_warnings.h>
 
 
+#include <opm/parser/eclipse/EclipseState/Tables/TableIndex.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
@@ -63,6 +64,7 @@ BOOST_AUTO_TEST_CASE( TestDefault ) {
 
     column.updateValue(0 , 10);
     BOOST_CHECK_EQUAL( column[0] , 10 );
+    BOOST_CHECK( column.hasDefault( ) );
 }
 
 
@@ -75,6 +77,7 @@ BOOST_AUTO_TEST_CASE( TestAscending ) {
     column.addValue( 10 );
     BOOST_CHECK_THROW( column.addValue( 9 ) , std::invalid_argument );
     column.addDefault( );
+    BOOST_CHECK( column.hasDefault( ) );
     BOOST_CHECK_THROW( column.updateValue( 1, 9 ) , std::invalid_argument );
     column.addValue( 12 );
     BOOST_CHECK_THROW( column.updateValue( 1, 13 ) , std::invalid_argument );
@@ -88,6 +91,7 @@ BOOST_AUTO_TEST_CASE( TestAscending ) {
     column.updateValue( 3,13 );
     column.updateValue( 4,14 );
     column.updateValue( 5,15 );
+    BOOST_CHECK( !column.hasDefault( ) );
 }
 
 
@@ -97,6 +101,8 @@ BOOST_AUTO_TEST_CASE( TestWeaklyAscending ) {
 
     column.addValue(1);
     column.addValue(1);
+
+    BOOST_CHECK( !column.hasDefault( ) );
 }
 
 
@@ -131,3 +137,97 @@ BOOST_AUTO_TEST_CASE( TestDEFAULT_NONE) {
 
     BOOST_CHECK_THROW( column.addDefault(  ) , std::invalid_argument );
 }
+
+
+BOOST_AUTO_TEST_CASE( Test_MIN_MAX) {
+    ColumnSchema schema("COLUMN" , Table::RANDOM , Table::DEFAULT_LINEAR);
+    TableColumn column( schema );
+
+    BOOST_CHECK_THROW( column.max( ) , std::invalid_argument );
+    BOOST_CHECK_THROW( column.min( ) , std::invalid_argument );
+
+    column.addValue( 1 );
+    BOOST_CHECK_EQUAL( 1 , column.min() );
+    BOOST_CHECK_EQUAL( 1 , column.max() );
+
+    column.addValue( 100 );
+    BOOST_CHECK_EQUAL( 1 , column.min() );
+    BOOST_CHECK_EQUAL( 100 , column.max() );
+
+    column.addValue( 50 );
+    BOOST_CHECK_EQUAL( 1 , column.min() );
+    BOOST_CHECK_EQUAL( 100 , column.max() );
+
+    column.addDefault( );
+    BOOST_CHECK_THROW( column.max( ) , std::invalid_argument );
+    BOOST_CHECK_THROW( column.min( ) , std::invalid_argument );
+
+    column.updateValue( 3 , 67 );
+    BOOST_CHECK_EQUAL( 1 , column.min() );
+    BOOST_CHECK_EQUAL( 100 , column.max() );
+}
+
+BOOST_AUTO_TEST_CASE( Test_IN_RANGE) {
+    ColumnSchema schema("COLUMN" , Table::RANDOM , Table::DEFAULT_LINEAR);
+    TableColumn column( schema );
+
+    column.addValue(10);
+    column.addValue(20);
+    BOOST_CHECK_THROW( column.inRange( 15 ) , std::invalid_argument );
+
+
+    ColumnSchema schema2("COLUMN" , Table::INCREASING, Table::DEFAULT_LINEAR);
+    TableColumn column2( schema2 );
+
+
+    BOOST_CHECK_THROW( column2.inRange( 15 ) , std::invalid_argument );
+    column2.addValue(10);
+    BOOST_CHECK_THROW( column2.inRange( 15 ) , std::invalid_argument );
+    column2.addValue(20);
+    BOOST_CHECK( column2.inRange( 15 ));
+    BOOST_CHECK( column2.inRange( 10 ));
+    BOOST_CHECK( column2.inRange( 20 ));
+
+    BOOST_CHECK( !column2.inRange( 9 ));
+    BOOST_CHECK( !column2.inRange( 21 ));
+
+    column2.addDefault( );
+    BOOST_CHECK_THROW( column2.inRange( 15 ) , std::invalid_argument );
+}
+
+
+
+BOOST_AUTO_TEST_CASE( Test_Table_Index ) {
+    {
+        ColumnSchema schema("COLUMN" , Table::RANDOM , Table::DEFAULT_NONE);
+        TableColumn column( schema );
+
+        /* Can not look up with random ordering */
+        BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
+    }
+
+    {
+        ColumnSchema schema("COLUMN" , Table::INCREASING , Table::DEFAULT_LINEAR);
+        TableColumn column( schema );
+
+        /* Can not look up in empty column */
+        BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
+
+        column.addValue( 10 );
+        /* Can not look up in column with one element */
+        BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
+
+        column.addDefault( );
+        /* Can not look up in column with defaults */
+        BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
+
+
+        column.updateValue(1 , 20 );
+
+        /* Out of range */
+        BOOST_CHECK_THROW( column.lookup( 9 ) , std::invalid_argument );
+        BOOST_CHECK_THROW( column.lookup( 21 ) , std::invalid_argument );
+    }
+
+}
+

@@ -26,6 +26,7 @@
 #include <memory>
 
 #include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableIndex.hpp>
 
 namespace Opm {
 
@@ -40,8 +41,13 @@ namespace Opm {
         void updateValue(size_t index, double value);
         double operator[](size_t index) const;
         bool defaultApplied(size_t index) const;
+        bool hasDefault( ) const;
         double front() const;
         double back() const;
+        double min() const;
+        double max() const;
+        bool inRange( double arg ) const;
+        TableIndex lookup(double argValue) const;
 
     private:
         void assertUpdate(size_t index, double value) const;
@@ -52,6 +58,7 @@ namespace Opm {
         std::string m_name;
         std::vector<double> m_values;
         std::vector<bool> m_default;
+        size_t m_defaultCount;
     };
 }
 

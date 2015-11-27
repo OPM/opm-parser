@@ -116,6 +116,7 @@ EclipseState/Tables/TableContainer.cpp
 EclipseState/Tables/TableColumn.cpp
 EclipseState/Tables/ColumnSchema.cpp
 EclipseState/Tables/TableSchema.cpp
+EclipseState/Tables/TableIndex.cpp
 #
 EclipseState/Grid/GridProperty.cpp
 EclipseState/Grid/Box.cpp
@@ -288,6 +289,7 @@ EclipseState/Tables/TableColumn.hpp
 EclipseState/Tables/ColumnSchema.hpp
 EclipseState/Tables/TableEnums.hpp
 EclipseState/Tables/TableSchema.hpp
+EclipseState/Tables/TableIndex.hpp
 #
 Utility/WconinjeWrapper.hpp
 Utility/CompdatWrapper.hpp

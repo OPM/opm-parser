@@ -58,6 +58,22 @@ namespace Opm {
             throw std::invalid_argument("Internal error - should not be here\n");
         }
     }
+
+    bool ColumnSchema::lookupValid( ) const {
+        if (m_order == Table::RANDOM)
+            return false;
+        else
+            return true;
+    }
+
+
+    bool ColumnSchema::acceptsDefault( ) const {
+        if (m_defaultAction == Table::DEFAULT_NONE)
+            return false;
+        else
+            return true;
+    }
+
 }
 
 

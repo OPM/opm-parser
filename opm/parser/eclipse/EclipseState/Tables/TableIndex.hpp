@@ -18,29 +18,30 @@
  */
 
 
-#ifndef _COLUMN_SCHEMA_HPP_
-#define _COLUMN_SCHEMA_HPP_
+#ifndef _TABLE_INDEX_HPP_
+#define _TABLE_INDEX_HPP_
 
-#include <string>
-#include <vector>
+#include <cstddef>
 
-#include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
+/*
+  Small class used to simplify lookup in tables based on linear
+  interpolation; first binear search in an ordered column is used to
+  instantiate a TableIndex object, and then subsequently that
+  TableIndex instance is used to evaluate the corresponding value over
+  another column.
+*/
 
 namespace Opm {
 
-    class ColumnSchema {
+    class TableIndex {
     public:
-        ColumnSchema(const std::string& name , Table::ColumnOrderEnum order, Table::DefaultAction defaultAction);
-        const std::string& name() const;
-        bool validOrder( double value1 , double value2) const;
-        bool lookupValid( ) const;
-        bool acceptsDefault( ) const;
+        TableIndex( size_t index1 , double weight1 , double weight2);
+
     private:
-        std::string m_name;
-        Table::ColumnOrderEnum m_order;
-        Table::DefaultAction m_defaultAction;
+        size_t m_index1;
+        double m_weight1  , m_weight2;
     };
 }
 
-#endif
 
+#endif
