@@ -132,7 +132,6 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_subdirectory(opm/json)
 add_subdirectory(opm/parser)
-add_subdirectory(opm/core)
 
 add_custom_target(check ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_dependencies(check test-suite)
