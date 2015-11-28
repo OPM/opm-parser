@@ -170,9 +170,38 @@ namespace Opm {
         if (hasDefault())
             throw std::invalid_argument("Can not lookup elements in a column with defaulted values.");
 
+        /* Extrapolation might be required ?? */
         if (!inRange(argValue))
             throw std::invalid_argument("Value not in range.");
 
+        {
+            bool isDescending = m_schema.isDecreasing( );
+            size_t lowIntervalIdx = 0;
+            size_t intervalIdx = (size() - 1)/2;
+            size_t highIntervalIdx = size() - 1;
+            double weight1;
+
+            while (lowIntervalIdx + 1 < highIntervalIdx) {
+                if (isDescending) {
+                    if (m_values[intervalIdx] < argValue)
+                        highIntervalIdx = intervalIdx;
+                    else
+                        lowIntervalIdx = intervalIdx;
+                }
+                else {
+                    if (m_values[intervalIdx] < argValue)
+                        lowIntervalIdx = intervalIdx;
+                    else
+                        highIntervalIdx = intervalIdx;
+                }
+
+                intervalIdx = (highIntervalIdx + lowIntervalIdx)/2;
+            }
+
+            weight1 = 1 - (argValue - m_values[intervalIdx])/(m_values[intervalIdx + 1] - m_values[intervalIdx]);
+
+            return TableIndex( intervalIdx , weight1 );
+        }
     }
 
 
@@ -182,6 +211,19 @@ namespace Opm {
         else
             return false;
     }
+
+
+    double TableColumn::eval( const TableIndex& index) const {
+        size_t index1 = index.getIndex1();
+        double weight1 = index.getWeight1( );
+        double value = m_values[index1] * weight1;
+        if (weight1 < 1.0) {
+            double weight2 = index.getWeight2( );
+            value += weight2 * m_values[index1 + 1];
+        }
+        return value;
+    }
+
 
 }
 

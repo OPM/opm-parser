@@ -228,6 +228,44 @@ BOOST_AUTO_TEST_CASE( Test_Table_Index ) {
         BOOST_CHECK_THROW( column.lookup( 9 ) , std::invalid_argument );
         BOOST_CHECK_THROW( column.lookup( 21 ) , std::invalid_argument );
     }
-
 }
 
+
+BOOST_AUTO_TEST_CASE( Test_EVAL_INCREASING ) {
+    ColumnSchema schema("COLUMN" , Table::INCREASING , Table::DEFAULT_LINEAR);
+    TableColumn column( schema );
+
+    column.addValue(0);
+    column.addValue(1);
+    column.addValue(2);
+    column.addValue(3);
+
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 0 )) , 0 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 1 )) , 1 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 2 )) , 2 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 3 )) , 3 );
+
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 0.25 )) , 0.25 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 1.75 )) , 1.75 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 2.5 )) , 2.5 );
+}
+
+
+BOOST_AUTO_TEST_CASE( Test_EVAL_DECREASING ) {
+    ColumnSchema schema("COLUMN" , Table::DECREASING , Table::DEFAULT_LINEAR);
+    TableColumn column( schema );
+
+    column.addValue(3);
+    column.addValue(2);
+    column.addValue(1);
+    column.addValue(0);
+
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 0 )) , 0 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 1 )) , 1 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 2 )) , 2 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 3 )) , 3 );
+
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 0.25 )) , 0.25 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 1.75 )) , 1.75 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( 2.5 )) , 2.5 );
+}

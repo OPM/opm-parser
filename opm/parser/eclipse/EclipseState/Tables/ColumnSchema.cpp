@@ -74,6 +74,21 @@ namespace Opm {
             return true;
     }
 
+
+    bool ColumnSchema::isIncreasing( ) const {
+        if ((m_order == Table::INCREASING) || (m_order == Table::STRICTLY_INCREASING))
+            return true;
+        else
+            return false;
+    }
+
+    bool ColumnSchema::isDecreasing( ) const {
+        if ((m_order == Table::DECREASING) || (m_order == Table::STRICTLY_DECREASING))
+            return true;
+        else
+            return false;
+    }
+
 }
 
 

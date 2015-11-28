@@ -35,11 +35,13 @@ namespace Opm {
 
     class TableIndex {
     public:
-        TableIndex( size_t index1 , double weight1 , double weight2);
-
+        TableIndex( size_t index1 , double weight1);
+        size_t getIndex1( ) const;
+        double getWeight1( ) const;
+        double getWeight2( ) const;
     private:
         size_t m_index1;
-        double m_weight1  , m_weight2;
+        double m_weight1;
     };
 }
 

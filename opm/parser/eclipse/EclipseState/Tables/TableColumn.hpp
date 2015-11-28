@@ -48,6 +48,7 @@ namespace Opm {
         double max() const;
         bool inRange( double arg ) const;
         TableIndex lookup(double argValue) const;
+        double eval( const TableIndex& index) const;
 
     private:
         void assertUpdate(size_t index, double value) const;

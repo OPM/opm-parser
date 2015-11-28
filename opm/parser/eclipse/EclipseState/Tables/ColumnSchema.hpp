@@ -35,6 +35,8 @@ namespace Opm {
         bool validOrder( double value1 , double value2) const;
         bool lookupValid( ) const;
         bool acceptsDefault( ) const;
+        bool isIncreasing( ) const;
+        bool isDecreasing( ) const;
     private:
         std::string m_name;
         Table::ColumnOrderEnum m_order;

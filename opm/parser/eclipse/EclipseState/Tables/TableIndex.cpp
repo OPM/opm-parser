@@ -25,12 +25,26 @@
 
 namespace Opm {
 
-    TableIndex::TableIndex( size_t index1 , double weight1 , double weight2) :
+    TableIndex::TableIndex( size_t index1 , double weight1) :
         m_index1( index1 ),
-        m_weight1( weight1 ),
-        m_weight2( weight2 )
+        m_weight1( weight1 )
     {
 
     }
+
+    size_t TableIndex::getIndex1( ) const {
+        return m_index1;
+    }
+
+
+    double TableIndex::getWeight1( ) const {
+        return m_weight1;
+    }
+
+
+    double TableIndex::getWeight2( ) const {
+        return 1 - m_weight1;
+    }
+
 
 }
