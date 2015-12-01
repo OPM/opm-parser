@@ -126,6 +126,7 @@ namespace Opm {
         addTables( "SWFN",  m_tabdims->getNumSatTables() );
         addTables( "SGFN",  m_tabdims->getNumSatTables() );
         addTables( "SSFN",  m_tabdims->getNumSatTables() );
+        addTables( "MSFN",  m_tabdims->getNumSatTables() );
 
         addTables( "PLYADS", m_tabdims->getNumSatTables() );
         addTables( "PLYROCK", m_tabdims->getNumSatTables());
@@ -143,6 +144,21 @@ namespace Opm {
         addTables( "PLYMAX", m_regdims->getNPLMIX());
         addTables( "RSVD", m_eqldims->getNumEquilRegions());
         addTables( "RVVD", m_eqldims->getNumEquilRegions());
+
+        {
+            size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
+            if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
+                auto keyword = deck.getKeyword<ParserKeywords::MISCIBLE>();
+                auto record = keyword->getRecord(0);
+                numMiscibleTables =  static_cast<size_t>(record->getItem<ParserKeywords::MISCIBLE::NTMISC>()->getInt(0));
+            }
+            addTables( "SORWMIS", numMiscibleTables);
+            addTables( "SGCWMIS", numMiscibleTables);
+            addTables( "MISC", numMiscibleTables);
+            addTables( "PMISC", numMiscibleTables);
+
+
+        }
 
         {
             size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
@@ -178,6 +194,8 @@ namespace Opm {
         initSimpleTableContainer<SwfnTable>(deck, "SWFN" , m_tabdims->getNumSatTables());
         initSimpleTableContainer<SgfnTable>(deck, "SGFN" , m_tabdims->getNumSatTables());
         initSimpleTableContainer<SsfnTable>(deck, "SSFN" , m_tabdims->getNumSatTables());
+        initSimpleTableContainer<MsfnTable>(deck, "MSFN" , m_tabdims->getNumSatTables());
+
 
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
@@ -195,6 +213,21 @@ namespace Opm {
             initSimpleTableContainer<ImkrvdTable>( deck , "IMKRVD", numEndScaleTables);
             initSimpleTableContainer<ImptvdTable>( deck , "IMPTVD", numEndScaleTables);
         }
+
+        {
+            size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
+            if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
+                auto keyword = deck.getKeyword<ParserKeywords::MISCIBLE>();
+                auto record = keyword->getRecord(0);
+                numMiscibleTables =  static_cast<size_t>(record->getItem<ParserKeywords::MISCIBLE::NTMISC>()->getInt(0));
+            }
+            initSimpleTableContainer<SorwmisTable>(deck, "SORWMIS", numMiscibleTables);
+            initSimpleTableContainer<SgcwmisTable>(deck, "SGCWMIS", numMiscibleTables);
+            initSimpleTableContainer<MiscTable>(deck, "MISC", numMiscibleTables);
+            initSimpleTableContainer<PmiscTable>(deck, "PMISC", numMiscibleTables);
+
+        }
+
         initSimpleTableContainer<PvdgTable>(deck, "PVDG", m_tabdims->getNumPVTTables());
         initSimpleTableContainer<PvdoTable>(deck, "PVDO", m_tabdims->getNumPVTTables());
         initSimpleTableContainer<PvdsTable>(deck, "PVDS", m_tabdims->getNumPVTTables());

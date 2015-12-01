@@ -276,6 +276,11 @@ EclipseState/Tables/VFPProdTable.hpp
 EclipseState/Tables/VFPInjTable.hpp
 EclipseState/Tables/TableManager.hpp
 EclipseState/Tables/TableContainer.hpp
+EclipseState/Tables/SorwmisTable.hpp
+EclipseState/Tables/SgcwmisTable.hpp
+EclipseState/Tables/MiscTable.hpp
+EclipseState/Tables/PmiscTable.hpp
+EclipseState/Tables/MsfnTable.hpp
 #
 Utility/WconinjeWrapper.hpp
 Utility/CompdatWrapper.hpp
