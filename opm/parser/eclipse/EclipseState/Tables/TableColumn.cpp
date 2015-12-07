@@ -24,7 +24,7 @@
 namespace Opm {
 
     TableColumn::TableColumn(const ColumnSchema& schema) :
-        m_schema( schema )
+        m_schema( &schema )
     {
         m_defaultCount = 0;
     }
@@ -37,8 +37,8 @@ namespace Opm {
 
 
     void TableColumn::assertOrder(double value1 , double value2) const {
-        if (!m_schema.validOrder( value1 , value2) )
-            throw std::invalid_argument("Incorrect ordering of values");
+        if (!m_schema->validOrder( value1 , value2) )
+            throw std::invalid_argument("Incorrect ordering of values in column: " + m_schema->name());
     }
 
 
@@ -81,12 +81,17 @@ namespace Opm {
 
 
     void TableColumn::addDefault() {
-        if (m_schema.acceptsDefault()) {
+        Table::DefaultAction defaultAction = m_schema->getDefaultMode( );
+
+        if (defaultAction == Table::DEFAULT_CONST)
+            addValue( m_schema->getDefaultValue( ));
+        else if (defaultAction == Table::DEFAULT_LINEAR) {
             m_values.push_back( -1 ); // Should never even be read.
             m_default.push_back( true );
             m_defaultCount += 1;
         } else
             throw std::invalid_argument("The column does not accept default values");
+
     }
 
 
@@ -147,7 +152,7 @@ namespace Opm {
 
     bool TableColumn::inRange( double arg ) const {
         if (m_values.size( ) >= 2) {
-            if (!m_schema.lookupValid( ))
+            if (!m_schema->lookupValid( ))
                 throw std::invalid_argument("Must have an ordered column to check in range.");
 
             if ((arg >= min()) && (arg <= max()))
@@ -161,7 +166,7 @@ namespace Opm {
 
 
     TableIndex TableColumn::lookup( double argValue ) const {
-        if (!m_schema.lookupValid( ))
+        if (!m_schema->lookupValid( ))
             throw std::invalid_argument("Must have an ordered column to perform table argument lookup.");
 
         if (size() < 2)
@@ -175,7 +180,7 @@ namespace Opm {
             throw std::invalid_argument("Value not in range.");
 
         {
-            bool isDescending = m_schema.isDecreasing( );
+            bool isDescending = m_schema->isDecreasing( );
             size_t lowIntervalIdx = 0;
             size_t intervalIdx = (size() - 1)/2;
             size_t highIntervalIdx = size() - 1;
@@ -222,6 +227,71 @@ namespace Opm {
             value += weight2 * m_values[index1 + 1];
         }
         return value;
+    }
+
+
+    TableColumn& TableColumn::operator= (const TableColumn& other) {
+        if (this != &other) {
+            m_schema = other.m_schema;
+            m_name = other.m_name;
+            m_values = other.m_values;
+            m_default = other.m_default;
+            m_defaultCount = other.m_defaultCount;
+        }
+        return *this;
+    }
+
+
+    void TableColumn::applyDefaults( const TableColumn& argColumn ) {
+        if (m_schema->getDefaultMode() == Table::DEFAULT_LINEAR) {
+            if (size() != argColumn.size())
+                throw std::invalid_argument("Size mismatch with argument column");
+
+            for (size_t rowIdx = 0; rowIdx < size(); ++rowIdx) {
+                if (defaultApplied( rowIdx )) {
+                    // find first row which was not defaulted before the current one
+                    ssize_t rowBeforeIdx = rowIdx;
+                    for (; rowBeforeIdx >= 0; -- rowBeforeIdx)
+                        if (!defaultApplied(rowBeforeIdx))
+                            break;
+
+                    // find first row which was not defaulted after the current one
+                    ssize_t rowAfterIdx = rowIdx;
+                    for (; rowAfterIdx < static_cast<ssize_t>(size()); ++ rowAfterIdx)
+                        if (!defaultApplied(rowAfterIdx))
+                            break;
+
+
+                    // switch to extrapolation by a constant at the fringes
+                    if (rowBeforeIdx < 0 && rowAfterIdx >= static_cast<ssize_t>(size()))
+                        throw std::invalid_argument("Column " + m_schema->name() + " can't be fully defaulted");
+                    else if (rowBeforeIdx < 0)
+                        rowBeforeIdx = rowAfterIdx;
+                    else if (rowAfterIdx >= static_cast<ssize_t>(size()))
+                        rowAfterIdx = rowBeforeIdx;
+
+                    {
+                        // linear interpolation
+                        double alpha = 0.0;
+                        if (rowBeforeIdx != rowAfterIdx)
+                            alpha = (argColumn[rowIdx] - argColumn[rowBeforeIdx]) / (argColumn[rowAfterIdx] - argColumn[rowBeforeIdx]);
+
+                        double value = m_values[rowBeforeIdx]*(1-alpha) + m_values[rowAfterIdx]*alpha;
+
+                        updateValue( rowIdx , value );
+                    }
+                }
+            }
+        }
+    }
+
+
+    void TableColumn::assertUnitRange() const {
+        if (front() != 0.0)
+            throw std::invalid_argument("Column " + m_schema->name() + " must span range [0 1]");
+
+        if (back() != 1.0)
+            throw std::invalid_argument("Column " + m_schema->name() + " must span range [0 1]");
     }
 
 

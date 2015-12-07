@@ -32,6 +32,14 @@ namespace Opm {
     }
 
 
+    ColumnSchema::ColumnSchema(const std::string& name , Table::ColumnOrderEnum order , double defaultValue ) :
+        m_name( name ),
+        m_order( order ),
+        m_defaultAction( Table::DEFAULT_CONST ),
+        m_defaultValue( defaultValue )
+    {
+    }
+
     const std::string& ColumnSchema::name() const {
         return m_name;
     }
@@ -87,6 +95,19 @@ namespace Opm {
             return true;
         else
             return false;
+    }
+
+
+    Table::DefaultAction ColumnSchema::getDefaultMode( ) const {
+        return m_defaultAction;
+    }
+
+
+    double ColumnSchema::getDefaultValue( ) const {
+        if (m_defaultAction == Table::DEFAULT_CONST)
+            return m_defaultValue;
+        else
+            throw std::invalid_argument("Column must be configured with constant default when using this method");
     }
 
 }

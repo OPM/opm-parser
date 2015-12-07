@@ -25,22 +25,28 @@
 #include <vector>
 
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
+#include <opm/parser/eclipse/EclipseState/Util/Value.hpp>
+
 
 namespace Opm {
 
     class ColumnSchema {
     public:
         ColumnSchema(const std::string& name , Table::ColumnOrderEnum order, Table::DefaultAction defaultAction);
+        ColumnSchema(const std::string& name , Table::ColumnOrderEnum order, double defaultValue);
         const std::string& name() const;
         bool validOrder( double value1 , double value2) const;
         bool lookupValid( ) const;
         bool acceptsDefault( ) const;
         bool isIncreasing( ) const;
         bool isDecreasing( ) const;
+        Table::DefaultAction getDefaultMode( ) const;
+        double getDefaultValue( ) const;
     private:
         std::string m_name;
         Table::ColumnOrderEnum m_order;
         Table::DefaultAction m_defaultAction;
+        double m_defaultValue;
     };
 }
 

@@ -29,6 +29,8 @@ namespace Opm {
     class PlymaxTable : public SimpleTable {
     public:
         friend class TableManager;
+
+        // This is not really a table; every column has only one element.
         PlymaxTable(Opm::DeckRecordConstPtr record)
         {
             m_schema = std::make_shared<TableSchema>( );
@@ -37,6 +39,12 @@ namespace Opm {
             m_schema->addColumn( ColumnSchema("C_POLYMER_MAX", Table::RANDOM , Table::DEFAULT_NONE) );
 
             addColumns();
+            for (size_t colIdx = 0; colIdx < record->size(); colIdx++) {
+                auto item = record->getItem( colIdx );
+                auto& column = getColumn( colIdx );
+
+                column.addValue( item->getSIDouble(0) );
+            }
         }
 
         using SimpleTable::numTables;

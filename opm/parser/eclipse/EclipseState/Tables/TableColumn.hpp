@@ -49,13 +49,16 @@ namespace Opm {
         bool inRange( double arg ) const;
         TableIndex lookup(double argValue) const;
         double eval( const TableIndex& index) const;
-
+        void applyDefaults( const TableColumn& argColumn );
+        void assertUnitRange() const;
+        TableColumn& operator= (const TableColumn& other);
+        
     private:
         void assertUpdate(size_t index, double value) const;
         void assertPrevious(size_t index , double value) const;
         void assertNext(size_t index , double value) const;
 
-        const ColumnSchema& m_schema;
+        const ColumnSchema * m_schema;
         std::string m_name;
         std::vector<double> m_values;
         std::vector<bool> m_default;

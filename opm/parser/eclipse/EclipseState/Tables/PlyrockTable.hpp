@@ -43,7 +43,7 @@ namespace Opm {
             addColumns();
             for (size_t colIdx = 0; colIdx < record->size(); colIdx++) {
                 auto item = record->getItem( colIdx );
-                auto column = getColumn( colIdx );
+                auto& column = getColumn( colIdx );
 
                 column.addValue( item->getSIDouble(0) );
             }

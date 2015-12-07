@@ -36,9 +36,9 @@ namespace Opm {
         {
             m_schema = std::make_shared<TableSchema>();
             m_schema->addColumn( ColumnSchema("SL"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
-            m_schema->addColumn( ColumnSchema("KRG"  , Table::INCREASING , Table::DEFAULT_LINEAR ));
+            m_schema->addColumn( ColumnSchema("KRG"  , Table::DECREASING , Table::DEFAULT_LINEAR ));
             m_schema->addColumn( ColumnSchema("KROG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
-            m_schema->addColumn( ColumnSchema("PCOG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
+            m_schema->addColumn( ColumnSchema("PCOG" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
             SimpleTable::init( item );
 

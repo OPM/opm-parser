@@ -269,3 +269,42 @@ BOOST_AUTO_TEST_CASE( Test_EVAL_DECREASING ) {
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 1.75 )) , 1.75 );
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 2.5 )) , 2.5 );
 }
+
+
+
+
+BOOST_AUTO_TEST_CASE( Test_CONST_DEFAULT ) {
+    ColumnSchema schema("COLUMN" , Table::DECREASING , 1.0);
+    TableColumn column( schema );
+    column.addDefault( );
+    column.addDefault( );
+    BOOST_CHECK( !column.hasDefault( ) );
+
+    BOOST_CHECK_EQUAL( column[0] , 1.0 );
+    BOOST_CHECK_EQUAL( column[1] , 1.0 );
+}
+
+
+BOOST_AUTO_TEST_CASE( Test_LINEAR_DEFAULT ) {
+    ColumnSchema argSchema("COLUMN" , Table::INCREASING , Table::DEFAULT_NONE);
+    ColumnSchema valueSchema("COLUMN" , Table::RANDOM , Table::DEFAULT_LINEAR);
+    TableColumn argColumn( argSchema );
+    TableColumn valueColumn( valueSchema );
+
+    argColumn.addValue( 0 );    valueColumn.addValue( 0 );
+    argColumn.addValue( 0.05 ); valueColumn.addDefault( );
+    argColumn.addValue( 0.10 ); valueColumn.addValue(1.0);
+    argColumn.addValue( 0.50 ); valueColumn.addDefault( );
+    argColumn.addValue( 0.80 ); valueColumn.addValue(1.0);
+    argColumn.addValue( 0.95 ); valueColumn.addDefault( );
+    argColumn.addValue( 1.00 );
+
+    BOOST_CHECK_THROW( valueColumn.applyDefaults( argColumn ) , std::invalid_argument );
+    valueColumn.addValue(0.0);
+    valueColumn.applyDefaults( argColumn );
+
+    BOOST_CHECK( !valueColumn.hasDefault( ) );
+    BOOST_CHECK_CLOSE( valueColumn[1] , 0.50 , 1e-6);
+    BOOST_CHECK_CLOSE( valueColumn[3] , 1.00 , 1e-6);
+    BOOST_CHECK_CLOSE( valueColumn[5] , 0.25 , 1e-6);
+}

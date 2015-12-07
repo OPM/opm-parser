@@ -36,7 +36,11 @@ namespace Opm {
             m_schema->addColumn( ColumnSchema( "GasSolventRelpermMultiplier", Table::INCREASING  , Table::DEFAULT_NONE));
             m_schema->addColumn( ColumnSchema( "OilRelpermMultiplier", Table::DECREASING  , Table::DEFAULT_NONE));
 
-            SimpleTable::assertUnitRange("GasPhaseFraction");
+            SimpleTable::init( item );
+            {
+                auto& column = getColumn("GasPhaseFraction");
+                column.assertUnitRange();
+            }
         }
 
         using SimpleTable::numTables;

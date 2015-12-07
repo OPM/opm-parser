@@ -200,14 +200,14 @@ PMISC\n\
 
 BOOST_AUTO_TEST_CASE(PARSE_PMISC)
 {
-ParserPtr parser(new Parser());
+    ParserPtr parser(new Parser());
 
-// test table input
-DeckPtr deck =  parser->parseString(pmiscData, ParseMode());
-Opm::PmiscTable pmiscTable(deck->getKeyword("PMISC")->getRecord(0)->getItem(0));
-BOOST_CHECK_EQUAL(3U, pmiscTable.getOilPhasePressureColumn().size());
-BOOST_CHECK_EQUAL(200*1e5, pmiscTable.getOilPhasePressureColumn()[1]);
-BOOST_CHECK_EQUAL(0.5, pmiscTable.getMiscibilityColumn()[1]);
+    // test table input
+    DeckPtr deck =  parser->parseString(pmiscData, ParseMode());
+    Opm::PmiscTable pmiscTable(deck->getKeyword("PMISC")->getRecord(0)->getItem(0));
+    BOOST_CHECK_EQUAL(3U, pmiscTable.getOilPhasePressureColumn().size());
+    BOOST_CHECK_EQUAL(200*1e5, pmiscTable.getOilPhasePressureColumn()[1]);
+    BOOST_CHECK_EQUAL(0.5, pmiscTable.getMiscibilityColumn()[1]);
 }
 
 const char *msfnData = "\n\

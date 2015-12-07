@@ -17,6 +17,7 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <utility>
+#include <iostream>
 
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
 
@@ -36,8 +37,8 @@ size_t SimpleTable::numTables(Opm::DeckKeywordConstPtr keyword)
 void SimpleTable::addColumns() {
     for (size_t colIdx = 0; colIdx < m_schema->size(); ++colIdx) {
         const auto& schemaColumn = m_schema->getColumn( colIdx );
-        TableColumn column(schemaColumn); // SOme move trickery here ...
-        //m_columns.insert( schemaColumn.name() , column );
+        TableColumn column(schemaColumn); // Some move trickery here ...
+        m_columns.insert( schemaColumn.name() , column );
     }
 }
 
@@ -52,7 +53,7 @@ void SimpleTable::init(Opm::DeckItemConstPtr deckItem)
     {
         size_t rows = deckItem->size() / numColumns();
         for (size_t colIdx = 0; colIdx < numColumns(); ++colIdx) {
-            auto column = getColumn( colIdx );
+            auto& column = getColumn( colIdx );
             for (size_t rowIdx = 0; rowIdx < rows; rowIdx++) {
                 size_t deckItemIdx = rowIdx*numColumns() + colIdx;
                 if (deckItem->defaultApplied(deckItemIdx))
@@ -60,12 +61,14 @@ void SimpleTable::init(Opm::DeckItemConstPtr deckItem)
                 else
                     column.addValue( deckItem->getSIDouble(deckItemIdx) );
             }
+            if (colIdx > 0)
+                column.applyDefaults(getColumn( 0 ));
         }
     }
 }
 
 size_t SimpleTable::numColumns() const {
-    return m_columns.size();
+    return m_schema->size();
 }
 
 size_t SimpleTable::numRows() const {
@@ -74,21 +77,21 @@ size_t SimpleTable::numRows() const {
 }
 
 
-    const TableColumn&& SimpleTable::getColumn( const std::string& name) const {
-        return std::forward<const TableColumn>(m_columns.get_const( name ));
+    const TableColumn& SimpleTable::getColumn( const std::string& name) const {
+        return std::forward<const TableColumn &>(m_columns.get_const( name ));
     }
 
-    const TableColumn&& SimpleTable::getColumn( size_t columnIndex )  const {
-        return std::forward<const TableColumn>(m_columns.get_const( columnIndex ));
+    const TableColumn& SimpleTable::getColumn( size_t columnIndex )  const {
+        return std::forward<const TableColumn &>(m_columns.get_const( columnIndex ));
     }
 
 
-    TableColumn&& SimpleTable::getColumn( const std::string& name) {
-        return std::forward<TableColumn>(m_columns.get( name ));
+    TableColumn& SimpleTable::getColumn( const std::string& name) {
+        return std::forward<TableColumn &>(m_columns.get( name ));
     }
 
-    TableColumn&& SimpleTable::getColumn( size_t columnIndex ) {
-        return std::forward<TableColumn>(m_columns.get( columnIndex ));
+    TableColumn& SimpleTable::getColumn( size_t columnIndex ) {
+        return std::forward<TableColumn &>(m_columns.get( columnIndex ));
     }
 
 
@@ -157,15 +160,6 @@ void SimpleTable::checkNonDefaultable(const std::string& columnName)
 
 
 
-void SimpleTable::assertUnitRange(const std::string& columnName)
-{
-    const auto& column = getColumn( columnName );
-    if (column.front() != 0.0)
-        throw std::invalid_argument("Column " + columnName + " must span range [0 1]");
-
-    if (column.back() != 1.0)
-        throw std::invalid_argument("Column " + columnName + " must span range [0 1]");
-}
 
 void SimpleTable::applyDefaultsConstant(const std::string& columnName, double value)
 {

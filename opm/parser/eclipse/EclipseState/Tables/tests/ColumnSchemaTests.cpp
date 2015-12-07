@@ -32,6 +32,15 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE( CreateTest ) {
     ColumnSchema schema("Name" , Table::INCREASING , Table::DEFAULT_NONE);
     BOOST_CHECK_EQUAL( schema.name() , "Name");
+    BOOST_CHECK_THROW( schema.getDefaultValue() , std::invalid_argument );
+}
+
+
+BOOST_AUTO_TEST_CASE( CreateDefaultConst ) {
+    ColumnSchema schema("Name" , Table::INCREASING , 1.76);
+    BOOST_CHECK_EQUAL( schema.name() , "Name");
+    BOOST_CHECK_EQUAL( schema.getDefaultMode() , Table::DEFAULT_CONST );
+    BOOST_CHECK_EQUAL( schema.getDefaultValue() , 1.76 );
 }
 
 

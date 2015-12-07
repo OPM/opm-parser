@@ -56,7 +56,7 @@ namespace Opm {
             {
                 size_t numRows = deckItem->size() / m_schema->size();
                 for (size_t columnIndex=0; columnIndex < m_schema->size(); columnIndex++) {
-                    auto column = getColumn( columnIndex );
+                    auto& column = getColumn( columnIndex );
                     for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
                         size_t deckIndex = rowIdx * m_schema->size() + columnIndex;
 

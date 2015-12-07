@@ -53,11 +53,11 @@ namespace Opm {
 
         size_t numColumns() const;
         size_t numRows() const;
-        const TableColumn&& getColumn(const std::string &name) const;
-        const TableColumn&& getColumn(size_t colIdx) const;
+        const TableColumn& getColumn(const std::string &name) const;
+        const TableColumn& getColumn(size_t colIdx) const;
 
-        TableColumn&& getColumn(const std::string &name);
-        TableColumn&& getColumn(size_t colIdx);
+        TableColumn& getColumn(const std::string &name);
+        TableColumn& getColumn(size_t colIdx);
 
         /*!
          * \brief Evaluate a column of the table at a given position.
@@ -72,7 +72,6 @@ namespace Opm {
         void checkMonotonic(const std::string& columnName,
                              bool isAscending,
                              bool isStrictlyMonotonic = true);
-        void assertUnitRange(const std::string& columnName);
         void applyDefaultsConstant(const std::string& columnName, double value);
         void applyDefaultsLinear(const std::string& columnName);
         //void createColumns(const TableSchema& tableSchema);
