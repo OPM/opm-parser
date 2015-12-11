@@ -26,8 +26,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Eqldims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Regdims.hpp>
 
-#include <opm/parser/eclipse/EclipseState/Tables/PvtgOuterTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/PvtoOuterTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/PvtgTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgwfnTable.hpp>
@@ -121,8 +121,8 @@ namespace Opm {
         const TableContainer& getMsfnTables() const;
 
 
-        const std::vector<PvtgOuterTable>& getPvtgTables() const;
-        const std::vector<PvtoOuterTable>& getPvtoTables() const;
+        const std::vector<PvtgTable>& getPvtgTables() const;
+        const std::vector<PvtoTable>& getPvtoTables() const;
         const std::map<int, VFPProdTable>& getVFPProdTables() const;
         const std::map<int, VFPInjTable>& getVFPInjTables() const;
     private:
@@ -238,8 +238,8 @@ namespace Opm {
         std::map<std::string , TableContainer> m_simpleTables;
         std::map<int, VFPProdTable> m_vfpprodTables;
         std::map<int, VFPInjTable> m_vfpinjTables;
-        std::vector<PvtgOuterTable> m_pvtgTables;
-        std::vector<PvtoOuterTable> m_pvtoTables;
+        std::vector<PvtgTable> m_pvtgTables;
+        std::vector<PvtoTable> m_pvtoTables;
 
         std::shared_ptr<Regdims> m_regdims;
         std::shared_ptr<Tabdims> m_tabdims;

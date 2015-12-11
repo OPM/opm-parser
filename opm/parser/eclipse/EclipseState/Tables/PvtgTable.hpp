@@ -16,18 +16,19 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPM_PARSER_PVTO_OUTER_TABLE_HPP
-#define	OPM_PARSER_PVTO_OUTER_TABLE_HPP
+#ifndef OPM_PARSER_PVTG_TABLE_HPP
+#define	OPM_PARSER_PVTG_TABLE_HPP
 
 #include <opm/parser/eclipse/EclipseState/Tables/PvtxTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/PvtoInnerTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/PvtgInnerTable.hpp>
 
 namespace Opm {
-    class PvtoOuterTable : public PvtxTable {
+    class PvtgTable : public PvtxTable {
+
     public:
 
-        PvtoOuterTable(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) :
-            m_columnSchema( "RS" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
+        PvtgTable(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) :
+            m_columnSchema( "P" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
             m_column( m_columnSchema )
         {
             auto ranges = recordRanges( keyword );
@@ -44,20 +45,20 @@ namespace Opm {
                 {
                     Opm::DeckItemConstPtr dataItem = deckRecord->getItem(1);
                     //m_tables.emplace_back( dataItem );
-                    m_tables.push_back( std::make_shared<const PvtoInnerTable>( dataItem ));
+                    m_tables.push_back( std::make_shared<const PvtgInnerTable>( dataItem ));
                 }
             }
         }
 
 
-        const PvtoInnerTable& getInnerTable(size_t tableNumber) const {
+        const PvtgInnerTable& getInnerTable(size_t tableNumber) const {
             if (tableNumber >= size())
                 throw std::invalid_argument("Invalid table number: " + std::to_string( tableNumber) + " max: " + std::to_string( size() - 1 ));
             return *m_tables[ tableNumber ];
         }
 
 
-        const TableColumn& getGasSolubilityColumn() const
+        const TableColumn& getPressureColumn() const
         {
             return m_column;
         }
@@ -67,16 +68,16 @@ namespace Opm {
             return m_column.size();
         }
 
-
         const std::pair<size_t, size_t>& recordRange() const {
             return m_recordRange;
         }
+
 
     private:
         ColumnSchema m_columnSchema;
         TableColumn m_column;
         std::pair<size_t, size_t> m_recordRange;
-        std::vector<std::shared_ptr<const PvtoInnerTable> > m_tables;
+        std::vector<std::shared_ptr<const PvtgInnerTable> > m_tables;
         //std::vector<PvtoInnerTable> m_tables;
     };
 }

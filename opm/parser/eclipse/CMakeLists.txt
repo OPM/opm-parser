@@ -239,7 +239,7 @@ EclipseState/Tables/Tabdims.hpp
 EclipseState/Tables/Eqldims.hpp
 EclipseState/Tables/Regdims.hpp
 EclipseState/Tables/PlyadsTable.hpp
-EclipseState/Tables/PvtoOuterTable.hpp
+EclipseState/Tables/PvtoTable.hpp
 EclipseState/Tables/RocktabTable.hpp
 EclipseState/Tables/PvtgInnerTable.hpp
 EclipseState/Tables/PvdoTable.hpp
@@ -272,7 +272,7 @@ EclipseState/Tables/RtempvdTable.hpp
 EclipseState/Tables/OilvisctTable.hpp
 EclipseState/Tables/GasvisctTable.hpp
 EclipseState/Tables/WatvisctTable.hpp
-EclipseState/Tables/PvtgOuterTable.hpp
+EclipseState/Tables/PvtgTable.hpp
 EclipseState/Tables/VFPProdTable.hpp
 EclipseState/Tables/VFPInjTable.hpp
 EclipseState/Tables/TableManager.hpp

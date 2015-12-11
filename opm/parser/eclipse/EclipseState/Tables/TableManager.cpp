@@ -579,11 +579,11 @@ namespace Opm {
         return getTables("PLYSHLOG");
     }
 
-    const std::vector<PvtgOuterTable>& TableManager::getPvtgTables() const {
+    const std::vector<PvtgTable>& TableManager::getPvtgTables() const {
         return m_pvtgTables;
     }
 
-    const std::vector<PvtoOuterTable>& TableManager::getPvtoTables() const {
+    const std::vector<PvtoTable>& TableManager::getPvtoTables() const {
         return m_pvtoTables;
     }
 
