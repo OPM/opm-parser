@@ -29,12 +29,11 @@
 
 // generic table classes
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/MultiRecordTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/FullTable.hpp>
+//#include <opm/parser/eclipse/EclipseState/Tables/FullTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
 // keyword specific table classes
-#include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
+// #include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PlyrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgwfnTable.hpp>

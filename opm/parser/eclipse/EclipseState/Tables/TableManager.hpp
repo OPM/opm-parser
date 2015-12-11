@@ -26,6 +26,9 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Eqldims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Regdims.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Tables/PvtgOuterTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/PvtoOuterTable.hpp>
+
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
@@ -55,8 +58,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/EnptvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/ImkrvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/ImptvdTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/PvtgTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/VFPProdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/VFPInjTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
@@ -66,7 +67,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/PmiscTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/MsfnTable.hpp>
 
-#include <opm/parser/eclipse/EclipseState/Tables/MultiRecordTable.hpp>
 
 
 
@@ -230,7 +230,7 @@ namespace Opm {
 
             const auto& tableKeyword = deck.getKeyword(keywordName);
 
-            int numTables = MultiRecordTable::numTables( tableKeyword );
+            int numTables = TableType::numTables( tableKeyword );
             for (int tableIdx = 0; tableIdx < numTables; ++tableIdx)
                 tableVector.push_back(TableType(tableKeyword , tableIdx));
         }

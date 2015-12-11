@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013 by Andreas Lauser
+  Copyright 2015 Statoil ASA.
 
   This file is part of the Open Porous Media project (OPM).
 
@@ -16,35 +16,24 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef OPM_PARSER_PVTO_TABLE_HPP
-#define	OPM_PARSER_PVTO_TABLE_HPP
+#ifndef OPM_PARSER_PVTX_TABLE_HPP
+#define	OPM_PARSER_PVTX_TABLE_HPP
 
-#include "FullTable.hpp"
-#include "PvtoInnerTable.hpp"
-#include "PvtoOuterTable.hpp"
+#include <vector>
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 
 namespace Opm {
     // forward declaration
     class TableManager;
 
-    class PvtoTable : public Opm::FullTable<Opm::PvtoOuterTable, Opm::PvtoInnerTable>
+    class PvtxTable
     {
     public:
-        typedef Opm::FullTable<Opm::PvtoOuterTable, Opm::PvtoInnerTable> ParentType;
-        friend class TableManager;
-        using ParentType::init;
 
-
-#ifdef BOOST_TEST_MODULE
-        // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
-        void initFORUNITTESTONLY(Opm::DeckKeywordConstPtr keyword, size_t tableIdx)
-        { init(keyword, tableIdx); }
-#endif
-
+        static size_t numTables(Opm::DeckKeywordConstPtr keyword);
+        static std::vector<std::pair<size_t , size_t> > recordRanges(Opm::DeckKeywordConstPtr keyword);
     };
 
-    typedef std::shared_ptr<PvtoTable> PvtoTablePtr;
-    typedef std::shared_ptr<const PvtoTable> PvtoConstTablePtr;
 }
 
 #endif

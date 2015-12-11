@@ -108,7 +108,6 @@ EclipseState/Schedule/Tuning.cpp
 EclipseState/Schedule/Events.cpp
 #
 EclipseState/Tables/SimpleTable.cpp
-EclipseState/Tables/MultiRecordTable.cpp
 EclipseState/Tables/VFPProdTable.cpp
 EclipseState/Tables/VFPInjTable.cpp
 EclipseState/Tables/TableManager.cpp
@@ -117,6 +116,7 @@ EclipseState/Tables/TableColumn.cpp
 EclipseState/Tables/ColumnSchema.cpp
 EclipseState/Tables/TableSchema.cpp
 EclipseState/Tables/TableIndex.cpp
+EclipseState/Tables/PvtxTable.cpp
 #
 EclipseState/Grid/GridProperty.cpp
 EclipseState/Grid/Box.cpp
@@ -243,12 +243,10 @@ EclipseState/Tables/PvtoOuterTable.hpp
 EclipseState/Tables/RocktabTable.hpp
 EclipseState/Tables/PvtgInnerTable.hpp
 EclipseState/Tables/PvdoTable.hpp
-EclipseState/Tables/MultiRecordTable.hpp
 EclipseState/Tables/PvdgTable.hpp
 EclipseState/Tables/PvdsTable.hpp
 EclipseState/Tables/SimpleTable.hpp
 EclipseState/Tables/PlymaxTable.hpp
-EclipseState/Tables/PvtgTable.hpp
 EclipseState/Tables/PlyrockTable.hpp
 EclipseState/Tables/SwofTable.hpp
 EclipseState/Tables/SgwfnTable.hpp
@@ -258,7 +256,6 @@ EclipseState/Tables/SsfnTable.hpp
 EclipseState/Tables/Sof2Table.hpp
 EclipseState/Tables/Sof3Table.hpp
 EclipseState/Tables/EnptvdTable.hpp
-EclipseState/Tables/FullTable.hpp
 EclipseState/Tables/PlyviscTable.hpp
 EclipseState/Tables/PlydhflfTable.hpp
 EclipseState/Tables/PlyshlogTable.hpp
@@ -266,7 +263,7 @@ EclipseState/Tables/EnkrvdTable.hpp
 EclipseState/Tables/ImkrvdTable.hpp
 EclipseState/Tables/SgofTable.hpp
 EclipseState/Tables/SlgofTable.hpp
-EclipseState/Tables/PvtoTable.hpp
+EclipseState/Tables/PvtxTable.hpp
 EclipseState/Tables/ImptvdTable.hpp
 EclipseState/Tables/RsvdTable.hpp
 EclipseState/Tables/PvtoInnerTable.hpp

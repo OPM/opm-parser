@@ -19,10 +19,11 @@
 #ifndef OPM_PARSER_PVTG_OUTER_TABLE_HPP
 #define	OPM_PARSER_PVTG_OUTER_TABLE_HPP
 
+#include <opm/parser/eclipse/EclipseState/Tables/PvtxTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PvtgInnerTable.hpp>
 
 namespace Opm {
-    class PvtgOuterTable {
+    class PvtgOuterTable : public PvtxTable {
 
     public:
 
@@ -30,7 +31,7 @@ namespace Opm {
             m_columnSchema( "P" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
             m_column( m_columnSchema )
         {
-            auto ranges = MultiRecordTable::recordRanges( keyword );
+            auto ranges = recordRanges( keyword );
             if (tableIdx >= ranges.size())
                 throw std::invalid_argument("Asked for table: " + std::to_string( tableIdx ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( ranges.size() ) + " tables");
 
