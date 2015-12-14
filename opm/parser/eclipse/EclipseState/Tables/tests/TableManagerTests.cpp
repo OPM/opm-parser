@@ -94,8 +94,6 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
     Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseMode()));
     Opm::DeckKeywordConstPtr swofKeyword = deck->getKeyword("SWOF");
 
-    BOOST_CHECK_EQUAL(Opm::SwofTable::numTables(swofKeyword), 2);
-
     Opm::SwofTable swof1Table(deck->getKeyword("SWOF")->getRecord(0)->getItem(0));
     Opm::SwofTable swof2Table(deck->getKeyword("SWOF")->getRecord(1)->getItem(0));
 
@@ -140,7 +138,6 @@ BOOST_AUTO_TEST_CASE(SgwfnTable_Tests) {
     Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseMode()));
     Opm::DeckKeywordConstPtr sgwfnKeyword = deck->getKeyword("SGWFN");
 
-    BOOST_CHECK_EQUAL(Opm::SgwfnTable::numTables(sgwfnKeyword), 2);
 
     Opm::SgwfnTable sgwfn1Table(deck->getKeyword("SGWFN")->getRecord(0)->getItem(0));
     Opm::SgwfnTable sgwfn2Table(deck->getKeyword("SGWFN")->getRecord(1)->getItem(0));
@@ -184,8 +181,6 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
     Opm::ParserPtr parser(new Opm::Parser);
     Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseMode()));
     Opm::DeckKeywordConstPtr sgofKeyword = deck->getKeyword("SGOF");
-
-    BOOST_CHECK_EQUAL(Opm::SgofTable::numTables(sgofKeyword), 2);
 
     Opm::SgofTable sgof1Table(deck->getKeyword("SGOF")->getRecord(0)->getItem(0));
     Opm::SgofTable sgof2Table(deck->getKeyword("SGOF")->getRecord(1)->getItem(0));
@@ -233,9 +228,6 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         Opm::ParserPtr parser(new Opm::Parser);
         Opm::DeckConstPtr deck(parser->parseString(correctDeckData, Opm::ParseMode()));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
-
-        BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
-
         Opm::PlyadsTable plyadsTable(plyadsKeyword->getRecord(0)->getItem(0));
 
 
@@ -266,7 +258,6 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, Opm::ParseMode()));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
 
-        BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword->getRecord(0)->getItem(0)), std::invalid_argument);
     }
 
@@ -290,7 +281,6 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
         Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, Opm::ParseMode()));
         Opm::DeckKeywordConstPtr plyadsKeyword = deck->getKeyword("PLYADS");
 
-        BOOST_CHECK_EQUAL(Opm::PlyadsTable::numTables(plyadsKeyword), 1);
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword->getRecord(0)->getItem(0)), std::invalid_argument);
     }
 }

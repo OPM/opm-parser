@@ -23,13 +23,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableSchema.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class SgwfnTable : public SimpleTable {
-
-        friend class TableManager;
-
 
     public:
         SgwfnTable(Opm::DeckItemConstPtr item) {
@@ -42,17 +36,6 @@ namespace Opm {
 
             SimpleTable::init( item );
         }
-
-#ifdef BOOST_TEST_MODULE
-        // DO NOT TRY TO CALL THIS METHOD! it is only for the unit tests!
-        void initFORUNITTESTONLY(Opm::DeckItemConstPtr item)
-        { init(item); }
-#endif
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getSgColumn() const
         { return SimpleTable::getColumn(0); }

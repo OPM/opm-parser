@@ -24,9 +24,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class MsfnTable : public SimpleTable {
     public:
         MsfnTable(Opm::DeckItemConstPtr item)
@@ -43,10 +40,6 @@ namespace Opm {
             }
         }
 
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getGasPhaseFractionColumn() const
         { return SimpleTable::getColumn(0); }

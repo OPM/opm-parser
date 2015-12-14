@@ -35,11 +35,6 @@ namespace Opm {
             SimpleTable::init( item );
         }
 
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
-
         const TableColumn& getDepthColumn() const
         {
             return SimpleTable::getColumn(0);

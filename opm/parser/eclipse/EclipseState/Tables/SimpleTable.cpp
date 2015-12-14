@@ -29,18 +29,14 @@ namespace Opm {
     }
 
 
-size_t SimpleTable::numTables(Opm::DeckKeywordConstPtr keyword)
-{
-    return keyword->size();
-}
 
-void SimpleTable::addColumns() {
-    for (size_t colIdx = 0; colIdx < m_schema->size(); ++colIdx) {
-        const auto& schemaColumn = m_schema->getColumn( colIdx );
-        TableColumn column(schemaColumn); // Some move trickery here ...
-        m_columns.insert( schemaColumn.name() , column );
+    void SimpleTable::addColumns() {
+        for (size_t colIdx = 0; colIdx < m_schema->size(); ++colIdx) {
+            const auto& schemaColumn = m_schema->getColumn( colIdx );
+            TableColumn column(schemaColumn); // Some move trickery here ...
+            m_columns.insert( schemaColumn.name() , column );
+        }
     }
-}
 
 
 // create table from single record
@@ -146,31 +142,8 @@ double SimpleTable::evaluate(const std::string& columnName, double xPos) const
     return yColumn[intervalIdx]*(1-alpha) + yColumn[intervalIdx + 1]*alpha;
 }
 
-void SimpleTable::checkNonDefaultable(const std::string& columnName)
-{
-    int columnIdx = m_columnNames.at(columnName);
-
-    int nRows = numRows();
-
-    for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
-        if (m_valueDefaulted[columnIdx][rowIdx])
-            throw std::invalid_argument("Column " + columnName + " is not defaultable");
-    }
-}
 
 
-
-
-void SimpleTable::applyDefaultsConstant(const std::string& columnName, double value)
-{
-    auto column = getColumn( columnName );
-    int nRows = numRows();
-
-    for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
-        if (column.defaultApplied( rowIdx ))
-            column.updateValue( rowIdx , value );
-    }
-}
 
 
 void SimpleTable::applyDefaultsLinear(const std::string& columnName)

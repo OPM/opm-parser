@@ -23,13 +23,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class EnptvdTable : public SimpleTable {
     public:
-
-        friend class TableManager;
         EnptvdTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>( );
@@ -45,11 +40,6 @@ namespace Opm {
 
             SimpleTable::init(item);
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         // using this method is strongly discouraged but the current endpoint scaling
         // code makes it hard to avoid

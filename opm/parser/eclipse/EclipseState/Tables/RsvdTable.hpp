@@ -23,9 +23,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class RsvdTable : public SimpleTable {
     public:
         friend class TableManager;
@@ -37,11 +34,6 @@ namespace Opm {
 
             SimpleTable::init(item);
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getDepthColumn() const
         { return SimpleTable::getColumn(0); }

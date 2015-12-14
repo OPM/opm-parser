@@ -23,14 +23,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class PlymaxTable : public SimpleTable {
     public:
-        friend class TableManager;
-
-        // This is not really a table; every column has only one element.
         PlymaxTable(Opm::DeckRecordConstPtr record)
         {
             m_schema = std::make_shared<TableSchema>( );
@@ -46,11 +40,6 @@ namespace Opm {
                 column.addValue( item->getSIDouble(0) );
             }
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getPolymerConcentrationColumn() const
         { return SimpleTable::getColumn(0); }

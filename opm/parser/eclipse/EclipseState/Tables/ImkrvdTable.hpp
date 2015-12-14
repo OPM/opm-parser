@@ -24,13 +24,8 @@
 
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class ImkrvdTable : public SimpleTable {
     public:
-        friend class TableManager;
-
         ImkrvdTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>( );
@@ -45,11 +40,6 @@ namespace Opm {
 
             SimpleTable::init(item);
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         /*!
          * \brief The datum depth for the remaining columns

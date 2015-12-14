@@ -43,14 +43,6 @@ namespace Opm {
         SimpleTable();
         void addColumns();
 
-        /*!
-         * \brief Returns the number of tables in a keyword.
-         *
-         * For simple tables, that is identical to the number of
-         * records.
-         */
-        static size_t numTables(Opm::DeckKeywordConstPtr keyword);
-
         size_t numColumns() const;
         size_t numRows() const;
         const TableColumn& getColumn(const std::string &name) const;
@@ -68,15 +60,10 @@ namespace Opm {
         double evaluate(const std::string& columnName, double xPos) const;
 
     protected:
-        void checkNonDefaultable(const std::string& columnName);
         void checkMonotonic(const std::string& columnName,
                              bool isAscending,
                              bool isStrictlyMonotonic = true);
-        void applyDefaultsConstant(const std::string& columnName, double value);
         void applyDefaultsLinear(const std::string& columnName);
-        //void createColumns(const TableSchema& tableSchema);
-        //void createColumns(const std::vector<std::string>& columnNames);
-        void addColumn(std::shared_ptr<const ColumnSchema> schema);
 
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<bool> > m_valueDefaulted;

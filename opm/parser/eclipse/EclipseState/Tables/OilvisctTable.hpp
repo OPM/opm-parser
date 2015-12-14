@@ -23,13 +23,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class OilvisctTable : public SimpleTable {
     public:
-
-        friend class TableManager;
 
         OilvisctTable(Opm::DeckItemConstPtr item)
         {
@@ -38,11 +33,6 @@ namespace Opm {
             m_schema->addColumn( ColumnSchema("Temperature" , Table::DECREASING , Table::DEFAULT_NONE) );
             SimpleTable::init(item);
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getTemperatureColumn() const
         { return SimpleTable::getColumn(0); }

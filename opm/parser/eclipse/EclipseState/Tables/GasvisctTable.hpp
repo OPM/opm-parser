@@ -24,13 +24,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class GasvisctTable : public SimpleTable {
     public:
-        friend class TableManager;
-
         GasvisctTable(const Deck& deck, Opm::DeckItemConstPtr deckItem)
         {
             int numComponents = deck.getKeyword<ParserKeywords::COMPS>()->getRecord(0)->getItem(0)->getInt(0);
@@ -77,11 +72,6 @@ namespace Opm {
                 }
             }
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getTemperatureColumn() const
         { return SimpleTable::getColumn(0); }

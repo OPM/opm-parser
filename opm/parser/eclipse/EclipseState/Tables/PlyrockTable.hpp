@@ -24,12 +24,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class PlyrockTable : public SimpleTable {
     public:
-        friend class TableManager;
 
         // This is not really a table; every column has only one element.
         PlyrockTable(DeckRecordConstPtr record)
@@ -48,10 +44,6 @@ namespace Opm {
                 column.addValue( item->getSIDouble(0) );
             }
         }
-
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
 
         // since this keyword is not necessarily monotonic, it cannot be evaluated!
         //using SimpleTable::evaluate;

@@ -23,12 +23,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableEnums.hpp>
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class PvdgTable : public SimpleTable {
     public:
-        friend class TableManager;
 
         PvdgTable(Opm::DeckItemConstPtr item)
         {
@@ -40,10 +36,6 @@ namespace Opm {
             SimpleTable::init( item );
         }
 
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getPressureColumn() const
         { return SimpleTable::getColumn(0); }

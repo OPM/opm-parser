@@ -24,13 +24,8 @@
 
 
 namespace Opm {
-    // forward declaration
-    class TableManager;
-
     class PlyviscTable : public SimpleTable {
     public:
-
-        friend class TableManager;
         PlyviscTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>();
@@ -40,10 +35,6 @@ namespace Opm {
         }
 
     public:
-        using SimpleTable::numTables;
-        using SimpleTable::numRows;
-        using SimpleTable::numColumns;
-        using SimpleTable::evaluate;
 
         const TableColumn& getPolymerConcentrationColumn() const
         { return SimpleTable::getColumn(0); }
