@@ -47,12 +47,17 @@ namespace Opm {
         double min() const;
         double max() const;
         bool inRange( double arg ) const;
+
+        /*
+           Will extrapolate with constant endpoint values if @argValue
+           is out of range.
+        */
         TableIndex lookup(double argValue) const;
         double eval( const TableIndex& index) const;
         void applyDefaults( const TableColumn& argColumn );
         void assertUnitRange() const;
         TableColumn& operator= (const TableColumn& other);
-        
+
     private:
         void assertUpdate(size_t index, double value) const;
         void assertPrevious(size_t index , double value) const;

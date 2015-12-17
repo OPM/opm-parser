@@ -94,124 +94,63 @@ size_t SimpleTable::numRows() const {
 
 double SimpleTable::evaluate(const std::string& columnName, double xPos) const
 {
-    const auto xColumn = getColumn( 0 );
-    const auto yColumn = getColumn( columnName );
+    const auto& argColumn = getColumn( 0 );
+    const auto& valueColumn = getColumn( columnName );
 
-    bool isDescending = false;
-    if (xColumn.front() > xColumn.back())
-        isDescending = true;
-
-    // handle the constant interpolation cases
-    if (isDescending) {
-        if (xColumn.front() < xPos)
-            return yColumn.front();
-        else if (xPos < xColumn.back())
-            return yColumn.back();
-    }
-    else {
-        if (xPos < xColumn.front())
-            return yColumn.front();
-        else if (xColumn.back() < xPos)
-            return yColumn.back();
-    }
-
-    // find the interval which contains the x position using interval halfing
-    size_t lowIntervalIdx = 0;
-    size_t intervalIdx = (xColumn.size() - 1)/2;
-    size_t highIntervalIdx = xColumn.size()-1;
-    while (lowIntervalIdx + 1 < highIntervalIdx) {
-        if (isDescending) {
-            if (xColumn[intervalIdx] < xPos)
-                highIntervalIdx = intervalIdx;
-            else
-                lowIntervalIdx = intervalIdx;
-        }
-        else {
-            if (xColumn[intervalIdx] < xPos)
-                lowIntervalIdx = intervalIdx;
-            else
-                highIntervalIdx = intervalIdx;
-        }
-
-        intervalIdx = (highIntervalIdx + lowIntervalIdx)/2;
-    }
-
-    // use linear interpolation if the x position is in between two non-defaulted
-    // values, else use the non-defaulted value
-    double alpha = (xPos - xColumn[intervalIdx])/(xColumn[intervalIdx + 1] - xColumn[intervalIdx]);
-    return yColumn[intervalIdx]*(1-alpha) + yColumn[intervalIdx + 1]*alpha;
+    const auto index = argColumn.lookup( xPos );
+    return valueColumn.eval( index );
 }
 
 
-
-
-
-void SimpleTable::applyDefaultsLinear(const std::string& columnName)
-{
-    auto xColumn = getColumn( 0 );
-    auto yColumn = getColumn( columnName );
-    int nRows = numRows();
-
-    for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
-        if (yColumn.defaultApplied( rowIdx )) {
-            // find first row which was not defaulted before the current one
-            int rowBeforeIdx = rowIdx;
-            for (; rowBeforeIdx >= 0; -- rowBeforeIdx)
-                if (!yColumn.defaultApplied(rowBeforeIdx))
-                    break;
-
-            // find first row which was not defaulted after the current one
-            int rowAfterIdx = rowIdx;
-            for (; rowAfterIdx < static_cast<int>(yColumn.size()); ++ rowAfterIdx)
-                if (!yColumn.defaultApplied(rowAfterIdx))
-                    break;
-
-            // switch to extrapolation by a constant at the fringes
-            if (rowBeforeIdx < 0 && rowAfterIdx >= static_cast<int>(yColumn.size()))
-                throw std::invalid_argument("Column " + columnName + " can't be fully defaulted");
-            else if (rowBeforeIdx < 0)
-                rowBeforeIdx = rowAfterIdx;
-            else if (rowAfterIdx >= static_cast<int>(yColumn.size()))
-                rowAfterIdx = rowBeforeIdx;
-
-            // linear interpolation
-            double alpha = 0.0;
-            if (rowBeforeIdx != rowAfterIdx) {
-                alpha = xColumn[rowIdx] - xColumn[rowBeforeIdx];
-                alpha /= (xColumn[rowAfterIdx] - xColumn[rowBeforeIdx]);
-            }
-
-            double value =
-                yColumn[rowBeforeIdx]*(1-alpha) + yColumn[rowAfterIdx]*alpha;
-
-            yColumn.updateValue( rowIdx , value );
-        }
-    }
-}
-
-
-    //void SimpleTable::createColumns(const TableSchema& tableSchema)
-    //{
-
-//    size_t columnIndex = 0;
-//    for (columnIndex = 0; columnIndex < tableSchema.size(); columnIndex++) {
-//        const auto& column = tableSchema.getColumn( columnIndex );
-//        m_columnNames[column.name()] = columnIndex;
+//    const auto xColumn = getColumn( 0 );
+//    const auto yColumn = getColumn( columnName );
+//
+//    bool isDescending = false;
+//    if (xColumn.front() > xColumn.back())
+//        isDescending = true;
+//
+//    // handle the constant interpolation cases
+//    if (isDescending) {
+//        if (xColumn.front() < xPos)
+//            return yColumn.front();
+//        else if (xPos < xColumn.back())
+//            return yColumn.back();
 //    }
-//    m_columns.resize(tableSchema.size());
+//    else {
+//        if (xPos < xColumn.front())
+//            return yColumn.front();
+//        else if (xColumn.back() < xPos)
+//            return yColumn.back();
+//    }
+//
+//    // find the interval which contains the x position using interval halfing
+//    size_t lowIntervalIdx = 0;
+//    size_t intervalIdx = (xColumn.size() - 1)/2;
+//    size_t highIntervalIdx = xColumn.size()-1;
+//    while (lowIntervalIdx + 1 < highIntervalIdx) {
+//        if (isDescending) {
+//            if (xColumn[intervalIdx] < xPos)
+//                highIntervalIdx = intervalIdx;
+//            else
+//                lowIntervalIdx = intervalIdx;
+//        }
+//        else {
+//            if (xColumn[intervalIdx] < xPos)
+//                lowIntervalIdx = intervalIdx;
+//            else
+//                highIntervalIdx = intervalIdx;
+//        }
+//
+//        intervalIdx = (highIntervalIdx + lowIntervalIdx)/2;
+//    }
+//
+//    // use linear interpolation if the x position is in between two non-defaulted
+//    // values, else use the non-defaulted value
+//    double alpha = (xPos - xColumn[intervalIdx])/(xColumn[intervalIdx + 1] - xColumn[intervalIdx]);
+//    return yColumn[intervalIdx]*(1-alpha) + yColumn[intervalIdx + 1]*alpha;
+//}
 
-    // Allocate column names. TODO (?): move the column names into
-    // the json description of the keyword.
-    /*auto columnNameIt = columnNames.begin();
-    const auto &columnNameEndIt = columnNames.end();
-    size_t columnIdx = 0;
-    for (; columnNameIt != columnNameEndIt; ++columnNameIt, ++columnIdx) {
-        m_columnNames[*columnNameIt] = columnIdx;
-    }
-    m_columns.resize(columnIdx);
-    m_valueDefaulted.resize(columnIdx);
-    */
-    //}
+
 
 
 }

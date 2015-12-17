@@ -169,15 +169,23 @@ namespace Opm {
         if (!m_schema->lookupValid( ))
             throw std::invalid_argument("Must have an ordered column to perform table argument lookup.");
 
-        if (size() < 2)
-            throw std::invalid_argument("Must have at least two elements in column for table argument lookup.");
+        if (size() < 1)
+            throw std::invalid_argument("Must have at least one elements in column for table argument lookup.");
 
         if (hasDefault())
             throw std::invalid_argument("Can not lookup elements in a column with defaulted values.");
 
-        /* Extrapolation might be required ?? */
-        if (!inRange(argValue))
-            throw std::invalid_argument("Value not in range.");
+        if (argValue >= max()) {
+            const auto max_iter = std::max_element( m_values.begin() , m_values.end());
+            const size_t max_index = max_iter - m_values.begin();
+            return TableIndex( max_index , 1.0 );
+        }
+
+        if (argValue <= min()) {
+            const auto min_iter = std::min_element( m_values.begin() , m_values.end());
+            const size_t min_index = min_iter - m_values.begin();
+            return TableIndex( min_index , 1.0 );
+        }
 
         {
             bool isDescending = m_schema->isDecreasing( );

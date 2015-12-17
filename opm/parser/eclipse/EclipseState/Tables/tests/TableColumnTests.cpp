@@ -214,8 +214,6 @@ BOOST_AUTO_TEST_CASE( Test_Table_Index ) {
         BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
 
         column.addValue( 10 );
-        /* Can not look up in column with one element */
-        BOOST_CHECK_THROW( column.lookup( 0.67 ) , std::invalid_argument );
 
         column.addDefault( );
         /* Can not look up in column with defaults */
@@ -223,10 +221,6 @@ BOOST_AUTO_TEST_CASE( Test_Table_Index ) {
 
 
         column.updateValue(1 , 20 );
-
-        /* Out of range */
-        BOOST_CHECK_THROW( column.lookup( 9 ) , std::invalid_argument );
-        BOOST_CHECK_THROW( column.lookup( 21 ) , std::invalid_argument );
     }
 }
 
@@ -236,6 +230,12 @@ BOOST_AUTO_TEST_CASE( Test_EVAL_INCREASING ) {
     TableColumn column( schema );
 
     column.addValue(0);
+
+    /* Out of range - constant end-point extrapolation , size = 1*/
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( -1 )) , 0 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup(  1 )) , 0 );
+
+
     column.addValue(1);
     column.addValue(2);
     column.addValue(3);
@@ -248,6 +248,10 @@ BOOST_AUTO_TEST_CASE( Test_EVAL_INCREASING ) {
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 0.25 )) , 0.25 );
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 1.75 )) , 1.75 );
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 2.5 )) , 2.5 );
+
+    /* Out of range - constant end-point extrapolation */
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( -1 )) , 0 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup(  4 )) , 3 );
 }
 
 
@@ -268,6 +272,10 @@ BOOST_AUTO_TEST_CASE( Test_EVAL_DECREASING ) {
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 0.25 )) , 0.25 );
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 1.75 )) , 1.75 );
     BOOST_CHECK_EQUAL( column.eval( column.lookup( 2.5 )) , 2.5 );
+
+    /* Out of range - constant end-point extrapolation */
+    BOOST_CHECK_EQUAL( column.eval( column.lookup( -1 )) , 0 );
+    BOOST_CHECK_EQUAL( column.eval( column.lookup(  4 )) , 3 );
 }
 
 

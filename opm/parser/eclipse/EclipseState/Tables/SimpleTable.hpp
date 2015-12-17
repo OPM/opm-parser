@@ -32,17 +32,13 @@
 #include <cassert>
 
 namespace Opm {
-    class PlyshlogTable;
     class SimpleTable {
-        friend class PlyshlogTable;
-    protected:
-        SimpleTable(const SimpleTable&) = default;
-        void init(Opm::DeckItemConstPtr deckItem);
 
     public:
+        SimpleTable(const SimpleTable&) = default;
         SimpleTable();
         void addColumns();
-
+        void init(Opm::DeckItemConstPtr deckItem);
         size_t numColumns() const;
         size_t numRows() const;
         const TableColumn& getColumn(const std::string &name) const;
@@ -60,11 +56,6 @@ namespace Opm {
         double evaluate(const std::string& columnName, double xPos) const;
 
     protected:
-        void checkMonotonic(const std::string& columnName,
-                             bool isAscending,
-                             bool isStrictlyMonotonic = true);
-        void applyDefaultsLinear(const std::string& columnName);
-
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<bool> > m_valueDefaulted;
         std::vector<TableColumn> m_columns2;
