@@ -32,7 +32,7 @@ namespace Opm {
 
     class TableColumn {
     public:
-        TableColumn( const ColumnSchema& schema );
+        explicit TableColumn( const ColumnSchema& schema );
         size_t size( ) const;
         const std::string& name() const;
         void assertOrder(double value1 , double value2) const;
