@@ -74,11 +74,11 @@ size_t SimpleTable::numRows() const {
 
 
     const TableColumn& SimpleTable::getColumn( const std::string& name) const {
-        return std::forward<const TableColumn &>(m_columns.get_const( name ));
+        return std::forward<const TableColumn &>(m_columns.get( name ));
     }
 
     const TableColumn& SimpleTable::getColumn( size_t columnIndex )  const {
-        return std::forward<const TableColumn &>(m_columns.get_const( columnIndex ));
+        return std::forward<const TableColumn &>(m_columns.get( columnIndex ));
     }
 
 

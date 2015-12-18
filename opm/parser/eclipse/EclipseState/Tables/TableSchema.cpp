@@ -33,11 +33,11 @@ namespace Opm {
 
 
     const ColumnSchema&& TableSchema::getColumn( const std::string& name ) const {
-        return std::forward<const ColumnSchema>( m_columns.get_const( name ) );
+        return std::forward<const ColumnSchema>( m_columns.get( name ) );
     }
 
     const ColumnSchema&& TableSchema::getColumn( size_t columnIndex ) const {
-        return std::forward<const ColumnSchema>( m_columns.get_const( columnIndex) );
+        return std::forward<const ColumnSchema>( m_columns.get( columnIndex) );
     }
 
     size_t TableSchema::size() const {

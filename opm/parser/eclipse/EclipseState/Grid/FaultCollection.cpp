@@ -76,7 +76,7 @@ namespace Opm {
 
 
     std::shared_ptr<const Fault> FaultCollection::getFault(const std::string& faultName) const {
-        return m_faults.get_const( faultName );
+        return m_faults.get( faultName );
     }
 
     std::shared_ptr<Fault> FaultCollection::getFault(const std::string& faultName) {
@@ -89,7 +89,7 @@ namespace Opm {
     }
 
     std::shared_ptr<const Fault> FaultCollection::getFault(size_t faultIndex) const {
-        return m_faults.get_const( faultIndex );
+        return m_faults.get( faultIndex );
     }
 
 
