@@ -22,14 +22,14 @@
 #include <vector>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 
-namespace Opm {
-    // forward declaration
-    class TableManager;
+/*
+  This class is a common base class for the PVTG and PVTO tables.
+*/
 
+namespace Opm {
     class PvtxTable
     {
     public:
-
         static size_t numTables(Opm::DeckKeywordConstPtr keyword);
         static std::vector<std::pair<size_t , size_t> > recordRanges(Opm::DeckKeywordConstPtr keyword);
     };

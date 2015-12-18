@@ -25,7 +25,6 @@
 namespace Opm {
     class RsvdTable : public SimpleTable {
     public:
-        friend class TableManager;
         RsvdTable(Opm::DeckItemConstPtr item)
         {
             m_schema = std::make_shared<TableSchema>( );

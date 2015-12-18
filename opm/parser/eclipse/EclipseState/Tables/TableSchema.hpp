@@ -37,10 +37,6 @@ namespace Opm {
         const ColumnSchema&& getColumn( const std::string& name ) const;
         const ColumnSchema&& getColumn( size_t columnIndex ) const;
 
-        /*
-          std::vector<const ColumnSchema>::const_iterator begin() const;
-          std::vector<const ColumnSchema>::const_iterator end() const;
-        */
         /* Number of columns */
         size_t size() const;
     private:

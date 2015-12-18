@@ -1,6 +1,4 @@
-
-
-    /*
+/*
   Copyright 2015 Statoil ASA.
 
   This file is part of the Open Porous Media project (OPM).

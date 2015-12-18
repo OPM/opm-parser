@@ -15,7 +15,8 @@
 
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
+
 #ifndef OPM_PARSER_IMPTVD_TABLE_HPP
 #define	OPM_PARSER_IMPTVD_TABLE_HPP
 

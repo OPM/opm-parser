@@ -13,11 +13,12 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public Licenseer
+  You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
+
 #ifndef OPM_PARSER_GASVISCT_TABLE_HPP
-#define	OPM_PARSER_GASVISCT_TABLE_HPP
+#define OPM_PARSER_GASVISCT_TABLE_HPP
 
 #include <opm/parser/eclipse/Parser/ParserKeywords.hpp>
 #include "SimpleTable.hpp"

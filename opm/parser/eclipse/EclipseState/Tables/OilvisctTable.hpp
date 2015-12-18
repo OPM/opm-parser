@@ -30,7 +30,7 @@ namespace Opm {
         {
             m_schema = std::make_shared<TableSchema>( );
             m_schema->addColumn( ColumnSchema("Temperature" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE) );
-            m_schema->addColumn( ColumnSchema("Temperature" , Table::DECREASING , Table::DEFAULT_NONE) );
+            m_schema->addColumn( ColumnSchema("Viscosity" , Table::DECREASING , Table::DEFAULT_NONE) );
             SimpleTable::init(item);
         }
 

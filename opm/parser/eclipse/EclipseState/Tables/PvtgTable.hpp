@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 by Andreas Lauser
+  Copyright (C) 2013 by Andreas Lauser
 
   This file is part of the Open Porous Media project (OPM).
 

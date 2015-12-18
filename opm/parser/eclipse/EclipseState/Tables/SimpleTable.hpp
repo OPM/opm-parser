@@ -58,7 +58,6 @@ namespace Opm {
     protected:
         std::map<std::string, size_t> m_columnNames;
         std::vector<std::vector<bool> > m_valueDefaulted;
-        std::vector<TableColumn> m_columns2;
         std::shared_ptr<TableSchema> m_schema;
         OrderedMap<TableColumn> m_columns;
     };

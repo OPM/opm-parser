@@ -44,15 +44,6 @@ namespace Opm {
         return m_columns.size();
     }
 
-    /*std::vector<const ColumnSchema>::const_iterator begin() const {
-        return m_columns.begin();
-    }
-
-
-    std::vector<const ColumnSchema>::const_iterator end() const {
-        return m_columns.end();
-    }
-    */
 }
 
 
