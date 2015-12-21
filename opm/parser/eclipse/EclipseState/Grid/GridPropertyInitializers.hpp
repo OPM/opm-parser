@@ -113,7 +113,7 @@ public:
             int cellEquilNum = eqlNum[cellIdx];
             const RtempvdTable& rtempvdTable = rtempvdTables.getTable<RtempvdTable>(cellEquilNum);
             double cellDepth = std::get<2>(eclipseGrid->getCellCenter(cellIdx));
-            values[cellIdx] = rtempvdTable.evaluate("Temperature", cellDepth);
+            values[cellIdx] = rtempvdTable.evaluate("Temperature" , cellDepth);
         }
     }
 

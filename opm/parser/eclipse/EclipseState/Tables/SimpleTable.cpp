@@ -29,6 +29,12 @@ namespace Opm {
     }
 
 
+    SimpleTable::SimpleTable(std::shared_ptr<TableSchema> schema , Opm::DeckItemConstPtr deckItem)
+     : m_schema( schema )
+    {
+        init(deckItem);
+    }
+
 
     void SimpleTable::addColumns() {
         for (size_t colIdx = 0; colIdx < m_schema->size(); ++colIdx) {
@@ -92,18 +98,13 @@ size_t SimpleTable::numRows() const {
 
 
 
-double SimpleTable::evaluate(const std::string& columnName, double xPos) const
-{
-    const auto& argColumn = getColumn( 0 );
-    const auto& valueColumn = getColumn( columnName );
+    double SimpleTable::evaluate(const std::string& columnName, double xPos) const
+    {
+        const auto& argColumn = getColumn( 0 );
+        const auto& valueColumn = getColumn( columnName );
 
-    const auto index = argColumn.lookup( xPos );
-    return valueColumn.eval( index );
-}
-
-
-
-
-
+        const auto index = argColumn.lookup( xPos );
+        return valueColumn.eval( index );
+    }
 
 }

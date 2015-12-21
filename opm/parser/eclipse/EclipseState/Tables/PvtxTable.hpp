@@ -22,6 +22,10 @@
 #include <vector>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableColumn.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/TableSchema.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/ColumnSchema.hpp>
 /*
   This class is a common base class for the PVTG and PVTO tables.
 */
@@ -29,9 +33,23 @@
 namespace Opm {
     class PvtxTable
     {
+
     public:
         static size_t numTables(Opm::DeckKeywordConstPtr keyword);
         static std::vector<std::pair<size_t , size_t> > recordRanges(Opm::DeckKeywordConstPtr keyword);
+
+        PvtxTable(const std::string& columnName);
+        const SimpleTable& getInnerTable(size_t tableNumber) const;
+        void init(Opm::DeckKeywordConstPtr keyword , size_t tableIdx);
+        size_t size() const;
+        double evaluate(const std::string& column, double outerArg, double innerArg) const;
+
+    protected:
+        ColumnSchema m_outerColumnSchema;
+        TableColumn m_outerColumn;
+
+        std::shared_ptr<TableSchema> m_innerSchema;
+        std::vector<std::shared_ptr<const SimpleTable> > m_innerTables;
     };
 
 }

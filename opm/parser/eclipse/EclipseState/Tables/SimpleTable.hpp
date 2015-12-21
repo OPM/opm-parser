@@ -37,6 +37,7 @@ namespace Opm {
     public:
         SimpleTable(const SimpleTable&) = default;
         SimpleTable();
+        SimpleTable(std::shared_ptr<TableSchema> schema , Opm::DeckItemConstPtr deckItem);
         void addColumns();
         void init(Opm::DeckItemConstPtr deckItem);
         size_t numColumns() const;

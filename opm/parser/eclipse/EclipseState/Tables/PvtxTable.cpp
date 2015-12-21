@@ -21,6 +21,67 @@
 
 namespace Opm {
 
+    PvtxTable::PvtxTable(const std::string& columnName) :
+        m_outerColumnSchema( columnName , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
+        m_outerColumn( m_outerColumnSchema )
+    {
+
+    }
+
+    void PvtxTable::init(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) {
+        auto ranges = recordRanges( keyword );
+        if (tableIdx >= ranges.size())
+            throw std::invalid_argument("Asked for table: " + std::to_string( tableIdx ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( ranges.size() ) + " tables");
+
+        {
+            auto range = ranges[ tableIdx ];
+            for (size_t  rowIdx = range.first; rowIdx < range.second; rowIdx++) {
+                Opm::DeckRecordConstPtr deckRecord = keyword->getRecord(rowIdx);
+                {
+                    Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
+                    m_outerColumn.addValue( indexItem->getSIDouble( 0 ));
+                }
+                {
+                    Opm::DeckItemConstPtr dataItem = deckRecord->getItem(1);
+                    std::shared_ptr<SimpleTable> innerTable = std::make_shared<SimpleTable>(m_innerSchema , dataItem);
+                    m_innerTables.push_back( innerTable );
+                }
+            }
+        }
+    }
+
+
+    double PvtxTable::evaluate(const std::string& column, double outerArg, double innerArg) const
+    {
+        TableIndex outerIndex = m_outerColumn.lookup( outerArg );
+        const auto& innerTable1 = getInnerTable( outerIndex.getIndex1( ) );
+        double weight1 = outerIndex.getWeight1( );
+        double value = weight1 * innerTable1.evaluate( column , innerArg );
+
+        if (weight1 < 1) {
+            const auto& innerTable2 = getInnerTable( outerIndex.getIndex2( ) );
+            double weight2 = outerIndex.getWeight2( );
+
+            value += weight2 * innerTable2.evaluate( column , innerArg );
+        }
+
+        return value;
+    }
+
+
+    const SimpleTable& PvtxTable::getInnerTable(size_t tableNumber) const {
+        if (tableNumber >= size())
+            throw std::invalid_argument("Invalid table number: " + std::to_string( tableNumber) + " max: " + std::to_string( size() - 1 ));
+        return *m_innerTables[ tableNumber ];
+    }
+
+
+    size_t PvtxTable::size() const
+    {
+        return m_outerColumn.size();
+    }
+
+    
     size_t PvtxTable::numTables(Opm::DeckKeywordConstPtr keyword)
     {
         auto ranges = recordRanges(keyword);

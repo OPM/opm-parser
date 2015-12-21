@@ -482,7 +482,7 @@ protected:
                 throw std::invalid_argument("Not enough tables!");
 
             // evaluate the table at the cell depth
-            value = table.evaluate(columnName, cellDepth);
+            value = table.evaluate(columnName , cellDepth);
 
             if (!std::isfinite(value))
                 // a column can be fully defaulted. In this case, eval() returns a NaN

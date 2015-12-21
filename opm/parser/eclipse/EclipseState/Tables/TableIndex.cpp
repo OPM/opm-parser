@@ -34,6 +34,10 @@ namespace Opm {
         return m_index1;
     }
 
+    size_t TableIndex::getIndex2( ) const {
+        return m_index1 + 1;
+    }
+
 
     double TableIndex::getWeight1( ) const {
         return m_weight1;

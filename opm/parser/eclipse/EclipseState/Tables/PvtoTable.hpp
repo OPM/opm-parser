@@ -20,64 +20,22 @@
 #define	OPM_PARSER_PVTO_TABLE_HPP
 
 #include <opm/parser/eclipse/EclipseState/Tables/PvtxTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/PvtoInnerTable.hpp>
 
 namespace Opm {
     class PvtoTable : public PvtxTable {
     public:
 
-        PvtoTable(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) :
-            m_columnSchema( "RS" , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ),
-            m_column( m_columnSchema )
+        PvtoTable(Opm::DeckKeywordConstPtr keyword , size_t tableIdx) : PvtxTable("RS")
         {
-            auto ranges = recordRanges( keyword );
-            if (tableIdx >= ranges.size())
-                throw std::invalid_argument("Asked for table: " + std::to_string( tableIdx ) + " in keyword + " + keyword->name() + " which only has " + std::to_string( ranges.size() ) + " tables");
+            m_innerSchema = std::make_shared<TableSchema>( );
 
-            m_recordRange = ranges[ tableIdx ];
-            for (size_t  rowIdx = m_recordRange.first; rowIdx < m_recordRange.second; rowIdx++) {
-                Opm::DeckRecordConstPtr deckRecord = keyword->getRecord(rowIdx);
-                {
-                    Opm::DeckItemConstPtr indexItem = deckRecord->getItem(0);
-                    m_column.addValue( indexItem->getSIDouble( 0 ));
-                }
-                {
-                    Opm::DeckItemConstPtr dataItem = deckRecord->getItem(1);
-                    //m_tables.emplace_back( dataItem );
-                    m_tables.push_back( std::make_shared<const PvtoInnerTable>( dataItem ));
-                }
-            }
+            m_innerSchema->addColumn( ColumnSchema( "P"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
+            m_innerSchema->addColumn( ColumnSchema( "BO" , Table::RANDOM , Table::DEFAULT_LINEAR ));
+            m_innerSchema->addColumn( ColumnSchema( "MU" , Table::RANDOM , Table::DEFAULT_LINEAR ));
+
+            PvtxTable::init(keyword , tableIdx);
         }
 
-
-        const PvtoInnerTable& getInnerTable(size_t tableNumber) const {
-            if (tableNumber >= size())
-                throw std::invalid_argument("Invalid table number: " + std::to_string( tableNumber) + " max: " + std::to_string( size() - 1 ));
-            return *m_tables[ tableNumber ];
-        }
-
-
-        const TableColumn& getGasSolubilityColumn() const
-        {
-            return m_column;
-        }
-
-
-        size_t size() const {
-            return m_column.size();
-        }
-
-
-        const std::pair<size_t, size_t>& recordRange() const {
-            return m_recordRange;
-        }
-
-    private:
-        ColumnSchema m_columnSchema;
-        TableColumn m_column;
-        std::pair<size_t, size_t> m_recordRange;
-        std::vector<std::shared_ptr<const PvtoInnerTable> > m_tables;
-        //std::vector<PvtoInnerTable> m_tables;
     };
 }
 
