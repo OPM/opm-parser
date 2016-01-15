@@ -16,6 +16,17 @@ if(NOT OPM_COMMON_ROOT)
   find_package(opm-common QUIET)
 endif()
 
+#-----------------------------------------------------------------
+option (ENABLE_PYTHON "Enable simple python wappers" OFF)
+if (ENABLE_PYTHON)
+   if (NOT BUILD_SHARED_LIBS)
+      set( BUILD_SHARED_LIBS ON)
+      message( WARNING "When ENABLE_PYTHON is ON we must use shared libraries - forcing BUILD_SHARED_LIBS to ON")
+   endif()
+endif()
+#-----------------------------------------------------------------
+
+
 if (NOT opm-common_FOUND)
    unset(opm-common_FOUND)
 
