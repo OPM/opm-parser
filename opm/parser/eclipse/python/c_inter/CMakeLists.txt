@@ -3,6 +3,8 @@ cparser.cc
 cdeck.cc cdeck_keyword.cc cdeck_record.cc cdeck_item.cc
 cparse_mode.cc
 ctable_manager.cc
+ctable.cc
+ctable_index.cc
 copm_log.cc
 )
 
