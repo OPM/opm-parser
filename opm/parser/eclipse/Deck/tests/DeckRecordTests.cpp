@@ -90,6 +90,24 @@ BOOST_AUTO_TEST_CASE(get_indexoutofbounds_throws) {
     BOOST_CHECK_THROW(deckRecord.getItem(1), std::range_error);
 }
 
+BOOST_AUTO_TEST_CASE(iterator_traversal) {
+    DeckRecord deckRecord;
+
+    DeckIntItemPtr intItem1(new DeckIntItem("TEST1"));
+    DeckIntItemPtr intItem2(new DeckIntItem("TEST2"));
+    deckRecord.addItem(intItem1);
+    deckRecord.addItem(intItem2);
+
+    for( const auto& item : deckRecord )
+        BOOST_CHECK_EQUAL(item.size(), 0U );
+
+    for( auto& item : deckRecord )
+        BOOST_CHECK_EQUAL(item.size(), 0U );
+
+    for( auto itr = deckRecord.cbegin(); itr != deckRecord.cend(); ++itr )
+        BOOST_CHECK_EQUAL( itr->size(), 0U );
+}
+
 BOOST_AUTO_TEST_CASE(get_byName_returnsItem) {
     DeckRecord deckRecord;
     DeckIntItemPtr intItem1(new DeckIntItem("TEST"));
