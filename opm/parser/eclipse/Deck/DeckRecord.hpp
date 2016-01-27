@@ -24,6 +24,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <opm/parser/eclipse/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/Utility/Iterator.hpp>
 
 namespace Opm {
 
@@ -31,6 +33,10 @@ namespace Opm {
 
     class DeckRecord {
     public:
+
+        typedef iterator_base< DeckItem > iterator;
+        typedef iterator_base< const DeckItem, DeckItem > const_iterator;
+
         DeckRecord();
         size_t size() const;
         void addItem(std::shared_ptr< DeckItem > deckItem);
@@ -38,6 +44,15 @@ namespace Opm {
         std::shared_ptr< DeckItem > getItem(const std::string& name) const;
         std::shared_ptr< DeckItem > getDataItem() const;
         bool        hasItem(const std::string& name) const;
+
+        iterator begin();
+        iterator end();
+
+        const_iterator begin() const;
+        const_iterator end() const;
+
+        const_iterator cbegin() const;
+        const_iterator cend() const;
         
     template <class Item>
     std::shared_ptr< DeckItem > getItem() const {

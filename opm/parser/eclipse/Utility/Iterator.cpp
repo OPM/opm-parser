@@ -62,4 +62,7 @@ namespace Opm {
     bool iterator_base< T, S >::operator!=( const iterator_base< T, S >& rhs ) const {
         return this->itr != rhs.itr;
     }
+
+    template class iterator_base< DeckItem >;
+    template class iterator_base< const DeckItem, DeckItem >;
 }
