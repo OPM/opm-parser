@@ -73,6 +73,31 @@ namespace Opm {
             throw std::range_error("Not a data keyword ?");
     }
 
+    DeckRecord::iterator DeckRecord::begin() {
+        return DeckRecord::iterator( this->m_items.begin() );
+    }
+
+    DeckRecord::iterator DeckRecord::end() {
+        return DeckRecord::iterator( this->m_items.end() );
+    }
+
+    DeckRecord::const_iterator DeckRecord::begin() const {
+        return DeckRecord::const_iterator( 
+                const_cast< DeckRecord* >( this )->m_items.begin()
+            );
+    }
+
+    DeckRecord::const_iterator DeckRecord::end() const {
+        return DeckRecord::const_iterator( 
+                const_cast< DeckRecord* >( this )->m_items.end()
+            );
+    }
+
+    DeckRecord::const_iterator DeckRecord::cbegin() const {
+        return this->begin();
+    }
+
+    DeckRecord::const_iterator DeckRecord::cend() const {
+        return this->end();
+    }
 }
-
-

@@ -26,11 +26,16 @@
 #include <map>
 #include <memory>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/Deck/Iterator.hpp>
 
 namespace Opm {
 
     class DeckRecord {
     public:
+
+        typedef iterator_base< DeckItem > iterator;
+        typedef iterator_base< const DeckItem, DeckItem > const_iterator;
+
         DeckRecord();
         size_t size() const;
         void addItem(DeckItemPtr deckItem);
@@ -38,6 +43,15 @@ namespace Opm {
         DeckItemPtr getItem(const std::string& name) const;
         DeckItemPtr getDataItem() const;
         bool        hasItem(const std::string& name) const;
+
+        iterator begin();
+        iterator end();
+
+        const_iterator begin() const;
+        const_iterator end() const;
+
+        const_iterator cbegin() const;
+        const_iterator cend() const;
         
     template <class Item>
     DeckItemPtr getItem() const {
