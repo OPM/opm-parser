@@ -45,6 +45,7 @@ Deck/DeckIntItem.cpp
 Deck/DeckDoubleItem.cpp
 Deck/DeckFloatItem.cpp
 Deck/DeckStringItem.cpp
+Deck/DeckIterator.cpp
 Deck/Section.cpp
 Deck/SCHEDULESection.cpp
 Deck/DeckTimeStep.cpp
