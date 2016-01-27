@@ -278,6 +278,7 @@ EclipseState/Tables/TableEnums.hpp
 EclipseState/Tables/TableSchema.hpp
 EclipseState/Tables/TableIndex.hpp
 #
+Utility/Iterator.hpp
 Utility/WconinjeWrapper.hpp
 Utility/CompdatWrapper.hpp
 Utility/WconinjWrapper.hpp
