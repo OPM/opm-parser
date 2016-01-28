@@ -316,8 +316,8 @@ namespace Opm {
 
 
     void Schedule::handleCOMPORD(const ParseMode& parseMode, std::shared_ptr<const DeckKeyword> compordKeyword, size_t /* currentStep */) {
-        for (const auto record : (*compordKeyword)) {
-            auto methodItem = record->getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
+        for (const auto& record : (*compordKeyword)) {
+            auto methodItem = record.getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
             if ((methodItem->getString(0) != "TRACK")  && (methodItem->getString(0) != "INPUT")) {
                 std::string msg = "The COMPORD keyword only handles 'TRACK' or 'INPUT' order.";
                 parseMode.handleError( ParseMode::UNSUPPORTED_COMPORD_TYPE , msg );
