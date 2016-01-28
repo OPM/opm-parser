@@ -297,11 +297,10 @@ namespace Opm {
     void EclipseState::setMULTFLT(std::shared_ptr<const Section> section) const {
         for (size_t index=0; index < section->count("MULTFLT"); index++) {
             DeckKeywordConstPtr faultsKeyword = section->getKeyword("MULTFLT" , index);
-            for (auto iter = faultsKeyword->begin(); iter != faultsKeyword->end(); ++iter) {
+            for( auto& faultRecord : *faultsKeyword ) {
 
-                DeckRecordConstPtr faultRecord = *iter;
-                const std::string& faultName = faultRecord->getItem(0)->getString(0);
-                double multFlt = faultRecord->getItem(1)->getRawDouble(0);
+                const std::string& faultName = faultRecord.getItem(0)->getString(0);
+                double multFlt = faultRecord.getItem(1)->getRawDouble(0);
 
                 m_faults->setTransMult( faultName , multFlt );
             }
@@ -1372,9 +1371,9 @@ namespace Opm {
 
             if (keyword->isKeyword<MULTFLT>()) {
                 for (const auto& record : *keyword) {
-                    const std::string& faultName = record->getItem<MULTFLT::fault>()->getString(0);
+                    const std::string& faultName = record.getItem<MULTFLT::fault>()->getString(0);
                     auto fault = m_faults->getFault( faultName );
-                    double tmpMultFlt = record->getItem<MULTFLT::factor>()->getRawDouble(0);
+                    double tmpMultFlt = record.getItem<MULTFLT::factor>()->getRawDouble(0);
                     double oldMultFlt = fault->getTransMult( );
                     double newMultFlt = oldMultFlt * tmpMultFlt;
 
