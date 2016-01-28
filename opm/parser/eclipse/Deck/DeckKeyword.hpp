@@ -12,12 +12,17 @@
 #include <vector>
 #include <memory>
 
+#include <opm/parser/eclipse/Utility/Iterator.hpp>
+
 namespace Opm {
     class ParserKeyword;
     class DeckRecord;
 
     class DeckKeyword {
     public:
+
+        typedef iterator_base< const DeckRecord > const_iterator;
+
         DeckKeyword(const std::string& keywordName);
         DeckKeyword(const std::string& keywordName, bool knownKeyword);
 
@@ -62,8 +67,11 @@ namespace Opm {
                 return false;
         }
 
-        std::vector<std::shared_ptr< const DeckRecord >>::const_iterator begin() const;
-        std::vector<std::shared_ptr< const DeckRecord >>::const_iterator end() const;
+        const_iterator begin() const;
+        const_iterator end() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+
     private:
         std::string m_keywordName;
         std::string m_fileName;
