@@ -137,7 +137,21 @@ BOOST_AUTO_TEST_CASE(getKeyword_multipleKeyword_keywordReturned) {
     BOOST_CHECK_EQUAL(keyword3, deck.getKeyword("TRULS"));
 }
 
+BOOST_AUTO_TEST_CASE(iterator) {
+    Deck deck;
+    DeckKeywordPtr keyword1 = DeckKeywordPtr(new DeckKeyword("TRULS"));
+    DeckKeywordPtr keyword2 = DeckKeywordPtr(new DeckKeyword("TRULS"));
+    DeckKeywordPtr keyword3 = DeckKeywordPtr(new DeckKeyword("TRULS"));
+    deck.addKeyword(keyword1);
+    deck.addKeyword(keyword2);
+    deck.addKeyword(keyword3);
 
+    for ( const auto& keyword : deck )
+        BOOST_CHECK_EQUAL( 0U, keyword.size() );
+
+    for ( auto itr = deck.cbegin(); itr != deck.cend(); ++itr )
+        BOOST_CHECK_EQUAL( 0U, itr->size() );
+}
 
 BOOST_AUTO_TEST_CASE(getKeyword_outOfRange_throws) {
     Deck deck;
