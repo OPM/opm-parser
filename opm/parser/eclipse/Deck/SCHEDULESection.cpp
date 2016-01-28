@@ -41,8 +41,8 @@ namespace Opm {
     void SCHEDULESection::populateDeckTimeSteps() {
         DeckTimeStepPtr currentTimeStep = std::make_shared<DeckTimeStep>();
 
-        for (auto iter = begin(); iter != end(); ++iter) {  //Loop keywords in schedule section
-            auto keyword = *iter;
+        for( size_t i = 0; i < this->size(); ++i ) {
+            auto keyword = this->getKeyword( i );
             if (keyword->name() == "TSTEP") {
                 DeckItemPtr items = keyword->getDataRecord()->getDataItem();
                 for (size_t item_iter = 0; item_iter < items->size(); ++item_iter) {
@@ -50,7 +50,7 @@ namespace Opm {
                    currentTimeStep = std::make_shared<DeckTimeStep>();
                 }
             } else if (keyword->name() == "DATES") {
-                for (auto record_iter = keyword->begin(); record_iter != keyword->end(); ++record_iter ) {
+                for( size_t record_iter = 0; record_iter < keyword->size(); ++record_iter ) {
                     m_decktimesteps.push_back(currentTimeStep);
                     currentTimeStep = std::make_shared<DeckTimeStep>();
                 }

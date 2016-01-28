@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(IteratorTest) {
 
     int numberOfItems = 0;
     for (auto iter=section.begin(); iter != section.end(); ++iter) {
-        std::cout << (*iter)->name() << std::endl;
+        std::cout << iter->name() << std::endl;
         numberOfItems++;
     }
 

@@ -940,8 +940,8 @@ namespace Opm {
     void EclipseState::scanSection(std::shared_ptr<Opm::Section> section,
                                    int enabledTypes) {
         BoxManager boxManager(m_eclipseGrid->getNX( ) , m_eclipseGrid->getNY() , m_eclipseGrid->getNZ());
-        for (auto iter = section->begin(); iter != section->end(); ++iter) {
-            DeckKeywordConstPtr deckKeyword = *iter;
+        for( size_t i = 0; i < section->size(); ++i ) {
+            auto deckKeyword = section->getKeyword( i );section->getKeyword( i );
 
             if (supportsGridProperty(deckKeyword->name(), enabledTypes) )
                 loadGridPropertyFromDeckKeyword(boxManager.getActiveBox(), deckKeyword,  enabledTypes);
@@ -1369,8 +1369,8 @@ namespace Opm {
         using namespace ParserKeywords;
         for (const auto& keyword : *deck) {
 
-            if (keyword->isKeyword<MULTFLT>()) {
-                for (const auto& record : *keyword) {
+            if (keyword.isKeyword<MULTFLT>()) {
+                for (const auto& record : keyword) {
                     const std::string& faultName = record.getItem<MULTFLT::fault>()->getString(0);
                     auto fault = m_faults->getFault( faultName );
                     double tmpMultFlt = record.getItem<MULTFLT::factor>()->getRawDouble(0);

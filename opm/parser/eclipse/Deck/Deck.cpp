@@ -102,14 +102,32 @@ namespace Opm {
             return m_emptyList;
     }
 
-    std::vector<DeckKeywordConstPtr>::const_iterator Deck::begin() const {
-        return m_keywordList.begin();
+    template< typename C, typename I >
+    static typename C::iterator remove_constness( C& c, I it ) {
+        return c.erase( it, it );
     }
 
-    std::vector<DeckKeywordConstPtr>::const_iterator Deck::end() const {
-        return m_keywordList.end();
+    Deck::const_iterator Deck::begin() const {
+        auto itr = this->m_keywordList.begin();
+        auto& mlist = const_cast< Deck* >( this )->m_keywordList;
+
+        return Deck::const_iterator( remove_constness( mlist, itr ) );
     }
 
+    Deck::const_iterator Deck::end() const {
+        auto itr = this->m_keywordList.end();
+        auto& mlist = const_cast< Deck* >( this )->m_keywordList;
+
+        return Deck::const_iterator( remove_constness( mlist, itr ) );
+    }
+
+    Deck::const_iterator Deck::cbegin() const {
+        return this->begin();
+    }
+
+    Deck::const_iterator Deck::cend() const {
+        return this->end();
+    }
 
     size_t Deck::size() const {
         return m_keywordList.size();

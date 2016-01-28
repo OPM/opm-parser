@@ -44,8 +44,8 @@ namespace Opm {
     void Section::populateSection(DeckConstPtr deck, const std::string& startKeywordName)
     {
         bool inSection = false;
-        for (auto iter = deck->begin(); iter != deck->end(); ++iter) {
-            auto keyword = *iter;
+        for( size_t i = 0; i < deck->size(); ++i ) {
+            auto keyword = deck->getKeyword( i );
             if (!inSection) {
                 if (keyword->name() == startKeywordName) {
                     inSection = true;
