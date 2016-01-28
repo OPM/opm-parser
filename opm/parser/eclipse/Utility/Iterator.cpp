@@ -66,4 +66,5 @@ namespace Opm {
     template class iterator_base< DeckItem >;
     template class iterator_base< const DeckItem, DeckItem >;
     template class iterator_base< const DeckRecord >;
+    template class iterator_base< const DeckKeyword >;
 }
