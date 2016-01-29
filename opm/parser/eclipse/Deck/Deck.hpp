@@ -24,6 +24,9 @@
 #include <memory>
 #include <vector>
 
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/Deck/Iterator.hpp>
+
 namespace Opm {
 
     class DeckKeyword;
@@ -31,6 +34,9 @@ namespace Opm {
 
     class Deck {
     public:
+
+        typedef iterator_base< const DeckKeyword > const_iterator;
+
         Deck();
         bool hasKeyword(std::shared_ptr< const DeckKeyword > keyword) const;
         bool hasKeyword( const std::string& keyword ) const;
@@ -48,8 +54,11 @@ namespace Opm {
         void initUnitSystem();
         std::shared_ptr<UnitSystem> getDefaultUnitSystem() const;
         std::shared_ptr<UnitSystem> getActiveUnitSystem()  const;
-        std::vector<std::shared_ptr< const DeckKeyword >>::const_iterator begin() const;
-        std::vector<std::shared_ptr< const DeckKeyword >>::const_iterator end() const;
+
+        const_iterator begin() const;
+        const_iterator end() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
 
 
         template <class Keyword>
