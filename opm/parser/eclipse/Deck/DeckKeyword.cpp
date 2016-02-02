@@ -91,12 +91,33 @@ namespace Opm {
         m_recordList.push_back(record);
     }
 
-    std::vector<DeckRecordConstPtr>::const_iterator DeckKeyword::begin() const {
-        return m_recordList.begin();
+    template< typename C, typename I >
+    static typename C::iterator remove_constness( C& c, I it ) {
+        return c.erase( it, it );
     }
 
-    std::vector<DeckRecordConstPtr>::const_iterator DeckKeyword::end() const {
-        return m_recordList.end();
+    DeckKeyword::const_iterator DeckKeyword::begin() const {
+        auto mut_this = const_cast< DeckKeyword* >( this );
+        auto itr = mut_this->m_recordList.begin();
+        auto& mlist = mut_this->m_recordList;
+
+        return DeckKeyword::const_iterator( remove_constness( mlist, itr ) );
+    }
+
+    DeckKeyword::const_iterator DeckKeyword::end() const {
+        auto mut_this = const_cast< DeckKeyword* >( this );
+        auto itr = mut_this->m_recordList.end();
+        auto& mlist = mut_this->m_recordList;
+
+        return DeckKeyword::const_iterator( remove_constness( mlist, itr ) );
+    }
+
+    DeckKeyword::const_iterator DeckKeyword::cbegin() const {
+        return this->begin();
+    }
+
+    DeckKeyword::const_iterator DeckKeyword::cend() const {
+        return this->end();
     }
 
     DeckRecordConstPtr DeckKeyword::getRecord(size_t index) const {

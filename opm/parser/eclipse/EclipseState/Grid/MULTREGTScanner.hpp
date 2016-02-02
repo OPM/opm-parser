@@ -50,7 +50,7 @@ namespace Opm {
 
     class MULTREGTRecord {
     public:
-        MULTREGTRecord(std::shared_ptr< const DeckRecord > deckRecord , const std::string& defaultRegion);
+        MULTREGTRecord(const DeckRecord& deckRecord , const std::string& defaultRegion);
 
         Value<int> m_srcRegion;
         Value<int> m_targetRegion;

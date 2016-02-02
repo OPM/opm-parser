@@ -72,6 +72,18 @@ BOOST_AUTO_TEST_CASE(addRecord_onerecord_recordadded) {
 
 }
 
+BOOST_AUTO_TEST_CASE(iterator) {
+    DeckKeywordPtr deckKeyword(new DeckKeyword("KW"));
+    deckKeyword->addRecord(DeckRecordConstPtr(new DeckRecord()));
+    BOOST_CHECK_EQUAL(1U, deckKeyword->size());
+
+    for ( const auto& record : *deckKeyword )
+        BOOST_CHECK_EQUAL( 0U, record.size() );
+
+    for ( auto itr = deckKeyword->cbegin(); itr != deckKeyword->cend(); ++itr )
+        BOOST_CHECK_EQUAL( 0U, itr->size() );
+}
+
 BOOST_AUTO_TEST_CASE(getRecord_onerecord_recordretured) {
     DeckKeywordPtr deckKeyword(new DeckKeyword("KW"));
     DeckRecordConstPtr deckRecord(new DeckRecord());

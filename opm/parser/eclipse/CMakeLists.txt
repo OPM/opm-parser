@@ -45,6 +45,7 @@ Deck/DeckIntItem.cpp
 Deck/DeckDoubleItem.cpp
 Deck/DeckFloatItem.cpp
 Deck/DeckStringItem.cpp
+Deck/DeckIterator.cpp
 Deck/Section.cpp
 Deck/SCHEDULESection.cpp
 Deck/DeckTimeStep.cpp
@@ -286,6 +287,7 @@ EclipseState/Tables/TableEnums.hpp
 EclipseState/Tables/TableSchema.hpp
 EclipseState/Tables/TableIndex.hpp
 #
+Utility/Iterator.hpp
 Utility/WconinjeWrapper.hpp
 Utility/CompdatWrapper.hpp
 Utility/WconinjWrapper.hpp
