@@ -97,8 +97,9 @@ namespace Opm {
     }
 
     DeckKeyword::const_iterator DeckKeyword::begin() const {
-        auto itr = this->m_recordList.begin();
-        auto& mlist = const_cast< DeckKeyword* >( this )->m_recordList;
+        auto mut_this = const_cast< DeckKeyword* >( this );
+        auto itr = mut_this->m_recordList.begin();
+        auto& mlist = mut_this->m_recordList;
 
         return DeckKeyword::const_iterator( remove_constness( mlist, itr ) );
     }

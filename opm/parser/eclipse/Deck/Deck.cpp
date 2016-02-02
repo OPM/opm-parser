@@ -109,15 +109,17 @@ namespace Opm {
     }
 
     Deck::const_iterator Deck::begin() const {
-        auto itr = this->m_keywordList.begin();
-        auto& mlist = const_cast< Deck* >( this )->m_keywordList;
+        auto mut_this = const_cast< Deck* >( this );
+        auto itr = mut_this->m_keywordList.begin();
+        auto& mlist = mut_this->m_keywordList;
 
         return Deck::const_iterator( remove_constness( mlist, itr ) );
     }
 
     Deck::const_iterator Deck::end() const {
-        auto itr = this->m_keywordList.end();
-        auto& mlist = const_cast< Deck* >( this )->m_keywordList;
+        auto mut_this = const_cast< Deck* >( this );
+        auto itr = mut_this->m_keywordList.end();
+        auto& mlist = mut_this->m_keywordList;
 
         return Deck::const_iterator( remove_constness( mlist, itr ) );
     }
