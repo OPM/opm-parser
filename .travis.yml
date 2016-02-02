@@ -25,14 +25,14 @@ install:
     - cd opm-common
     - mkdir build
     - cd build
-    - cmake ../
+    - CXX="g++-4.8" cmake ../
     - make
     - cd ../../
 
     - cd ert
     - mkdir build
     - cd build
-    - cmake ../devel/
+    - CXX="g++-4.8" cmake ../devel/
     - make
     - cd ../../
 
@@ -41,6 +41,6 @@ install:
 before_script:
     - mkdir build
     - cd build
-    - cmake ../
+    - CXX="g++-4.8" cmake ../
 
 script: make && ctest --output-on-failure
