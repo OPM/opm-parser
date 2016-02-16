@@ -68,17 +68,17 @@ namespace Opm {
 
 
 
-    MULTREGTRecord::MULTREGTRecord(DeckRecordConstPtr deckRecord , const std::string& defaultRegion) :
+    MULTREGTRecord::MULTREGTRecord(const DeckRecord& deckRecord , const std::string& defaultRegion) :
         m_srcRegion("SRC_REGION"),
         m_targetRegion("TARGET_REGION"),
         m_region("REGION" , defaultRegion)
     {
-        DeckItemConstPtr srcItem = deckRecord->getItem("SRC_REGION");
-        DeckItemConstPtr targetItem = deckRecord->getItem("TARGET_REGION");
-        DeckItemConstPtr tranItem = deckRecord->getItem("TRAN_MULT");
-        DeckItemConstPtr dirItem = deckRecord->getItem("DIRECTIONS");
-        DeckItemConstPtr nncItem = deckRecord->getItem("NNC_MULT");
-        DeckItemConstPtr defItem = deckRecord->getItem("REGION_DEF");
+        DeckItemConstPtr srcItem = deckRecord.getItem("SRC_REGION");
+        DeckItemConstPtr targetItem = deckRecord.getItem("TARGET_REGION");
+        DeckItemConstPtr tranItem = deckRecord.getItem("TRAN_MULT");
+        DeckItemConstPtr dirItem = deckRecord.getItem("DIRECTIONS");
+        DeckItemConstPtr nncItem = deckRecord.getItem("NNC_MULT");
+        DeckItemConstPtr defItem = deckRecord.getItem("REGION_DEF");
 
 
         if (!srcItem->defaultApplied(0))
@@ -163,8 +163,8 @@ namespace Opm {
 
 
     void MULTREGTScanner::assertKeywordSupported(DeckKeywordConstPtr deckKeyword, const std::string& defaultRegion) {
-        for (auto iter = deckKeyword->begin(); iter != deckKeyword->end(); ++iter) {
-            MULTREGTRecord record( *iter , defaultRegion);
+        for( const auto& iter : *deckKeyword ) {
+            MULTREGTRecord record( iter , defaultRegion);
 
             if (record.m_nncBehaviour == MULTREGT::NOAQUNNC)
                 throw std::invalid_argument("Sorry - currently we do not support \'NOAQUNNC\' for MULTREGT.");
@@ -177,7 +177,6 @@ namespace Opm {
 
             if (record.m_srcRegion.getValue() == record.m_targetRegion.getValue())
                 throw std::invalid_argument("Sorry - multregt applied internally to a region is not yet supported");
-
         }
     }
 

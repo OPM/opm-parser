@@ -91,12 +91,22 @@ namespace Opm {
         m_recordList.push_back(record);
     }
 
-    std::vector<DeckRecordConstPtr>::const_iterator DeckKeyword::begin() const {
-        return m_recordList.begin();
+    DeckKeyword::const_iterator DeckKeyword::begin() const {
+        auto itr = const_cast< DeckKeyword* >( this )->m_recordList.begin();
+        return DeckKeyword::const_iterator( itr );
     }
 
-    std::vector<DeckRecordConstPtr>::const_iterator DeckKeyword::end() const {
-        return m_recordList.end();
+    DeckKeyword::const_iterator DeckKeyword::end() const {
+        auto itr = const_cast< DeckKeyword* >( this )->m_recordList.end();
+        return DeckKeyword::const_iterator( itr );
+    }
+
+    DeckKeyword::const_iterator DeckKeyword::cbegin() const {
+        return this->begin();
+    }
+
+    DeckKeyword::const_iterator DeckKeyword::cend() const {
+        return this->end();
     }
 
     DeckRecordConstPtr DeckKeyword::getRecord(size_t index) const {
