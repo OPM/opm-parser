@@ -20,6 +20,7 @@
 #ifndef OPM_ECLIPSE_STATE_HPP
 #define OPM_ECLIPSE_STATE_HPP
 
+#include <utility>
 #include <memory>
 #include <set>
 
@@ -73,12 +74,17 @@ namespace Opm {
         std::string getTitle() const;
         bool supportsGridProperty(const std::string& keyword, int enabledTypes=AllProperties) const;
 
-        std::shared_ptr<GridProperty<int> > getRegion( const DeckItem& regionItem ) const;
-        std::shared_ptr<GridProperty<int> > getDefaultRegion() const;
-        std::shared_ptr<GridProperty<int> > getIntGridProperty( const std::string& keyword ) const;
-        std::shared_ptr<GridProperty<double> > getDoubleGridProperty( const std::string& keyword ) const;
-        bool hasIntGridProperty(const std::string& keyword) const;
-        bool hasDoubleGridProperty(const std::string& keyword) const;
+        std::shared_ptr<const GridProperty<int> > getRegion( const DeckItem& regionItem ) const;
+        std::shared_ptr<const GridProperty<int> > getDefaultRegion() const;
+        std::shared_ptr<const GridProperty<int> > getIntGridProperty( const std::string& keyword ) const;
+        std::shared_ptr<const GridProperty<double> > getDoubleGridProperty( const std::string& keyword ) const;
+        bool hasDeckIntGridProperty(const std::string& keyword) const;
+        bool hasDeckDoubleGridProperty(const std::string& keyword) const;
+
+        bool hasIntGridProperty(const std::string& keyword) const __attribute__((deprecated("use hasDeckIntGridProperty() instead")))
+        { return hasDeckIntGridProperty(keyword); }
+        bool hasDoubleGridProperty(const std::string& keyword) const __attribute__((deprecated("use hasDeckDoubleGridProperty() instead")))
+        { return hasDeckDoubleGridProperty(keyword); }
 
         void loadGridPropertyFromDeckKeyword(std::shared_ptr<const Box> inputBox,
                                              const DeckKeyword& deckKeyword,
@@ -141,6 +147,9 @@ namespace Opm {
         void copyDoubleKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
 
         void complainAboutAmbiguousKeyword(std::shared_ptr< const Deck > deck, const std::string& keywordName) const;
+
+        std::shared_ptr<GridProperty<int> > getOrCreateIntProperty_(const std::string name);
+        std::shared_ptr<GridProperty<double> > getOrCreateDoubleProperty_(const std::string name);
 
         std::shared_ptr< const EclipseGrid >      m_eclipseGrid;
         std::shared_ptr< IOConfig >              m_ioConfig;
