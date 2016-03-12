@@ -81,11 +81,6 @@ namespace Opm {
         bool hasDeckIntGridProperty(const std::string& keyword) const;
         bool hasDeckDoubleGridProperty(const std::string& keyword) const;
 
-        bool hasIntGridProperty(const std::string& keyword) const __attribute__((deprecated("use hasDeckIntGridProperty() instead")))
-        { return hasDeckIntGridProperty(keyword); }
-        bool hasDoubleGridProperty(const std::string& keyword) const __attribute__((deprecated("use hasDeckDoubleGridProperty() instead")))
-        { return hasDeckDoubleGridProperty(keyword); }
-
         void loadGridPropertyFromDeckKeyword(std::shared_ptr<const Box> inputBox,
                                              const DeckKeyword& deckKeyword,
                                              int enabledTypes = AllProperties);
