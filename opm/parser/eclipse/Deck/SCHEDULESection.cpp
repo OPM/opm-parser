@@ -23,6 +23,7 @@
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Deck/DeckTimeStep.hpp>
 #include <opm/parser/eclipse/Deck/SCHEDULESection.hpp>
+#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 namespace Opm {
 
@@ -37,7 +38,7 @@ namespace Opm {
         if (timestep < m_decktimesteps.size()) {
             return m_decktimesteps[timestep];
         } else {
-            throw std::out_of_range("No DeckTimeStep in ScheduleSection for timestep " + std::to_string(timestep));
+            OpmLog::error("No DeckTimeStep in ScheduleSection for timestep " + std::to_string(timestep));
         }
     }
 

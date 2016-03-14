@@ -19,6 +19,7 @@
 
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/Units/Dimension.hpp>
+#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 #include <boost/algorithm/string.hpp>
 
@@ -110,7 +111,7 @@ namespace Opm {
     template< typename T >
     void DeckTypeItem< T >::push_back( T x ) {
         if( this->dataPointDefaulted.size() != this->data.size() )
-            throw std::logic_error("To add a value to an item, no \"pseudo defaults\" can be added before");
+            OpmLog::debug("To add a value to an item, no \"pseudo defaults\" can be added before");
 
         this->data.push_back( x );
         this->dataPointDefaulted.push_back( false );
@@ -119,7 +120,7 @@ namespace Opm {
     template< typename T >
     void DeckTypeItem< T >::push_backDefault( T data_arg ) {
         if( this->dataPointDefaulted.size() != this->data.size() )
-            throw std::logic_error("To add a value to an item, no \"pseudo defaults\" can be added before");
+            OpmLog::debug("To add a value to an item, no \"pseudo defaults\" can be added before");
 
         this->data.push_back( data_arg );
         this->dataPointDefaulted.push_back(true);
@@ -128,7 +129,7 @@ namespace Opm {
     template< typename T >
     void DeckTypeItem< T >::push_backDummyDefault() {
         if( this->dataPointDefaulted.size() != 0 )
-            throw std::logic_error("Pseudo defaults can only be specified for empty items");
+            OpmLog::debug("Pseudo defaults can only be specified for empty items");
 
         this->dataPointDefaulted.push_back( true );
     }
@@ -136,7 +137,7 @@ namespace Opm {
     template< typename T >
     void DeckTypeItem< T >::push_back( T x, size_t numValues ) {
         if( this->dataPointDefaulted.size() != this->data.size() )
-            throw std::logic_error("To add a value to an item, no \"pseudo defaults\" can be added before");
+            OpmLog::debug("To add a value to an item, no \"pseudo defaults\" can be added before");
 
         this->data.insert( this->data.end(), numValues, x );
         this->dataPointDefaulted.insert( this->dataPointDefaulted.end(), numValues, false );
@@ -181,7 +182,7 @@ namespace Opm {
 
     const std::vector< double >& DeckItemT< double >::assertSIData() const {
         if( this->dimensions.size() <= 0 )
-            throw std::invalid_argument("No dimension has been set for item:" + this->name() + " can not ask for SI data");
+            OpmLog::debug("No dimension has been set for item:" + this->name() + " can not ask for SI data");
 
         // we already converted this item to SI?
         if( this->SIdata.size() > 0 ) return this->SIdata;
@@ -246,7 +247,7 @@ namespace Opm {
         if( auto* d = dynamic_cast< DeckItemT< T >* >( ptr.get() ) )
             return d;
 
-        throw std::logic_error(
+        OpmLog::debug(
                 "Treating item " + ptr->name()
                 + " as " + typename_string< T >()
                 + ", but is "
@@ -259,7 +260,7 @@ namespace Opm {
         if( auto* d = dynamic_cast< const DeckItemT< T >* >( ptr.get() ) )
             return d;
 
-        throw std::logic_error(
+        OpmLog::debug(
                 "Treating item " + ptr->name()
                 + " as " + typename_string< T >()
                 + ", but is "
