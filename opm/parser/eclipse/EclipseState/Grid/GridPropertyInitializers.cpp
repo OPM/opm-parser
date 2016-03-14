@@ -1,8 +1,23 @@
+/*
+  This file is part of the Open Porous Media project (OPM).
+
+  OPM is free software: you can redistribute it and/or modify it under the terms
+  of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  OPM is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  OPM.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <algorithm>
 #include <limits>
 #include <vector>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
@@ -20,39 +35,38 @@ namespace Opm {
     template< typename T >
     GridPropertyInitFunction< T >::GridPropertyInitFunction(
             signature fn,
-            const Deck& d,
             const EclipseState& state ) :
-        f( fn ), deck( &d ), es( &state )
+        f( fn ), es( &state )
     {}
 
     template< typename T >
     std::vector< T > GridPropertyInitFunction< T >::operator()( size_t size ) const {
         if( !this->f ) return std::vector< T >( size, this->constant );
 
-        return (*this->f)( size, *this->deck, *this->es );
+        return (*this->f)( size, *this->es );
     }
 
     template< typename T >
     GridPropertyPostFunction< T >::GridPropertyPostFunction(
             signature fn,
-            const Deck& d,
             const EclipseState& state ) :
-        f( fn ), deck( &d ), es( &state )
+        f( fn ), es( &state )
     {}
 
     template< typename T >
     void GridPropertyPostFunction< T >::operator()( std::vector< T >& values ) const {
         if( !this->f ) return;
 
-        return (*this->f)( values, *this->deck, *this->es );
+        return (*this->f)( values, *this->es );
     }
 
     std::vector< double > temperature_lookup(
             size_t size,
-            const Deck& deck,
             const EclipseState& eclipseState ) {
 
-        if( !deck.hasKeyword("EQLNUM") ) {
+        auto tables = eclipseState.getTableManager();
+
+        if( !tables->useEqlnum() ) {
             /* if values are defaulted in the TEMPI keyword, but no
              * EQLNUM is specified, you will get NaNs
              */
@@ -61,7 +75,6 @@ namespace Opm {
 
         std::vector< double > values( size, 0 );
 
-        auto tables = eclipseState.getTableManager();
         auto eclipseGrid = eclipseState.getEclipseGrid();
         const auto& rtempvdTables = tables->getRtempvdTables();
         const std::vector< int >& eqlNum = eclipseState.getIntGridProperty("EQLNUM")->getData();

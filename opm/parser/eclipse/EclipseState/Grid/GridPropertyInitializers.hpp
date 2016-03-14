@@ -28,7 +28,6 @@
 */
 namespace Opm {
 
-class Deck;
 class EclipseState;
 
 template< typename T >
@@ -36,13 +35,11 @@ template< typename T >
         public:
             using signature = std::vector< T >(*)(
                         size_t,
-                        const Deck&,
                         const EclipseState&
                     );
 
             GridPropertyInitFunction(
                     signature,
-                    const Deck&,
                     const EclipseState& );
 
             GridPropertyInitFunction( T );
@@ -51,7 +48,6 @@ template< typename T >
         private:
             signature f = nullptr;
             T constant;
-            const Deck* deck = nullptr;
             const EclipseState* es = nullptr;
     };
 
@@ -59,27 +55,24 @@ template< typename T >
     class GridPropertyPostFunction {
         public:
             using signature = void(*)( std::vector< T >&,
-                                       const Deck&,
                                        const EclipseState&
                                      );
 
             GridPropertyPostFunction() = default;
             GridPropertyPostFunction(
                     signature,
-                    const Deck&,
                     const EclipseState& );
 
             void operator()( std::vector< T >& ) const;
 
         private:
             signature f = nullptr;
-            const Deck* deck = nullptr;
             const EclipseState* es = nullptr;
     };
 
     // initialize the TEMPI grid property using the temperature vs depth
     // table (stemming from the TEMPVD or the RTEMPVD keyword)
-    std::vector< double > temperature_lookup( size_t, const Deck&, const EclipseState& );
+    std::vector< double > temperature_lookup( size_t, const EclipseState& );
 
 }
 

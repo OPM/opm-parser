@@ -1,4 +1,19 @@
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+/*
+  This file is part of the Open Porous Media project (OPM).
+
+  OPM is free software: you can redistribute it and/or modify it under the terms
+  of the GNU General Public License as published by the Free Software
+  Foundation, either version 3 of the License, or (at your option) any later
+  version.
+
+  OPM is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License along with
+  OPM.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
@@ -22,7 +37,7 @@ namespace Opm {
      * can be used to enter relperm and capillary pressure tables.
      *
      * If SWOF and SGOF are specified in the deck it return I
-     * If SWFN, SGFN and SOF3 are specified in the deck it return I
+     * If SWFN, SGFN and SOF3 are specified in the deck it return II
      * If keywords are missing or mixed, an error is given.
      */
     enum class SatfuncFamily { none = 0, I = 1, II = 2 };
@@ -660,11 +675,10 @@ namespace Opm {
     }
 
     static std::vector< double > satnumApply( size_t size,
-                                               const std::string& columnName,
-                                               const std::vector< double >& fallbackValues,
-                                               const Deck& m_deck,
-                                               const EclipseState& m_eclipseState,
-                                               bool useOneMinusTableValue ) {
+                                              const std::string& columnName,
+                                              const std::vector< double >& fallbackValues,
+                                              const EclipseState& m_eclipseState,
+                                              bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
 
@@ -685,7 +699,7 @@ namespace Opm {
         // cell and we would need to know how the simulator wants to interpolate between
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
-        const bool useEnptvd = m_deck.hasKeyword("ENPTVD");
+        const bool useEnptvd = tables->useEnptvd();
         const auto& enptvdTables = tables->getEnptvdTables();
 
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
@@ -706,11 +720,10 @@ namespace Opm {
     }
 
     static std::vector< double > imbnumApply( size_t size,
-                                               const std::string& columnName,
-                                               const std::vector< double >& fallBackValues,
-                                               const Deck& m_deck,
-                                               const EclipseState& m_eclipseState,
-                                               bool useOneMinusTableValue ) {
+                                              const std::string& columnName,
+                                              const std::vector< double >& fallBackValues,
+                                              const EclipseState& m_eclipseState,
+                                              bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
 
@@ -728,7 +741,7 @@ namespace Opm {
         // cell and we would need to know how the simulator wants to interpolate between
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
-        const bool useImptvd = m_deck.hasKeyword("IMPTVD");
+        const bool useImptvd = tables->useImptvd();
         const TableContainer& imptvdTables = tables->getImptvdTables();
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
             int imbTableIdx = imbnum->iget( cellIdx ) - 1;
@@ -746,174 +759,173 @@ namespace Opm {
         return values;
     }
 
-    std::vector< double > SGLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SGLEndpoint( size_t size, const EclipseState& es ) {
         const auto min_gas = findMinGasSaturation( *es.getTableManager() );
-        return satnumApply( size, "SGCO", min_gas, deck, es, false );
+        return satnumApply( size, "SGCO", min_gas, es, false );
     }
 
-    std::vector< double > ISGLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISGLEndpoint( size_t size, const EclipseState& es ) {
         const auto min_gas = findMinGasSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SGCO", min_gas, deck, es, false );
+        return imbnumApply( size, "SGCO", min_gas, es, false );
     }
 
-    std::vector< double > SGUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SGUEndpoint( size_t size, const EclipseState& es ) {
         const auto max_gas = findMaxGasSaturation( *es.getTableManager() );
-        return satnumApply( size, "SGMAX", max_gas, deck, es, false );
+        return satnumApply( size, "SGMAX", max_gas, es, false );
     }
 
-    std::vector< double > ISGUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISGUEndpoint( size_t size, const EclipseState& es ) {
         const auto max_gas = findMaxGasSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SGMAX", max_gas, deck, es, false );
+        return imbnumApply( size, "SGMAX", max_gas, es, false );
     }
 
-    std::vector< double > SWLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SWLEndpoint( size_t size, const EclipseState& es ) {
         const auto min_water = findMinWaterSaturation( *es.getTableManager() );
-        return satnumApply( size, "SWCO", min_water, deck, es, false );
+        return satnumApply( size, "SWCO", min_water, es, false );
     }
 
-    std::vector< double > ISWLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISWLEndpoint( size_t size, const EclipseState& es ) {
         const auto min_water = findMinWaterSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SWCO", min_water, deck, es, false );
+        return imbnumApply( size, "SWCO", min_water, es, false );
     }
 
-    std::vector< double > SWUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SWUEndpoint( size_t size, const EclipseState& es ) {
         const auto max_water = findMaxWaterSaturation( *es.getTableManager() );
-        return satnumApply( size, "SWMAX", max_water, deck, es, true );
+        return satnumApply( size, "SWMAX", max_water, es, true );
     }
 
-    std::vector< double > ISWUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISWUEndpoint( size_t size, const EclipseState& es ) {
         const auto max_water = findMaxWaterSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SWMAX", max_water, deck, es, true);
+        return imbnumApply( size, "SWMAX", max_water, es, true);
     }
 
-    std::vector< double > SGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SGCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_gas = findCriticalGas( *es.getTableManager() );
-        return satnumApply( size, "SGCRIT", crit_gas, deck, es, false );
+        return satnumApply( size, "SGCRIT", crit_gas, es, false );
     }
 
-    std::vector< double > ISGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISGCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_gas = findCriticalGas( *es.getTableManager() );
-        return imbnumApply( size, "SGCRIT", crit_gas, deck, es, false );
+        return imbnumApply( size, "SGCRIT", crit_gas, es, false );
     }
 
-    std::vector< double > SOWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SOWCREndpoint( size_t size, const EclipseState& es ) {
         const auto oil_water = findCriticalOilWater( *es.getTableManager() );
-        return satnumApply( size, "SOWCRIT", oil_water, deck, es, false );
+        return satnumApply( size, "SOWCRIT", oil_water, es, false );
     }
 
-    std::vector< double > ISOWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISOWCREndpoint( size_t size, const EclipseState& es ) {
         const auto oil_water = findCriticalOilWater( *es.getTableManager() );
-        return imbnumApply( size, "SOWCRIT", oil_water, deck, es, false );
+        return imbnumApply( size, "SOWCRIT", oil_water, es, false );
     }
 
-    std::vector< double > SOGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SOGCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_oil_gas = findCriticalOilGas( *es.getTableManager() );
-        return satnumApply( size, "SOGCRIT", crit_oil_gas, deck, es, false );
+        return satnumApply( size, "SOGCRIT", crit_oil_gas, es, false );
     }
 
-    std::vector< double > ISOGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISOGCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_oil_gas = findCriticalOilGas( *es.getTableManager() );
-        return imbnumApply( size, "SOGCRIT", crit_oil_gas, deck, es, false );
+        return imbnumApply( size, "SOGCRIT", crit_oil_gas, es, false );
     }
 
-    std::vector< double > SWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > SWCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_water = findCriticalWater( *es.getTableManager() );
-        return satnumApply( size, "SWCRIT", crit_water, deck, es, false );
+        return satnumApply( size, "SWCRIT", crit_water, es, false );
     }
 
-    std::vector< double > ISWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > ISWCREndpoint( size_t size, const EclipseState& es ) {
         const auto crit_water = findCriticalWater( *es.getTableManager() );
-        return imbnumApply( size, "SWCRIT", crit_water, deck, es, false );
+        return imbnumApply( size, "SWCRIT", crit_water, es, false );
     }
 
-    std::vector< double > PCWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > PCWEndpoint( size_t size, const EclipseState& es ) {
         const auto max_pcow = findMaxPcow( *es.getTableManager() );
-        return satnumApply( size, "PCW", max_pcow, deck, es, false );
+        return satnumApply( size, "PCW", max_pcow, es, false );
     }
 
-    std::vector< double > IPCWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IPCWEndpoint( size_t size, const EclipseState& es ) {
         const auto max_pcow = findMaxPcow( *es.getTableManager() );
-        return imbnumApply( size, "IPCW", max_pcow, deck, es, false );
+        return imbnumApply( size, "IPCW", max_pcow, es, false );
     }
 
-    std::vector< double > PCGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > PCGEndpoint( size_t size, const EclipseState& es ) {
         const auto max_pcog = findMaxPcog( *es.getTableManager() );
-        return satnumApply( size, "PCG", max_pcog, deck, es, false );
+        return satnumApply( size, "PCG", max_pcog, es, false );
     }
 
-    std::vector< double > IPCGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IPCGEndpoint( size_t size, const EclipseState& es ) {
         const auto max_pcog = findMaxPcog( *es.getTableManager() );
-        return imbnumApply( size, "IPCG", max_pcog, deck, es, false );
+        return imbnumApply( size, "IPCG", max_pcog, es, false );
     }
 
-    std::vector< double > KRWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRWEndpoint( size_t size, const EclipseState& es ) {
         const auto max_krw = findMaxKrw( *es.getTableManager() );
-        return satnumApply( size, "KRW", max_krw, deck, es, false );
+        return satnumApply( size, "KRW", max_krw, es, false );
     }
 
-    std::vector< double > IKRWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRWEndpoint( size_t size, const EclipseState& es ) {
         const auto krwr = findKrwr( *es.getTableManager() );
-        return imbnumApply( size, "IKRW", krwr, deck, es, false );
+        return imbnumApply( size, "IKRW", krwr, es, false );
     }
 
-    std::vector< double > KRWREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRWREndpoint( size_t size, const EclipseState& es ) {
         const auto krwr = findKrwr( *es.getTableManager() );
-        return satnumApply( size, "KRWR", krwr, deck, es, false );
+        return satnumApply( size, "KRWR", krwr, es, false );
     }
 
-    std::vector< double > IKRWREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRWREndpoint( size_t size, const EclipseState& es ) {
         const auto krwr = findKrwr( *es.getTableManager() );
-        return imbnumApply( size, "IKRWR", krwr, deck, es, false );
+        return imbnumApply( size, "IKRWR", krwr, es, false );
     }
 
-    std::vector< double > KROEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KROEndpoint( size_t size, const EclipseState& es ) {
         const auto max_kro = findMaxKro( *es.getTableManager() );
-        return satnumApply( size, "KRO", max_kro, deck, es, false );
+        return satnumApply( size, "KRO", max_kro, es, false );
     }
 
-    std::vector< double > IKROEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKROEndpoint( size_t size, const EclipseState& es ) {
         const auto max_kro = findMaxKro( *es.getTableManager() );
-        return imbnumApply( size, "IKRO", max_kro, deck, es, false );
+        return imbnumApply( size, "IKRO", max_kro, es, false );
     }
 
-    std::vector< double > KRORWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRORWEndpoint( size_t size, const EclipseState& es ) {
         const auto krorw = findKrorw( *es.getTableManager() );
-        return satnumApply( size, "KRORW", krorw, deck, es, false );
+        return satnumApply( size, "KRORW", krorw, es, false );
     }
 
-    std::vector< double > IKRORWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRORWEndpoint( size_t size, const EclipseState& es ) {
         const auto krorw = findKrorw( *es.getTableManager() );
-        return imbnumApply( size, "IKRORW", krorw, deck, es, false );
+        return imbnumApply( size, "IKRORW", krorw, es, false );
     }
 
-    std::vector< double > KRORGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRORGEndpoint( size_t size, const EclipseState& es ) {
         const auto krorg = findKrorg( *es.getTableManager() );
-        return satnumApply( size, "KRORG", krorg, deck, es, false );
+        return satnumApply( size, "KRORG", krorg, es, false );
     }
 
-    std::vector< double > IKRORGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRORGEndpoint( size_t size, const EclipseState& es ) {
         const auto krorg = findKrorg( *es.getTableManager() );
-        return imbnumApply( size, "IKRORG", krorg, deck, es, false );
+        return imbnumApply( size, "IKRORG", krorg, es, false );
     }
 
-    std::vector< double > KRGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRGEndpoint( size_t size, const EclipseState& es ) {
         const auto max_krg = findMaxKrg( *es.getTableManager() );
-        return satnumApply( size, "KRG", max_krg, deck, es, false );
+        return satnumApply( size, "KRG", max_krg, es, false );
     }
 
-    std::vector< double > IKRGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRGEndpoint( size_t size, const EclipseState& es ) {
         const auto max_krg = findMaxKrg( *es.getTableManager() );
-        return imbnumApply( size, "IKRG", max_krg, deck, es, false );
+        return imbnumApply( size, "IKRG", max_krg, es, false );
     }
 
-    std::vector< double > KRGREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > KRGREndpoint( size_t size, const EclipseState& es ) {
         const auto krgr = findKrgr( *es.getTableManager() );
-        return satnumApply( size, "KRGR", krgr, deck, es, false );
+        return satnumApply( size, "KRGR", krgr, es, false );
     }
 
-    std::vector< double > IKRGREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
+    std::vector< double > IKRGREndpoint( size_t size, const EclipseState& es ) {
         const auto krgr = findKrgr( *es.getTableManager() );
-        return imbnumApply( size, "IKRGR", krgr, deck, es, false );
+        return imbnumApply( size, "IKRGR", krgr, es, false );
     }
-
 }

@@ -72,7 +72,12 @@
 
 namespace Opm {
 
-    TableManager::TableManager( const Deck& deck ) {
+    TableManager::TableManager( const Deck& deck )
+        :
+        hasImptvd (deck.hasKeyword("IMPTVD")),
+        hasEnptvd (deck.hasKeyword("ENPTVD")),
+        hasEqlnum (deck.hasKeyword("EQLNUM"))
+    {
         initDims( deck );
         initSimpleTables( deck );
         initFullTables(deck, "PVTG", m_pvtgTables);
@@ -659,6 +664,18 @@ namespace Opm {
         return m_vfpinjTables;
     }
 
+    const bool TableManager::useImptvd() const {
+        return hasImptvd;
+    }
+
+    const bool TableManager::useEnptvd() const {
+        return hasEnptvd;
+    }
+
+    const bool TableManager::useEqlnum() const {
+        return hasEqlnum;
+    }
+
 
     void TableManager::complainAboutAmbiguousKeyword(const Deck& deck, const std::string& keywordName) const {
         OpmLog::addMessage(Log::MessageType::Error, "The " + keywordName + " keyword must be unique in the deck. Ignoring all!");
@@ -669,5 +686,3 @@ namespace Opm {
         }
     }
 }
-
-
