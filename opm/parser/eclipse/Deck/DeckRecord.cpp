@@ -24,6 +24,7 @@
 
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 
 namespace Opm {
@@ -35,7 +36,7 @@ namespace Opm {
 
     void DeckRecord::addItem( DeckItem&& deckItem ) {
         if( this->hasItem( deckItem.name() ) )
-            throw std::invalid_argument(
+            OpmLog::debug(
                     "Item with name: "
                     + deckItem.name()
                     + " already exists in DeckRecord");
@@ -55,7 +56,7 @@ namespace Opm {
         auto item = std::find_if( m_items.begin(), m_items.end(), eq );
 
         if( item == m_items.end() )
-            throw std::invalid_argument("Item: " + name + " does not exist.");
+            OpmLog::debug("Item: " + name + " does not exist.");
 
         return *item;
     }
@@ -64,7 +65,7 @@ namespace Opm {
         if (m_items.size() == 1)
             return getItem(0);
         else
-            throw std::range_error("Not a data keyword ?");
+            OpmLog::debug("Not a data keyword ?");
     }
 
     const DeckItem& DeckRecord::getItem( size_t index ) const {
@@ -79,7 +80,7 @@ namespace Opm {
         auto item = std::find_if( this->begin(), this->end(), eq );
 
         if( item == m_items.end() )
-            throw std::invalid_argument("Item: " + name + " does not exist.");
+            OpmLog::debug("Item: " + name + " does not exist.");
 
         return *item;
     }
@@ -88,7 +89,7 @@ namespace Opm {
         if (m_items.size() == 1)
             return getItem(0);
         else
-            throw std::range_error("Not a data keyword ?");
+            OpmLog::debug("Not a data keyword ?");
     }
 
     bool DeckRecord::hasItem(const std::string& name) const {

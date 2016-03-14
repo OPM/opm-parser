@@ -24,6 +24,7 @@
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
+#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 namespace Opm {
 
@@ -44,21 +45,21 @@ namespace Opm {
 
     const DeckKeyword& DeckView::getKeyword( const std::string& keyword, size_t index ) const {
         if( !this->hasKeyword( keyword ) )
-            throw std::invalid_argument("Keyword " + keyword + " not in deck.");
+            OpmLog::error("Keyword " + keyword + " not in deck.");
 
         return this->getKeyword( this->offsets( keyword ).at( index ) );
     }
 
     const DeckKeyword& DeckView::getKeyword( const std::string& keyword ) const {
         if( !this->hasKeyword( keyword ) )
-            throw std::invalid_argument("Keyword " + keyword + " not in deck.");
+            OpmLog::error("Keyword " + keyword + " not in deck.");
 
         return this->getKeyword( this->offsets( keyword ).back() );
     }
 
     const DeckKeyword& DeckView::getKeyword( size_t index ) const {
         if( index >= this->size() )
-            throw std::out_of_range("Keyword index " + std::to_string( index ) + " is out of range.");
+            OpmLog::debug("Keyword index " + std::to_string( index ) + " is out of range.");
 
         return *( this->begin() + index );
     }

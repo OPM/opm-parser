@@ -20,6 +20,7 @@
 #include "DeckKeyword.hpp"
 #include "DeckRecord.hpp"
 #include "DeckItem.hpp"
+#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 namespace Opm {
 
@@ -97,7 +98,7 @@ namespace Opm {
         if (m_recordList.size() == 1)
             return getRecord(0);
         else
-            throw std::range_error("Not a data keyword ?");
+            OpmLog::debug("Not a data keyword ?");
     }
 
 
