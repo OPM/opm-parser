@@ -76,109 +76,65 @@ namespace Opm {
             const_iterator fst;
             const_iterator lst;
     };
-}
 
-/*
- * The implementation of string_view is inline and therefore the definitions
- * are also in this file. The reason for this is performance; string_view's
- * logic is trivial and function call and indirection overhead is significant
- * compared to the useful work it does. Additionally, string_view is a *very*
- * much used class in the inner loops of the parser - inlining the
- * implementation measured to improve performance by some 10%.
- */
-
-std::ostream& operator<<( std::ostream& stream, const Opm::string_view& view );
-
-inline std::string operator+( std::string str, const Opm::string_view& view ) {
-    return str.append( view.begin(), view.end() );
-}
-
-inline std::string operator+( const Opm::string_view& view, const std::string& str ) {
-    return view.string().append( str.begin(), str.end() );
-}
-
-inline bool operator==( const Opm::string_view& view, const std::string& rhs ) {
-    return rhs.size() == view.size() &&
-        std::equal( view.begin(), view.end(), std::begin( rhs ) );
-}
-
-inline bool operator==( const Opm::string_view& view, const char* rhs ) {
-    return std::equal( view.begin(), view.end(), rhs );
-}
-
-inline bool operator==( const std::string& lhs, const Opm::string_view& view ) {
-    return view == lhs;
-}
-
-inline bool operator==( const char* lhs, const Opm::string_view& view ) {
-    return view == lhs;
-}
-
-inline bool operator!=( const Opm::string_view& view, const std::string& rhs ) {
-    return !( view == rhs );
-}
-
-inline bool operator!=( const std::string& lhs, const Opm::string_view& view ) {
-    return !( view == lhs );
-}
-
-inline bool operator!=( const Opm::string_view& view, const char* rhs ) {
-    return !( view == rhs );
-}
-
-inline bool operator!=( const char* lhs, const Opm::string_view& view ) {
-    return !( view == lhs );
-}
-
-
-namespace boost { namespace test_tools {
-    /* This is an unfortunate consequence of using boost.test.
-     * For reference, see
-     * http://stackoverflow.com/questions/17572583/boost-check-fails-to-compile-operator-for-custom-types
-     *
-     * In short, boost.test is unable to select the correct operator overloads,
-     * even in the global scope, inside its test macros. As a consequence, in
-     * order for boost.test to function we pry open its internals and creates a
-     * specialised instantiaten of string_view, as well as custom
-     * boost-namespace-specific overloads of comparison operators (that simply
-     * forward to the propoer implementations.
+    /*
+     * The implementation of string_view is inline and therefore the definitions
+     * are also in this file. The reason for this is performance; string_view's
+     * logic is trivial and function call and indirection overhead is significant
+     * compared to the useful work it does. Additionally, string_view is a *very*
+     * much used class in the inner loops of the parser - inlining the
+     * implementation measured to improve performance by some 10%.
      */
 
-    template< typename T > struct print_log_value;
 
-    template<>
-    struct print_log_value< Opm::string_view > {
-        void operator()( std::ostream& os, const Opm::string_view& view ) {
-            ::operator<<( os, view );
-        }
+    // Non-member operators using string_view.
 
-    };
+    std::ostream& operator<<( std::ostream& stream, const Opm::string_view& view );
 
-    namespace tt_detail {
-
-        template< typename T >
-        inline bool operator==( const Opm::string_view& o, const T& x ) {
-            return ::operator==( o, x );
-        }
-
-        template< typename T >
-        inline bool operator==( const T& x, const Opm::string_view& o ) {
-            return ::operator==( o, x );
-        }
-
-        template< typename T >
-        inline bool operator!=( const Opm::string_view& o, const T& x ) {
-            return ::operator!=( o, x );
-        }
-
-        template< typename T >
-        inline bool operator!=( const T& x, const Opm::string_view& o ) {
-            return ::operator!=( o, x );
-        }
+    inline std::string operator+( std::string str, const Opm::string_view& view ) {
+        return str.append( view.begin(), view.end() );
     }
-}}
 
-namespace Opm {
+    inline std::string operator+( const Opm::string_view& view, const std::string& str ) {
+        return view.string().append( str.begin(), str.end() );
+    }
+
+    inline bool operator==( const Opm::string_view& view, const std::string& rhs ) {
+        return rhs.size() == view.size() &&
+            std::equal( view.begin(), view.end(), std::begin( rhs ) );
+    }
+
+    inline bool operator==( const Opm::string_view& view, const char* rhs ) {
+        return std::equal( view.begin(), view.end(), rhs );
+    }
+
+    inline bool operator==( const std::string& lhs, const Opm::string_view& view ) {
+        return view == lhs;
+    }
+
+    inline bool operator==( const char* lhs, const Opm::string_view& view ) {
+        return view == lhs;
+    }
+
+    inline bool operator!=( const Opm::string_view& view, const std::string& rhs ) {
+        return !( view == rhs );
+    }
+
+    inline bool operator!=( const std::string& lhs, const Opm::string_view& view ) {
+        return !( view == lhs );
+    }
+
+    inline bool operator!=( const Opm::string_view& view, const char* rhs ) {
+        return !( view == rhs );
+    }
+
+    inline bool operator!=( const char* lhs, const Opm::string_view& view ) {
+        return !( view == lhs );
+    }
+
+
+    // Member functions of string_view.
+
     inline string_view::string_view( std::string::const_iterator begin,
                               std::string::const_iterator end ) :
         fst( begin ),
