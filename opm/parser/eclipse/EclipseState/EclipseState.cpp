@@ -46,85 +46,28 @@
 
 namespace Opm {
 
-    namespace GridPropertyPostProcessor {
-
-        void distTopLayer( std::vector<double>& values, const Deck&, const EclipseState& m_eclipseState ) {
-            EclipseGridConstPtr grid = m_eclipseState.getEclipseGrid();
-            size_t layerSize = grid->getNX() * grid->getNY();
-            size_t gridSize  = grid->getCartesianSize();
-
-            for( size_t globalIndex = layerSize; globalIndex < gridSize; globalIndex++ ) {
-                if( std::isnan( values[ globalIndex ] ) )
-                    values[globalIndex] = values[globalIndex - layerSize];
-            }
-        }
-
-        void initPORV( std::vector<double>& values, const Deck&, const EclipseState& m_eclipseState ) {
-            EclipseGridConstPtr grid = m_eclipseState.getEclipseGrid();
-            /*
-               Observe that this apply method does not alter the
-               values input vector, instead it fetches the PORV
-               property one more time, and then manipulates that.
-               */
-            auto porv = m_eclipseState.getDoubleGridProperty("PORV");
-            if (porv->containsNaN()) {
-                auto poro = m_eclipseState.getDoubleGridProperty("PORO");
-                auto ntg = m_eclipseState.getDoubleGridProperty("NTG");
-                if (poro->containsNaN())
-                    throw std::logic_error("Do not have information for the PORV keyword - some defaulted values in PORO");
-                else {
-                    const auto& poroData = poro->getData();
-                    for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
-                        if (std::isnan(values[globalIndex])) {
-                            double cell_poro = poroData[globalIndex];
-                            double cell_ntg = ntg->iget(globalIndex);
-                            double cell_volume = grid->getCellVolume(globalIndex);
-                            values[globalIndex] = cell_poro * cell_volume * cell_ntg;
-                        }
-                    }
-                }
-            }
-
-            if (m_eclipseState.hasDeckDoubleGridProperty("MULTPV")) {
-                auto multpvData = m_eclipseState.getDoubleGridProperty("MULTPV")->getData();
-                for (size_t globalIndex = 0; globalIndex < porv->getCartesianSize(); globalIndex++) {
-                    values[globalIndex] *= multpvData[globalIndex];
-                }
-            }
-        }
-    }
-
-
-    static bool isInt(double value) {
-        double diff = fabs(nearbyint(value) - value);
-
-        if (diff < 1e-6)
-            return true;
-        else
-            return false;
-    }
-
-
-    EclipseState::EclipseState(DeckConstPtr deck , const ParseContext& parseContext)
-        : m_deckUnitSystem( deck->getActiveUnitSystem() ),
-          m_defaultRegion("FLUXNUM"),
-          m_parseContext( parseContext )
+    EclipseState::EclipseState(std::shared_ptr<const Deck> deck, const ParseMode& parseMode) :
+        m_deckUnitSystem(    deck->getActiveUnitSystem() ),
+        m_parseMode(         parseMode ),
+        m_tables(            std::make_shared<const TableManager>( *deck )),
+        m_eclipseGrid(       EclipseGridConstPtr(new EclipseGrid(deck))),
+        m_eclipseProperties( deck, m_tables, m_eclipseGrid )
     {
-        initPhases(deck);
-        initTables(deck);
-        initEclipseGrid(deck);
         initGridopts(deck);
         initIOConfig(deck);
-        initSchedule(deck);
+
+        schedule = ScheduleConstPtr( new Schedule(m_parseMode ,  getEclipseGrid() , deck, m_ioConfig) );
         initIOConfigPostSchedule(deck);
         initTitle(deck);
-        initProperties(deck);
-        initInitConfig(deck);
-        initSimulationConfig(deck);
+
+        m_initConfig = std::make_shared<const InitConfig>(deck);
+        m_simulationConfig = std::make_shared<const SimulationConfig>(m_parseMode, deck,
+                                                                      m_eclipseProperties.getIntGridProperties() );
+
         initTransMult();
         initFaults(deck);
         initMULTREGT(deck);
-        initNNC(deck);
+        m_nnc = std::make_shared<NNC>( deck, getEclipseGrid());
     }
 
     const UnitSystem& EclipseState::getDeckUnitSystem() const {
@@ -136,20 +79,22 @@ namespace Opm {
         return m_eclipseGrid;
     }
 
+    // is only used in EclipseWriter
     EclipseGridPtr EclipseState::getEclipseGridCopy() const {
         return std::make_shared<EclipseGrid>( m_eclipseGrid->c_ptr() );
     }
 
+    EclipseProperties EclipseState::getEclipseProperties() const {
+        return m_eclipseProperties;
+    }
 
     std::shared_ptr<const TableManager> EclipseState::getTableManager() const {
         return m_tables;
     }
 
-
     const ParseContext& EclipseState::getParseContext() const {
         return m_parseContext;
     }
-
 
     ScheduleConstPtr EclipseState::getSchedule() const {
         return schedule;
@@ -191,12 +136,6 @@ namespace Opm {
         return m_title;
     }
 
-
-
-    void EclipseState::initTables(DeckConstPtr deck) {
-        m_tables = std::make_shared<const TableManager>( *deck );
-   }
-
     void EclipseState::initIOConfig(DeckConstPtr deck) {
         m_ioConfig = std::make_shared<IOConfig>();
         if (Section::hasGRID(*deck)) {
@@ -217,14 +156,6 @@ namespace Opm {
             m_ioConfig->handleSolutionSection(schedule->getTimeMap(), solutionSection);
         }
         m_ioConfig->initFirstOutput( *this->schedule );
-    }
-
-    void EclipseState::initInitConfig(DeckConstPtr deck){
-        m_initConfig = std::make_shared<const InitConfig>(deck);
-    }
-
-    void EclipseState::initSimulationConfig(DeckConstPtr deck) {
-        m_simulationConfig = std::make_shared<const SimulationConfig>(m_parseContext , deck , m_intGridProperties);
     }
 
 
@@ -256,6 +187,26 @@ namespace Opm {
             m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTZ"), FaceDir::ZPlus);
         if (hasDeckDoubleGridProperty("MULTZ-"))
             m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTZ-"), FaceDir::ZMinus);
+	}
+
+    void EclipseState::initTransMult() {
+        EclipseGridConstPtr grid = getEclipseGrid();
+        m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
+        auto doubleGp = m_eclipseProperties.getDoubleGridProperties();
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTX"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTX"), FaceDir::XPlus);
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTX-"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTX-"), FaceDir::XMinus);
+
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTY"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTY"), FaceDir::YPlus);
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTY-"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTY-"), FaceDir::YMinus);
+
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTZ"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTZ"), FaceDir::ZPlus);
+        if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTZ-"))
+            m_transMult->applyMULT(*doubleGp->getKeyword("MULTZ-"), FaceDir::ZMinus);
     }
 
     void EclipseState::initFaults(DeckConstPtr deck) {
@@ -298,7 +249,12 @@ namespace Opm {
         if (deck->hasKeyword("MULTREGT"))
             multregtKeywords = deck->getKeywordList("MULTREGT");
 
-        std::shared_ptr<MULTREGTScanner> scanner = std::make_shared<MULTREGTScanner>(m_intGridProperties, multregtKeywords , m_defaultRegion);
+        std::shared_ptr<MULTREGTScanner> scanner =
+            std::make_shared<MULTREGTScanner>(
+                m_eclipseProperties.getIntGridProperties(),
+                multregtKeywords ,
+                m_eclipseProperties.getDefaultRegionKeyword());
+
         m_transMult->setMultregtScanner( scanner );
     }
 
@@ -351,31 +307,8 @@ namespace Opm {
             const auto& nrmult_item = record.getItem("NRMULT");
 
             if (nrmult_item.get< int >(0) > 0)
-                m_defaultRegion = "MULTNUM";
+                m_eclipseProperties.setDefaultRegionKeyword("MULTNUM");
         }
-    }
-
-
-    void EclipseState::initPhases(DeckConstPtr deck) {
-        if (deck->hasKeyword("OIL"))
-            phases.insert(Phase::PhaseEnum::OIL);
-
-        if (deck->hasKeyword("GAS"))
-            phases.insert(Phase::PhaseEnum::GAS);
-
-        if (deck->hasKeyword("WATER"))
-            phases.insert(Phase::PhaseEnum::WATER);
-
-        if (phases.size() < 3)
-            OpmLog::addMessage(Log::MessageType::Info , "Only " + std::to_string(static_cast<long long>(phases.size())) + " fluid phases are enabled");
-    }
-
-    size_t EclipseState::getNumPhases() const{
-        return phases.size();
-    }
-
-    bool EclipseState::hasPhase(enum Phase::PhaseEnum phase) const {
-         return (phases.count(phase) == 1);
     }
 
     void EclipseState::initTitle(DeckConstPtr deck){

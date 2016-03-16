@@ -24,43 +24,49 @@
 
 namespace Opm {
 
-    class Deck;
-    class EclipseState;
+    template< typename > class GridProperties;
 
-    std::vector< double > SGLEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISGLEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SGUEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISGUEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SWLEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISWLEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SWUEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISWUEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SGCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISGCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SOWCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISOWCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SOGCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISOGCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > SWCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > ISWCREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > PCWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IPCWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > PCGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IPCGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRWREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRWREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KROEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKROEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRORWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRORWEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRORGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRORGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRGEndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > KRGREndpoint( size_t, const Deck&, const EclipseState& );
-    std::vector< double > IKRGREndpoint( size_t, const Deck&, const EclipseState& );
+    class EclipseGrid;
+    class TableManager;
+
+    typedef std::shared_ptr<const TableManager> TM; //FIXME PGDR use using?
+    typedef std::shared_ptr<const EclipseGrid > EG;
+    typedef std::shared_ptr<GridProperties<int> > GP;
+
+    std::vector< double > SGLEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISGLEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SGUEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISGUEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SWLEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISWLEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SWUEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISWUEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SGCREndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISGCREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SOWCREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISOWCREndpoint( size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SOGCREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISOGCREndpoint( size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > SWCREndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > ISWCREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > PCWEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IPCWEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > PCGEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IPCGEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRWEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRWEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRWREndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRWREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KROEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKROEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRORWEndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRORWEndpoint( size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRORGEndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRORGEndpoint( size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRGEndpoint(    size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRGEndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > KRGREndpoint(   size_t, TM tm, EG eg, GP intGridProperties);
+    std::vector< double > IKRGREndpoint(  size_t, TM tm, EG eg, GP intGridProperties);
 
 }
 

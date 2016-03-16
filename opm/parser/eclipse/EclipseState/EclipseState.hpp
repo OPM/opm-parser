@@ -22,9 +22,9 @@
 
 #include <utility>
 #include <memory>
-#include <set>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
+#include <opm/parser/eclipse/EclipseState/EclipseProperties.hpp>
 
 namespace Opm {
 
@@ -70,7 +70,6 @@ namespace Opm {
         std::shared_ptr< const SimulationConfig > getSimulationConfig() const;
         std::shared_ptr< const EclipseGrid > getEclipseGrid() const;
         std::shared_ptr< EclipseGrid > getEclipseGridCopy() const;
-        bool hasPhase(enum Phase::PhaseEnum phase) const;
         std::string getTitle() const;
         bool supportsGridProperty(const std::string& keyword, int enabledTypes=AllProperties) const;
 
@@ -95,8 +94,9 @@ namespace Opm {
         std::shared_ptr<const NNC> getNNC() const;
         bool hasNNC() const;
 
+        EclipseProperties getEclipseProperties() const;
+
         std::shared_ptr<const TableManager> getTableManager() const;
-        size_t getNumPhases() const;
 
         // the unit system used by the deck. note that it is rarely needed to convert
         // units because internally to opm-parser everything is represented by SI
@@ -106,20 +106,13 @@ namespace Opm {
 
     private:
         void initTabdims(std::shared_ptr< const Deck > deck);
-        void initTables(std::shared_ptr< const Deck > deck);
         void initIOConfig(std::shared_ptr< const Deck > deck);
-        void initSchedule(std::shared_ptr< const Deck > deck);
         void initIOConfigPostSchedule(std::shared_ptr< const Deck > deck);
-        void initInitConfig(std::shared_ptr< const Deck > deck);
-        void initSimulationConfig(std::shared_ptr< const Deck > deck);
-        void initEclipseGrid(std::shared_ptr< const Deck > deck);
         void initGridopts(std::shared_ptr< const Deck > deck);
-        void initPhases(std::shared_ptr< const Deck > deck);
         void initTitle(std::shared_ptr< const Deck > deck);
         void initProperties(std::shared_ptr< const Deck > deck);
         void initTransMult();
         void initFaults(std::shared_ptr< const Deck > deck);
-        void initNNC(std::shared_ptr< const Deck > deck);
 
 
         void setMULTFLT(std::shared_ptr<const Opm::Section> section) const;
@@ -157,18 +150,20 @@ namespace Opm {
         std::shared_ptr< const Schedule >         schedule;
         std::shared_ptr< const SimulationConfig > m_simulationConfig;
 
-        std::shared_ptr<const TableManager> m_tables;
-
-        std::set<enum Phase::PhaseEnum> phases;
         std::string m_title;
-        const UnitSystem& m_deckUnitSystem;
-        std::shared_ptr<GridProperties<int> > m_intGridProperties;
-        std::shared_ptr<GridProperties<double> > m_doubleGridProperties;
         std::shared_ptr<TransMult> m_transMult;
         std::shared_ptr<FaultCollection> m_faults;
         std::shared_ptr<NNC> m_nnc;
         std::string m_defaultRegion;
         const ParseContext& m_parseContext;
+
+
+        // constructor order (-Wreorder)
+        const UnitSystem& m_deckUnitSystem;
+        const ParseMode& m_parseMode;
+        std::shared_ptr<const TableManager> m_tables;
+        std::shared_ptr<const EclipseGrid> m_eclipseGrid;
+        EclipseProperties m_eclipseProperties;
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

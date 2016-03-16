@@ -29,13 +29,13 @@ namespace Opm {
      */
     enum class SatfuncFamily { none = 0, I = 1, II = 2 };
 
-    static SatfuncFamily getSaturationFunctionFamily( const TableManager& tm ) {
-        const TableContainer& swofTables = tm.getSwofTables();
-        const TableContainer& sgofTables = tm.getSgofTables();
-        const TableContainer& slgofTables = tm.getSlgofTables();
-        const TableContainer& sof3Tables = tm.getSof3Tables();
-        const TableContainer& swfnTables = tm.getSwfnTables();
-        const TableContainer& sgfnTables = tm.getSgfnTables();
+    static SatfuncFamily getSaturationFunctionFamily( std::shared_ptr<const TableManager> tm ) {
+        const TableContainer& swofTables = tm->getSwofTables();
+        const TableContainer& sgofTables = tm->getSgofTables();
+        const TableContainer& slgofTables = tm->getSlgofTables();
+        const TableContainer& sof3Tables = tm->getSof3Tables();
+        const TableContainer& swfnTables = tm->getSwfnTables();
+        const TableContainer& sgfnTables = tm->getSgfnTables();
 
 
         bool family1 = (!sgofTables.empty() || !slgofTables.empty()) && !swofTables.empty();
@@ -59,10 +59,10 @@ namespace Opm {
 
     enum class limit { min, max };
 
-    static std::vector< double > findMinWaterSaturation( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+    static std::vector< double > findMinWaterSaturation( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getSwColumn().front();
@@ -80,10 +80,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxWaterSaturation( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+    static std::vector< double > findMaxWaterSaturation( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getSwColumn().back();
@@ -101,11 +101,11 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMinGasSaturation( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables  = tm.getSgofTables();
-        const auto& slgofTables = tm.getSlgofTables();
-        const auto& sgfnTables = tm.getSgfnTables();
+    static std::vector< double > findMinGasSaturation( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables  = tm->getSgofTables();
+        const auto& slgofTables = tm->getSlgofTables();
+        const auto& sgfnTables = tm->getSgfnTables();
 
         const auto famI_sgof = [&sgofTables]( int i ) {
             return sgofTables.getTable< SgofTable >( i ).getSgColumn().front();
@@ -141,11 +141,11 @@ namespace Opm {
 
     }
 
-    static std::vector< double > findMaxGasSaturation( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables  = tm.getSgofTables();
-        const auto& slgofTables = tm.getSlgofTables();
-        const auto& sgfnTables = tm.getSgfnTables();
+    static std::vector< double > findMaxGasSaturation( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables  = tm->getSgofTables();
+        const auto& slgofTables = tm->getSlgofTables();
+        const auto& sgfnTables = tm->getSgfnTables();
 
         const auto famI_sgof = [&sgofTables]( int i ) {
             return sgofTables.getTable< SgofTable >( i ).getSgColumn().back();
@@ -208,11 +208,11 @@ namespace Opm {
         return table.getSwColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalWater( const TableManager& tm ) {
+    static std::vector< double > findCriticalWater( std::shared_ptr<const TableManager> tm ) {
 
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto famI = [&swofTables]( int i ) {
             return critical_water( swofTables.getTable< SwofTable >( i ) );
@@ -251,12 +251,12 @@ namespace Opm {
         return slgofTable.getSlColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalGas( const TableManager& tm ) {
+    static std::vector< double > findCriticalGas( std::shared_ptr<const TableManager> tm ) {
 
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgfnTables = tm.getSgfnTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& slgofTables = tm.getSlgofTables();
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgfnTables = tm->getSgfnTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& slgofTables = tm->getSlgofTables();
 
         const auto famI_sgof = [&sgofTables]( int i ) {
             return critical_gas( sgofTables.getTable< SgofTable >( i ) );
@@ -311,10 +311,10 @@ namespace Opm {
         return sof3Table.getSoColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalOilWater( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& sof3Tables= tm.getSof3Tables();
+    static std::vector< double > findCriticalOilWater( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& sof3Tables= tm->getSof3Tables();
 
         const auto famI = [&swofTables]( int i ) {
             return critical_oil_water( swofTables.getTable< SwofTable >( i ) );
@@ -361,12 +361,12 @@ namespace Opm {
     }
 
 
-    static std::vector< double > findCriticalOilGas( const TableManager& tm ) {
+    static std::vector< double > findCriticalOilGas( std::shared_ptr<const TableManager> tm ) {
 
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& slgofTables = tm.getSlgofTables();
-        const auto& sof3Tables = tm.getSof3Tables();
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& slgofTables = tm->getSlgofTables();
+        const auto& sof3Tables = tm->getSof3Tables();
 
         const auto famI_sgof = [&sgofTables]( int i ) {
             return critical_oil_gas( sgofTables.getTable< SgofTable >( i ) );
@@ -399,10 +399,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKrg( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& sgfnTables = tm.getSgfnTables();
+    static std::vector< double > findMaxKrg( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& sgfnTables = tm->getSgfnTables();
 
         const auto& famI = [&sgofTables]( int i ) {
             return sgofTables.getTable< SgofTable >( i ).getKrgColumn().back();
@@ -422,10 +422,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrgr( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& sgfnTables = tm.getSgfnTables();
+    static std::vector< double > findKrgr( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& sgfnTables = tm->getSgfnTables();
 
         const auto& famI = [&sgofTables]( int i ) {
             return sgofTables.getTable< SgofTable >( i ).getKrgColumn().front();
@@ -445,10 +445,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrwr( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+    static std::vector< double > findKrwr( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto& famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getKrwColumn().front();
@@ -468,10 +468,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrorw( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& sof3Tables = tm.getSof3Tables();
+    static std::vector< double > findKrorw( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& sof3Tables = tm->getSof3Tables();
 
         const auto& famI = [&swofTables]( int i ) {
             const auto& swofTable = swofTables.getTable< SwofTable >( i );
@@ -502,10 +502,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrorg( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& sof3Tables = tm.getSof3Tables();
+    static std::vector< double > findKrorg( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& sof3Tables = tm->getSof3Tables();
 
         const auto& famI = [&sgofTables]( int i ) {
             const auto& sgofTable = sgofTables.getTable< SgofTable >( i );
@@ -545,10 +545,10 @@ namespace Opm {
      * is not taken into account which means that some twophase quantity must be
      * scaled.
      */
-    static std::vector< double > findMaxPcog( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& sgofTables = tm.getSgofTables();
-        const auto& sgfnTables = tm.getSgfnTables();
+    static std::vector< double > findMaxPcog( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& sgofTables = tm->getSgofTables();
+        const auto& sgfnTables = tm->getSgfnTables();
 
         const auto& famI = [&sgofTables]( int i ) {
             return sgofTables.getTable< SgofTable >( i ).getPcogColumn().front();
@@ -568,10 +568,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxPcow( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+    static std::vector< double > findMaxPcow( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto& famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getPcowColumn().front();
@@ -591,10 +591,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKro( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& sof3Tables = tm.getSof3Tables();
+    static std::vector< double > findMaxKro( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& sof3Tables = tm->getSof3Tables();
 
         const auto& famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getKrowColumn().front();
@@ -614,10 +614,10 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKrw( const TableManager& tm ) {
-        const auto num_tables = tm.getTabdims()->getNumSatTables();
-        const auto& swofTables = tm.getSwofTables();
-        const auto& swfnTables = tm.getSwfnTables();
+    static std::vector< double > findMaxKrw( std::shared_ptr<const TableManager> tm ) {
+        const auto num_tables = tm->getTabdims()->getNumSatTables();
+        const auto& swofTables = tm->getSwofTables();
+        const auto& swfnTables = tm->getSwfnTables();
 
         const auto& famI = [&swofTables]( int i ) {
             return swofTables.getTable< SwofTable >( i ).getKrwColumn().back();
@@ -662,33 +662,32 @@ namespace Opm {
     }
 
     static std::vector< double > satnumApply( size_t size,
-                                               const std::string& columnName,
-                                               const std::vector< double >& fallbackValues,
-                                               const Deck& m_deck,
-                                               const EclipseState& m_eclipseState,
-                                               bool useOneMinusTableValue ) {
+                                              const std::string& columnName,
+                                              const std::vector< double >& fallbackValues,
+                                              std::shared_ptr<const TableManager> tableManager,
+                                              std::shared_ptr<const EclipseGrid> eclipseGrid,
+                                              std::shared_ptr<GridProperties<int>> intGridProperties,
+                                              bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
 
-        auto eclipseGrid = m_eclipseState.getEclipseGrid();
-        auto tables = m_eclipseState.getTableManager();
-        auto tabdims = tables->getTabdims();
-        auto satnum = m_eclipseState.getIntGridProperty("SATNUM");
-        auto endnum = m_eclipseState.getIntGridProperty("ENDNUM");
+        auto tabdims = tableManager->getTabdims();
+        auto satnum = intGridProperties->getKeyword("SATNUM");
+        auto endnum = intGridProperties->getKeyword("ENDNUM");
         int numSatTables = tabdims->getNumSatTables();
 
         satnum->checkLimits( 1 , numSatTables );
 
         // All table lookup assumes three-phase model
-        assert( m_eclipseState.getNumPhases() == 3 );
+        assert( tableManager->getNumPhases() == 3 );
 
         // acctually assign the defaults. if the ENPVD keyword was specified in the deck,
         // this currently cannot be done because we would need the Z-coordinate of the
         // cell and we would need to know how the simulator wants to interpolate between
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
-        const bool useEnptvd = m_deck.hasKeyword("ENPTVD");
-        const auto& enptvdTables = tables->getEnptvdTables();
+        const bool useEnptvd = tableManager->useEnptvd();
+        const auto& enptvdTables = tableManager->getEnptvdTables();
 
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
             int satTableIdx = satnum->iget( cellIdx ) - 1;
@@ -708,20 +707,19 @@ namespace Opm {
     }
 
     static std::vector< double > imbnumApply( size_t size,
-                                               const std::string& columnName,
-                                               const std::vector< double >& fallBackValues,
-                                               const Deck& m_deck,
-                                               const EclipseState& m_eclipseState,
-                                               bool useOneMinusTableValue ) {
+                                              const std::string& columnName,
+                                              const std::vector< double >& fallBackValues,
+                                              std::shared_ptr<const TableManager> tableManager,
+                                              std::shared_ptr<const EclipseGrid> eclipseGrid,
+                                              std::shared_ptr<GridProperties<int>> intGridProperties,
+                                              bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
 
-        auto eclipseGrid = m_eclipseState.getEclipseGrid();
-        auto tables = m_eclipseState.getTableManager();
-        auto imbnum = m_eclipseState.getIntGridProperty("IMBNUM");
-        auto endnum = m_eclipseState.getIntGridProperty("ENDNUM");
+        auto imbnum = intGridProperties->getKeyword("IMBNUM"); // FIXME PGDR HOW TO GET ?
+        auto endnum = intGridProperties->getKeyword("ENDNUM"); // FIXME PGDR HOW TO GET ?
 
-        auto tabdims = tables->getTabdims();
+        auto tabdims = tableManager->getTabdims();
         const int numSatTables = tabdims->getNumSatTables();
 
         imbnum->checkLimits( 1 , numSatTables );
@@ -730,8 +728,8 @@ namespace Opm {
         // cell and we would need to know how the simulator wants to interpolate between
         // sampling points. Both of these are outside the scope of opm-parser, so we just
         // assign a NaN in this case...
-        const bool useImptvd = m_deck.hasKeyword("IMPTVD");
-        const TableContainer& imptvdTables = tables->getImptvdTables();
+        const bool useImptvd = tableManager->useImptvd();
+        const TableContainer& imptvdTables = tableManager->getImptvdTables();
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
             int imbTableIdx = imbnum->iget( cellIdx ) - 1;
             int endNum = endnum->iget( cellIdx ) - 1;
@@ -748,174 +746,344 @@ namespace Opm {
         return values;
     }
 
-    std::vector< double > SGLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto min_gas = findMinGasSaturation( *es.getTableManager() );
-        return satnumApply( size, "SGCO", min_gas, deck, es, false );
+    std::vector< double > SGLEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto min_gas = findMinGasSaturation( tableManager );
+        return satnumApply( size, "SGCO", min_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISGLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto min_gas = findMinGasSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SGCO", min_gas, deck, es, false );
+    std::vector< double > ISGLEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto min_gas = findMinGasSaturation( tableManager );
+        return imbnumApply( size, "SGCO", min_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SGUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_gas = findMaxGasSaturation( *es.getTableManager() );
-        return satnumApply( size, "SGMAX", max_gas, deck, es, false );
+    std::vector< double > SGUEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_gas = findMaxGasSaturation( tableManager );
+        return satnumApply( size, "SGMAX", max_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISGUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_gas = findMaxGasSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SGMAX", max_gas, deck, es, false );
+    std::vector< double > ISGUEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_gas = findMaxGasSaturation( tableManager );
+        return imbnumApply( size, "SGMAX", max_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SWLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto min_water = findMinWaterSaturation( *es.getTableManager() );
-        return satnumApply( size, "SWCO", min_water, deck, es, false );
+    std::vector< double > SWLEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto min_water = findMinWaterSaturation( tableManager );
+        return satnumApply( size, "SWCO", min_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISWLEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto min_water = findMinWaterSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SWCO", min_water, deck, es, false );
+    std::vector< double > ISWLEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto min_water = findMinWaterSaturation( tableManager );
+        return imbnumApply( size, "SWCO", min_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SWUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_water = findMaxWaterSaturation( *es.getTableManager() );
-        return satnumApply( size, "SWMAX", max_water, deck, es, true );
+    std::vector< double > SWUEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_water = findMaxWaterSaturation( tableManager );
+        return satnumApply( size, "SWMAX", max_water, tableManager, eclipseGrid,
+                            intGridProperties, true );
     }
 
-    std::vector< double > ISWUEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_water = findMaxWaterSaturation( *es.getTableManager() );
-        return imbnumApply( size, "SWMAX", max_water, deck, es, true);
+	    std::vector< double > ISWUEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_water = findMaxWaterSaturation( tableManager );
+        return imbnumApply( size, "SWMAX", max_water, tableManager, eclipseGrid,
+                            intGridProperties, true);
     }
 
-    std::vector< double > SGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_gas = findCriticalGas( *es.getTableManager() );
-        return satnumApply( size, "SGCRIT", crit_gas, deck, es, false );
+    std::vector< double > SGCREndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_gas = findCriticalGas( tableManager );
+        return satnumApply( size, "SGCRIT", crit_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_gas = findCriticalGas( *es.getTableManager() );
-        return imbnumApply( size, "SGCRIT", crit_gas, deck, es, false );
+    std::vector< double > ISGCREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_gas = findCriticalGas( tableManager );
+        return imbnumApply( size, "SGCRIT", crit_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SOWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto oil_water = findCriticalOilWater( *es.getTableManager() );
-        return satnumApply( size, "SOWCRIT", oil_water, deck, es, false );
+    std::vector< double > SOWCREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto oil_water = findCriticalOilWater( tableManager );
+        return satnumApply( size, "SOWCRIT", oil_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISOWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto oil_water = findCriticalOilWater( *es.getTableManager() );
-        return imbnumApply( size, "SOWCRIT", oil_water, deck, es, false );
+    std::vector< double > ISOWCREndpoint( size_t size,
+                                          std::shared_ptr< const TableManager > tableManager,
+                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                          std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto oil_water = findCriticalOilWater( tableManager );
+        return imbnumApply( size, "SOWCRIT", oil_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SOGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_oil_gas = findCriticalOilGas( *es.getTableManager() );
-        return satnumApply( size, "SOGCRIT", crit_oil_gas, deck, es, false );
+    std::vector< double > SOGCREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_oil_gas = findCriticalOilGas( tableManager );
+        return satnumApply( size, "SOGCRIT", crit_oil_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISOGCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_oil_gas = findCriticalOilGas( *es.getTableManager() );
-        return imbnumApply( size, "SOGCRIT", crit_oil_gas, deck, es, false );
+    std::vector< double > ISOGCREndpoint( size_t size,
+                                          std::shared_ptr< const TableManager > tableManager,
+                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                          std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_oil_gas = findCriticalOilGas( tableManager );
+        return imbnumApply( size, "SOGCRIT", crit_oil_gas, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > SWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_water = findCriticalWater( *es.getTableManager() );
-        return satnumApply( size, "SWCRIT", crit_water, deck, es, false );
+    std::vector< double > SWCREndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_water = findCriticalWater( tableManager );
+        return satnumApply( size, "SWCRIT", crit_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > ISWCREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto crit_water = findCriticalWater( *es.getTableManager() );
-        return imbnumApply( size, "SWCRIT", crit_water, deck, es, false );
+    std::vector< double > ISWCREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto crit_water = findCriticalWater( tableManager );
+        return imbnumApply( size, "SWCRIT", crit_water, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > PCWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_pcow = findMaxPcow( *es.getTableManager() );
-        return satnumApply( size, "PCW", max_pcow, deck, es, false );
+    std::vector< double > PCWEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_pcow = findMaxPcow( tableManager );
+        return satnumApply( size, "PCW", max_pcow, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IPCWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_pcow = findMaxPcow( *es.getTableManager() );
-        return imbnumApply( size, "IPCW", max_pcow, deck, es, false );
+    std::vector< double > IPCWEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_pcow = findMaxPcow( tableManager );
+        return imbnumApply( size, "IPCW", max_pcow, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > PCGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_pcog = findMaxPcog( *es.getTableManager() );
-        return satnumApply( size, "PCG", max_pcog, deck, es, false );
+    std::vector< double > PCGEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_pcog = findMaxPcog( tableManager );
+        return satnumApply( size, "PCG", max_pcog, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IPCGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_pcog = findMaxPcog( *es.getTableManager() );
-        return imbnumApply( size, "IPCG", max_pcog, deck, es, false );
+    std::vector< double > IPCGEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_pcog = findMaxPcog( tableManager );
+        return imbnumApply( size, "IPCG", max_pcog, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_krw = findMaxKrw( *es.getTableManager() );
-        return satnumApply( size, "KRW", max_krw, deck, es, false );
+    std::vector< double > KRWEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_krw = findMaxKrw( tableManager );
+        return satnumApply( size, "KRW", max_krw, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krwr = findKrwr( *es.getTableManager() );
-        return imbnumApply( size, "IKRW", krwr, deck, es, false );
+    std::vector< double > IKRWEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krwr = findKrwr( tableManager );
+        return imbnumApply( size, "IKRW", krwr, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRWREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krwr = findKrwr( *es.getTableManager() );
-        return satnumApply( size, "KRWR", krwr, deck, es, false );
+    std::vector< double > KRWREndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krwr = findKrwr( tableManager );
+        return satnumApply( size, "KRWR", krwr, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRWREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krwr = findKrwr( *es.getTableManager() );
-        return imbnumApply( size, "IKRWR", krwr, deck, es, false );
+    std::vector< double > IKRWREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krwr = findKrwr( tableManager );
+        return imbnumApply( size, "IKRWR", krwr, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KROEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_kro = findMaxKro( *es.getTableManager() );
-        return satnumApply( size, "KRO", max_kro, deck, es, false );
+    std::vector< double > KROEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_kro = findMaxKro( tableManager );
+        return satnumApply( size, "KRO", max_kro, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKROEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_kro = findMaxKro( *es.getTableManager() );
-        return imbnumApply( size, "IKRO", max_kro, deck, es, false );
+    std::vector< double > IKROEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_kro = findMaxKro( tableManager );
+        return imbnumApply( size, "IKRO", max_kro, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRORWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krorw = findKrorw( *es.getTableManager() );
-        return satnumApply( size, "KRORW", krorw, deck, es, false );
+    std::vector< double > KRORWEndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krorw = findKrorw( tableManager );
+        return satnumApply( size, "KRORW", krorw, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRORWEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krorw = findKrorw( *es.getTableManager() );
-        return imbnumApply( size, "IKRORW", krorw, deck, es, false );
+    std::vector< double > IKRORWEndpoint( size_t size,
+                                          std::shared_ptr< const TableManager > tableManager,
+                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                          std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krorw = findKrorw( tableManager );
+        return imbnumApply( size, "IKRORW", krorw, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRORGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krorg = findKrorg( *es.getTableManager() );
-        return satnumApply( size, "KRORG", krorg, deck, es, false );
+    std::vector< double > KRORGEndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krorg = findKrorg( tableManager );
+        return satnumApply( size, "KRORG", krorg, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRORGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krorg = findKrorg( *es.getTableManager() );
-        return imbnumApply( size, "IKRORG", krorg, deck, es, false );
+    std::vector< double > IKRORGEndpoint( size_t size,
+                                          std::shared_ptr< const TableManager > tableManager,
+                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                          std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krorg = findKrorg( tableManager );
+        return imbnumApply( size, "IKRORG", krorg, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_krg = findMaxKrg( *es.getTableManager() );
-        return satnumApply( size, "KRG", max_krg, deck, es, false );
+    std::vector< double > KRGEndpoint( size_t size,
+                                       std::shared_ptr< const TableManager > tableManager,
+                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                       std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_krg = findMaxKrg( tableManager );
+        return satnumApply( size, "KRG", max_krg, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRGEndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto max_krg = findMaxKrg( *es.getTableManager() );
-        return imbnumApply( size, "IKRG", max_krg, deck, es, false );
+    std::vector< double > IKRGEndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto max_krg = findMaxKrg( tableManager );
+        return imbnumApply( size, "IKRG", max_krg, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > KRGREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krgr = findKrgr( *es.getTableManager() );
-        return satnumApply( size, "KRGR", krgr, deck, es, false );
+    std::vector< double > KRGREndpoint( size_t size,
+                                        std::shared_ptr< const TableManager > tableManager,
+                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                        std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krgr = findKrgr( tableManager );
+        return satnumApply( size, "KRGR", krgr, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
-    std::vector< double > IKRGREndpoint( size_t size, const Deck& deck, const EclipseState& es ) {
-        const auto krgr = findKrgr( *es.getTableManager() );
-        return imbnumApply( size, "IKRGR", krgr, deck, es, false );
+    std::vector< double > IKRGREndpoint( size_t size,
+                                         std::shared_ptr< const TableManager > tableManager,
+                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
+                                         std::shared_ptr<GridProperties<int> > intGridProperties)
+    {
+        const auto krgr = findKrgr( tableManager );
+        return imbnumApply( size, "IKRGR", krgr, tableManager, eclipseGrid,
+                            intGridProperties, false );
     }
 
 }

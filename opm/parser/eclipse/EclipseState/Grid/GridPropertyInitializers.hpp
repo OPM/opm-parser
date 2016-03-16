@@ -29,21 +29,26 @@
 namespace Opm {
 
 class Deck;
-class EclipseState;
+class EclipseGrid;
+class TableManager;
+template <typename T> class GridProperties;
 
 template< typename T >
     class GridPropertyInitFunction {
         public:
             using signature = std::vector< T >(*)(
                         size_t,
-                        const Deck&,
-                        const EclipseState&
+                        std::shared_ptr<const TableManager>,
+                        std::shared_ptr<const EclipseGrid>,
+                        std::shared_ptr<GridProperties<int>>
                     );
 
             GridPropertyInitFunction(
                     signature,
-                    const Deck&,
-                    const EclipseState& );
+                    std::shared_ptr<const TableManager>,
+                    std::shared_ptr<const EclipseGrid>,
+                    std::shared_ptr<GridProperties<int>>
+                    );
 
             GridPropertyInitFunction( T );
             std::vector< T > operator()( size_t ) const;
@@ -51,35 +56,48 @@ template< typename T >
         private:
             signature f = nullptr;
             T constant;
-            const Deck* deck = nullptr;
-            const EclipseState* es = nullptr;
-    };
+            std::shared_ptr<const TableManager>  tm  = nullptr;
+            std::shared_ptr<const EclipseGrid>   eg   = nullptr;
+            std::shared_ptr<GridProperties<int>> gp = nullptr;
+              };
 
 template< typename T >
     class GridPropertyPostFunction {
         public:
             using signature = void(*)( std::vector< T >&,
-                                       const Deck&,
-                                       const EclipseState&
-                                     );
+                                       //const EclipseState&
+                                       std::shared_ptr<const TableManager>,
+                                       std::shared_ptr<const EclipseGrid>,
+                                       std::shared_ptr<GridProperties<int>>
 
             GridPropertyPostFunction() = default;
             GridPropertyPostFunction(
                     signature,
-                    const Deck&,
-                    const EclipseState& );
+                    // const EclipseState& );
+                    std::shared_ptr<const TableManager>,
+                    std::shared_ptr<const EclipseGrid>,
+                    std::shared_ptr<GridProperties<int>>
+                );
 
             void operator()( std::vector< T >& ) const;
 
         private:
             signature f = nullptr;
-            const Deck* deck = nullptr;
-            const EclipseState* es = nullptr;
+            // const EclipseState* es = nullptr;
+            std::shared_ptr<const TableManager> tm;
+            std::shared_ptr<const EclipseGrid> eg;
+            std::shared_ptr<GridProperties<int>> gp;
+
     };
 
     // initialize the TEMPI grid property using the temperature vs depth
     // table (stemming from the TEMPVD or the RTEMPVD keyword)
-    std::vector< double > temperature_lookup( size_t, const Deck&, const EclipseState& );
+    // std::vector< double > temperature_lookup( size_t, const EclipseState& );
+    std::vector< double > temperature_lookup( size_t,
+                                              std::shared_ptr<const TableManager>,
+                                              std::shared_ptr<const EclipseGrid>,
+                                              std::shared_ptr<GridProperties<int>>);
+
 
 }
 
