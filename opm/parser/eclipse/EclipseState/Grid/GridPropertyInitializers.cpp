@@ -24,51 +24,52 @@ namespace Opm {
             //const EclipseState& state
             std::shared_ptr<const TableManager> tables,
             std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> g_props)
+            std::shared_ptr<GridProperties<int>> ig_props,
+            std::shared_ptr<GridProperties<double>> dg_props)
         :
             f( fn ),
             // es( &state )
             tm ( tables ),
             eg ( grid ),
-            gp ( g_props )
+            igp ( ig_props ),
+            dgp ( dg_props )
     {}
 
     template< typename T >
     std::vector< T > GridPropertyInitFunction< T >::operator()( size_t size ) const {
         if( !this->f ) return std::vector< T >( size, this->constant );
 
-        // return (*this->f)( size, *this->es );
-        return (*this->f)( size, this->tm, this->eg, this->gp ); // FIXME PGDR deref this->tm...?
+        return (*this->f)( size, this->tm, this->eg, this->igp, this->dgp );
     }
 
     template< typename T >
     GridPropertyPostFunction< T >::GridPropertyPostFunction(
             signature fn,
-            //const EclipseState& state
             std::shared_ptr<const TableManager> tables,
             std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> g_props)
+            std::shared_ptr<GridProperties<int>> ig_props,
+            std::shared_ptr<GridProperties<double>> dg_props)
         :
             f( fn ),
-            // es( &state )
             tm ( tables ),
             eg ( grid ),
-            gp ( g_props )
+            igp ( ig_props ),
+            dgp ( dg_props )
     {}
 
     template< typename T >
     void GridPropertyPostFunction< T >::operator()( std::vector< T >& values ) const {
         if( !this->f ) return;
 
-        //return (*this->f)( values, *this->es );
-        return (*this->f)( values, this->tm, this->eg, this->gp ); // FIXME PGDR deref this->tm...?
+        return (*this->f)( values, this->tm, this->eg, this->igp, this->dgp );
     }
 
     std::vector< double > temperature_lookup(
             size_t size,
             std::shared_ptr<const TableManager> tables,
             std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> g_props) {
+            std::shared_ptr<GridProperties<int>> ig_props,
+            std::shared_ptr<GridProperties<double>> dg_props) {
 
         if( !tables->useEqlnum() ) {
             /* if values are defaulted in the TEMPI keyword, but no
@@ -80,7 +81,7 @@ namespace Opm {
         std::vector< double > values( size, 0 );
 
         const auto& rtempvdTables = tables->getRtempvdTables();
-        const std::vector< int >& eqlNum = g_props->getKeyword("EQLNUM")->getData();
+        const std::vector< int >& eqlNum = ig_props->getKeyword("EQLNUM")->getData();
 
         for (size_t cellIdx = 0; cellIdx < eqlNum.size(); ++ cellIdx) {
             int cellEquilNum = eqlNum[cellIdx];

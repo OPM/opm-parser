@@ -266,6 +266,7 @@ BOOST_AUTO_TEST_CASE(IntProperties) {
 
 
 
+
 // FIXME PGDR this test should be updated to test API
 BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     std::shared_ptr<CounterLog> counter = std::make_shared<CounterLog>(Log::MessageType::Error);
@@ -273,11 +274,10 @@ BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     DeckPtr deck = createDeck();
     EclipseState state(deck , ParseContext());
     auto props = state.getEclipseProperties();
-    // FIXME PGDR add back or delete: const auto& swat = deck->getKeyword("SWAT");
+    // const auto& swat = deck->getKeyword("SWAT");
     BOOST_CHECK_EQUAL( false , props.supportsGridProperty("SWAT"));
 
-    // FIXME PGDR these tests don't make sense to me, making
-    // loadGridPropertyFromDeckKeyword private:
+    // loadGridPropertyFromDeckKeyword is private in EclipseProperties
 
     // props.loadGridPropertyFromDeckKeyword(std::make_shared<const Box>(10,10,10), swat);
     // BOOST_CHECK_EQUAL( 1 , counter->numMessages(Log::MessageType::Error) );

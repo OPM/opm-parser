@@ -29,6 +29,7 @@
 namespace Opm {
 
     template< typename > class GridProperty;
+    template< typename > class GridProperties;
 
     class Box;
     class BoxManager;
@@ -79,6 +80,9 @@ namespace Opm {
         void processGridProperties( std::shared_ptr<const Deck> deck,
                                     std::shared_ptr<const EclipseGrid> eclipseGrid,
                                     int enabledTypes);
+
+        double getSIScaling(const std::string &dimensionString) const;
+
         void scanSection(std::shared_ptr<Opm::Section> section,
                          std::shared_ptr<const EclipseGrid> eclipseGrid,
                          int enabledTypes);
@@ -95,7 +99,6 @@ namespace Opm {
         void handleEQUALREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
         void handleMULTIREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
 
-        /// FIXME PGDR moved to private
         void loadGridPropertyFromDeckKeyword(std::shared_ptr<const Box> inputBox,
                                              const DeckKeyword& deckKeyword,
                                              int enabledTypes = AllProperties);
@@ -104,6 +107,7 @@ namespace Opm {
                              std::shared_ptr<const TableManager> tableManager,
                              std::shared_ptr<const EclipseGrid>  eclipseGrid );
 
+        const UnitSystem& m_deckUnitSystem;
         std::shared_ptr<GridProperties<int> > m_intGridProperties;
         std::shared_ptr<GridProperties<double> > m_doubleGridProperties;
         std::string m_defaultRegion;

@@ -98,9 +98,9 @@ namespace Opm {
 
         std::shared_ptr<const TableManager> getTableManager() const;
 
-        // the unit system used by the deck. note that it is rarely needed to convert
-        // units because internally to opm-parser everything is represented by SI
-        // units...
+        // the unit system used by the deck. note that it is rarely needed to
+        // convert units because internally to opm-parser everything is
+        // represented by SI units...
         const UnitSystem& getDeckUnitSystem()  const;
         void applyModifierDeck( std::shared_ptr<const Deck> deck);
 
@@ -120,26 +120,8 @@ namespace Opm {
 
         double getSIScaling(const std::string &dimensionString) const;
 
-        void processGridProperties(std::shared_ptr< const Deck > deck, int enabledTypes);
-        void scanSection(std::shared_ptr<Opm::Section> section , int enabledTypes);
-        void handleADDKeyword(const DeckKeyword& deckKeyword  , BoxManager& boxManager, int enabledTypes);
-        void handleBOXKeyword(const DeckKeyword& deckKeyword  , BoxManager& boxManager);
-        void handleCOPYKeyword(const DeckKeyword& deckKeyword , BoxManager& boxManager, int enabledTypes);
-        void handleENDBOXKeyword(BoxManager& boxManager);
-        void handleEQUALSKeyword(const DeckKeyword& deckKeyword   , BoxManager& boxManager, int enabledTypes);
-        void handleMULTIPLYKeyword(const DeckKeyword& deckKeyword , BoxManager& boxManager, int enabledTypes);
-
-        void handleEQUALREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
-        void handleMULTIREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
-        void handleADDREGKeyword(const DeckKeyword& deckKeyword  , int enabledTypes);
-        void handleCOPYREGKeyword(const DeckKeyword& deckKeyword , int enabledTypes);
-
-        void setKeywordBox( const DeckKeyword& deckKeyword, const DeckRecord&, BoxManager& boxManager);
-
-        void copyIntKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
-        void copyDoubleKeyword(const std::string& srcField , const std::string& targetField , std::shared_ptr<const Box> inputBox);
-
-        void complainAboutAmbiguousKeyword(std::shared_ptr< const Deck > deck, const std::string& keywordName) const;
+        void complainAboutAmbiguousKeyword(std::shared_ptr< const Deck > deck,
+                                           const std::string& keywordName) const;
 
         std::shared_ptr<GridProperty<int> > getOrCreateIntProperty_(const std::string name);
         std::shared_ptr<GridProperty<double> > getOrCreateDoubleProperty_(const std::string name);
@@ -158,7 +140,6 @@ namespace Opm {
         const ParseContext& m_parseContext;
 
 
-        // constructor order (-Wreorder)
         const UnitSystem& m_deckUnitSystem;
         const ParseMode& m_parseMode;
         std::shared_ptr<const TableManager> m_tables;
