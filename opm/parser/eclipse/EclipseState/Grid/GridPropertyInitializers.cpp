@@ -21,11 +21,10 @@ namespace Opm {
     template< typename T >
     GridPropertyInitFunction< T >::GridPropertyInitFunction(
             signature fn,
-            //const EclipseState& state
-            std::shared_ptr<const TableManager> tables,
-            std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> ig_props,
-            std::shared_ptr<GridProperties<double>> dg_props)
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props)
         :
             f( fn ),
             // es( &state )
@@ -45,10 +44,10 @@ namespace Opm {
     template< typename T >
     GridPropertyPostFunction< T >::GridPropertyPostFunction(
             signature fn,
-            std::shared_ptr<const TableManager> tables,
-            std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> ig_props,
-            std::shared_ptr<GridProperties<double>> dg_props)
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props)
         :
             f( fn ),
             tm ( tables ),
@@ -66,10 +65,10 @@ namespace Opm {
 
     std::vector< double > temperature_lookup(
             size_t size,
-            std::shared_ptr<const TableManager> tables,
-            std::shared_ptr<const EclipseGrid> grid,
-            std::shared_ptr<GridProperties<int>> ig_props,
-            std::shared_ptr<GridProperties<double>> dg_props) {
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props) {
 
         if( !tables->useEqlnum() ) {
             /* if values are defaulted in the TEMPI keyword, but no
@@ -81,7 +80,7 @@ namespace Opm {
         std::vector< double > values( size, 0 );
 
         const auto& rtempvdTables = tables->getRtempvdTables();
-        const std::vector< int >& eqlNum = ig_props->getKeyword("EQLNUM")->getData();
+        const std::vector< int >& eqlNum = ig_props->getKeyword("EQLNUM").getData();
 
         for (size_t cellIdx = 0; cellIdx < eqlNum.size(); ++ cellIdx) {
             int cellEquilNum = eqlNum[cellIdx];

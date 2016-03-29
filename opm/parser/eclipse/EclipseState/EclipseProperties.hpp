@@ -23,13 +23,14 @@
 #include <memory>
 #include <set>
 
+#include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 
 
 namespace Opm {
 
-    template< typename > class GridProperty;
-    template< typename > class GridProperties;
+//    template< typename > class GridProperty;
+//    template< typename > class GridProperties;
 
     class Box;
     class BoxManager;
@@ -57,34 +58,34 @@ namespace Opm {
             AllProperties = IntProperties | DoubleProperties
         };
 
-        EclipseProperties( std::shared_ptr<const Deck>         deck,
+        EclipseProperties( const Deck&         deck,
                            std::shared_ptr<const TableManager> tableManager,
-                           std::shared_ptr<const EclipseGrid>  eclipseGrid);
+                           const EclipseGrid&  eclipseGrid);
 
         static void setKeywordBox( const DeckKeyword& deckKeyword, const DeckRecord&, BoxManager& boxManager);
 
-        std::shared_ptr<GridProperty<int> > getRegion( const DeckItem& regionItem ) const;
-        std::shared_ptr<GridProperty<int> > getDefaultRegion() const;
+        const GridProperty<int>& getRegion( const DeckItem& regionItem ) const;
+        const GridProperty<int>& getDefaultRegion() const;
         std::string getDefaultRegionKeyword() const;
         void setDefaultRegionKeyword(std::string defaultRegionKeyword);
 
-        std::shared_ptr<GridProperty<int> > getIntGridProperty( const std::string& keyword ) const;
-        std::shared_ptr<GridProperty<double> > getDoubleGridProperty( const std::string& keyword ) const;
-        std::shared_ptr<GridProperties<int> > getIntGridProperties() const;
-        std::shared_ptr<GridProperties<double> > getDoubleGridProperties() const;
+        const GridProperty<int>&      getIntGridProperty( const std::string& keyword )    const;
+        const GridProperty<double> &  getDoubleGridProperty( const std::string& keyword ) const;
+        GridProperties<int>&    getIntGridProperties();
+        GridProperties<double>& getDoubleGridProperties();
         bool hasDeckIntGridProperty(const std::string& keyword) const;
         bool hasDeckDoubleGridProperty(const std::string& keyword) const;
         bool supportsGridProperty(const std::string& keyword, int enabledTypes=AllProperties) const;
 
     private:
-        void processGridProperties( std::shared_ptr<const Deck> deck,
-                                    std::shared_ptr<const EclipseGrid> eclipseGrid,
+        void processGridProperties( const Deck& deck,
+                                    const EclipseGrid& eclipseGrid,
                                     int enabledTypes);
 
         double getSIScaling(const std::string &dimensionString) const;
 
-        void scanSection(std::shared_ptr<Opm::Section> section,
-                         std::shared_ptr<const EclipseGrid> eclipseGrid,
+        void scanSection(const Section& section,
+                         const EclipseGrid& eclipseGrid,
                          int enabledTypes);
 
         void handleADDKeyword(     const DeckKeyword& deckKeyword, BoxManager& boxManager, int enabledTypes);
@@ -99,18 +100,18 @@ namespace Opm {
         void handleEQUALREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
         void handleMULTIREGKeyword(const DeckKeyword& deckKeyword, int enabledTypes);
 
-        void loadGridPropertyFromDeckKeyword(std::shared_ptr<const Box> inputBox,
+        void loadGridPropertyFromDeckKeyword(const Box& inputBox,
                                              const DeckKeyword& deckKeyword,
                                              int enabledTypes = AllProperties);
 
-        void initProperties( std::shared_ptr<const Deck> deck,
+        void initProperties( const Deck&         deck,
                              std::shared_ptr<const TableManager> tableManager,
-                             std::shared_ptr<const EclipseGrid>  eclipseGrid );
+                             const EclipseGrid&  eclipseGrid );
 
-        const UnitSystem& m_deckUnitSystem;
-        std::shared_ptr<GridProperties<int> > m_intGridProperties;
-        std::shared_ptr<GridProperties<double> > m_doubleGridProperties;
-        std::string m_defaultRegion;
+        std::string            m_defaultRegion;
+        const UnitSystem&      m_deckUnitSystem;
+        GridProperties<int>    m_intGridProperties;
+        GridProperties<double> m_doubleGridProperties;
     };
 }
 

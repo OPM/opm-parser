@@ -38,18 +38,18 @@ template< typename T >
         public:
             using signature = std::vector< T >(*)(
                         size_t,
-                        std::shared_ptr<const TableManager>,
-                        std::shared_ptr<const EclipseGrid>,
-                        std::shared_ptr<GridProperties<int>> ig_props,
-                        std::shared_ptr<GridProperties<double>> dg_props
+                        const TableManager*,
+                        const EclipseGrid*,
+                        GridProperties<int>* ig_props,
+                        GridProperties<double>* dg_props
                     );
 
             GridPropertyInitFunction(
                     signature,
-                    std::shared_ptr<const TableManager>,
-                    std::shared_ptr<const EclipseGrid>,
-                    std::shared_ptr<GridProperties<int>>,
-                    std::shared_ptr<GridProperties<double>>
+                    const TableManager*,
+                    const EclipseGrid*,
+                    GridProperties<int>*,
+                    GridProperties<double>*
                     );
 
             GridPropertyInitFunction( T );
@@ -58,42 +58,39 @@ template< typename T >
         private:
             signature f = nullptr;
             T constant;
-            std::shared_ptr<const TableManager>     tm  = nullptr;
-            std::shared_ptr<const EclipseGrid>      eg  = nullptr;
-            std::shared_ptr<GridProperties<int>>    igp = nullptr;
-            std::shared_ptr<GridProperties<double>> dgp = nullptr;
+            const TableManager*     tm  = nullptr;
+            const EclipseGrid*      eg  = nullptr;
+            GridProperties<int>*    igp = nullptr;
+            GridProperties<double>* dgp = nullptr;
               };
 
 template< typename T >
     class GridPropertyPostFunction {
         public:
             using signature = void(*)( std::vector< T >&,
-                                       //const EclipseState&
-                                       std::shared_ptr<const TableManager>,
-                                       std::shared_ptr<const EclipseGrid>,
-                                       std::shared_ptr<GridProperties<int>>,
-                                       std::shared_ptr<GridProperties<double>>
+                                       const TableManager*,
+                                       const EclipseGrid*,
+                                       GridProperties<int>*,
+                                       GridProperties<double>*
                                      );
 
             GridPropertyPostFunction() = default;
             GridPropertyPostFunction(
                     signature,
-                    // const EclipseState& );
-                    std::shared_ptr<const TableManager>,
-                    std::shared_ptr<const EclipseGrid>,
-                    std::shared_ptr<GridProperties<int>>,
-                    std::shared_ptr<GridProperties<double>>
+                    const TableManager*,
+                    const EclipseGrid*,
+                    GridProperties<int>*,
+                    GridProperties<double>*
                 );
 
             void operator()( std::vector< T >& ) const;
 
         private:
             signature f = nullptr;
-            // const EclipseState* es = nullptr;
-            std::shared_ptr<const TableManager>     tm;
-            std::shared_ptr<const EclipseGrid>      eg;
-            std::shared_ptr<GridProperties<int>>    igp;
-            std::shared_ptr<GridProperties<double>> dgp;
+            const TableManager*     tm;
+            const EclipseGrid*      eg;
+            GridProperties<int>*    igp;
+            GridProperties<double>* dgp;
 
     };
 
@@ -101,12 +98,10 @@ template< typename T >
     // table (stemming from the TEMPVD or the RTEMPVD keyword)
     // std::vector< double > temperature_lookup( size_t, const EclipseState& );
     std::vector< double > temperature_lookup( size_t,
-                                              std::shared_ptr<const TableManager>,
-                                              std::shared_ptr<const EclipseGrid>,
-                                              std::shared_ptr<GridProperties<int>>,
-                                              std::shared_ptr<GridProperties<double>>);
-
-
+                                              const TableManager*,
+                                              const EclipseGrid*,
+                                              GridProperties<int>*,
+                                              GridProperties<double>*);
 }
 
-#endif
+#endif // ECLIPSE_GRIDPROPERTY_INITIALIZERS_HPP

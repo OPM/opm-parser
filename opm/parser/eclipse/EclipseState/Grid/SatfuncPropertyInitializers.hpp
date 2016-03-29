@@ -29,10 +29,10 @@ namespace Opm {
     class EclipseGrid;
     class TableManager;
 
-    typedef std::shared_ptr<const TableManager> TM; //FIXME PGDR use using?
-    typedef std::shared_ptr<const EclipseGrid > EG;
-    typedef std::shared_ptr<GridProperties<int> > IGP;
-    typedef std::shared_ptr<GridProperties<double> > DGP;
+    typedef const TableManager* TM; //FIXME PGDR use using?
+    typedef const EclipseGrid*      EG;
+    typedef GridProperties<int>*    IGP;
+    typedef GridProperties<double>* DGP;
 
     std::vector< double > SGLEndpoint(    size_t, TM tm, EG eg, IGP intGridProperties, DGP doubleGridProperties);
     std::vector< double > ISGLEndpoint(   size_t, TM tm, EG eg, IGP intGridProperties, DGP doubleGridProperties);

@@ -94,7 +94,7 @@ namespace Opm {
         std::shared_ptr<const NNC> getNNC() const;
         bool hasNNC() const;
 
-        EclipseProperties getEclipseProperties() const;
+        const EclipseProperties& getEclipseProperties() const;
 
         std::shared_ptr<const TableManager> getTableManager() const;
 
@@ -129,7 +129,7 @@ namespace Opm {
         std::shared_ptr< const EclipseGrid >      m_eclipseGrid;
         std::shared_ptr< IOConfig >              m_ioConfig;
         std::shared_ptr< const InitConfig >       m_initConfig;
-        std::shared_ptr< const Schedule >         schedule;
+        std::shared_ptr< const Schedule >         m_schedule;
         std::shared_ptr< const SimulationConfig > m_simulationConfig;
 
         std::string m_title;

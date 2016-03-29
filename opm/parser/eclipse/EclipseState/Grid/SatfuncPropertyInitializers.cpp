@@ -29,7 +29,7 @@ namespace Opm {
      */
     enum class SatfuncFamily { none = 0, I = 1, II = 2 };
 
-    static SatfuncFamily getSaturationFunctionFamily( std::shared_ptr<const TableManager> tm ) {
+    static SatfuncFamily getSaturationFunctionFamily( const TableManager* tm ) {
         const TableContainer& swofTables = tm->getSwofTables();
         const TableContainer& sgofTables = tm->getSgofTables();
         const TableContainer& slgofTables = tm->getSlgofTables();
@@ -59,7 +59,7 @@ namespace Opm {
 
     enum class limit { min, max };
 
-    static std::vector< double > findMinWaterSaturation( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMinWaterSaturation( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& swfnTables = tm->getSwfnTables();
@@ -80,7 +80,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxWaterSaturation( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxWaterSaturation( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& swfnTables = tm->getSwfnTables();
@@ -101,7 +101,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMinGasSaturation( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMinGasSaturation( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables  = tm->getSgofTables();
         const auto& slgofTables = tm->getSlgofTables();
@@ -141,7 +141,7 @@ namespace Opm {
 
     }
 
-    static std::vector< double > findMaxGasSaturation( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxGasSaturation( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables  = tm->getSgofTables();
         const auto& slgofTables = tm->getSlgofTables();
@@ -208,7 +208,7 @@ namespace Opm {
         return table.getSwColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalWater( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findCriticalWater( const TableManager* tm ) {
 
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
@@ -251,7 +251,7 @@ namespace Opm {
         return slgofTable.getSlColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalGas( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findCriticalGas( const TableManager* tm ) {
 
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgfnTables = tm->getSgfnTables();
@@ -311,7 +311,7 @@ namespace Opm {
         return sof3Table.getSoColumn()[ index - 1 ];
     }
 
-    static std::vector< double > findCriticalOilWater( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findCriticalOilWater( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& sof3Tables= tm->getSof3Tables();
@@ -361,7 +361,7 @@ namespace Opm {
     }
 
 
-    static std::vector< double > findCriticalOilGas( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findCriticalOilGas( const TableManager* tm ) {
 
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables = tm->getSgofTables();
@@ -399,7 +399,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKrg( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxKrg( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables = tm->getSgofTables();
         const auto& sgfnTables = tm->getSgfnTables();
@@ -422,7 +422,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrgr( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findKrgr( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables = tm->getSgofTables();
         const auto& sgfnTables = tm->getSgfnTables();
@@ -445,7 +445,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrwr( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findKrwr( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& swfnTables = tm->getSwfnTables();
@@ -468,7 +468,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrorw( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findKrorw( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& sof3Tables = tm->getSof3Tables();
@@ -502,7 +502,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findKrorg( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findKrorg( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables = tm->getSgofTables();
         const auto& sof3Tables = tm->getSof3Tables();
@@ -545,7 +545,7 @@ namespace Opm {
      * is not taken into account which means that some twophase quantity must be
      * scaled.
      */
-    static std::vector< double > findMaxPcog( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxPcog( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& sgofTables = tm->getSgofTables();
         const auto& sgfnTables = tm->getSgfnTables();
@@ -568,7 +568,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxPcow( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxPcow( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& swfnTables = tm->getSwfnTables();
@@ -591,7 +591,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKro( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxKro( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& sof3Tables = tm->getSof3Tables();
@@ -614,7 +614,7 @@ namespace Opm {
         }
     }
 
-    static std::vector< double > findMaxKrw( std::shared_ptr<const TableManager> tm ) {
+    static std::vector< double > findMaxKrw( const TableManager* tm ) {
         const auto num_tables = tm->getTabdims()->getNumSatTables();
         const auto& swofTables = tm->getSwofTables();
         const auto& swfnTables = tm->getSwfnTables();
@@ -664,20 +664,20 @@ namespace Opm {
     static std::vector< double > satnumApply( size_t size,
                                               const std::string& columnName,
                                               const std::vector< double >& fallbackValues,
-                                              std::shared_ptr<const TableManager> tableManager,
-                                              std::shared_ptr<const EclipseGrid> eclipseGrid,
-                                              std::shared_ptr<GridProperties<int>> intGridProperties,
-                                              std::shared_ptr<GridProperties<double>> doubleGridProperties,
+                                              const TableManager* tableManager,
+                                              const EclipseGrid* eclipseGrid,
+                                              GridProperties<int>* intGridProperties,
+                                              GridProperties<double>* doubleGridProperties,
                                               bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
-
         auto tabdims = tableManager->getTabdims();
-        auto satnum = intGridProperties->getKeyword("SATNUM");
-        auto endnum = intGridProperties->getKeyword("ENDNUM");
+        auto& satnum = intGridProperties->getOrCreateProperty("SATNUM");
+
+        auto endnum = intGridProperties->getOrCreateProperty("ENDNUM");
         int numSatTables = tabdims->getNumSatTables();
 
-        satnum->checkLimits( 1 , numSatTables );
+        satnum.checkLimits( 1 , numSatTables );
 
         // All table lookup assumes three-phase model
         assert( tableManager->getNumPhases() == 3 );
@@ -691,8 +691,8 @@ namespace Opm {
         const auto& enptvdTables = tableManager->getEnptvdTables();
 
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
-            int satTableIdx = satnum->iget( cellIdx ) - 1;
-            int endNum = endnum->iget( cellIdx ) - 1;
+            int satTableIdx = satnum.iget( cellIdx ) - 1;
+            int endNum = endnum.iget( cellIdx ) - 1;
             double cellDepth = std::get< 2 >( eclipseGrid->getCellCenter( cellIdx ) );
 
 
@@ -710,10 +710,10 @@ namespace Opm {
     static std::vector< double > imbnumApply( size_t size,
                                               const std::string& columnName,
                                               const std::vector< double >& fallBackValues,
-                                              std::shared_ptr<const TableManager> tableManager,
-                                              std::shared_ptr<const EclipseGrid> eclipseGrid,
-                                              std::shared_ptr<GridProperties<int>> intGridProperties,
-                                              std::shared_ptr<GridProperties<double>> doubleGridProperties,
+                                              const TableManager* tableManager,
+                                              const EclipseGrid* eclipseGrid,
+                                              GridProperties<int>* intGridProperties,
+                                              GridProperties<double>* doubleGridProperties,
                                               bool useOneMinusTableValue ) {
 
         std::vector< double > values( size, 0 );
@@ -724,7 +724,7 @@ namespace Opm {
         auto tabdims = tableManager->getTabdims();
         const int numSatTables = tabdims->getNumSatTables();
 
-        imbnum->checkLimits( 1 , numSatTables );
+        imbnum.checkLimits( 1 , numSatTables );
         // acctually assign the defaults. if the ENPVD keyword was specified in the deck,
         // this currently cannot be done because we would need the Z-coordinate of the
         // cell and we would need to know how the simulator wants to interpolate between
@@ -733,8 +733,8 @@ namespace Opm {
         const bool useImptvd = tableManager->useImptvd();
         const TableContainer& imptvdTables = tableManager->getImptvdTables();
         for( size_t cellIdx = 0; cellIdx < eclipseGrid->getCartesianSize(); cellIdx++ ) {
-            int imbTableIdx = imbnum->iget( cellIdx ) - 1;
-            int endNum = endnum->iget( cellIdx ) - 1;
+            int imbTableIdx = imbnum.iget( cellIdx ) - 1;
+            int endNum = endnum.iget( cellIdx ) - 1;
             double cellDepth = std::get< 2 >( eclipseGrid->getCellCenter( cellIdx ) );
 
             values[cellIdx] = selectValue(imptvdTables,
@@ -749,10 +749,10 @@ namespace Opm {
     }
 
     std::vector< double > SGLEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                       const TableManager * tableManager,
+                                       const EclipseGrid* eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto min_gas = findMinGasSaturation( tableManager );
         return satnumApply( size, "SGCO", min_gas, tableManager, eclipseGrid,
@@ -760,10 +760,10 @@ namespace Opm {
     }
 
     std::vector< double > ISGLEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                        const EclipseGrid* eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto min_gas = findMinGasSaturation( tableManager );
         return imbnumApply( size, "SGCO", min_gas, tableManager, eclipseGrid,
@@ -771,10 +771,10 @@ namespace Opm {
     }
 
     std::vector< double > SGUEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid* eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_gas = findMaxGasSaturation( tableManager );
         return satnumApply( size, "SGMAX", max_gas, tableManager, eclipseGrid,
@@ -782,10 +782,10 @@ namespace Opm {
     }
 
     std::vector< double > ISGUEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid* eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_gas = findMaxGasSaturation( tableManager );
         return imbnumApply( size, "SGMAX", max_gas, tableManager, eclipseGrid,
@@ -793,10 +793,10 @@ namespace Opm {
     }
 
     std::vector< double > SWLEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid* eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto min_water = findMinWaterSaturation( tableManager );
         return satnumApply( size, "SWCO", min_water, tableManager, eclipseGrid,
@@ -804,10 +804,10 @@ namespace Opm {
     }
 
     std::vector< double > ISWLEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                        std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto min_water = findMinWaterSaturation( tableManager );
         return imbnumApply( size, "SWCO", min_water, tableManager, eclipseGrid,
@@ -815,21 +815,21 @@ namespace Opm {
     }
 
     std::vector< double > SWUEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_water = findMaxWaterSaturation( tableManager );
         return satnumApply( size, "SWMAX", max_water, tableManager, eclipseGrid,
                             intGridProperties, doubleGridProperties, true );
     }
 
-	    std::vector< double > ISWUEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+    std::vector< double > ISWUEndpoint( size_t size,
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_water = findMaxWaterSaturation( tableManager );
         return imbnumApply( size, "SWMAX", max_water, tableManager, eclipseGrid,
@@ -837,10 +837,10 @@ namespace Opm {
     }
 
     std::vector< double > SGCREndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto crit_gas = findCriticalGas( tableManager );
         return satnumApply( size, "SGCRIT", crit_gas, tableManager, eclipseGrid,
@@ -848,10 +848,10 @@ namespace Opm {
     }
 
     std::vector< double > ISGCREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto crit_gas = findCriticalGas( tableManager );
         return imbnumApply( size, "SGCRIT", crit_gas, tableManager, eclipseGrid,
@@ -859,10 +859,10 @@ namespace Opm {
     }
 
     std::vector< double > SOWCREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto oil_water = findCriticalOilWater( tableManager );
         return satnumApply( size, "SOWCRIT", oil_water, tableManager, eclipseGrid,
@@ -870,10 +870,10 @@ namespace Opm {
     }
 
     std::vector< double > ISOWCREndpoint( size_t size,
-                                          std::shared_ptr< const TableManager > tableManager,
-                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                          std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties
+                                           const TableManager * tableManager,
+                                          const EclipseGrid  * eclipseGrid,
+                                          GridProperties<int>* intGridProperties,
+                                          GridProperties<double>* doubleGridProperties
 )
     {
         const auto oil_water = findCriticalOilWater( tableManager );
@@ -882,10 +882,10 @@ namespace Opm {
     }
 
     std::vector< double > SOGCREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto crit_oil_gas = findCriticalOilGas( tableManager );
         return satnumApply( size, "SOGCRIT", crit_oil_gas, tableManager, eclipseGrid,
@@ -893,10 +893,10 @@ namespace Opm {
     }
 
     std::vector< double > ISOGCREndpoint( size_t size,
-                                          std::shared_ptr< const TableManager > tableManager,
-                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                          std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                           const TableManager * tableManager,
+                                          const EclipseGrid  * eclipseGrid,
+                                          GridProperties<int>* intGridProperties,
+                                          GridProperties<double>* doubleGridProperties)
     {
         const auto crit_oil_gas = findCriticalOilGas( tableManager );
         return imbnumApply( size, "SOGCRIT", crit_oil_gas, tableManager, eclipseGrid,
@@ -904,10 +904,10 @@ namespace Opm {
     }
 
     std::vector< double > SWCREndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto crit_water = findCriticalWater( tableManager );
         return satnumApply( size, "SWCRIT", crit_water, tableManager, eclipseGrid,
@@ -915,10 +915,10 @@ namespace Opm {
     }
 
     std::vector< double > ISWCREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto crit_water = findCriticalWater( tableManager );
         return imbnumApply( size, "SWCRIT", crit_water, tableManager, eclipseGrid,
@@ -926,10 +926,10 @@ namespace Opm {
     }
 
     std::vector< double > PCWEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_pcow = findMaxPcow( tableManager );
         return satnumApply( size, "PCW", max_pcow, tableManager, eclipseGrid,
@@ -937,10 +937,10 @@ namespace Opm {
     }
 
     std::vector< double > IPCWEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_pcow = findMaxPcow( tableManager );
         return imbnumApply( size, "IPCW", max_pcow, tableManager, eclipseGrid,
@@ -948,10 +948,10 @@ namespace Opm {
     }
 
     std::vector< double > PCGEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_pcog = findMaxPcog( tableManager );
         return satnumApply( size, "PCG", max_pcog, tableManager, eclipseGrid,
@@ -959,10 +959,10 @@ namespace Opm {
     }
 
     std::vector< double > IPCGEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_pcog = findMaxPcog( tableManager );
         return imbnumApply( size, "IPCG", max_pcog, tableManager, eclipseGrid,
@@ -970,10 +970,10 @@ namespace Opm {
     }
 
     std::vector< double > KRWEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_krw = findMaxKrw( tableManager );
         return satnumApply( size, "KRW", max_krw, tableManager, eclipseGrid,
@@ -981,10 +981,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRWEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto krwr = findKrwr( tableManager );
         return imbnumApply( size, "IKRW", krwr, tableManager, eclipseGrid,
@@ -992,10 +992,10 @@ namespace Opm {
     }
 
     std::vector< double > KRWREndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto krwr = findKrwr( tableManager );
         return satnumApply( size, "KRWR", krwr, tableManager, eclipseGrid,
@@ -1003,10 +1003,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRWREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto krwr = findKrwr( tableManager );
         return imbnumApply( size, "IKRWR", krwr, tableManager, eclipseGrid,
@@ -1014,10 +1014,10 @@ namespace Opm {
     }
 
     std::vector< double > KROEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_kro = findMaxKro( tableManager );
         return satnumApply( size, "KRO", max_kro, tableManager, eclipseGrid,
@@ -1025,10 +1025,10 @@ namespace Opm {
     }
 
     std::vector< double > IKROEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_kro = findMaxKro( tableManager );
         return imbnumApply( size, "IKRO", max_kro, tableManager, eclipseGrid,
@@ -1036,10 +1036,10 @@ namespace Opm {
     }
 
     std::vector< double > KRORWEndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto krorw = findKrorw( tableManager );
         return satnumApply( size, "KRORW", krorw, tableManager, eclipseGrid,
@@ -1047,10 +1047,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRORWEndpoint( size_t size,
-                                          std::shared_ptr< const TableManager > tableManager,
-                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                          std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                           const TableManager * tableManager,
+                                          const EclipseGrid  * eclipseGrid,
+                                          GridProperties<int>* intGridProperties,
+                                          GridProperties<double>* doubleGridProperties)
     {
         const auto krorw = findKrorw( tableManager );
         return imbnumApply( size, "IKRORW", krorw, tableManager, eclipseGrid,
@@ -1058,10 +1058,10 @@ namespace Opm {
     }
 
     std::vector< double > KRORGEndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                          const TableManager * tableManager,
+                                         const EclipseGrid  * eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto krorg = findKrorg( tableManager );
         return satnumApply( size, "KRORG", krorg, tableManager, eclipseGrid,
@@ -1069,10 +1069,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRORGEndpoint( size_t size,
-                                          std::shared_ptr< const TableManager > tableManager,
-                                          std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                          std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                           const TableManager * tableManager,
+                                          const EclipseGrid  * eclipseGrid,
+                                          GridProperties<int>* intGridProperties,
+                                          GridProperties<double>* doubleGridProperties)
     {
         const auto krorg = findKrorg( tableManager );
         return imbnumApply( size, "IKRORG", krorg, tableManager, eclipseGrid,
@@ -1080,10 +1080,10 @@ namespace Opm {
     }
 
     std::vector< double > KRGEndpoint( size_t size,
-                                       std::shared_ptr< const TableManager > tableManager,
-                                       std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                       std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                        const TableManager * tableManager,
+                                       const EclipseGrid  * eclipseGrid,
+                                       GridProperties<int>* intGridProperties,
+                                       GridProperties<double>* doubleGridProperties)
     {
         const auto max_krg = findMaxKrg( tableManager );
         return satnumApply( size, "KRG", max_krg, tableManager, eclipseGrid,
@@ -1091,10 +1091,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRGEndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto max_krg = findMaxKrg( tableManager );
         return imbnumApply( size, "IKRG", max_krg, tableManager, eclipseGrid,
@@ -1102,10 +1102,10 @@ namespace Opm {
     }
 
     std::vector< double > KRGREndpoint( size_t size,
-                                        std::shared_ptr< const TableManager > tableManager,
-                                        std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                        std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                        const EclipseGrid  * eclipseGrid,
+                                        GridProperties<int>* intGridProperties,
+                                        GridProperties<double>* doubleGridProperties)
     {
         const auto krgr = findKrgr( tableManager );
         return satnumApply( size, "KRGR", krgr, tableManager, eclipseGrid,
@@ -1113,10 +1113,10 @@ namespace Opm {
     }
 
     std::vector< double > IKRGREndpoint( size_t size,
-                                         std::shared_ptr< const TableManager > tableManager,
-                                         std::shared_ptr< const EclipseGrid  > eclipseGrid,
-                                         std::shared_ptr<GridProperties<int> > intGridProperties,
-                                       std::shared_ptr<GridProperties<double> > doubleGridProperties)
+                                         const TableManager * tableManager,
+                                         const EclipseGrid* eclipseGrid,
+                                         GridProperties<int>* intGridProperties,
+                                         GridProperties<double>* doubleGridProperties)
     {
         const auto krgr = findKrgr( tableManager );
         return imbnumApply( size, "IKRGR", krgr, tableManager, eclipseGrid,

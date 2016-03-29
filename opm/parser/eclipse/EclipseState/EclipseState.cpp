@@ -50,15 +50,16 @@ namespace Opm {
         m_deckUnitSystem(    deck->getActiveUnitSystem() ),
         m_parseMode(         parseMode ),
         m_tables(            std::make_shared<const TableManager>( *deck )),
-        m_eclipseGrid(       EclipseGridConstPtr(new EclipseGrid(deck))),
-        m_eclipseProperties( deck, m_tables, m_eclipseGrid )
+        m_eclipseGrid(       new EclipseGrid(deck)),
+        m_eclipseProperties( *deck, m_tables, *m_eclipseGrid)
     {
-        initGridopts(deck);
         initIOConfig(deck);
 
-        schedule = ScheduleConstPtr( new Schedule(m_parseMode ,  getEclipseGrid() , deck, m_ioConfig) );
+        m_schedule = ScheduleConstPtr( new Schedule(m_parseMode ,  getEclipseGrid() , deck, m_ioConfig) );
         initIOConfigPostSchedule(deck);
         initTitle(deck);
+
+        initGridopts(deck);
 
         m_initConfig = std::make_shared<const InitConfig>(deck);
         m_simulationConfig = std::make_shared<const SimulationConfig>(m_parseMode, deck,
@@ -84,7 +85,7 @@ namespace Opm {
         return std::make_shared<EclipseGrid>( m_eclipseGrid->c_ptr() );
     }
 
-    EclipseProperties EclipseState::getEclipseProperties() const {
+    const EclipseProperties& EclipseState::getEclipseProperties() const {
         return m_eclipseProperties;
     }
 
@@ -97,7 +98,7 @@ namespace Opm {
     }
 
     ScheduleConstPtr EclipseState::getSchedule() const {
-        return schedule;
+        return m_schedule;
     }
 
     IOConfigConstPtr EclipseState::getIOConfigConst() const {
@@ -153,7 +154,7 @@ namespace Opm {
     void EclipseState::initIOConfigPostSchedule(DeckConstPtr deck) {
         if (Section::hasSOLUTION(*deck)) {
             std::shared_ptr<const SOLUTIONSection> solutionSection = std::make_shared<const SOLUTIONSection>(*deck);
-            m_ioConfig->handleSolutionSection(schedule->getTimeMap(), solutionSection);
+            m_ioConfig->handleSolutionSection(m_schedule->getTimeMap(), solutionSection);
         }
         m_ioConfig->initFirstOutput( *this->schedule );
     }
@@ -172,41 +173,22 @@ namespace Opm {
     void EclipseState::initTransMult() {
         EclipseGridConstPtr grid = getEclipseGrid();
         m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
-
-        if (hasDeckDoubleGridProperty("MULTX"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTX"), FaceDir::XPlus);
-        if (hasDeckDoubleGridProperty("MULTX-"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTX-"), FaceDir::XMinus);
-
-        if (hasDeckDoubleGridProperty("MULTY"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTY"), FaceDir::YPlus);
-        if (hasDeckDoubleGridProperty("MULTY-"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTY-"), FaceDir::YMinus);
-
-        if (hasDeckDoubleGridProperty("MULTZ"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTZ"), FaceDir::ZPlus);
-        if (hasDeckDoubleGridProperty("MULTZ-"))
-            m_transMult->applyMULT(m_doubleGridProperties->getKeyword("MULTZ-"), FaceDir::ZMinus);
-	}
-
-    void EclipseState::initTransMult() {
-        EclipseGridConstPtr grid = getEclipseGrid();
-        m_transMult = std::make_shared<TransMult>( grid->getNX() , grid->getNY() , grid->getNZ());
-        auto doubleGp = m_eclipseProperties.getDoubleGridProperties();
+        // by obtaining doubleGridProperties we're circumventing the runpostprocessor which is called on state.getkeyword
+        auto& doubleGp = m_eclipseProperties.getDoubleGridProperties();
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTX"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTX"), FaceDir::XPlus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTX"), FaceDir::XPlus);
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTX-"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTX-"), FaceDir::XMinus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTX-"), FaceDir::XMinus);
 
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTY"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTY"), FaceDir::YPlus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTY"), FaceDir::YPlus);
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTY-"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTY-"), FaceDir::YMinus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTY-"), FaceDir::YMinus);
 
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTZ"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTZ"), FaceDir::ZPlus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTZ"), FaceDir::ZPlus);
         if (m_eclipseProperties.hasDeckDoubleGridProperty("MULTZ-"))
-            m_transMult->applyMULT(*doubleGp->getKeyword("MULTZ-"), FaceDir::ZMinus);
+            m_transMult->applyMULT(doubleGp.getKeyword("MULTZ-"), FaceDir::ZMinus);
     }
 
     void EclipseState::initFaults(DeckConstPtr deck) {

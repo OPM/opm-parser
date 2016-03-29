@@ -249,13 +249,13 @@ BOOST_AUTO_TEST_CASE(UnInitializedVectorThrows) {
 BOOST_AUTO_TEST_CASE(IntSetCorrectly) {
     Opm::DeckPtr deck = createValidIntDeck();
     Opm::EclipseState state(deck , Opm::ParseContext());
-    std::shared_ptr<const Opm::GridProperty<int> > property = state.getEclipseProperties().getIntGridProperty( "SATNUM");
+    const auto& property = state.getEclipseProperties().getIntGridProperty( "SATNUM");
     for (size_t j=0; j< 5; j++)
         for (size_t i = 0; i < 5; i++) {
             if (i < 2)
-                BOOST_CHECK_EQUAL( 12 , property->iget(i,j,0));
+                BOOST_CHECK_EQUAL( 12 , property.iget(i,j,0));
             else
-                BOOST_CHECK_EQUAL( 21 , property->iget(i,j,0));
+                BOOST_CHECK_EQUAL( 21 , property.iget(i,j,0));
         }
 
 }
@@ -264,13 +264,14 @@ BOOST_AUTO_TEST_CASE(IntSetCorrectly) {
 BOOST_AUTO_TEST_CASE(UnitAppliedCorrectly) {
     Opm::DeckPtr deck = createValidPERMXDeck();
     Opm::EclipseState state(deck , Opm::ParseContext());
-    std::shared_ptr<const Opm::GridProperty<double> > permx = state.getEclipseProperties().getDoubleGridProperty( "PERMX");
+    Opm::EclipseState state(deck , Opm::ParseMode());
+    const auto& permx = state.getEclipseProperties().getDoubleGridProperty( "PERMX");
 
     for (size_t j=0; j< 5; j++)
         for (size_t i = 0; i < 5; i++) {
             if (i < 2)
-                BOOST_CHECK_EQUAL( 2 * Opm::Metric::Permeability , permx->iget(i,j,0));
+                BOOST_CHECK_EQUAL( 2 * Opm::Metric::Permeability , permx.iget(i,j,0));
             else
-                BOOST_CHECK_EQUAL( 4 * Opm::Metric::Permeability , permx->iget(i,j,0));
+                BOOST_CHECK_EQUAL( 4 * Opm::Metric::Permeability , permx.iget(i,j,0));
         }
 }

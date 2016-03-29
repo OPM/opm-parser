@@ -97,22 +97,20 @@ ParserPtr parser(new Parser());
 return parser->parseString(deckData, ParseContext()) ;
 }
 
-
-
 BOOST_AUTO_TEST_CASE(GetPOROTOPBased) {
-DeckPtr deck = createDeckTOP();
-EclipseState state(deck , ParseMode());
-auto props = state.getEclipseProperties();
+    DeckPtr deck = createDeckTOP();
+    EclipseState state(deck , ParseContext());
+    const EclipseProperties& props = state.getEclipseProperties();
 
-std::shared_ptr<const GridProperty<double> > poro  = props.getDoubleGridProperty( "PORO" );
-std::shared_ptr<const GridProperty<double> > permx = props.getDoubleGridProperty( "PERMX" );
+    const GridProperty<double>& poro  = props.getDoubleGridProperty( "PORO" );
+    const GridProperty<double>& permx = props.getDoubleGridProperty( "PERMX" );
 
-BOOST_CHECK_EQUAL(1000U , poro->getCartesianSize() );
-BOOST_CHECK_EQUAL(1000U , permx->getCartesianSize() );
-for (size_t i=0; i < poro->getCartesianSize(); i++) {
-BOOST_CHECK_EQUAL( 0.10 , poro->iget(i) );
-BOOST_CHECK_EQUAL( 0.25 * Metric::Permeability , permx->iget(i) );
-}
+    BOOST_CHECK_EQUAL(1000U , poro.getCartesianSize() );
+    BOOST_CHECK_EQUAL(1000U , permx.getCartesianSize() );
+    for (size_t i=0; i < poro.getCartesianSize(); i++) {
+        BOOST_CHECK_EQUAL( 0.10 , poro.iget(i) );
+        BOOST_CHECK_EQUAL( 0.25 * Metric::Permeability , permx.iget(i) );
+    }
 }
 
 static DeckPtr createDeck() {
@@ -226,7 +224,7 @@ return parser->parseString(inputStr, ParseContext()) ;
 BOOST_AUTO_TEST_CASE(CreateSimulationConfig) {
 
 DeckPtr deck = createDeckSimConfig();
-EclipseState state(deck, ParseMode());
+EclipseState state(deck, ParseContext());
 SimulationConfigConstPtr simConf = state.getSimulationConfig();
 
 BOOST_CHECK( simConf->hasThresholdPressure() );
@@ -273,7 +271,7 @@ BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     OpmLog::addBackend("COUNTER" , counter);
     DeckPtr deck = createDeck();
     EclipseState state(deck , ParseContext());
-    auto props = state.getEclipseProperties();
+    auto& props = state.getEclipseProperties();
     // const auto& swat = deck->getKeyword("SWAT");
     BOOST_CHECK_EQUAL( false , props.supportsGridProperty("SWAT"));
 
@@ -288,13 +286,13 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
     DeckPtr deck = createDeck();
     EclipseState state(deck, ParseContext());
 
-    std::shared_ptr<const GridProperty<int> > satNUM = state.getEclipseProperties().getIntGridProperty( "SATNUM" );
+    const GridProperty<int>& satNUM = state.getEclipseProperties().getIntGridProperty( "SATNUM" );
 
-    BOOST_CHECK_EQUAL(1000U , satNUM->getCartesianSize() );
-    for (size_t i=0; i < satNUM->getCartesianSize(); i++)
-        BOOST_CHECK_EQUAL( 2 , satNUM->iget(i) );
+    BOOST_CHECK_EQUAL(1000U , satNUM.getCartesianSize() );
+    for (size_t i=0; i < satNUM.getCartesianSize(); i++)
+        BOOST_CHECK_EQUAL( 2 , satNUM.iget(i) );
 
-    BOOST_CHECK_THROW( satNUM->iget(100000) , std::invalid_argument);
+    BOOST_CHECK_THROW( satNUM.iget(100000) , std::invalid_argument);
 }
 
 
@@ -413,22 +411,24 @@ static DeckPtr createDeckWithGridOpts() {
 BOOST_AUTO_TEST_CASE(NoGridOptsDefaultRegion) {
     DeckPtr deck = createDeckNoGridOpts();
     EclipseState state(deck, ParseContext());
-    auto multnum = state.getEclipseProperties().getIntGridProperty("MULTNUM");
-    auto fluxnum = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
-    auto def_property = state.getEclipseProperties().getDefaultRegion();
+    const auto& multnum      = state.getEclipseProperties().getIntGridProperty("MULTNUM");
+    const auto& fluxnum      = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
+    const auto& def_property = state.getEclipseProperties().getDefaultRegion();
 
-    BOOST_CHECK_EQUAL( fluxnum  , def_property );
+    BOOST_CHECK_EQUAL( &fluxnum  , &def_property );
+    BOOST_CHECK_NE( &fluxnum  , &multnum );
 }
 
 
 BOOST_AUTO_TEST_CASE(WithGridOptsDefaultRegion) {
     DeckPtr deck = createDeckWithGridOpts();
     EclipseState state(deck, ParseContext());
-    auto multnum = state.getEclipseProperties().getIntGridProperty("MULTNUM");
-    auto fluxnum = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
-    auto def_property = state.getEclipseProperties().getDefaultRegion();
+    const auto& multnum = state.getEclipseProperties().getIntGridProperty("MULTNUM");
+    const auto& fluxnum = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
+    const auto& def_property = state.getEclipseProperties().getDefaultRegion();
 
-    BOOST_CHECK_EQUAL( multnum , def_property );
+    BOOST_CHECK_EQUAL( &multnum , &def_property );
+    BOOST_CHECK_NE( &fluxnum  , &multnum );
 }
 
 

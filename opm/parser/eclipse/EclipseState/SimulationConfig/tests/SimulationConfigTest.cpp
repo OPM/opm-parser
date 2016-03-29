@@ -105,30 +105,28 @@ const std::string& inputStr_vap_dis = "RUNSPEC\n"
                                       "REGIONS\n"
                                       "\n";
 
-static DeckPtr createDeck(const ParseContext& parseContext , const std::string& input) {
+static DeckPtr createDeck(const ParseContext& parseContext, const std::string& input) {
     Opm::Parser parser;
     return parser.parseString(input, parseContext);
 }
 
-
-static std::shared_ptr<GridProperties<int>> getGridProperties() {
+static GridProperties<int>& getGridProperties() {
     GridPropertySupportedKeywordInfo<int> kwInfo = GridPropertySupportedKeywordInfo<int>("EQLNUM", 3, "");
     std::vector<GridPropertySupportedKeywordInfo<int>> supportedKeywordsVec;
     supportedKeywordsVec.push_back(kwInfo);
-    EclipseGridConstPtr eclipseGrid = std::make_shared<const EclipseGrid>(3, 3, 3);
-    std::shared_ptr<GridProperties<int>> gridProperties = std::make_shared<GridProperties<int>>(eclipseGrid, std::move(supportedKeywordsVec));
-    gridProperties->addKeyword("EQLNUM");
+    const EclipseGrid eclipseGrid(3, 3, 3);
+    GridProperties<int> gridProperties(eclipseGrid, std::move(supportedKeywordsVec));
+    gridProperties.addKeyword("EQLNUM");
     return gridProperties;
 }
 
-
 BOOST_AUTO_TEST_CASE(SimulationConfigGetThresholdPressureTableTest) {
     ParseContext parseContext;
-    DeckPtr deck = createDeck(parseContext , inputStr);
+    DeckPtr deck = createDeck(parseContext, inputStr);
     SimulationConfigConstPtr simulationConfigPtr;
-    BOOST_CHECK_NO_THROW(simulationConfigPtr = std::make_shared<const SimulationConfig>(parseContext , deck, getGridProperties()));
+    BOOST_CHECK_NO_THROW(
+            simulationConfigPtr = std::make_shared<const SimulationConfig>(parseContext, deck, getGridProperties()));
 }
-
 
 BOOST_AUTO_TEST_CASE(SimulationConfigNOTHPRES) {
     ParseContext parseContext;

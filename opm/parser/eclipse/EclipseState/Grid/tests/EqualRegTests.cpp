@@ -202,42 +202,38 @@ BOOST_AUTO_TEST_CASE(InvalidRegionThrows) {
     BOOST_CHECK_THROW( new Opm::EclipseState( deck, Opm::ParseContext()) , std::invalid_argument );
 }
 
-
 BOOST_AUTO_TEST_CASE(ExpectedIntThrows) {
     Opm::DeckPtr deck = createDeckInvalidValue();
     BOOST_CHECK_THROW( new Opm::EclipseState( deck, Opm::ParseContext()) , std::invalid_argument );
 }
-
 
 BOOST_AUTO_TEST_CASE(UnInitializedVectorThrows) {
     Opm::DeckPtr deck = createDeckUnInitialized();
     BOOST_CHECK_THROW( new Opm::EclipseState( deck, Opm::ParseContext()) , std::invalid_argument );
 }
 
-
 BOOST_AUTO_TEST_CASE(IntSetCorrectly) {
     Opm::DeckPtr deck = createValidIntDeck();
     Opm::EclipseState state(deck , Opm::ParseContext());
-    std::shared_ptr<const Opm::GridProperty<int> > property = state.getEclipseProperties().getIntGridProperty( "SATNUM");
-    for (size_t j=0; j< 5; j++)
+    auto& property = state.getEclipseProperties().getIntGridProperty("SATNUM");
+    for (size_t j = 0; j < 5; j++)
         for (size_t i = 0; i < 5; i++) {
             if (i < 2)
-                BOOST_CHECK_EQUAL( 11 , property->iget(i,j,0));
+                BOOST_CHECK_EQUAL(11, property.iget(i, j, 0));
             else
-                BOOST_CHECK_EQUAL( 20 , property->iget(i,j,0));
+                BOOST_CHECK_EQUAL(20, property.iget(i, j, 0));
         }
 
 }
 
-
 BOOST_AUTO_TEST_CASE(UnitAppliedCorrectly) {
     Opm::DeckPtr deck = createValidPERMXDeck();
     Opm::EclipseState state(deck , Opm::ParseContext());
-    std::shared_ptr<const Opm::GridProperty<double> > permx = state.getEclipseProperties().getDoubleGridProperty( "PERMX");
-    std::shared_ptr<const Opm::GridProperty<double> > permy = state.getEclipseProperties().getDoubleGridProperty( "PERMY");
-    std::shared_ptr<const Opm::GridProperty<double> > permz = state.getEclipseProperties().getDoubleGridProperty( "PERMZ");
-    for (size_t g=0; g< 25; g++) {
-        BOOST_CHECK_EQUAL( permz->iget(g), permx->iget(g));
-        BOOST_CHECK_EQUAL( permy->iget(g), permx->iget(g));
+    const auto& permx = state.getEclipseProperties().getDoubleGridProperty("PERMX");
+    const auto& permy = state.getEclipseProperties().getDoubleGridProperty("PERMY");
+    const auto& permz = state.getEclipseProperties().getDoubleGridProperty("PERMZ");
+    for (size_t g = 0; g < 25; g++) {
+        BOOST_CHECK_EQUAL(permz.iget(g), permx.iget(g));
+        BOOST_CHECK_EQUAL(permy.iget(g), permx.iget(g));
     }
 }
