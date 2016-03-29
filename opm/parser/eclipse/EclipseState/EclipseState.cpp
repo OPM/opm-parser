@@ -22,6 +22,8 @@
 #include <opm/common/OpmLog/OpmLog.hpp>
 
 #include <opm/parser/eclipse/Deck/Section.hpp>
+#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
@@ -59,8 +61,6 @@ namespace Opm {
         initIOConfigPostSchedule(deck);
         initTitle(deck);
 
-        initGridopts(deck);
-
         m_initConfig = std::make_shared<const InitConfig>(deck);
         m_simulationConfig = std::make_shared<const SimulationConfig>(m_parseMode, deck,
                                                                       m_eclipseProperties.getIntGridProperties() );
@@ -85,7 +85,7 @@ namespace Opm {
         return std::make_shared<EclipseGrid>( m_eclipseGrid->c_ptr() );
     }
 
-    const EclipseProperties& EclipseState::getEclipseProperties() const {
+    const Eclipse3DProperties& EclipseState::getEclipseProperties() const {
         return m_eclipseProperties;
     }
 
@@ -240,60 +240,7 @@ namespace Opm {
         m_transMult->setMultregtScanner( scanner );
     }
 
-
-
-    void EclipseState::initEclipseGrid(DeckConstPtr deck) {
-        m_eclipseGrid = EclipseGridConstPtr( new EclipseGrid(deck));
-    }
-
-
-    void EclipseState::initGridopts(DeckConstPtr deck) {
-        if (deck->hasKeyword("GRIDOPTS")) {
-            /*
-              The EQUALREG, MULTREG, COPYREG, ... keywords are used to
-              manipulate vectors based on region values; for instance
-              the statement
-
-                EQUALREG
-                   PORO  0.25  3    /   -- Region array not specified
-                   PERMX 100   3  F /
-                /
-
-              will set the PORO field to 0.25 for all cells in region
-              3 and the PERMX value to 100 mD for the same cells. The
-              fourth optional argument to the EQUALREG keyword is used
-              to indicate which REGION array should be used for the
-              selection.
-
-              If the REGION array is not indicated (as in the PORO
-              case) above, the default region to use in the xxxREG
-              keywords depends on the GRIDOPTS keyword:
-
-                1. If GRIDOPTS is present, and the NRMULT item is
-                   greater than zero, the xxxREG keywords will default
-                   to use the MULTNUM region.
-
-                2. If the GRIDOPTS keyword is not present - or the
-                   NRMULT item equals zero, the xxxREG keywords will
-                   default to use the FLUXNUM keyword.
-
-              This quite weird behaviour comes from reading the
-              GRIDOPTS and MULTNUM documentation, and practical
-              experience with ECLIPSE simulations. Ufortunately the
-              documentation of the xxxREG keywords does not confirm
-              this.
-            */
-
-            auto gridOpts = deck->getKeyword("GRIDOPTS");
-            const auto& record = gridOpts.getRecord(0);
-            const auto& nrmult_item = record.getItem("NRMULT");
-
-            if (nrmult_item.get< int >(0) > 0)
-                m_eclipseProperties.setDefaultRegionKeyword("MULTNUM");
-        }
-    }
-
-    void EclipseState::initTitle(DeckConstPtr deck){
+    void EclipseState::initTitle(DeckConstPtr deck) {
         if (deck->hasKeyword("TITLE")) {
             const auto& titleKeyword = deck->getKeyword("TITLE");
             const auto& item = titleKeyword.getRecord( 0 ).getItem( 0 );

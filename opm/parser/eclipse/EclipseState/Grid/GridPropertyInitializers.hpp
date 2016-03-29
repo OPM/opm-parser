@@ -87,10 +87,10 @@ template< typename T >
 
         private:
             signature f = nullptr;
-            const TableManager*     tm;
-            const EclipseGrid*      eg;
-            GridProperties<int>*    igp;
-            GridProperties<double>* dgp;
+            const TableManager*     tm = nullptr;
+            const EclipseGrid*      eg = nullptr;
+            GridProperties<int>*    igp = nullptr;
+            GridProperties<double>* dgp = nullptr;
 
     };
 

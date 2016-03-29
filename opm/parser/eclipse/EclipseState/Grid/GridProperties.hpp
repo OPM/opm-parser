@@ -55,7 +55,7 @@
 
 namespace Opm {
 
-    class EclipseProperties;
+    class Eclipse3DProperties;
 
     template <typename T>
     class GridProperties {
@@ -192,7 +192,7 @@ namespace Opm {
         /// this method exists for (friend) EclipseProperties to be allowed initializing PORV keyword
         void postAddKeyword(const std::string& name,
                             const T defaultValue,
-                            GridPropertyPostFunction< T > postProcessor,
+                            GridPropertyPostFunction< T >& postProcessor,
                             const std::string& dimString )
             {
                 m_supportedKeywords.emplace(name,
@@ -209,7 +209,7 @@ namespace Opm {
             if (m_properties.count( keywordName ) > 0)
                 return false; // property already exists (if it is auto generated or not doesn't matter)
             else {
-                auto supportedKeyword = m_supportedKeywords.at( keywordName );
+                auto& supportedKeyword = m_supportedKeywords.at( keywordName );
                 int nx = m_eclipseGrid.getNX();
                 int ny = m_eclipseGrid.getNY();
                 int nz = m_eclipseGrid.getNZ();
@@ -234,7 +234,7 @@ namespace Opm {
     mutable std::vector<std::shared_ptr<GridProperty<T> > > m_property_list;
 };
 
-        friend class EclipseProperties; // needed for PORV keyword entanglement
+        friend class Eclipse3DProperties; // needed for PORV keyword entanglement
         const EclipseGrid& m_eclipseGrid;
         std::unordered_map<std::string, SupportedKeywordInfo> m_supportedKeywords;
         mutable std::map<std::string , std::shared_ptr<GridProperty<T> > > m_properties;

@@ -29,9 +29,6 @@
 
 namespace Opm {
 
-//    template< typename > class GridProperty;
-//    template< typename > class GridProperties;
-
     class Box;
     class BoxManager;
     class Deck;
@@ -49,7 +46,8 @@ namespace Opm {
     class TransMult;
     class UnitSystem;
 
-    class EclipseProperties
+    /// Class representing properties on 3D grid for use in EclipseState.
+    class Eclipse3DProperties
     {
     public:
         enum EnabledTypes {
@@ -58,29 +56,26 @@ namespace Opm {
             AllProperties = IntProperties | DoubleProperties
         };
 
-        EclipseProperties( const Deck&         deck,
-                           std::shared_ptr<const TableManager> tableManager,
-                           const EclipseGrid&  eclipseGrid);
+        Eclipse3DProperties(const Deck& deck,
+                            std::shared_ptr<const TableManager> tableManager,
+                            const EclipseGrid& eclipseGrid);
 
-        static void setKeywordBox( const DeckKeyword& deckKeyword, const DeckRecord&, BoxManager& boxManager);
-
-        const GridProperty<int>& getRegion( const DeckItem& regionItem ) const;
-        const GridProperty<int>& getDefaultRegion() const;
+        const GridProperty<int>& getRegion(const DeckItem& regionItem) const;
         std::string getDefaultRegionKeyword() const;
-        void setDefaultRegionKeyword(std::string defaultRegionKeyword);
 
-        const GridProperty<int>&      getIntGridProperty( const std::string& keyword )    const;
-        const GridProperty<double> &  getDoubleGridProperty( const std::string& keyword ) const;
-        GridProperties<int>&    getIntGridProperties();
-        GridProperties<double>& getDoubleGridProperties();
+        const GridProperty<int>&      getIntGridProperty     ( const std::string& keyword ) const;
+        const GridProperty<double>&   getDoubleGridProperty  ( const std::string& keyword ) const;
+              GridProperties<int>&    getIntGridProperties   ();
+              GridProperties<double>& getDoubleGridProperties();
+
         bool hasDeckIntGridProperty(const std::string& keyword) const;
         bool hasDeckDoubleGridProperty(const std::string& keyword) const;
-        bool supportsGridProperty(const std::string& keyword, int enabledTypes=AllProperties) const;
+        bool supportsGridProperty(const std::string& keyword, int enabledTypes = AllProperties) const;
 
     private:
-        void processGridProperties( const Deck& deck,
-                                    const EclipseGrid& eclipseGrid,
-                                    int enabledTypes);
+        void processGridProperties(const Deck& deck,
+                                   const EclipseGrid& eclipseGrid,
+                                   int enabledTypes);
 
         double getSIScaling(const std::string &dimensionString) const;
 
@@ -102,7 +97,9 @@ namespace Opm {
 
         void loadGridPropertyFromDeckKeyword(const Box& inputBox,
                                              const DeckKeyword& deckKeyword,
-                                             int enabledTypes = AllProperties);
+                                             int enabledTypes);
+
+        static void setKeywordBox(const DeckKeyword& deckKeyword, const DeckRecord&, BoxManager& boxManager);
 
         void initProperties( const Deck&         deck,
                              std::shared_ptr<const TableManager> tableManager,

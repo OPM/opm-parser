@@ -110,7 +110,7 @@ static DeckPtr createDeck(const ParseContext& parseContext, const std::string& i
     return parser.parseString(input, parseContext);
 }
 
-static GridProperties<int>& getGridProperties() {
+static GridProperties<int> getGridProperties() {
     GridPropertySupportedKeywordInfo<int> kwInfo = GridPropertySupportedKeywordInfo<int>("EQLNUM", 3, "");
     std::vector<GridPropertySupportedKeywordInfo<int>> supportedKeywordsVec;
     supportedKeywordsVec.push_back(kwInfo);
@@ -122,31 +122,34 @@ static GridProperties<int>& getGridProperties() {
 
 BOOST_AUTO_TEST_CASE(SimulationConfigGetThresholdPressureTableTest) {
     ParseContext parseContext;
+    auto gp = getGridProperties();
     DeckPtr deck = createDeck(parseContext, inputStr);
     SimulationConfigConstPtr simulationConfigPtr;
-    BOOST_CHECK_NO_THROW(
-            simulationConfigPtr = std::make_shared<const SimulationConfig>(parseContext, deck, getGridProperties()));
+    BOOST_CHECK_NO_THROW( simulationConfigPtr = std::make_shared<const SimulationConfig>( parseContext, deck, gp ) );
 }
 
 BOOST_AUTO_TEST_CASE(SimulationConfigNOTHPRES) {
     ParseContext parseContext;
+    auto gp = getGridProperties();
     DeckPtr deck = createDeck(parseContext , inputStr_noTHPRES);
-    SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+    SimulationConfig simulationConfig(parseContext , deck, gp);
     BOOST_CHECK_EQUAL( false , simulationConfig.hasThresholdPressure());
 }
 
 BOOST_AUTO_TEST_CASE(SimulationConfigCPRNotUsed) {
         ParseContext parseContext;
+        auto gp = getGridProperties();
         DeckPtr deck = createDeck(parseContext , inputStr_noTHPRES);
-        SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+        SimulationConfig simulationConfig(parseContext , deck, gp);
         BOOST_CHECK_EQUAL( false , simulationConfig.useCPR());
 }
 
 BOOST_AUTO_TEST_CASE(SimulationConfigCPRUsed) {
     ParseContext parseContext;
+    auto gp = getGridProperties();
     DeckPtr deck = createDeck(parseContext , inputStr_cpr);
     SUMMARYSection summary(*deck);
-    SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+    SimulationConfig simulationConfig(parseContext , deck, gp);
     BOOST_CHECK_EQUAL( true , simulationConfig.useCPR());
     BOOST_CHECK_EQUAL( false , summary.hasKeyword("CPR"));
 }
@@ -154,9 +157,10 @@ BOOST_AUTO_TEST_CASE(SimulationConfigCPRUsed) {
 
 BOOST_AUTO_TEST_CASE(SimulationConfigCPRInSUMMARYSection) {
     ParseContext parseContext;
+    auto gp = getGridProperties();
     DeckPtr deck = createDeck(parseContext , inputStr_cpr_in_SUMMARY);
     SUMMARYSection summary(*deck);
-    SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+    SimulationConfig simulationConfig(parseContext , deck, gp);
     BOOST_CHECK_EQUAL( false , simulationConfig.useCPR());
     BOOST_CHECK_EQUAL( true , summary.hasKeyword("CPR"));
 }
@@ -164,9 +168,10 @@ BOOST_AUTO_TEST_CASE(SimulationConfigCPRInSUMMARYSection) {
 
 BOOST_AUTO_TEST_CASE(SimulationConfigCPRBoth) {
     ParseContext parseContext;
+    auto gp = getGridProperties();
     DeckPtr deck = createDeck(parseContext , inputStr_cpr_BOTH);
     SUMMARYSection summary(*deck);
-    SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+    SimulationConfig simulationConfig(parseContext , deck, gp);
     BOOST_CHECK_EQUAL( true , simulationConfig.useCPR());
     BOOST_CHECK_EQUAL( true , summary.hasKeyword("CPR"));
 
@@ -188,13 +193,15 @@ BOOST_AUTO_TEST_CASE(SimulationConfigCPRRUnspecWithData) {
 
 BOOST_AUTO_TEST_CASE(SimulationConfig_VAPOIL_DISGAS) {
     ParseContext parseContext;
+    auto gp1 = getGridProperties();
     DeckPtr deck = createDeck(parseContext , inputStr);
-    SimulationConfig simulationConfig(parseContext , deck, getGridProperties());
+    SimulationConfig simulationConfig(parseContext , deck, gp1);
     BOOST_CHECK_EQUAL( false , simulationConfig.hasDISGAS());
     BOOST_CHECK_EQUAL( false , simulationConfig.hasVAPOIL());
 
+    auto gp2 = getGridProperties();
     DeckPtr deck_vd = createDeck(parseContext, inputStr_vap_dis);
-    SimulationConfig simulationConfig_vd(parseContext , deck_vd, getGridProperties());
+    SimulationConfig simulationConfig_vd(parseContext , deck_vd, gp2);
     BOOST_CHECK_EQUAL( true , simulationConfig_vd.hasDISGAS());
     BOOST_CHECK_EQUAL( true , simulationConfig_vd.hasVAPOIL());
 }

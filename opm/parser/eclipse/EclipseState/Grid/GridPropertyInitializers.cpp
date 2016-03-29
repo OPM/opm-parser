@@ -11,6 +11,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/RtempvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
+
 namespace Opm {
 
     template< typename T >
@@ -58,8 +59,8 @@ namespace Opm {
 
     template< typename T >
     void GridPropertyPostFunction< T >::operator()( std::vector< T >& values ) const {
-        if( !this->f ) return;
-
+        if (!this->f)
+            return;
         return (*this->f)( values, this->tm, this->eg, this->igp, this->dgp );
     }
 

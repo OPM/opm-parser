@@ -24,7 +24,7 @@
 #include <memory>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseProperties.hpp>
+#include "Eclipse3DProperties.hpp"
 
 namespace Opm {
 
@@ -38,6 +38,7 @@ namespace Opm {
     class DeckKeyword;
     class DeckRecord;
     class EclipseGrid;
+    class Eclipse3DProperties;
     class Fault;
     class FaultCollection;
     class InitConfig;
@@ -94,7 +95,7 @@ namespace Opm {
         std::shared_ptr<const NNC> getNNC() const;
         bool hasNNC() const;
 
-        const EclipseProperties& getEclipseProperties() const;
+        const Eclipse3DProperties& getEclipseProperties() const;
 
         std::shared_ptr<const TableManager> getTableManager() const;
 
@@ -108,7 +109,6 @@ namespace Opm {
         void initTabdims(std::shared_ptr< const Deck > deck);
         void initIOConfig(std::shared_ptr< const Deck > deck);
         void initIOConfigPostSchedule(std::shared_ptr< const Deck > deck);
-        void initGridopts(std::shared_ptr< const Deck > deck);
         void initTitle(std::shared_ptr< const Deck > deck);
         void initProperties(std::shared_ptr< const Deck > deck);
         void initTransMult();
@@ -144,7 +144,7 @@ namespace Opm {
         const ParseMode& m_parseMode;
         std::shared_ptr<const TableManager> m_tables;
         std::shared_ptr<const EclipseGrid> m_eclipseGrid;
-        EclipseProperties m_eclipseProperties;
+        Eclipse3DProperties m_eclipseProperties;
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

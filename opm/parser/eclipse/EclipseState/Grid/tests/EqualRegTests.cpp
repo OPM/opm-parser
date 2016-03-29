@@ -34,6 +34,8 @@
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
+#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
@@ -228,10 +230,12 @@ BOOST_AUTO_TEST_CASE(IntSetCorrectly) {
 
 BOOST_AUTO_TEST_CASE(UnitAppliedCorrectly) {
     Opm::DeckPtr deck = createValidPERMXDeck();
-    Opm::EclipseState state(deck , Opm::ParseContext());
-    const auto& permx = state.getEclipseProperties().getDoubleGridProperty("PERMX");
-    const auto& permy = state.getEclipseProperties().getDoubleGridProperty("PERMY");
-    const auto& permz = state.getEclipseProperties().getDoubleGridProperty("PERMZ");
+    Opm::EclipseState state(deck, Opm::ParseContext());
+    const auto& props = state.getEclipseProperties();
+
+    const auto& permx = props.getDoubleGridProperty("PERMX");
+    const auto& permy = props.getDoubleGridProperty("PERMY");
+    const auto& permz = props.getDoubleGridProperty("PERMZ");
     for (size_t g = 0; g < 25; g++) {
         BOOST_CHECK_EQUAL(permz.iget(g), permx.iget(g));
         BOOST_CHECK_EQUAL(permy.iget(g), permx.iget(g));

@@ -1,6 +1,9 @@
 #include <array>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+
+#include <array>
+
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
@@ -674,7 +677,7 @@ namespace Opm {
         auto tabdims = tableManager->getTabdims();
         auto& satnum = intGridProperties->getOrCreateProperty("SATNUM");
 
-        auto endnum = intGridProperties->getOrCreateProperty("ENDNUM");
+        auto& endnum = intGridProperties->getOrCreateProperty("ENDNUM");
         int numSatTables = tabdims->getNumSatTables();
 
         satnum.checkLimits( 1 , numSatTables );
@@ -718,8 +721,8 @@ namespace Opm {
 
         std::vector< double > values( size, 0 );
 
-        auto imbnum = intGridProperties->getKeyword("IMBNUM");
-        auto endnum = intGridProperties->getKeyword("ENDNUM");
+        auto& imbnum = intGridProperties->getKeyword("IMBNUM");
+        auto& endnum = intGridProperties->getKeyword("ENDNUM");
 
         auto tabdims = tableManager->getTabdims();
         const int numSatTables = tabdims->getNumSatTables();

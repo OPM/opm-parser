@@ -35,6 +35,7 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/checkDeck.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
@@ -100,7 +101,7 @@ return parser->parseString(deckData, ParseContext()) ;
 BOOST_AUTO_TEST_CASE(GetPOROTOPBased) {
     DeckPtr deck = createDeckTOP();
     EclipseState state(deck , ParseContext());
-    const EclipseProperties& props = state.getEclipseProperties();
+    const Eclipse3DProperties& props = state.getEclipseProperties();
 
     const GridProperty<double>& poro  = props.getDoubleGridProperty( "PORO" );
     const GridProperty<double>& permx = props.getDoubleGridProperty( "PERMX" );
@@ -236,57 +237,42 @@ BOOST_CHECK_EQUAL(thresholdPressure->size(), 3);
 
 
 BOOST_AUTO_TEST_CASE(PhasesCorrect) {
-DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
-    auto tm = state.getTableManager();
-    BOOST_CHECK(   tm->hasPhase( Phase::PhaseEnum::OIL ));
-    BOOST_CHECK(   tm->hasPhase( Phase::PhaseEnum::GAS ));
-    BOOST_CHECK( !(tm->hasPhase( Phase::PhaseEnum::WATER )));
+    DeckPtr deck = createDeck();
+    EclipseState state( deck, ParseContext() );
+    const TableManager& tm = *state.getTableManager();
+    BOOST_CHECK(   tm.hasPhase( Phase::PhaseEnum::OIL ));
+    BOOST_CHECK(   tm.hasPhase( Phase::PhaseEnum::GAS ));
+    BOOST_CHECK( !(tm.hasPhase( Phase::PhaseEnum::WATER )));
 }
-
 
 BOOST_AUTO_TEST_CASE(TitleCorrect) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    EclipseState state( deck, ParseContext() );
 
-    BOOST_CHECK_EQUAL( state.getTitle(), "The title");
+    BOOST_CHECK_EQUAL( state.getTitle(), "The title" );
 }
-
 
 BOOST_AUTO_TEST_CASE(IntProperties) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    EclipseState state( deck, ParseContext() );
 
-    BOOST_CHECK_EQUAL( false , state.getEclipseProperties().supportsGridProperty("NONO"));
-    BOOST_CHECK_EQUAL( true  , state.getEclipseProperties().supportsGridProperty("SATNUM"));
-    BOOST_CHECK_EQUAL( true  , state.getEclipseProperties().hasDeckIntGridProperty("SATNUM"));
+    BOOST_CHECK_EQUAL( false, state.getEclipseProperties().supportsGridProperty( "NONO" ) );
+    BOOST_CHECK_EQUAL( true,  state.getEclipseProperties().supportsGridProperty( "SATNUM" ) );
+    BOOST_CHECK_EQUAL( true,  state.getEclipseProperties().hasDeckIntGridProperty( "SATNUM" ) );
 }
 
-
-
-
-// FIXME PGDR this test should be updated to test API
-BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
-    std::shared_ptr<CounterLog> counter = std::make_shared<CounterLog>(Log::MessageType::Error);
-    OpmLog::addBackend("COUNTER" , counter);
+BOOST_AUTO_TEST_CASE(PropertiesNotSupportsFalse) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck , ParseContext());
-    auto& props = state.getEclipseProperties();
-    // const auto& swat = deck->getKeyword("SWAT");
-    BOOST_CHECK_EQUAL( false , props.supportsGridProperty("SWAT"));
-
-    // loadGridPropertyFromDeckKeyword is private in EclipseProperties
-
-    // props.loadGridPropertyFromDeckKeyword(std::make_shared<const Box>(10,10,10), swat);
-    // BOOST_CHECK_EQUAL( 1 , counter->numMessages(Log::MessageType::Error) );
+    EclipseState state( deck, ParseContext() );
+    const auto& props = state.getEclipseProperties();
+    BOOST_CHECK( ! props.supportsGridProperty( "SWAT" ) );
 }
-
 
 BOOST_AUTO_TEST_CASE(GetProperty) {
     DeckPtr deck = createDeck();
     EclipseState state(deck, ParseContext());
 
-    const GridProperty<int>& satNUM = state.getEclipseProperties().getIntGridProperty( "SATNUM" );
+    const auto& satNUM = state.getEclipseProperties().getIntGridProperty( "SATNUM" );
 
     BOOST_CHECK_EQUAL(1000U , satNUM.getCartesianSize() );
     for (size_t i=0; i < satNUM.getCartesianSize(); i++)
@@ -295,37 +281,33 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
     BOOST_CHECK_THROW( satNUM.iget(100000) , std::invalid_argument);
 }
 
-
 BOOST_AUTO_TEST_CASE(GetTransMult) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    EclipseState state( deck, ParseContext() );
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
 
-
-    BOOST_CHECK_EQUAL( 1.0 , transMult->getMultiplier(1,0,0,FaceDir::XPlus));
-    BOOST_CHECK_THROW(transMult->getMultiplier(1000 , FaceDir::XPlus) , std::invalid_argument);
+    BOOST_CHECK_EQUAL( 1.0, transMult->getMultiplier( 1, 0, 0, FaceDir::XPlus ) );
+    BOOST_CHECK_THROW( transMult->getMultiplier( 1000, FaceDir::XPlus ), std::invalid_argument );
 }
-
-
 
 BOOST_AUTO_TEST_CASE(GetFaults) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck , ParseContext());
+    EclipseState state( deck, ParseContext() );
     std::shared_ptr<const FaultCollection> faults = state.getFaults();
 
-    BOOST_CHECK( faults->hasFault("F1") );
-    BOOST_CHECK( faults->hasFault("F2") );
+    BOOST_CHECK( faults->hasFault( "F1" ) );
+    BOOST_CHECK( faults->hasFault( "F2" ) );
 
-    std::shared_ptr<const Fault> F1 = faults->getFault("F1");
-    std::shared_ptr<const Fault> F2 = faults->getFault("F2");
+    std::shared_ptr<const Fault> F1 = faults->getFault( "F1" );
+    std::shared_ptr<const Fault> F2 = faults->getFault( "F2" );
 
-    BOOST_CHECK_EQUAL( 0.50 , F1->getTransMult());
-    BOOST_CHECK_EQUAL( 0.25 , F2->getTransMult());
+    BOOST_CHECK_EQUAL( 0.50, F1->getTransMult() );
+    BOOST_CHECK_EQUAL( 0.25, F2->getTransMult() );
 
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
-    BOOST_CHECK_EQUAL( transMult->getMultiplier(0 , 0 , 0 , FaceDir::XPlus) , 0.50 );
-    BOOST_CHECK_EQUAL( transMult->getMultiplier(4 , 3 , 0 , FaceDir::XMinus) , 0.25 );
-    BOOST_CHECK_EQUAL( transMult->getMultiplier(4 , 3 , 0 , FaceDir::ZPlus) , 1.00 );
+    BOOST_CHECK_EQUAL( transMult->getMultiplier( 0, 0, 0, FaceDir::XPlus ), 0.50 );
+    BOOST_CHECK_EQUAL( transMult->getMultiplier( 4, 3, 0, FaceDir::XMinus ), 0.25 );
+    BOOST_CHECK_EQUAL( transMult->getMultiplier( 4, 3, 0, FaceDir::ZPlus ), 1.00 );
 }
 
 
@@ -411,11 +393,13 @@ static DeckPtr createDeckWithGridOpts() {
 BOOST_AUTO_TEST_CASE(NoGridOptsDefaultRegion) {
     DeckPtr deck = createDeckNoGridOpts();
     EclipseState state(deck, ParseContext());
-    const auto& multnum      = state.getEclipseProperties().getIntGridProperty("MULTNUM");
-    const auto& fluxnum      = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
-    const auto& def_property = state.getEclipseProperties().getDefaultRegion();
+    const auto& props   = state.getEclipseProperties();
+        const auto& multnum = props.getIntGridProperty("MULTNUM");
+        const auto& fluxnum = props.getIntGridProperty("FLUXNUM");
+        const auto  default_kw = props.getDefaultRegionKeyword();
+        const auto& def_pro = props.getIntGridProperty(default_kw);
 
-    BOOST_CHECK_EQUAL( &fluxnum  , &def_property );
+    BOOST_CHECK_EQUAL( &fluxnum  , &def_pro );
     BOOST_CHECK_NE( &fluxnum  , &multnum );
 }
 
@@ -423,11 +407,13 @@ BOOST_AUTO_TEST_CASE(NoGridOptsDefaultRegion) {
 BOOST_AUTO_TEST_CASE(WithGridOptsDefaultRegion) {
     DeckPtr deck = createDeckWithGridOpts();
     EclipseState state(deck, ParseContext());
-    const auto& multnum = state.getEclipseProperties().getIntGridProperty("MULTNUM");
-    const auto& fluxnum = state.getEclipseProperties().getIntGridProperty("FLUXNUM");
-    const auto& def_property = state.getEclipseProperties().getDefaultRegion();
+    const auto& props   = state.getEclipseProperties();
+    const auto& multnum = props.getIntGridProperty("MULTNUM");
+    const auto& fluxnum = props.getIntGridProperty("FLUXNUM");
+    const auto  default_kw = props.getDefaultRegionKeyword();
+    const auto& def_pro = props.getIntGridProperty(default_kw);
 
-    BOOST_CHECK_EQUAL( &multnum , &def_property );
+    BOOST_CHECK_EQUAL( &multnum , &def_pro );
     BOOST_CHECK_NE( &fluxnum  , &multnum );
 }
 

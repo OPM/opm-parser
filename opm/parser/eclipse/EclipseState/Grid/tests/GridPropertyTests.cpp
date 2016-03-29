@@ -36,6 +36,7 @@
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
@@ -430,7 +431,7 @@ BOOST_AUTO_TEST_CASE(GridPropertyPostProcessors) {
     Opm::EclipseState st( deck, Opm::ParseContext() ) ;
     Opm::EclipseGrid grid(deck);
     std::shared_ptr<Opm::TableManager> tm  = std::make_shared<Opm::TableManager>(*deck);
-    Opm::EclipseProperties props(*deck, tm, grid);
+    Opm::Eclipse3DProperties props(*deck, tm, grid);
 
     SupportedKeywordInfo kwInfo1("MULTPV" , 1.0 , "1");
     Opm::GridPropertyPostFunction< double > gfunc( &TestPostProcessorMul,
