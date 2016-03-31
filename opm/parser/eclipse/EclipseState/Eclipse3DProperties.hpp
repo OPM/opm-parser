@@ -39,7 +39,7 @@ namespace Opm {
     class EclipseState;
     class InitConfig;
     class IOConfig;
-    class ParseMode;
+    class ParseContext;
     class Schedule;
     class Section;
     class TableManager;

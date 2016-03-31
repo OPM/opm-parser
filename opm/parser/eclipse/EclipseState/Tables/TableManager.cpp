@@ -17,20 +17,12 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/common/OpmLog/OpmLog.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/P.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
+
+#include <opm/parser/eclipse/Deck/Deck.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp> // Phase::PhaseEnum
+
 #include <opm/parser/eclipse/EclipseState/Tables/EnkrvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/EnptvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/GasvisctTable.hpp>
@@ -68,9 +60,18 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
 
+#include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
+
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Eqldims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Regdims.hpp>
+
+#include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/P.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
+
 
 namespace Opm {
 
@@ -694,6 +695,17 @@ namespace Opm {
         return m_vfpinjTables;
     }
 
+    const bool TableManager::useImptvd() const {
+        return hasImptvd;
+    }
+
+    const bool TableManager::useEnptvd() const {
+        return hasEnptvd;
+    }
+
+    const bool TableManager::useEqlnum() const {
+        return hasEqlnum;
+    }
 
     void TableManager::complainAboutAmbiguousKeyword(const Deck& deck, const std::string& keywordName) const {
         OpmLog::addMessage(Log::MessageType::Error, "The " + keywordName + " keyword must be unique in the deck. Ignoring all!");

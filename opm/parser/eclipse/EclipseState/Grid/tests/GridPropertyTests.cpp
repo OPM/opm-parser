@@ -26,7 +26,8 @@
 #include <opm/common/utility/platform_dependent/disable_warnings.h>
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp> #include <opm/common/utility/platform_dependent/reenable_warnings.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <opm/common/utility/platform_dependent/reenable_warnings.h>
 
 
 #include <ert/ecl/EclKW.hpp>
@@ -352,7 +353,7 @@ BOOST_AUTO_TEST_CASE(GridPropertyInitialization) {
 
     auto deck = parser->parseString(deckString, parseContext);
 
-    auto eclipseState = std::make_shared<Opm::EclipseState>(deck , parseContext);
+    Opm::EclipseState eclipseState(deck, parseContext);
     const auto& props = eclipseState.getEclipseProperties();
 
     // make sure that EclipseState throws if it is bugged about an _unsupported_ keyword
@@ -428,7 +429,6 @@ BOOST_AUTO_TEST_CASE(GridPropertyPostProcessors) {
     typedef Opm::GridPropertySupportedKeywordInfo<double> SupportedKeywordInfo;
 
     Opm::DeckPtr deck = createDeck();
-    Opm::EclipseState st( deck, Opm::ParseContext() ) ;
     Opm::EclipseGrid grid(deck);
     std::shared_ptr<Opm::TableManager> tm  = std::make_shared<Opm::TableManager>(*deck);
     Opm::Eclipse3DProperties props(*deck, tm, grid);

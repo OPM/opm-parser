@@ -19,6 +19,8 @@
 
 #include <boost/algorithm/string/join.hpp>
 
+#include <opm/common/OpmLog/OpmLog.hpp>
+
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
@@ -33,7 +35,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/parser/eclipse/Units/Dimension.hpp>
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
-#include <opm/parser/eclipse/OpmLog/OpmLog.hpp>
 
 namespace Opm {
 
