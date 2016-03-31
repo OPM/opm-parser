@@ -45,7 +45,8 @@ std::shared_ptr<const Opm::Deck> createSWOFDeck() {
         " 9 10 11 12 /\n";
 
     Opm::Parser parser;
-    Opm::DeckConstPtr deck(parser.parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser.parseString(deckData, parseContext));
     return deck;
 }
 

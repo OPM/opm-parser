@@ -289,6 +289,7 @@ BOOST_AUTO_TEST_CASE( quoted_comments ) {
 
 BOOST_AUTO_TEST_CASE( PATHS_has_global_scope ) {
     Parser parser;
-    parser.newDeckFromFile( "testdata/parser/PATHSInInclude.data", ParseContext() );
-    BOOST_CHECK_THROW( parser.newDeckFromFile( "testdata/parser/PATHSInIncludeInvalid.data", ParseContext() ), std::runtime_error );
+    ParseContext parseContext;
+    parser.newDeckFromFile( "testdata/parser/PATHSInInclude.data", parseContext );
+    BOOST_CHECK_THROW( parser.newDeckFromFile( "testdata/parser/PATHSInIncludeInvalid.data", parseContext ), std::runtime_error );
 }

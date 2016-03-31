@@ -105,7 +105,7 @@ namespace Opm {
     }
 
 
-    EclipseState::EclipseState(DeckConstPtr deck , const ParseContext& parseContext)
+    EclipseState::EclipseState(DeckConstPtr deck , ParseContext& parseContext)
         : m_deckUnitSystem( deck->getActiveUnitSystem() ),
           m_defaultRegion("FLUXNUM"),
           m_parseContext( parseContext )

@@ -56,7 +56,8 @@ const char *parserData =
     "    1.0 1.0 0.1 9.0 /\n";
 
 static void check_parser(ParserPtr parser) {
-    DeckPtr deck =  parser->parseString(parserData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseString(parserData, parseContext);
     const auto& kw1 = deck->getKeyword("SGOF");
     BOOST_CHECK_EQUAL(1U , kw1.size());
 
@@ -68,7 +69,8 @@ static void check_parser(ParserPtr parser) {
 }
 
 static void check_SgofTable(ParserPtr parser) {
-    DeckPtr deck =  parser->parseString(parserData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseString(parserData, parseContext);
     Opm::SgofTable sgofTable(deck->getKeyword("SGOF").getRecord(0).getItem(0));
 
     BOOST_CHECK_EQUAL(10U, sgofTable.getSgColumn().size());

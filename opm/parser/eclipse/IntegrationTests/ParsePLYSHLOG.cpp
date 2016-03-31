@@ -37,8 +37,9 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( PARSE_PLYSHLOG_OK) {
     ParserPtr parser(new Parser());
+    Opm::ParseContext parseContext;
     std::string deckFile("testdata/integration_tests/POLYMER/plyshlog.data");
-    DeckPtr deck =  parser->parseFile(deckFile, ParseContext());
+    DeckPtr deck =  parser->parseFile(deckFile, parseContext);
     const auto& kw = deck->getKeyword("PLYSHLOG");
     const auto& rec1 = kw.getRecord(0); // reference conditions
 

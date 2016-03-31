@@ -36,7 +36,7 @@ namespace Opm {
 
     public:
 
-        ThresholdPressure(const ParseContext& parseContext , std::shared_ptr< const Deck > deck, std::shared_ptr<GridProperties<int>> gridProperties);
+        ThresholdPressure(ParseContext& parseContext , std::shared_ptr< const Deck > deck, std::shared_ptr<GridProperties<int>> gridProperties);
 
 
         /*
@@ -78,7 +78,7 @@ namespace Opm {
 
         std::vector<std::pair<bool,double>> m_thresholdPressureTable;
         std::map<std::pair<int,int> , std::pair<bool , double> > m_pressureTable;
-        const ParseContext& m_parseContext;
+        ParseContext& m_parseContext;
     };
 
 

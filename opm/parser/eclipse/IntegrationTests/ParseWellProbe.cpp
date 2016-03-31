@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(ParseWellProbe) {
         "/\n";
     BOOST_CHECK_THROW(parser->parseString(invalidDeckString), std::invalid_argument);
 */
-
-    DeckPtr deck = parser->parseString(validDeckString, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck = parser->parseString(validDeckString, parseContext);
     BOOST_CHECK( !deck->hasKeyword("WELL_PROBE"));
     BOOST_CHECK( deck->hasKeyword("WBHP"));
     BOOST_CHECK( deck->hasKeyword("WOPR"));

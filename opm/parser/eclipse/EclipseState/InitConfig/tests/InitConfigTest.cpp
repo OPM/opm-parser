@@ -104,7 +104,8 @@ const std::string& deckWithEquil =
 
 static DeckPtr createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    return parser.parseString(input, parseContext);
 }
 
 BOOST_AUTO_TEST_CASE(InitConfigTest) {

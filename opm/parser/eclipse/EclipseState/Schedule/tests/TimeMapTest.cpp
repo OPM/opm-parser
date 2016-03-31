@@ -234,7 +234,8 @@ BOOST_AUTO_TEST_CASE(TimeStepsCorrect) {
         " 6 7 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser(/*addDefault=*/true));
-    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::DeckPtr deck = parser->parseString(deckData, parseContext);
     Opm::TimeMap tmap(deck);
 
     BOOST_CHECK_EQUAL(tmap.getStartTime(/*timeLevelIdx=*/0),
@@ -305,7 +306,8 @@ BOOST_AUTO_TEST_CASE(initTimestepsYearsAndMonths) {
         " 6 7 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser(true));
-    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::DeckPtr deck = parser->parseString(deckData, parseContext);
     const Opm::TimeMap tmap(deck);
 
     Opm::TimeMap* writableTimemap = const_cast<Opm::TimeMap*>(&tmap);

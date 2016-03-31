@@ -92,14 +92,16 @@ static DeckPtr createDeckTOP() {
         "\n";
 
     ParserPtr parser(new Parser());
-    return parser->parseString(deckData, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(deckData, parseContext) ;
 }
 
 
 
 BOOST_AUTO_TEST_CASE(GetPOROTOPBased) {
     DeckPtr deck = createDeckTOP();
-    EclipseState state(deck , ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck , parseContext);
 
     std::shared_ptr<const GridProperty<double> > poro = state.getDoubleGridProperty( "PORO" );
     std::shared_ptr<const GridProperty<double> > permx = state.getDoubleGridProperty( "PERMX" );
@@ -152,7 +154,8 @@ static DeckPtr createDeck() {
         "\n";
 
     ParserPtr parser(new Parser());
-    return parser->parseString(deckData, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(deckData, parseContext) ;
 }
 
 
@@ -180,13 +183,15 @@ static DeckPtr createDeckNoFaults() {
         "\n";
 
     ParserPtr parser(new Parser());
-    return parser->parseString(deckData, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(deckData, parseContext) ;
 }
 
 
 BOOST_AUTO_TEST_CASE(CreateSchedule) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck , ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck ,parseContext);
     ScheduleConstPtr schedule = state.getSchedule();
     EclipseGridConstPtr eclipseGrid = state.getEclipseGrid();
 
@@ -218,14 +223,16 @@ static DeckPtr createDeckSimConfig() {
 
 
     ParserPtr parser(new Parser());
-    return parser->parseString(inputStr, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(inputStr, parseContext) ;
 }
 
 
 BOOST_AUTO_TEST_CASE(CreateSimulationConfig) {
 
     DeckPtr deck = createDeckSimConfig();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
     SimulationConfigConstPtr simulationConfig = state.getSimulationConfig();
     std::shared_ptr<const ThresholdPressure> thresholdPressure = simulationConfig->getThresholdPressure();
     BOOST_CHECK_EQUAL(thresholdPressure->size(), 3);
@@ -235,7 +242,8 @@ BOOST_AUTO_TEST_CASE(CreateSimulationConfig) {
 
 BOOST_AUTO_TEST_CASE(PhasesCorrect) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
 
     BOOST_CHECK(  state.hasPhase( Phase::PhaseEnum::OIL ));
     BOOST_CHECK(  state.hasPhase( Phase::PhaseEnum::GAS ));
@@ -245,7 +253,8 @@ BOOST_AUTO_TEST_CASE(PhasesCorrect) {
 
 BOOST_AUTO_TEST_CASE(TitleCorrect) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
 
     BOOST_CHECK_EQUAL( state.getTitle(), "The title");
 }
@@ -253,7 +262,8 @@ BOOST_AUTO_TEST_CASE(TitleCorrect) {
 
 BOOST_AUTO_TEST_CASE(IntProperties) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
 
     BOOST_CHECK_EQUAL( false , state.supportsGridProperty("NONO"));
     BOOST_CHECK_EQUAL( true  , state.supportsGridProperty("SATNUM"));
@@ -266,7 +276,8 @@ BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
     std::shared_ptr<CounterLog> counter = std::make_shared<CounterLog>(Log::MessageType::Error);
     OpmLog::addBackend("COUNTER" , counter);
     DeckPtr deck = createDeck();
-    EclipseState state(deck , ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck , parseContext);
     const auto& swat = deck->getKeyword("SWAT");
     BOOST_CHECK_EQUAL( false , state.supportsGridProperty("SWAT"));
     state.loadGridPropertyFromDeckKeyword(std::make_shared<const Box>(10,10,10), swat);
@@ -276,7 +287,8 @@ BOOST_AUTO_TEST_CASE(PropertiesNotSupportedThrows) {
 
 BOOST_AUTO_TEST_CASE(GetProperty) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
 
     std::shared_ptr<const GridProperty<int> > satNUM = state.getIntGridProperty( "SATNUM" );
 
@@ -290,7 +302,8 @@ BOOST_AUTO_TEST_CASE(GetProperty) {
 
 BOOST_AUTO_TEST_CASE(GetTransMult) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
 
 
@@ -302,7 +315,8 @@ BOOST_AUTO_TEST_CASE(GetTransMult) {
 
 BOOST_AUTO_TEST_CASE(GetFaults) {
     DeckPtr deck = createDeck();
-    EclipseState state(deck , ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck , parseContext);
     std::shared_ptr<const FaultCollection> faults = state.getFaults();
 
     BOOST_CHECK( faults->hasFault("F1") );
@@ -323,7 +337,8 @@ BOOST_AUTO_TEST_CASE(GetFaults) {
 
 BOOST_AUTO_TEST_CASE(FaceTransMults) {
     DeckPtr deck = createDeckNoFaults();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
 
     for (int i = 0; i < 10; ++ i) {
@@ -377,7 +392,8 @@ static DeckPtr createDeckNoGridOpts() {
         "  1000*1 /\n";
 
     ParserPtr parser(new Parser());
-    return parser->parseString(deckData, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(deckData, parseContext) ;
 }
 
 
@@ -396,13 +412,15 @@ static DeckPtr createDeckWithGridOpts() {
         "  1000*1 /\n";
 
     ParserPtr parser(new Parser());
-    return parser->parseString(deckData, ParseContext()) ;
+    ParseContext parseContext;
+    return parser->parseString(deckData, parseContext) ;
 }
 
 
 BOOST_AUTO_TEST_CASE(NoGridOptsDefaultRegion) {
     DeckPtr deck = createDeckNoGridOpts();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
     auto multnum = state.getIntGridProperty("MULTNUM");
     auto fluxnum = state.getIntGridProperty("FLUXNUM");
     auto def_property = state.getDefaultRegion();
@@ -413,7 +431,8 @@ BOOST_AUTO_TEST_CASE(NoGridOptsDefaultRegion) {
 
 BOOST_AUTO_TEST_CASE(WithGridOptsDefaultRegion) {
     DeckPtr deck = createDeckWithGridOpts();
-    EclipseState state(deck, ParseContext());
+    ParseContext parseContext;
+    EclipseState state(deck, parseContext);
     auto multnum = state.getIntGridProperty("MULTNUM");
     auto fluxnum = state.getIntGridProperty("FLUXNUM");
     auto def_property = state.getDefaultRegion();
@@ -448,8 +467,9 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreation) {
 
 
     ParserPtr parser(new Parser());
-    DeckPtr deck = parser->parseString(deckData, ParseContext()) ;
-    EclipseState state(deck , ParseContext());
+    ParseContext parseContext;
+    DeckPtr deck = parser->parseString(deckData, parseContext) ;
+    EclipseState state(deck , parseContext);
 
     IOConfigConstPtr ioConfig = state.getIOConfigConst();
 

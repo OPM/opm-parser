@@ -67,9 +67,10 @@ static ParserPtr createWWCTParser() {
 BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckReturned) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
     ParserPtr parser = createWWCTParser();
+    Opm::ParseContext parseContext;
     BOOST_CHECK( parser->isRecognizedKeyword("WWCT"));
     BOOST_CHECK( parser->isRecognizedKeyword("SUMMARY"));
-    BOOST_CHECK_NO_THROW( parser->parseFile(singleKeywordFile.string(), ParseContext()) );
+    BOOST_CHECK_NO_THROW( parser->parseFile(singleKeywordFile.string(), parseContext) );
 }
 
 BOOST_AUTO_TEST_CASE(parse_stringWithWWCTKeyword_deckReturned) {
@@ -81,9 +82,10 @@ BOOST_AUTO_TEST_CASE(parse_stringWithWWCTKeyword_deckReturned) {
         "  'WELL-1' 'WELL-2' / -- Ehne mehne muh\n"
         "/\n";
     ParserPtr parser = createWWCTParser();
+    Opm::ParseContext parseContext;
     BOOST_CHECK( parser->isRecognizedKeyword("WWCT"));
     BOOST_CHECK( parser->isRecognizedKeyword("SUMMARY"));
-    BOOST_CHECK_NO_THROW(DeckPtr deck =  parser->parseString(wwctString, ParseContext()));
+    BOOST_CHECK_NO_THROW(DeckPtr deck =  parser->parseString(wwctString, parseContext));
 }
 
 BOOST_AUTO_TEST_CASE(parse_streamWithWWCTKeyword_deckReturned) {
@@ -96,15 +98,17 @@ BOOST_AUTO_TEST_CASE(parse_streamWithWWCTKeyword_deckReturned) {
         "/\n";
     std::shared_ptr<std::istream> wwctStream(new std::istringstream(wwctString));
     ParserPtr parser = createWWCTParser();
+    Opm::ParseContext parseContext;
     BOOST_CHECK( parser->isRecognizedKeyword("WWCT"));
     BOOST_CHECK( parser->isRecognizedKeyword("SUMMARY"));
-    BOOST_CHECK_NO_THROW(DeckPtr deck =  parser->parseStream(wwctStream, ParseContext()));
+    BOOST_CHECK_NO_THROW(DeckPtr deck =  parser->parseStream(wwctStream, parseContext));
 }
 
 BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckHasWWCT) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
     ParserPtr parser = createWWCTParser();
-    DeckPtr deck = parser->parseFile(singleKeywordFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck = parser->parseFile(singleKeywordFile.string(), parseContext);
     BOOST_CHECK(deck->hasKeyword("SUMMARY"));
     BOOST_CHECK(deck->hasKeyword("WWCT"));
 }
@@ -112,7 +116,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckHasWWCT) {
 BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_dataIsCorrect) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/wwct.data");
     ParserPtr parser = createWWCTParser();
-    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), parseContext);
     BOOST_CHECK_EQUAL("WELL-1", deck->getKeyword("WWCT" , 0).getRecord(0).getItem(0).get< std::string >(0));
     BOOST_CHECK_EQUAL("WELL-2", deck->getKeyword("WWCT" , 0).getRecord(0).getItem(0).get< std::string >(1));
 }
@@ -159,15 +164,16 @@ static ParserPtr createBPRParser() {
 BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_deckReturned) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/bpr.data");
     ParserPtr parser = createBPRParser();
-
-    BOOST_CHECK_NO_THROW(parser->parseFile(singleKeywordFile.string(), ParseContext()));
+    Opm::ParseContext parseContext;
+    BOOST_CHECK_NO_THROW(parser->parseFile(singleKeywordFile.string(), parseContext));
 }
 
 BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_DeckhasBRP) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/bpr.data");
 
     ParserPtr parser = createBPRParser();
-    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), parseContext);
 
     BOOST_CHECK_EQUAL(true, deck->hasKeyword("BPR"));
 }
@@ -176,7 +182,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_dataiscorrect) {
     boost::filesystem::path singleKeywordFile("testdata/integration_tests/bpr.data");
 
     ParserPtr parser = createBPRParser();
-    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(singleKeywordFile.string(), parseContext);
 
     const auto& keyword = deck->getKeyword("BPR" , 0);
     BOOST_CHECK_EQUAL(2U, keyword.size());
@@ -198,7 +205,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithBPRKeyword_dataiscorrect) {
 /***************** Testing non-recognized keywords ********************/
 BOOST_AUTO_TEST_CASE(parse_unknownkeyword_exceptionthrown) {
     ParserPtr parser(new Parser());
-    BOOST_CHECK_THROW( parser->parseFile("testdata/integration_tests/someobscureelements.data", ParseContext()), std::invalid_argument);
+    Opm::ParseContext parseContext;
+    BOOST_CHECK_THROW( parser->parseFile("testdata/integration_tests/someobscureelements.data", parseContext), std::invalid_argument);
 }
 
 /*********************Testing truncated (default) records ***************************/
@@ -207,7 +215,8 @@ BOOST_AUTO_TEST_CASE(parse_unknownkeyword_exceptionthrown) {
 // Datafile contains 3 RADFIN4 keywords. One fully specified, one with 2 out of 11 items, and one with no items.
 BOOST_AUTO_TEST_CASE(parse_truncatedrecords_deckFilledWithDefaults) {
     ParserPtr parser(new Parser());
-    DeckPtr deck =  parser->parseFile("testdata/integration_tests/truncated_records.data", ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile("testdata/integration_tests/truncated_records.data", parseContext);
     BOOST_CHECK_EQUAL(3U, deck->size());
     const auto& radfin4_0_full= deck->getKeyword("RADFIN4", 0);
     const auto& radfin4_1_partial= deck->getKeyword("RADFIN4", 1);

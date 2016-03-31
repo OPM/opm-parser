@@ -188,13 +188,15 @@ const std::string deckStr_RFT = "RUNSPEC\n"
 
 static DeckPtr createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    return parser.parseString(input, parseContext);
 }
 
 
 BOOST_AUTO_TEST_CASE( RFT_TIME) {
     DeckPtr deck = createDeck(deckStr_RFT);
-    EclipseState state( deck , Opm::ParseContext() );
+    Opm::ParseContext parseContext;
+    EclipseState state( deck , parseContext );
     std::shared_ptr<const IOConfig> ioConfig = state.getIOConfigConst();
 
 
@@ -213,8 +215,8 @@ BOOST_AUTO_TEST_CASE(IOConfigTest) {
     std::shared_ptr<const RUNSPECSection> runspecSection = std::make_shared<const RUNSPECSection>(*deck);
     ioConfigPtr->handleGridSection(gridSection);
     ioConfigPtr->handleRunspecSection(runspecSection);
-
-    Schedule schedule(ParseContext() , grid , deck, ioConfigPtr);
+    Opm::ParseContext parseContext;
+    Schedule schedule(parseContext, grid , deck, ioConfigPtr);
 
     TimeMapConstPtr timemap   = schedule.getTimeMap();
     const TimeMap* const_tmap = timemap.get();

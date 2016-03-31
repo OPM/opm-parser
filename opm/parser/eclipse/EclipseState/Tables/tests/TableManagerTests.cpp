@@ -59,7 +59,8 @@ std::shared_ptr<const Opm::Deck> createSingleRecordDeck() {
         " 9 10 11 12 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
     return deck;
 }
 
@@ -89,7 +90,8 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
 
     Opm::SwofTable swof1Table(deck->getKeyword("SWOF").getRecord(0).getItem(0));
     Opm::SwofTable swof2Table(deck->getKeyword("SWOF").getRecord(1).getItem(0));
@@ -132,7 +134,8 @@ BOOST_AUTO_TEST_CASE(SgwfnTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
 
 
     Opm::SgwfnTable sgwfn1Table(deck->getKeyword("SGWFN").getRecord(0).getItem(0));
@@ -175,7 +178,8 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
 
     Opm::SgofTable sgof1Table(deck->getKeyword("SGOF").getRecord(0).getItem(0));
     Opm::SgofTable sgof2Table(deck->getKeyword("SGOF").getRecord(1).getItem(0));
@@ -221,7 +225,8 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(correctDeckData, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(correctDeckData, parseContext));
         const auto& plyadsKeyword = deck->getKeyword("PLYADS");
         Opm::PlyadsTable plyadsTable(plyadsKeyword.getRecord(0).getItem(0));
 
@@ -250,7 +255,8 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, parseContext));
         const auto& plyadsKeyword = deck->getKeyword("PLYADS");
 
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword.getRecord(0).getItem(0)), std::invalid_argument);
@@ -273,7 +279,8 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000029 /\n";
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(incorrectDeckData, parseContext));
         const auto& plyadsKeyword = deck->getKeyword("PLYADS");
 
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword.getRecord(0).getItem(0)), std::invalid_argument);
@@ -321,7 +328,8 @@ VFPPROD \n\
 2 2 2 2 46.5 47.5 48.5 / \n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
     std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
     const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
 
@@ -448,7 +456,8 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
     const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
     std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
 
@@ -560,7 +569,8 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_values, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_values, parseContext));
         const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPPROD"), 1);
@@ -597,7 +607,8 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_values, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_values, parseContext));
         const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPPROD"), 1);
@@ -632,7 +643,8 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_metadata, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_metadata, parseContext));
         const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPPROD"), 1);
@@ -668,7 +680,8 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(wrong_metadata, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(wrong_metadata, parseContext));
         const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPPROD"), 1);
@@ -703,7 +716,8 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_axes, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_axes, parseContext));
         const auto& vfpprodKeyword = deck->getKeyword("VFPPROD");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPPROD"), 1);
@@ -736,7 +750,8 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
     const auto& vfpprodKeyword = deck->getKeyword("VFPINJ");
     std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
 
@@ -838,7 +853,8 @@ VFPINJ \n\
 2 4.5 5.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_values, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_values, parseContext));
         const auto& vfpinjKeyword = deck->getKeyword("VFPINJ");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPINJ"), 1);
@@ -869,7 +885,8 @@ VFPINJ \n\
 1 1.5 2.5 3.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_values, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_values, parseContext));
         const auto& vfpinjKeyword = deck->getKeyword("VFPINJ");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPINJ"), 1);
@@ -899,7 +916,8 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_metadata, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_metadata, parseContext));
         const auto& vfpinjKeyword = deck->getKeyword("VFPINJ");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPINJ"), 1);
@@ -930,7 +948,8 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(wrong_metadata, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(wrong_metadata, parseContext));
         const auto& vfpinjKeyword = deck->getKeyword("VFPINJ");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPINJ"), 1);
@@ -960,7 +979,8 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::ParserPtr parser(new Opm::Parser);
-        Opm::DeckConstPtr deck(parser->parseString(missing_axes, Opm::ParseContext()));
+        Opm::ParseContext parseContext;
+        Opm::DeckConstPtr deck(parser->parseString(missing_axes, parseContext));
         const auto& vfpinjKeyword = deck->getKeyword("VFPINJ");
         std::shared_ptr<Opm::UnitSystem> units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck->count("VFPINJ"), 1);
@@ -982,7 +1002,8 @@ BOOST_AUTO_TEST_CASE( TestPLYROCK ) {
         " 10 20 30 40 50 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(data, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(data, parseContext));
     Opm::TableManager tables( *deck );
     const Opm::TableContainer& plyrock = tables.getPlyrockTables();
 
@@ -1010,7 +1031,8 @@ BOOST_AUTO_TEST_CASE( TestPLYMAX ) {
         " 10 20 /\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(data, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(data, parseContext));
     Opm::TableManager tables( *deck );
     const Opm::TableContainer& plymax = tables.getPlymaxTables();
 
@@ -1034,5 +1056,6 @@ BOOST_AUTO_TEST_CASE( TestParseTABDIMS ) {
       "TABDIMS\n"
       "  1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 /\n";
     Opm::ParserPtr parser(new Opm::Parser);
-    BOOST_CHECK_NO_THROW( parser->parseString(data, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    BOOST_CHECK_NO_THROW( parser->parseString(data, parseContext));
 }

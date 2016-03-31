@@ -44,8 +44,8 @@ BOOST_AUTO_TEST_CASE( parse_VFPPROD_OK ) {
     ParserPtr parser(new Parser());
     std::string file("testdata/integration_tests/VFPPROD/VFPPROD1");
     BOOST_CHECK( parser->isRecognizedKeyword("VFPPROD"));
-
-    DeckPtr deck =  parser->parseFile(file, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(file, parseContext);
 
     const auto& VFPPROD1 = deck->getKeyword("VFPPROD" , 0);
     const auto& BPR = deck->getKeyword("BPR" , 0);

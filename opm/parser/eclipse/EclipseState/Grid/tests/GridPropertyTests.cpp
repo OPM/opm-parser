@@ -48,7 +48,8 @@ static const Opm::DeckKeyword createSATNUMKeyword( ) {
     "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::DeckPtr deck = parser->parseString(deckData, parseContext);
     return deck->getKeyword("SATNUM");
 }
 
@@ -59,7 +60,8 @@ static const Opm::DeckKeyword createTABDIMSKeyword( ) {
     "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    Opm::DeckPtr deck = parser->parseString(deckData, Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::DeckPtr deck = parser->parseString(deckData, parseContext);
     return deck->getKeyword("TABDIMS");
 }
 
@@ -414,14 +416,16 @@ static Opm::DeckPtr createDeck() {
         "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    return parser->parseString(deckData, Opm::ParseContext()) ;
+    Opm::ParseContext parseContext;
+    return parser->parseString(deckData, parseContext);
 }
 
 BOOST_AUTO_TEST_CASE(GridPropertyPostProcessors) {
     typedef Opm::GridPropertySupportedKeywordInfo<double> SupportedKeywordInfo;
 
     Opm::DeckPtr deck = createDeck();
-    Opm::EclipseState st( deck, Opm::ParseContext() ) ;
+    Opm::ParseContext parseContext;
+    Opm::EclipseState st( deck, parseContext );
     std::shared_ptr<Opm::EclipseGrid> grid = std::make_shared<Opm::EclipseGrid>(deck);
 
     SupportedKeywordInfo kwInfo1("MULTPV" , 1.0 , "1");

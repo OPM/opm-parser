@@ -49,8 +49,8 @@ BOOST_AUTO_TEST_CASE( KeywordInCorrectSection ) {
             "PROPS\n"
             "SOLUTION\n"
             "SCHEDULE\n";
-
-        auto deck = parser->parseString(correctDeckString, Opm::ParseContext());
+        Opm::ParseContext parseContext;
+        auto deck = parser->parseString(correctDeckString, parseContext);
         BOOST_CHECK(Opm::checkDeck(deck, parser));
     }
 
@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE( KeywordInCorrectSection ) {
             "PROPS\n"
             "SOLUTION\n"
             "SCHEDULE\n";
-
-        auto deck = parser->parseString(correctDeckString, Opm::ParseContext());
+        Opm::ParseContext parseContext;
+        auto deck = parser->parseString(correctDeckString, parseContext);
         BOOST_CHECK(!Opm::checkDeck(deck, parser));
         BOOST_CHECK(Opm::checkDeck(deck, parser, ~Opm::SectionTopology));
     }
@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE( KeywordInCorrectSection ) {
             "PROPS\n"
             "SOLUTION\n"
             "SCHEDULE\n";
-
-        auto deck = parser->parseString(incorrectDeckString, Opm::ParseContext());
+        Opm::ParseContext parseContext;
+        auto deck = parser->parseString(incorrectDeckString, parseContext);
         BOOST_CHECK(!Opm::checkDeck(deck, parser));
 
         // this is supposed to succeed as we don't ensure that all keywords are in the

@@ -42,7 +42,8 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE( parse_WCHONHIST_OK ) {
     ParserPtr parser(new Parser());
     std::string wconhistFile("testdata/integration_tests/WCONHIST/WCONHIST1");
-    DeckPtr deck =  parser->parseFile(wconhistFile, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(wconhistFile, parseContext);
     const auto& kw1 = deck->getKeyword("WCONHIST" , 0);
     BOOST_CHECK_EQUAL( 3U , kw1.size() );
 

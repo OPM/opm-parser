@@ -101,7 +101,8 @@ BOOST_AUTO_TEST_CASE( PvtxNumTables3 ) {
         "/\n";
 
     Opm::ParserPtr parser(new Opm::Parser);
-    Opm::DeckConstPtr deck(parser->parseString(deckData, Opm::ParseContext()));
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck(parser->parseString(deckData, parseContext));
 
     auto ranges = PvtxTable::recordRanges( deck->getKeyword<ParserKeywords::PVTO>() );
     BOOST_CHECK_EQUAL( 2 ,ranges.size() );

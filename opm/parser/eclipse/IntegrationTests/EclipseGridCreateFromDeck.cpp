@@ -38,7 +38,8 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE(CreateCPGrid) {
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT.DATA");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( deck ));
 
     BOOST_CHECK_EQUAL( 10U  , grid->getNX( ));
@@ -51,7 +52,8 @@ BOOST_AUTO_TEST_CASE(CreateCPGrid) {
 BOOST_AUTO_TEST_CASE(CreateCPActnumGrid) {
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT_ACTNUM.DATA");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( deck ));
 
     BOOST_CHECK_EQUAL(  10U , grid->getNX( ));
@@ -64,7 +66,8 @@ BOOST_AUTO_TEST_CASE(CreateCPActnumGrid) {
 BOOST_AUTO_TEST_CASE(ExportFromCPGridAllActive) {
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT.DATA");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
 
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( deck ));
 
@@ -81,7 +84,8 @@ BOOST_AUTO_TEST_CASE(ExportFromCPGridAllActive) {
 BOOST_AUTO_TEST_CASE(ExportFromCPGridACTNUM) {
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT_ACTNUM.DATA");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
 
     std::shared_ptr<EclipseGrid> grid(new EclipseGrid( deck ));
 

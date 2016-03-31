@@ -86,8 +86,8 @@ namespace {
 
         Opm::WellProductionProperties properties(const std::string& input) {
             Opm::Parser parser;
-
-            Opm::DeckPtr deck = parser.parseString(input, Opm::ParseContext());
+            Opm::ParseContext parseContext;
+            Opm::DeckPtr deck = parser.parseString(input, parseContext);
             const auto& record = deck->getKeyword("WCONHIST").getRecord(0);
             Opm::WellProductionProperties hist = Opm::WellProductionProperties::history( 100 , record);;
 
@@ -111,8 +111,8 @@ namespace {
         properties(const std::string& input)
         {
             Opm::Parser parser;
-
-            Opm::DeckPtr             deck   = parser.parseString(input, Opm::ParseContext());
+            Opm::ParseContext parseContext;
+            Opm::DeckPtr deck   = parser.parseString(input, parseContext);
             const auto& kwd     = deck->getKeyword("WCONHIST");
             const auto&  record = kwd.getRecord(0);
             Opm::WellProductionProperties pred = Opm::WellProductionProperties::prediction( record, false );

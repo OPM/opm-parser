@@ -42,8 +42,8 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE( parse_TITLE_OK ) {
     ParserPtr parser(new Parser());
     std::string fileWithTitleKeyword("testdata/integration_tests/TITLE/TITLE1.txt");
-
-    DeckPtr deck = parser->parseFile(fileWithTitleKeyword, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck = parser->parseFile(fileWithTitleKeyword, parseContext);
 
     BOOST_CHECK_EQUAL(size_t(2), deck->size());
     BOOST_CHECK_EQUAL (true, deck->hasKeyword("TITLE"));

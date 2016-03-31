@@ -116,7 +116,7 @@ namespace Opm {
         }
     }
 
-    DeckRecord ParserRecord::parse(const ParseContext& parseContext , RawRecord& rawRecord ) const {
+    DeckRecord ParserRecord::parse(ParseContext& parseContext , RawRecord& rawRecord ) const {
         DeckRecord deckRecord( size() + 20 );
         for (size_t i = 0; i < size(); i++) {
             auto parserItem = get(i);

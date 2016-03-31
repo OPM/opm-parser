@@ -151,7 +151,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckReturned) {
     path datafile;
     ParserPtr parser(new Parser());
     createDeckWithInclude (datafile, "");
-    DeckConstPtr deck =  parser->parseFile(datafile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckConstPtr deck =  parser->parseFile(datafile.string(), parseContext);
 
     BOOST_CHECK( deck->hasKeyword("START"));
     BOOST_CHECK( deck->hasKeyword("DIMENS"));
@@ -162,7 +163,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithENDINCKeyword_deckReturned) {
     path datafile;
     ParserPtr parser(new Parser());
     createDeckWithInclude (datafile, "ENDINC");
-    DeckConstPtr deck =  parser->parseFile(datafile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckConstPtr deck =  parser->parseFile(datafile.string(), parseContext);
 
     BOOST_CHECK( deck->hasKeyword("START"));
     BOOST_CHECK( !deck->hasKeyword("DIMENS"));
@@ -173,7 +175,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithENDKeyword_deckReturned) {
     path datafile;
     ParserPtr parser(new Parser());
     createDeckWithInclude (datafile, "END");
-    DeckConstPtr deck =  parser->parseFile(datafile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckConstPtr deck =  parser->parseFile(datafile.string(), parseContext);
 
     BOOST_CHECK( deck->hasKeyword("START"));
     BOOST_CHECK( !deck->hasKeyword("DIMENS"));
@@ -184,7 +187,8 @@ BOOST_AUTO_TEST_CASE(parse_fileWithPathsKeyword_IncludeExtendsPath) {
     path datafile;
     ParserPtr parser(new Parser());
     createDeckWithInclude (datafile, "");
-    DeckConstPtr deck =  parser->parseFile(datafile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckConstPtr deck =  parser->parseFile(datafile.string(), parseContext);
 
     BOOST_CHECK( deck->hasKeyword("TITLE"));
     BOOST_CHECK( deck->hasKeyword("BOX"));
