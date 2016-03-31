@@ -68,7 +68,8 @@ PVTO\n\
 
 
 static void check_parser(ParserPtr parser) {
-    DeckPtr deck =  parser->parseString(pvtoData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseString(pvtoData, parseContext);
     const auto& kw1 = deck->getKeyword("PVTO" , 0);
     BOOST_CHECK_EQUAL(5U , kw1.size());
 

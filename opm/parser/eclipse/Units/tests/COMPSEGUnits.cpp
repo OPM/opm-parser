@@ -41,7 +41,8 @@ std::shared_ptr<const Deck> createCOMPSEGSDeck() {
         "/\n";
 
     Parser parser;
-    DeckConstPtr deck(parser.parseString(deckData, ParseContext()));
+    ParseContext parseContext;
+    DeckConstPtr deck(parser.parseString(deckData, parseContext));
     return deck;
 }
 

@@ -47,7 +47,7 @@ namespace Opm {
 
 
     struct ParserState {
-        const ParseContext& parseContext;
+        ParseContext& parseContext;
         Deck * deck;
         boost::filesystem::path dataFile;
         boost::filesystem::path rootPath;
@@ -70,7 +70,7 @@ namespace Opm {
             rootPath = parent.rootPath;
         }
 
-        ParserState(const ParseContext& __parseContext)
+        ParserState(ParseContext& __parseContext)
             : parseContext( __parseContext ),
               deck( new Deck() ),
               pathMap( std::make_shared< std::map< std::string, std::string > >() ),
@@ -222,7 +222,7 @@ namespace Opm {
      is retained in the current implementation.
      */
 
-    Deck * Parser::newDeckFromFile(const std::string &dataFileName, const ParseContext& parseContext) const {
+    Deck * Parser::newDeckFromFile(const std::string &dataFileName, ParseContext& parseContext) const {
         std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
         parserState->openRootFile( dataFileName );
         parseState(parserState);
@@ -231,7 +231,7 @@ namespace Opm {
         return parserState->deck;
     }
 
-    Deck * Parser::newDeckFromString(const std::string &data, const ParseContext& parseContext) const {
+    Deck * Parser::newDeckFromString(const std::string &data, ParseContext& parseContext) const {
         std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
         parserState->openString( data );
 
@@ -242,15 +242,15 @@ namespace Opm {
     }
 
 
-    DeckPtr Parser::parseFile(const std::string &dataFileName, const ParseContext& parseContext) const {
+    DeckPtr Parser::parseFile(const std::string &dataFileName, ParseContext& parseContext) const {
         return std::shared_ptr<Deck>( newDeckFromFile( dataFileName , parseContext));
     }
 
-    DeckPtr Parser::parseString(const std::string &data, const ParseContext& parseContext) const {
+    DeckPtr Parser::parseString(const std::string &data, ParseContext& parseContext) const {
         return std::shared_ptr<Deck>( newDeckFromString( data , parseContext));
     }
 
-    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, const ParseContext& parseContext) const {
+    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, ParseContext& parseContext) const {
         std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
         parserState->openStream( inputStream );
 

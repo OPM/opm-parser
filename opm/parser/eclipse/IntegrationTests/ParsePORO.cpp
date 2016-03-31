@@ -39,8 +39,9 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(ParsePOROandPERMX) {
     ParserPtr parser(new Parser());
+    Opm::ParseContext parseContext;
     std::string poroFile("testdata/integration_tests/PORO/PORO1");
-    DeckPtr deck =  parser->parseFile(poroFile, ParseContext());
+    DeckPtr deck =  parser->parseFile(poroFile, parseContext);
     const auto& kw1 = deck->getKeyword("PORO" , 0);
     const auto& kw2 = deck->getKeyword("PERMX" , 0);
 

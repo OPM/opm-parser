@@ -41,7 +41,8 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_MULTREGT_OK ) {
     ParserPtr parser(new Parser());
-    DeckPtr deck =  parser->parseFile("testdata/integration_tests/MULTREGT/MULTREGT", ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile("testdata/integration_tests/MULTREGT/MULTREGT", parseContext);
     BOOST_CHECK_NO_THROW( deck->getKeyword("MULTREGT" , 0); );
 }
 

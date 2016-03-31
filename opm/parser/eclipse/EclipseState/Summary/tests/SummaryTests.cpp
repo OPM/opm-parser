@@ -47,8 +47,8 @@ static DeckPtr createDeck( const std::string& summary ) {
             "/\n"
             "SUMMARY\n"
             + summary;
-
-    return parser.parseString(input, ParseContext());
+    Opm::ParseContext parseContext;
+    return parser.parseString(input, parseContext);
 }
 
 static std::vector< std::string > sorted_names( const Summary& summary ) {
@@ -71,7 +71,8 @@ static std::vector< std::string > sorted_keywords( const Summary& summary ) {
 
 static Summary createSummary( std::string input ) {
     auto deck = createDeck( input );
-    EclipseState state( deck, ParseContext() );
+    Opm::ParseContext parseContext;
+    EclipseState state( deck, parseContext );
     return Summary( *deck, state );
 }
 

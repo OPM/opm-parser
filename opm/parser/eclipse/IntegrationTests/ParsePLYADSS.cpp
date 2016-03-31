@@ -35,8 +35,9 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( PARSE_PLYADSS_OK) {
     ParserPtr parser(new Parser());
+    Opm::ParseContext parseContext;
     std::string deckFile("testdata/integration_tests/POLYMER/plyadss.data");
-    DeckPtr deck =  parser->parseFile(deckFile, ParseContext());
+    DeckPtr deck =  parser->parseFile(deckFile, parseContext);
     const auto& kw = deck->getKeyword("PLYADSS");
 
     BOOST_CHECK_EQUAL( kw.size() , 11U );

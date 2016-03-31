@@ -44,7 +44,8 @@ BOOST_AUTO_TEST_CASE( CreateCompletionsFromRecord ) {
 
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_COMPDAT1");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
     const auto& COMPDAT1 = deck->getKeyword("COMPDAT" , 0);
     const auto& line0 = COMPDAT1.getRecord(0);
     const auto& line1 = COMPDAT1.getRecord(1);
@@ -90,7 +91,8 @@ BOOST_AUTO_TEST_CASE( CreateCompletionsFromKeyword ) {
 
     ParserPtr parser(new Parser());
     boost::filesystem::path scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_COMPDAT1");
-    DeckPtr deck =  parser->parseFile(scheduleFile.string(), ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(scheduleFile.string(), parseContext);
     const auto& COMPDAT1 = deck->getKeyword("COMPDAT" , 1);
 
     std::map< std::string , std::vector<CompletionPtr> > completions = Completion::completionsFromCOMPDATKeyword( COMPDAT1 );

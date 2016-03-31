@@ -61,7 +61,7 @@
 
 namespace Opm {
 
-    Schedule::Schedule(const ParseContext& parseContext , std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck, IOConfigPtr ioConfig)
+    Schedule::Schedule(ParseContext& parseContext , std::shared_ptr<const EclipseGrid> grid , DeckConstPtr deck, IOConfigPtr ioConfig)
         : m_grid(grid)
     {
         initFromDeck(parseContext , deck, ioConfig);
@@ -71,7 +71,7 @@ namespace Opm {
         return m_timeMap->getStartTime(/*timeStepIdx=*/0);
     }
 
-    void Schedule::initFromDeck(const ParseContext& parseContext , DeckConstPtr deck, IOConfigPtr ioConfig) {
+    void Schedule::initFromDeck(ParseContext& parseContext , DeckConstPtr deck, IOConfigPtr ioConfig) {
         initializeNOSIM(deck);
         createTimeMap(deck);
         m_tuning.reset(new Tuning(m_timeMap));
@@ -113,7 +113,7 @@ namespace Opm {
         m_timeMap.reset(new TimeMap(startTime));
     }
 
-    void Schedule::iterateScheduleSection(const ParseContext& parseContext , const SCHEDULESection& section, IOConfigPtr ioConfig) {
+    void Schedule::iterateScheduleSection(ParseContext& parseContext , const SCHEDULESection& section, IOConfigPtr ioConfig) {
         /*
           geoModifiers is a list of geo modifiers which can be found in the schedule
           section. This is only partly supported, support is indicated by the bool
@@ -314,7 +314,7 @@ namespace Opm {
     }
 
 
-    void Schedule::handleCOMPORD(const ParseContext& parseContext, const DeckKeyword& compordKeyword, size_t /* currentStep */) {
+    void Schedule::handleCOMPORD(ParseContext& parseContext, const DeckKeyword& compordKeyword, size_t /* currentStep */) {
         for (const auto& record : compordKeyword) {
             const auto& methodItem = record.getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
             if ((methodItem.get< std::string >(0) != "TRACK")  && (methodItem.get< std::string >(0) != "INPUT")) {

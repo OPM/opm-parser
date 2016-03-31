@@ -80,7 +80,7 @@ namespace Opm {
     public:
         ParseContext();
         ParseContext(const std::vector<std::pair<std::string , InputError::Action>> initial);
-        void handleError( const std::string& errorKey , const std::string& msg) const;
+        void handleError( const std::string& errorKey , const std::string& msg);
         bool hasKey(const std::string& key) const;
         void updateKey(const std::string& key , InputError::Action action);
         void update(InputError::Action action);

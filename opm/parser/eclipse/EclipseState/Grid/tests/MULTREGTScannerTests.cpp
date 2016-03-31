@@ -93,7 +93,8 @@ static Opm::DeckPtr createInvalidMULTREGTDeck() {
         "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    return parser->parseString(deckData, Opm::ParseContext()) ;
+    Opm::ParseContext parseContext;
+    return parser->parseString(deckData, parseContext);
 }
 
 
@@ -163,7 +164,8 @@ static Opm::DeckPtr createNotSupportedMULTREGTDeck() {
         "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    return parser->parseString(deckData, Opm::ParseContext()) ;
+    Opm::ParseContext parseContext;
+    return parser->parseString(deckData, parseContext);
 }
 
 
@@ -229,12 +231,14 @@ static Opm::DeckPtr createCopyMULTNUMDeck() {
         "\n";
 
     Opm::ParserPtr parser(new Opm::Parser());
-    return parser->parseString(deckData, Opm::ParseContext()) ;
+    Opm::ParseContext parseContext;
+    return parser->parseString(deckData, parseContext);
 }
 
 
 
 BOOST_AUTO_TEST_CASE(MULTREGT_COPY_MULTNUM) {
     Opm::DeckPtr deck = createCopyMULTNUMDeck();
-    Opm::EclipseState state(deck , Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::EclipseState state(deck , parseContext);
 }

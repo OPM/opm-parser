@@ -39,7 +39,8 @@ BOOST_AUTO_TEST_CASE( PARSE_MULTISEGMENT_ABS ) {
 
     ParserPtr parser(new Parser());
     std::string deckFile("testdata/integration_tests/SCHEDULE/SCHEDULE_MULTISEGMENT_WELL");
-    DeckPtr deck =  parser->parseFile(deckFile, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(deckFile, parseContext);
     // for WELSEGS keyword
     const auto& kw = deck->getKeyword("WELSEGS");
 

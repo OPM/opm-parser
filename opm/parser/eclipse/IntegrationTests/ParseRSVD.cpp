@@ -40,8 +40,9 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_EQUIL_OK ) {
     ParserPtr parser(new Parser());
+    Opm::ParseContext parseContext;
     std::string pvtgFile("testdata/integration_tests/RSVD/RSVD.txt");
-    DeckPtr deck =  parser->parseFile(pvtgFile, ParseContext());
+    DeckPtr deck =  parser->parseFile(pvtgFile, parseContext);
     const auto& kw1 = deck->getKeyword("RSVD" , 0);
     BOOST_CHECK_EQUAL( 6U , kw1.size() );
 

@@ -37,8 +37,9 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( PARSE_PLYVISC_OK) {
     ParserPtr parser(new Parser());
+    Opm::ParseContext parseContext;
     std::string deckFile("testdata/integration_tests/POLYMER/plyvisc.data");
-    DeckPtr deck =  parser->parseFile(deckFile, ParseContext());
+    DeckPtr deck =  parser->parseFile(deckFile, parseContext);
     const auto& kw = deck->getKeyword("PLYVISC");
     const auto& rec = kw.getRecord(0);
     const auto& item = rec.getItem(0);

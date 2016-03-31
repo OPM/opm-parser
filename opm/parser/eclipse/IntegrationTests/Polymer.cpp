@@ -37,7 +37,8 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_polymer_tables ) {
     ParserPtr parser(new Parser());
-    DeckPtr deck = parser->parseFile("testdata/integration_tests/POLYMER/POLY.inc", ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck = parser->parseFile("testdata/integration_tests/POLYMER/POLY.inc", parseContext);
     Opm::TableManager tables( *deck );
     const TableContainer& plymax = tables.getPlymaxTables();
     const TableContainer& plyrock = tables.getPlyrockTables();

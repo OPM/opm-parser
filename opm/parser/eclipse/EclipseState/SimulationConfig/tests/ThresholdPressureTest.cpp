@@ -134,7 +134,7 @@ const std::string& inputStrMissingPressure = "RUNSPEC\n"
 
 
 
-static DeckPtr createDeck(const ParseContext& parseContext , const std::string& input) {
+static DeckPtr createDeck(ParseContext& parseContext , const std::string& input) {
     Opm::Parser parser;
     return parser.parseString(input , parseContext);
 }

@@ -29,7 +29,7 @@
 
 namespace Opm {
 
-    ThresholdPressure::ThresholdPressure(const ParseContext& parseContext , DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties)
+    ThresholdPressure::ThresholdPressure(ParseContext& parseContext , DeckConstPtr deck, std::shared_ptr<GridProperties<int>> gridProperties)
         : m_parseContext( parseContext )
     {
 

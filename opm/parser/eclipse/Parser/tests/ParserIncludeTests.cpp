@@ -31,7 +31,8 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeValid) {
     boost::filesystem::path inputFilePath("testdata/parser/includeValid.data");
 
     Opm::ParserPtr parser(new Opm::Parser());
-    Opm::DeckConstPtr deck = parser->parseFile(inputFilePath.string() , Opm::ParseContext());
+    Opm::ParseContext parseContext;
+    Opm::DeckConstPtr deck = parser->parseFile(inputFilePath.string() , parseContext);
 
     BOOST_CHECK_EQUAL(true , deck->hasKeyword("OIL"));
     BOOST_CHECK_EQUAL(false , deck->hasKeyword("WATER"));
@@ -41,7 +42,8 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeInvalid) {
     boost::filesystem::path inputFilePath("testdata/parser/includeInvalid.data");
 
     Opm::ParserPtr parser(new Opm::Parser());
-    BOOST_CHECK_THROW(parser->parseFile(inputFilePath.string() , Opm::ParseContext()), std::runtime_error);
+    Opm::ParseContext parseContext;
+    BOOST_CHECK_THROW(parser->parseFile(inputFilePath.string() , parseContext), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(ParserKeyword_includeWrongCase) {
@@ -50,25 +52,26 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeWrongCase) {
     boost::filesystem::path inputFile3Path("testdata/parser/includeWrongCase3.data");
 
     Opm::ParserPtr parser(new Opm::Parser());
+    Opm::ParseContext parseContext;
 
 #if HAVE_CASE_SENSITIVE_FILESYSTEM
     // so far, we expect the files which are included to exhibit
     // exactly the same spelling as their names on disk. Eclipse seems
     // to be a bit more relaxed when it comes to this, so we might
     // have to change the current behavior one not-so-fine day...
-    BOOST_CHECK_THROW(parser->parseFile(inputFile1Path.string(), Opm::ParseContext()), std::runtime_error);
-    BOOST_CHECK_THROW(parser->parseFile(inputFile2Path.string(), Opm::ParseContext()), std::runtime_error);
-    BOOST_CHECK_THROW(parser->parseFile(inputFile3Path.string(), Opm::ParseContext()), std::runtime_error);
+    BOOST_CHECK_THROW(parser->parseFile(inputFile1Path.string(), parseContext), std::runtime_error);
+    BOOST_CHECK_THROW(parser->parseFile(inputFile2Path.string(), parseContext), std::runtime_error);
+    BOOST_CHECK_THROW(parser->parseFile(inputFile3Path.string(), parseContext), std::runtime_error);
 #else
     // for case-insensitive filesystems, the include statement will
     // always work regardless of how the capitalization of the
     // included files is wrong...
-    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile1Path.string(), Opm::ParseContext())->hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile1Path.string(), Opm::ParseContext())->hasKeyword("WATER"));
-    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile2Path.string(), Opm::ParseContext())->hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile2Path.string(), Opm::ParseContext())->hasKeyword("WATER"));
-    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile3Path.string(), Opm::ParseContext())->hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile3Path.string(), Opm::ParseContext())->hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile1Path.string(), parseContext)->hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile1Path.string(), parseContext)->hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile2Path.string(), parseContext)->hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile2Path.string(), parseContext)->hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, parser->parseFile(inputFile3Path.string(), parseContext)->hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, parser->parseFile(inputFile3Path.string(), parseContext)->hasKeyword("WATER"));
 #endif
 }
 

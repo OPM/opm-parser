@@ -22,8 +22,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <opm/common/OpmLog/LogUtil.hpp>
-#include <opm/common/OpmLog/OpmLog.hpp>
 #include <opm/parser/eclipse/Parser/InputErrorAction.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
@@ -77,11 +75,11 @@ namespace Opm {
     }
 
 
-    void ParseContext::handleError( const std::string& errorKey , const std::string& msg) const {
+    void ParseContext::handleError( const std::string& errorKey , const std::string& msg) {
         InputError::Action action = get( errorKey );
 
         if (action == InputError::WARN)
-            OpmLog::addMessage(Log::MessageType::Warning , msg);
+            m_messageContainer.warning(msg);
         else if (action == InputError::THROW_EXCEPTION)
             throw std::invalid_argument(errorKey + ": " + msg);
 

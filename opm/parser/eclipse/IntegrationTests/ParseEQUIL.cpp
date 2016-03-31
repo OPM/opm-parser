@@ -61,7 +61,8 @@ BOOST_AUTO_TEST_CASE( parse_EQUIL_MISSING_DIMS ) {
 BOOST_AUTO_TEST_CASE( parse_EQUIL_OK ) {
     ParserPtr parser(new Parser());
     std::string pvtgFile("testdata/integration_tests/EQUIL/EQUIL1");
-    DeckPtr deck =  parser->parseFile(pvtgFile, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseFile(pvtgFile, parseContext);
     const auto& kw1 = deck->getKeyword("EQUIL" , 0);
     BOOST_CHECK_EQUAL( 3U , kw1.size() );
 

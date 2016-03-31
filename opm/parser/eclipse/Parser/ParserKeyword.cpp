@@ -506,7 +506,7 @@ namespace Opm {
         return m_deckNames.end();
     }
 
-    DeckKeyword ParserKeyword::parse(const ParseContext& parseContext , RawKeywordPtr rawKeyword) const {
+    DeckKeyword ParserKeyword::parse(ParseContext& parseContext , RawKeywordPtr rawKeyword) const {
         if (rawKeyword->isFinished()) {
             DeckKeyword keyword( rawKeyword->getKeywordName() );
             keyword.setLocation(rawKeyword->getFilename(), rawKeyword->getLineNR());

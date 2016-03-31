@@ -76,12 +76,13 @@ BOOST_AUTO_TEST_CASE( PARSE_SORWMIS)
 ParserPtr parser(new Parser());
 
 // missing miscible keyword
-BOOST_CHECK_THROW (parser->parseString(sorwmisData, ParseContext()), std::invalid_argument );
+Opm::ParseContext parseContext;
+BOOST_CHECK_THROW (parser->parseString(sorwmisData, parseContext), std::invalid_argument );
 
 //too many tables
-BOOST_CHECK_THROW( parser->parseString(miscibleTightData + sorwmisData, ParseContext()), std::invalid_argument);
+BOOST_CHECK_THROW( parser->parseString(miscibleTightData + sorwmisData, parseContext), std::invalid_argument);
 
-DeckPtr deck1 =  parser->parseString(miscibleData + sorwmisData, ParseContext());
+DeckPtr deck1 =  parser->parseString(miscibleData + sorwmisData, parseContext);
 
 const auto& sorwmis = deck1->getKeyword("SORWMIS");
 const auto& miscible = deck1->getKeyword("MISCIBLE");
@@ -113,8 +114,8 @@ BOOST_CHECK_EQUAL(0.8, sorwmisTable1.getMiscibleResidualOilColumn()[2]);
 BOOST_AUTO_TEST_CASE( PARSE_SGCWMIS)
 {
     ParserPtr parser(new Parser());
-
-    DeckPtr deck1 =  parser->parseString(miscibleData + sgcwmisData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck1 =  parser->parseString(miscibleData + sgcwmisData, parseContext);
 
     const auto& sgcwmis = deck1->getKeyword("SGCWMIS");
     const auto& miscible = deck1->getKeyword("MISCIBLE");
@@ -177,18 +178,19 @@ BOOST_AUTO_TEST_CASE(PARSE_MISC)
     ParserPtr parser(new Parser());
 
     // out of range MISC keyword
-    DeckPtr deck1 = parser->parseString(miscOutOfRangeData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck1 = parser->parseString(miscOutOfRangeData, parseContext);
     const auto& item = deck1->getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable1(item);
 
 
     // too litle range of MISC keyword
-    DeckPtr deck2 = parser->parseString(miscTooSmallRangeData, ParseContext());
+    DeckPtr deck2 = parser->parseString(miscTooSmallRangeData, parseContext);
     const auto& item2 = deck2->getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable2(item2);
 
     // test table input
-    DeckPtr deck3 =  parser->parseString(miscData, ParseContext());
+    DeckPtr deck3 =  parser->parseString(miscData, parseContext);
     const auto& item3 = deck3->getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable3(item3);
     BOOST_CHECK_EQUAL(3U, miscTable3.getSolventFractionColumn().size());
@@ -211,7 +213,8 @@ BOOST_AUTO_TEST_CASE(PARSE_PMISC)
     ParserPtr parser(new Parser());
 
     // test table input
-    DeckPtr deck =  parser->parseString(pmiscData, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseString(pmiscData, parseContext);
     Opm::PmiscTable pmiscTable(deck->getKeyword("PMISC").getRecord(0).getItem(0));
     BOOST_CHECK_EQUAL(3U, pmiscTable.getOilPhasePressureColumn().size());
     BOOST_CHECK_EQUAL(200*1e5, pmiscTable.getOilPhasePressureColumn()[1]);
@@ -233,7 +236,8 @@ MSFN\n\
 BOOST_AUTO_TEST_CASE(PARSE_MSFN)
 {
 ParserPtr parser(new Parser());
-DeckPtr deck =  parser->parseString(msfnData, ParseContext());
+Opm::ParseContext parseContext;
+DeckPtr deck =  parser->parseString(msfnData, parseContext);
 
 // test table input 1
  Opm::MsfnTable msfnTable1(deck->getKeyword("MSFN").getRecord(0).getItem(0));
@@ -265,7 +269,8 @@ BOOST_AUTO_TEST_CASE(PARSE_TLPMIXPA)
     ParserPtr parser(new Parser());
 
     // test table input
-    DeckPtr deck =  parser->parseString(tlpmixpa, ParseContext());
+    Opm::ParseContext parseContext;
+    DeckPtr deck =  parser->parseString(tlpmixpa, parseContext);
     Opm::TlpmixpaTable tlpmixpaTable(deck->getKeyword("TLPMIXPA").getRecord(0).getItem(0));
     BOOST_CHECK_EQUAL(3U, tlpmixpaTable.getOilPhasePressureColumn().size());
     BOOST_CHECK_EQUAL(200*1e5, tlpmixpaTable.getOilPhasePressureColumn()[1]);
