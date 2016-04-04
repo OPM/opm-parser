@@ -45,7 +45,11 @@ namespace Opm {
         void addRawRecordString(const std::string& partialRecordString);
         size_t size() const;
         Raw::KeywordSizeEnum getSizeType() const;
-        RawRecord& getRecord( size_t index );
+
+        // Special case method only for inspecting INCLUDE keywords;
+        // the general getRecords functionality should use the
+        // iterator interface.
+        const RawRecord& getFirstRecord( ) const;
 
         static bool isKeywordPrefix(const std::string& line, std::string& keywordName);
 
@@ -58,9 +62,13 @@ namespace Opm {
         size_t getLineNR() const;
 
         using const_iterator = std::list< RawRecord >::const_iterator;
+        using iterator = std::list< RawRecord >::iterator;
 
         const_iterator begin() const;
         const_iterator end() const;
+        iterator begin();
+        iterator end();
+
 
     private:
         Raw::KeywordSizeEnum m_sizeType;
