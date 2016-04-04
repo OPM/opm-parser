@@ -38,7 +38,6 @@ function build_opm_parser {
   popd
 
   # Build opm-parser
-  git checkout $OPM_PARSER_REVISION
   pushd .
   mkdir serial/build-opm-parser
   cd serial/build-opm-parser
