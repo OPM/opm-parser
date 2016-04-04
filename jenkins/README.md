@@ -18,4 +18,4 @@ It is intended for pre-merge builds of pull requests.
 
 You specify a given pull request to use for opm-common through the trigger.
 The trigger line needs to contain ert=&lt;pull request number&gt; and/or
-opm-common=&lt;pull request number&gt;. om om om
+opm-common=&lt;pull request number&gt;. om om om p pp
