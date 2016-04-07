@@ -11,6 +11,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/RtempvdTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
+
 namespace Opm {
 
     template< typename T >
@@ -21,39 +22,56 @@ namespace Opm {
     template< typename T >
     GridPropertyInitFunction< T >::GridPropertyInitFunction(
             signature fn,
-            const Deck& d,
-            const EclipseState& state ) :
-        f( fn ), deck( &d ), es( &state )
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props)
+        :
+            f( fn ),
+            // es( &state )
+            tm ( tables ),
+            eg ( grid ),
+            igp ( ig_props ),
+            dgp ( dg_props )
     {}
 
     template< typename T >
     std::vector< T > GridPropertyInitFunction< T >::operator()( size_t size ) const {
         if( !this->f ) return std::vector< T >( size, this->constant );
 
-        return (*this->f)( size, *this->deck, *this->es );
+        return (*this->f)( size, this->tm, this->eg, this->igp, this->dgp );
     }
 
     template< typename T >
     GridPropertyPostFunction< T >::GridPropertyPostFunction(
             signature fn,
-            const Deck& d,
-            const EclipseState& state ) :
-        f( fn ), deck( &d ), es( &state )
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props)
+        :
+            f( fn ),
+            tm ( tables ),
+            eg ( grid ),
+            igp ( ig_props ),
+            dgp ( dg_props )
     {}
 
     template< typename T >
     void GridPropertyPostFunction< T >::operator()( std::vector< T >& values ) const {
-        if( !this->f ) return;
-
-        return (*this->f)( values, *this->deck, *this->es );
+        if (!this->f)
+            return;
+        return (*this->f)( values, this->tm, this->eg, this->igp, this->dgp );
     }
 
     std::vector< double > temperature_lookup(
             size_t size,
-            const Deck& deck,
-            const EclipseState& eclipseState ) {
+            const TableManager* tables,
+            const EclipseGrid* grid,
+            GridProperties<int>* ig_props,
+            GridProperties<double>* dg_props) {
 
-        if( !deck.hasKeyword("EQLNUM") ) {
+        if( !tables->useEqlnum() ) {
             /* if values are defaulted in the TEMPI keyword, but no
              * EQLNUM is specified, you will get NaNs
              */
@@ -62,15 +80,13 @@ namespace Opm {
 
         std::vector< double > values( size, 0 );
 
-        auto tables = eclipseState.getTableManager();
-        auto eclipseGrid = eclipseState.getEclipseGrid();
         const auto& rtempvdTables = tables->getRtempvdTables();
-        const std::vector< int >& eqlNum = eclipseState.getIntGridProperty("EQLNUM")->getData();
+        const std::vector< int >& eqlNum = ig_props->getKeyword("EQLNUM").getData();
 
         for (size_t cellIdx = 0; cellIdx < eqlNum.size(); ++ cellIdx) {
             int cellEquilNum = eqlNum[cellIdx];
             const RtempvdTable& rtempvdTable = rtempvdTables.getTable<RtempvdTable>(cellEquilNum);
-            double cellDepth = std::get<2>(eclipseGrid->getCellCenter(cellIdx));
+            double cellDepth = std::get<2>(grid->getCellCenter(cellIdx));
             values[cellIdx] = rtempvdTable.evaluate("Temperature", cellDepth);
         }
 
