@@ -37,11 +37,14 @@ function build_opm_parser {
   build_module "-DCMAKE_INSTALL_PREFIX=$WORKSPACE/serial/install" 0 $WORKSPACE/deps/opm-common
   popd
 
+  # Setup opm-data
+  source $WORKSPACE/deps/opm-common/jenkins/setup-opm-data.sh
+
   # Build opm-parser
   pushd .
   mkdir serial/build-opm-parser
   cd serial/build-opm-parser
-  build_module "-DCMAKE_PREFIX_PATH=$WORKSPACE/serial/install" 1 $WORKSPACE
+  build_module "-DCMAKE_PREFIX_PATH=$WORKSPACE/serial/install -DOPM_DATA_ROOT=$OPM_DATA_ROOT" 1 $WORKSPACE
   test $? -eq 0 || exit 1
   popd
 }
