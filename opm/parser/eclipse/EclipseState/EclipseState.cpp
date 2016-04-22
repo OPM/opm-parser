@@ -21,8 +21,6 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-#include <opm/common/OpmLog/OpmLog.hpp>
-
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
@@ -81,6 +79,11 @@ namespace Opm {
         initFaults(deck);
         initMULTREGT(deck);
         m_nnc = std::make_shared<NNC>( deck, getInputGrid());
+
+        m_messageContainer.appendMessages(m_tables.getMessageContainer());
+        m_messageContainer.appendMessages(m_schedule->getMessageContainer());
+        m_messageContainer.appendMessages(m_inputGrid->getMessageContainer());
+        m_messageContainer.appendMessages(m_eclipseProperties.getMessageContainer());
     }
 
     const UnitSystem& EclipseState::getDeckUnitSystem() const {
@@ -249,6 +252,7 @@ namespace Opm {
         m_transMult->setMultregtScanner( scanner );
     }
 
+
     std::vector< int > EclipseState::getRegions( const std::string& kw ) const {
         if( !this->get3DProperties().hasDeckIntGridProperty( kw ) ) return {};
 
@@ -261,12 +265,12 @@ namespace Opm {
     }
 
 
-    void EclipseState::complainAboutAmbiguousKeyword(DeckConstPtr deck, const std::string& keywordName) const {
-        OpmLog::addMessage(Log::MessageType::Error, "The " + keywordName + " keyword must be unique in the deck. Ignoring all!");
+    void EclipseState::complainAboutAmbiguousKeyword(DeckConstPtr deck, const std::string& keywordName) {
+        m_messageContainer.error("The " + keywordName + " keyword must be unique in the deck. Ignoring all!");
         auto keywords = deck->getKeywordList(keywordName);
         for (size_t i = 0; i < keywords.size(); ++i) {
             std::string msg = "Ambiguous keyword "+keywordName+" defined here";
-            OpmLog::addMessage(Log::MessageType::Error , Log::fileMessage( keywords[i]->getFileName(), keywords[i]->getLineNumber(),msg));
+            m_messageContainer.error(keywords[i]->getFileName(), msg, keywords[i]->getLineNumber());
         }
     }
 

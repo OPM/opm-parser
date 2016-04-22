@@ -26,7 +26,7 @@
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Util/OrderedMap.hpp>
-
+#include <opm/parser/eclipse/Parser/MessageContainer.hpp>
 
 namespace Opm
 {
@@ -81,7 +81,8 @@ namespace Opm
         const Events& getEvents() const;
         bool hasOilVaporizationProperties();
         std::shared_ptr<const Deck> getModifierDeck(size_t timeStep) const;
-
+        const MessageContainer& getMessageContainer() const;
+        MessageContainer& getMessageContainer();
 
 
     private:
@@ -95,6 +96,7 @@ namespace Opm
         std::shared_ptr<DynamicVector<std::shared_ptr<Deck> > > m_modifierDeck;
         std::shared_ptr< Tuning > m_tuning;
         bool nosim;
+        MessageContainer m_messages;
 
 
         void updateWellStatus(std::shared_ptr<Well> well, size_t reportStep , WellCommon::StatusEnum status);
@@ -109,7 +111,7 @@ namespace Opm
         void addGroup(const std::string& groupName , size_t timeStep);
         void addWell(const std::string& wellName, const DeckRecord& record, size_t timeStep, WellCompletion::CompletionOrderEnum wellCompletionOrder);
         void handleCOMPORD(const ParseContext& parseContext, const DeckKeyword& compordKeyword, size_t currentStep);
-        void checkWELSPECSConsistency(std::shared_ptr< const Well > well, const DeckKeyword& keyword, size_t recordIdx) const;
+        void checkWELSPECSConsistency(std::shared_ptr< const Well > well, const DeckKeyword& keyword, size_t recordIdx);
         void handleWELSPECS( const SCHEDULESection&, const DeckKeyword& keyword, size_t currentStep);
         void handleWCONProducer( const DeckKeyword& keyword, size_t currentStep, bool isPredictionMode);
         void handleWCONHIST( const DeckKeyword& keyword, size_t currentStep);

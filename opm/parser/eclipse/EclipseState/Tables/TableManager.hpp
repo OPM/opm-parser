@@ -42,8 +42,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/VFPInjTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/VFPProdTable.hpp>
 
-#include <opm/common/OpmLog/OpmLog.hpp>
-#include <opm/common/OpmLog/LogUtil.hpp>
+#include <opm/parser/eclipse/Parser/MessageContainer.hpp>
 
 namespace Opm {
 
@@ -119,10 +118,13 @@ namespace Opm {
         /// deck has keyword "EQLNUM" --- Equilibriation region numbers
         bool useEqlnum() const;
 
+        const MessageContainer& getMessageContainer() const;
+        MessageContainer& getMessageContainer();
+
     private:
         TableContainer& forceGetTables( const std::string& tableName , size_t numTables);
 
-        void complainAboutAmbiguousKeyword(const Deck& deck, const std::string& keywordName) const;
+        void complainAboutAmbiguousKeyword(const Deck& deck, const std::string& keywordName);
 
         void addTables( const std::string& tableName , size_t numTables);
         void initSimpleTables(const Deck& deck);
@@ -196,7 +198,7 @@ namespace Opm {
                     // should be copied...
                     if (tableIdx == 0) {
                         std::string msg = "The first table for keyword "+keywordName+" must be explicitly defined! Ignoring keyword";
-                        OpmLog::addMessage(Log::MessageType::Warning , Log::fileMessage( tableKeyword.getFileName(), tableKeyword.getLineNumber(), msg));
+                        m_messages.warning(tableKeyword.getFileName() + std::to_string(tableKeyword.getLineNumber()) + msg);
                         return;
                     }
                     tableVector.push_back(tableVector.back());
@@ -243,6 +245,8 @@ namespace Opm {
         const bool hasImptvd;// if deck has keyword IMPTVD
         const bool hasEnptvd;// if deck has keyword ENPTVD
         const bool hasEqlnum;// if deck has keyword EQLNUM
+
+        MessageContainer m_messages;
     };
 }
 

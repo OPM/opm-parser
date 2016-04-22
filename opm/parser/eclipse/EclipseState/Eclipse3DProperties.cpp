@@ -18,7 +18,6 @@
 
 
 #include <boost/algorithm/string/join.hpp>
-
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
@@ -855,7 +854,16 @@ namespace Opm {
         }
     }
 
-    // static member function
+    
+
+    MessageContainer Eclipse3DProperties::getMessageContainer() {
+        MessageContainer messages;
+        messages.appendMessages(m_intGridProperties.getMessageContainer());
+        messages.appendMessages(m_doubleGridProperties.getMessageContainer());
+        return messages;
+    }
+
+
     void Eclipse3DProperties::setKeywordBox( const DeckKeyword& deckKeyword,
                                            const DeckRecord& deckRecord,
                                            BoxManager& boxManager) {
@@ -896,10 +904,7 @@ namespace Opm {
         } else if (setCount != 0) {
             std::string msg = "BOX modifiers on keywords must be either "
                 "specified completely or not at all. Ignoring.";
-            OpmLog::addMessage(Log::MessageType::Error,
-                               Log::fileMessage(deckKeyword.getFileName(),
-                                                deckKeyword.getLineNumber(),
-                                                msg));
+            m_intGridProperties.getMessageContainer().error(deckKeyword.getFileName() + std::to_string(deckKeyword.getLineNumber()) + msg);
         }
     }
 }

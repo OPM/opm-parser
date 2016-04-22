@@ -25,6 +25,7 @@
 #include <opm/parser/eclipse/EclipseState/Util/Value.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/MinpvMode.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/PinchMode.hpp>
+#include <opm/parser/eclipse/Parser/MessageContainer.hpp>
 
 #include <ert/ecl/ecl_grid.h>
 #include <ert/util/ert_unique_ptr.hpp>
@@ -119,6 +120,8 @@ namespace Opm {
         bool equal(const EclipseGrid& other) const;
         void fwriteEGRID( const std::string& filename, bool output_metric ) const;
         const ecl_grid_type * c_ptr() const;
+        const MessageContainer& getMessageContainer() const;
+        MessageContainer& getMessageContainer();
     private:
         ERT::ert_unique_ptr<ecl_grid_type , ecl_grid_free> m_grid;
         double m_minpvValue;
@@ -129,6 +132,7 @@ namespace Opm {
         size_t m_nx;
         size_t m_ny;
         size_t m_nz;
+        MessageContainer m_messages;
 
         void assertCellInfo() const;
 
@@ -138,7 +142,7 @@ namespace Opm {
         void initDVDEPTHZGrid(const std::vector<int>& dims , std::shared_ptr< const Deck > deck);
         void initGrid(const std::vector<int>& dims, std::shared_ptr< const Deck > deck);
 
-        static void assertCornerPointKeywords(const std::vector<int>& dims, std::shared_ptr< const Deck > deck);
+        void assertCornerPointKeywords(const std::vector<int>& dims, std::shared_ptr< const Deck > deck);
         static bool hasDVDEPTHZKeywords(std::shared_ptr< const Deck > deck);
         static bool hasDTOPSKeywords(std::shared_ptr< const Deck > deck);
         static void assertVectorSize(const std::vector<double>& vector , size_t expectedSize , const std::string& msg);
