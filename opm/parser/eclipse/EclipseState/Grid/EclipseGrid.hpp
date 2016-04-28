@@ -96,6 +96,9 @@ namespace Opm {
 
         bool hasCellInfo() const;
 
+        /// Checks if two global indices are Cartesian neighbors
+        bool cartesianAdjacent(size_t g1, size_t g2) const;
+
         size_t getGlobalIndex(size_t i, size_t j, size_t k) const;
         std::array<int, 3> getIJK(size_t globalIndex) const;
         void assertGlobalIndex(size_t globalIndex) const;

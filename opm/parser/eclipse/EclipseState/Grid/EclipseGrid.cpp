@@ -249,19 +249,40 @@ namespace Opm {
         return m_minpvValue;
     }
 
+    /// static helper function checking that _one_ coordinate differs with 1
+    bool ijk_are_adj(int i1, int j1, int k1, int i2, int j2, int k2) {
+        return ((i1-i2)*(i1-i2)+
+                (j1-j2)*(j1-j2)+
+                (k1-k2)*(k1-k2)) == 1;
+    }
+
+    // checks cartesian adjacency of global indices g1 and g2
+    bool EclipseGrid::cartesianAdjacent(size_t g1, size_t g2) const {
+        assertGlobalIndex(g1); assertGlobalIndex(g2);
+
+        auto cell1 = getIJK(g1);
+        auto cell2 = getIJK(g2);
+        return ijk_are_adj(cell1[0], cell1[1], cell1[2],
+                           cell2[0], cell2[1], cell2[2]);
+    }
+
+
+
 
     size_t EclipseGrid::getGlobalIndex(size_t i, size_t j, size_t k) const {
+        assertIJK(i, j, k);
         return (i + j * getNX() + k * getNX() * getNY());
     }
 
-    std::array<int, 3> EclipseGrid::getIJK(size_t globalIndex) const {
-        std::array<int, 3> r = { 0, 0, 0 };
-        int k = globalIndex / (getNX() * getNY()); globalIndex -= k * (getNX() * getNY());
-        int j = globalIndex / getNX();             globalIndex -= j *  getNX();
-        int i = globalIndex;
-        r[0] = i;
-        r[1] = j;
-        r[2] = k;
+    std::array<int, 3> EclipseGrid::getIJK(size_t g) const {
+        assertGlobalIndex(g);
+        std::array<int, 3> r;
+
+        int i = g % m_nx;  g /= m_nx;
+        int j = g % m_ny;  g /= m_ny;
+        int k = g % m_nz;
+
+        r[0] = i; r[1] = j; r[2] = k;
         return r;
     }
 

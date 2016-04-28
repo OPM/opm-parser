@@ -127,6 +127,27 @@ BOOST_AUTO_TEST_CASE(CheckGridIndex) {
     BOOST_CHECK_EQUAL(grid.getGlobalIndex(11, 13, 17), 5723);
 
     BOOST_CHECK_EQUAL(17 * 19 * 41, grid.getCartesianSize());
+
+    BOOST_CHECK_THROW(grid.getIJK(17 * 19 * 41), std::invalid_argument);
+
+    BOOST_CHECK_THROW(grid.getGlobalIndex(17, 0, 0), std::invalid_argument);
+    BOOST_CHECK_THROW(grid.getGlobalIndex(0, 19, 0), std::invalid_argument);
+    BOOST_CHECK_THROW(grid.getGlobalIndex(0, 0, 41), std::invalid_argument);
+
+    size_t c1 = grid.getGlobalIndex(7, 11, 13);
+    size_t c2 = grid.getGlobalIndex(7, 12, 13);
+    size_t c3 = grid.getGlobalIndex(7, 13, 13);
+    size_t c4 = grid.getGlobalIndex(8, 12, 14);
+
+
+    BOOST_CHECK( grid.cartesianAdjacent(c1, c2));
+    BOOST_CHECK( grid.cartesianAdjacent(c3, c2));
+    BOOST_CHECK(!grid.cartesianAdjacent(c1, c3));
+
+    BOOST_CHECK(!grid.cartesianAdjacent(c4, c1));
+    BOOST_CHECK(!grid.cartesianAdjacent(c4, c2));
+    BOOST_CHECK(!grid.cartesianAdjacent(c4, c3));
+
 }
 
 static Opm::DeckPtr createCPDeck() {
