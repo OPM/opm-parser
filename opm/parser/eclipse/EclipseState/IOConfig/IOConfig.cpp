@@ -465,8 +465,12 @@ namespace Opm {
         m_output_dir = outputDir;
     }
 
-    std::string IOConfig::getBaseName() {
+    const std::string& IOConfig::getBaseName() const {
         return m_base_name;
+    }
+
+    void IOConfig::setBaseName(std::string baseName) {
+        m_base_name = baseName;
     }
 
 } //namespace Opm
