@@ -31,9 +31,8 @@
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserStringItem.hpp>
+#include <opm/parser/eclipse/RawDeck/RawConsts.hpp>
 #include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
-
-#include <boost/algorithm/string.hpp>
 
 namespace Opm {
 
@@ -82,15 +81,10 @@ namespace Opm {
     }
 
     bool ParserKeyword::hasDimension() const {
-        if (m_records.size() > 0) {
-            bool hasDim = false;
-            for (auto& record : m_records) {
-                if (record->hasDimension())
-                    hasDim = true;
-            }
-            return hasDim;
-        } else
-            return false;
+        for( const auto& record : m_records )
+            if( record->hasDimension() ) return true;
+
+        return false;
     }
 
 
@@ -207,7 +201,7 @@ namespace Opm {
     }
 
 
-    bool ParserKeyword::validNameStart(const std::string& name) {
+    bool ParserKeyword::validNameStart( const string_view& name) {
         if (name.length() > ParserConst::maxKeywordLength)
             return false;
 
@@ -217,69 +211,41 @@ namespace Opm {
         return true;
     }
 
-    bool ParserKeyword::validInternalName(const std::string& name) {
-        if (name.length() < 2)
-            return false;
-        else if (!std::isalpha(name[0]))
-            return false;
+    bool ParserKeyword::validInternalName( const std::string& name ) {
+        if( name.length() < 2 ) return false;
+        if( !std::isalpha( name[0] ) ) return false;
 
-        for (size_t i = 1; i < name.length(); i++) {
-            char c = name[i];
-            if (!isalnum(c) &&
-                c != '_')
-            {
-                return false;
-            }
-        }
+        const auto ok = []( char c ) { return std::isalnum( c ) || c == '_'; };
 
-        return true;
+        return std::all_of( name.begin() + 1, name.end(), ok );
     }
 
-    std::string ParserKeyword::getDeckName(const std::string& rawString)
-    {
+    string_view ParserKeyword::getDeckName( const string_view& str ) {
+
+        auto first_sep = std::find_if( str.begin(), str.end(), RawConsts::is_separator );
+
         // only look at the first 8 characters (at most)
-        std::string result = rawString.substr(0, 8);
+        if( std::distance( str.begin(), first_sep ) < 9 )
+            return { str.begin(), first_sep };
 
-        // remove any white space
-        boost::algorithm::trim(result);
-
-        return result;
+        return { str.begin(), str.begin() + 9 };
     }
 
-    static inline std::string uppercase( std::string str ) {
-        /* the cctype toupper etc. are often implemented as macros, so its
-         * unreliable with std algorithms. Hand-rolling map instead
-         */
-        for( auto& c : str ) c = toupper( c );
-        return str;
-    }
+    bool ParserKeyword::validDeckName( const string_view& name) {
 
-    bool ParserKeyword::validDeckName(const std::string& name) {
-        // make the keyword string ALL_UPPERCASE because Eclipse seems
-        // to be case-insensitive (although this is one of its
-        // undocumented features...)
-        auto upperCaseName = uppercase( name );
-
-        if (!validNameStart(upperCaseName))
+        if( !validNameStart( name ) )
             return false;
 
-        for (size_t i = 1; i < upperCaseName.length(); i++) {
-            char c = upperCaseName[i];
-            if (!isalnum(c) &&
-                c != '-' &&
-                c != '_' &&
-                c != '+')
-            {
-                return false;
-            }
-        }
-        return true;
+        const auto valid = []( char c ) {
+            return std::isalnum( c ) || c == '-' || c == '_' || c == '+';
+        };
+
+        return std::all_of( name.begin() + 1, name.end(), valid );
     }
 
     bool ParserKeyword::hasMultipleDeckNames() const {
         return m_deckNames.size() > 1;
     }
-
 
     void ParserKeyword::initDeckNames(const Json::JsonObject& jsonObject) {
         if (!jsonObject.has_item("deck_names"))
@@ -507,27 +473,23 @@ namespace Opm {
     }
 
     DeckKeyword ParserKeyword::parse(const ParseContext& parseContext , RawKeywordPtr rawKeyword) const {
-        if (rawKeyword->isFinished()) {
-            DeckKeyword keyword( rawKeyword->getKeywordName() );
-            keyword.setLocation(rawKeyword->getFilename(), rawKeyword->getLineNR());
-            keyword.setDataKeyword( isDataKeyword() );
-	    {
-		size_t record_nr = 0;
-		for (auto& rawRecord : *rawKeyword) {
-		    if(m_records.size() > 0) {
-			keyword.addRecord( getRecord( record_nr )->parse( parseContext, rawRecord ) );
-		    }
-		    else {
-			if(rawRecord.size() > 0) {
-			    throw std::invalid_argument("Missing item information " + rawKeyword->getKeywordName());
-			}
-		    }
-		    record_nr++;
-		}
-            }
-            return keyword;
-        } else
+        if( !rawKeyword->isFinished() )
             throw std::invalid_argument("Tried to create a deck keyword from an incomplete raw keyword " + rawKeyword->getKeywordName());
+
+        DeckKeyword keyword( rawKeyword->getKeywordName() );
+        keyword.setLocation( rawKeyword->getFilename(), rawKeyword->getLineNR() );
+        keyword.setDataKeyword( isDataKeyword() );
+
+        size_t record_nr = 0;
+        for( auto& rawRecord : *rawKeyword ) {
+            if( m_records.size() == 0 && rawRecord.size() > 0 )
+                throw std::invalid_argument("Missing item information " + rawKeyword->getKeywordName());
+
+            keyword.addRecord( getRecord( record_nr )->parse( parseContext, rawRecord ) );
+            record_nr++;
+        }
+
+        return keyword;
     }
 
     size_t ParserKeyword::getFixedSize() const {
@@ -580,16 +542,18 @@ namespace Opm {
         }
     }
 
-    bool ParserKeyword::matches(const std::string& deckKeywordName) const {
-        if (!validDeckName(deckKeywordName))
+    bool ParserKeyword::matches(const string_view& name ) const {
+        if (!validDeckName(name ))
             return false;
-        else if (m_deckNames.count(deckKeywordName) > 0)
+
+        else if( m_deckNames.count( name.string() ) )
             return true;
+
         else if (hasMatchRegex()) {
 #ifdef HAVE_REGEX
-            return std::regex_match(deckKeywordName, m_matchRegex);
+            return std::regex_match( name.begin(), name.end(), m_matchRegex);
 #else
-            return boost::regex_match(deckKeywordName, m_matchRegex);
+            return boost::regex_match( name.begin(), name.end(), m_matchRegex);
 #endif
         }
 
@@ -600,40 +564,36 @@ namespace Opm {
         // compare the deck names. we don't care about the ordering of the strings.
         if (m_deckNames != other.m_deckNames)
             return false;
-        {
-            if ((m_name == other.m_name) &&
-                (m_matchRegexString == other.m_matchRegexString) &&
-                (m_keywordSizeType == other.m_keywordSizeType) &&
-                (isDataKeyword() == other.isDataKeyword()) &&
-                (m_isTableCollection == other.m_isTableCollection)) {
 
-                bool equal_ = false;
-                switch (m_keywordSizeType) {
-                case FIXED:
-                    if (m_fixedSize == other.m_fixedSize)
-                        equal_ = true;
-                    break;
-                case OTHER_KEYWORD_IN_DECK:
-                    if ((m_sizeDefinitionPair.first == other.m_sizeDefinitionPair.first) &&
-                        (m_sizeDefinitionPair.second == other.m_sizeDefinitionPair.second))
-                        equal_ = true;
-                    break;
-                default:
-                    equal_ = true;
-                    break;
-                }
-
-                for (size_t recordIndex = 0; recordIndex < m_records.size(); recordIndex++) {
-                    std::shared_ptr<ParserRecord> record = getRecord(recordIndex);
-                    std::shared_ptr<ParserRecord> other_record = other.getRecord(recordIndex);
-
-                    equal_ = equal_ && record->equal( *other_record );
-                }
-
-                return equal_;
-            } else
+        if(    m_name != other.m_name
+            || m_matchRegexString != other.m_matchRegexString
+            || m_keywordSizeType != other.m_keywordSizeType
+            || isDataKeyword() != other.isDataKeyword()
+            || m_isTableCollection != other.m_isTableCollection )
                 return false;
+
+        switch( m_keywordSizeType ) {
+            case FIXED:
+                if( m_fixedSize != other.m_fixedSize )
+                    return false;
+                break;
+
+            case OTHER_KEYWORD_IN_DECK:
+                if(  m_sizeDefinitionPair.first != other.m_sizeDefinitionPair.first
+                  || m_sizeDefinitionPair.second != other.m_sizeDefinitionPair.second )
+                    return false;
+                break;
+
+            default:
+                break;
         }
+
+        for( size_t i = 0; i < m_records.size(); i++ ) {
+            if( !getRecord( i )->equal( *other.getRecord( i ) ) )
+                    return false;
+        }
+
+        return true;
     }
 
 

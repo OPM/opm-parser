@@ -33,46 +33,15 @@ using namespace std;
 
 namespace Opm {
 
-    static inline size_t findTerminatingSlash( const std::string& rec ) {
-
-        if( rec.back() == RawConsts::slash ) return rec.size() - 1;
-
-        /* possible fast path: no terminating slash in record */
-        const auto slash = rec.find_last_of( RawConsts::slash );
-        if( slash == std::string::npos ) return std::string::npos;
-
-        /* heuristic: since slash makes everything to the right of it into a
-         * no-op, if there is more than whitespace to its right before newline
-         * we guess that this is in fact not the terminating slash but rather
-         * some comment or description. Most of the time this is not the case,
-         * and it is slower, so avoid doing it if possible.
-         */
-
-        if( std::find_if_not( rec.begin() + slash, rec.end(), RawConsts::is_separator ) == rec.end() )
-            return slash;
-
-        /*
-         * left-to-right search after last closing quote. Like the previous
-         * implementation, assumes there are no quote marks past the
-         * terminating slash (as per the Eclipse manual). Search past last
-         * quote because slashes can appear in quotes in filenames etc, but
-         * will always be quoted.
-         */
-
-        const auto quote = rec.find_last_of( RawConsts::quote );
-        const auto begin = quote == std::string::npos ? 0 : quote;
-        return rec.find_first_of( RawConsts::slash, begin );
-    }
-
-    static inline std::string::const_iterator first_nonspace (
-            std::string::const_iterator begin,
-            std::string::const_iterator end ) {
+    template< typename Itr >
+    static inline Itr first_nonspace( Itr begin, Itr end ) {
         return std::find_if_not( begin, end, RawConsts::is_separator );
     }
 
-    static std::deque< string_view > splitSingleRecordString( const std::string& record ) {
+    static std::deque< string_view > splitSingleRecordString( const string_view& line ) {
 
         std::deque< string_view > dst;
+        string_view record( line );
 
         for( auto current = first_nonspace( record.begin(), record.end() );
                 current != record.end();
@@ -82,13 +51,6 @@ namespace Opm {
                 auto quote_end = std::find( current + 1, record.end(), RawConsts::quote ) + 1;
                 dst.push_back( { current, quote_end } );
                 current = quote_end;
-            } else if( *current == RawConsts::slash ) {
-                /* some records are break the optimistic algorithm of
-                 * findTerminatingSlash and contain multiple trailing slashes
-                 * with nothing inbetween. The first occuring one is the actual
-                 * terminator and we simply ignore everything following it.
-                 */
-                break;
             } else {
                 auto token_end = std::find_if( current, record.end(), RawConsts::is_separator );
                 dst.push_back( { current, token_end } );
@@ -109,20 +71,15 @@ namespace Opm {
      *
      */
 
-    static inline bool even_quotes( const std::string& str ) {
+    template< typename T >
+    static inline bool even_quotes( const T& str ) {
         return std::count( str.begin(), str.end(), RawConsts::quote ) % 2 == 0;
     }
 
-    static inline std::string trim_record( std::string&& str ) {
-        std::string local( std::move( str ) );
-        local.resize( findTerminatingSlash( local ) );
-        return local;
-    }
-
-    RawRecord::RawRecord(std::string&& singleRecordString,
+    RawRecord::RawRecord(const string_view& singleRecordString,
                          const std::string& fileName,
                          const std::string& keywordName) :
-        m_sanitizedRecordString( trim_record( std::move( singleRecordString ) ) ),
+        m_sanitizedRecordString( singleRecordString ),
         m_recordItems( splitSingleRecordString( m_sanitizedRecordString ) ),
         m_fileName(fileName),
         m_keywordName(keywordName)
@@ -131,7 +88,7 @@ namespace Opm {
         if( !even_quotes( singleRecordString ) )
             throw std::invalid_argument(
                 "Input string is not a complete record string, "
-                "offending string: " + singleRecordString
+                "offending string: '" + singleRecordString + "'"
             );
     }
 
@@ -145,8 +102,7 @@ namespace Opm {
 
     void RawRecord::push_front(std::string tok ) {
         this->expanded_items.push_back( tok );
-        string_view record { this->expanded_items.back().begin(), this->expanded_items.back().end() };
-        this->m_recordItems.push_front( record );
+        this->m_recordItems.emplace_front( this->expanded_items.back() );
     }
 
     void RawRecord::dump() const {
@@ -159,14 +115,11 @@ namespace Opm {
         std::cout << std::endl;
     }
 
-    const std::string& RawRecord::getRecordString() const {
-        return m_sanitizedRecordString;
+    std::string RawRecord::getRecordString() const {
+        return m_sanitizedRecordString.string();
     }
 
-    bool RawRecord::isTerminatedRecordString(const std::string& candidateRecordString) {
-        const auto terminatingSlash = findTerminatingSlash(candidateRecordString);
-        bool hasTerminatingSlash = terminatingSlash < candidateRecordString.size();
-        return hasTerminatingSlash && even_quotes( candidateRecordString );
+    bool RawRecord::isTerminatedRecordString( const string_view& str ) {
+        return str.back() == RawConsts::slash;
     }
-
 }

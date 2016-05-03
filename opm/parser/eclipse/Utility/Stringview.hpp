@@ -20,6 +20,7 @@
 #ifndef OPM_UTILITY_SUBSTRING_HPP
 #define OPM_UTILITY_SUBSTRING_HPP
 
+#include <algorithm>
 #include <cstring>
 #include <iosfwd>
 #include <stdexcept>
@@ -46,16 +47,24 @@ namespace Opm {
      */
     class string_view {
         public:
-            using const_iterator = std::string::const_iterator;
+            using const_iterator = const char*;
 
             inline string_view() = default;
+            inline string_view( const_iterator, const_iterator );
+            inline string_view( const_iterator, size_t );
             inline string_view( const std::string& );
-            inline string_view( std::string::const_iterator, std::string::const_iterator );
+            inline string_view( const std::string&, size_t );
+            inline string_view( const char* );
 
             inline const_iterator begin() const;
             inline const_iterator end() const;
 
+            inline char front() const;
+            inline char back() const;
+
             inline char operator[]( size_t ) const;
+            inline bool operator<( const string_view& ) const;
+            inline bool operator==( const string_view& ) const;
 
             inline bool empty() const;
             inline size_t size() const;
@@ -75,8 +84,8 @@ namespace Opm {
             inline std::string substr( size_t from, size_t to ) const;
 
         private:
-            const_iterator fst;
-            const_iterator lst;
+            const_iterator fst = nullptr;
+            const_iterator lst = nullptr;
     };
 
     /*
@@ -138,15 +147,28 @@ namespace Opm {
 
     // Member functions of string_view.
 
-    inline string_view::string_view( std::string::const_iterator begin,
-                              std::string::const_iterator end ) :
+    inline string_view::string_view( const_iterator begin,
+                                     const_iterator end ) :
         fst( begin ),
         lst( end )
     {}
 
+    inline string_view::string_view( const_iterator begin,
+                                     size_t count ) :
+        fst( begin ),
+        lst( begin + count )
+    {}
+
     inline string_view::string_view( const std::string& str ) :
-        fst( str.begin() ),
-        lst( str.end() )
+        string_view( str.data(), str.size() )
+    {}
+
+    inline string_view::string_view( const std::string& str, size_t count ) :
+        string_view( str.data(), count )
+    {}
+
+    inline string_view::string_view( const char* str ) :
+        string_view( str, str + std::strlen( str ) )
     {}
 
     inline string_view::const_iterator string_view::begin() const {
@@ -157,8 +179,25 @@ namespace Opm {
         return this->lst;
     }
 
+    inline char string_view::front() const {
+        return *this->fst;
+    }
+
+    inline char string_view::back() const {
+        return *(this->lst - 1);
+    }
+
     inline char string_view::operator[]( size_t i ) const {
         return *(this->begin() + i);
+    }
+
+    inline bool string_view::operator<( const string_view& rhs ) const {
+        return std::lexicographical_compare( this->begin(), this->end(),
+                                             rhs.begin(), rhs.end() );
+    }
+
+    inline bool string_view::operator==( const string_view& rhs ) const {
+        return std::equal( this->begin(), this->end(), rhs.begin() );
     }
 
     inline bool string_view::empty() const {

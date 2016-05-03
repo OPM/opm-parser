@@ -39,182 +39,533 @@
 #include <opm/parser/eclipse/RawDeck/RawConsts.hpp>
 #include <opm/parser/eclipse/RawDeck/RawEnums.hpp>
 #include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
+#include <opm/parser/eclipse/Utility/Stringview.hpp>
 
 namespace Opm {
 
+namespace {
 
-    struct ParserState {
-        const ParseContext& parseContext;
-        Deck * deck;
-        boost::filesystem::path dataFile;
-        boost::filesystem::path rootPath;
-        /* the path map is shared between all state instances, as it has global
-         * resolution, i.e. PATHS specified in an included file can be used
-         * from the file that included it.
-         */
-        std::shared_ptr< std::map<std::string, std::string> > pathMap;
-        size_t lineNR;
-        std::shared_ptr<std::istream> inputstream;
-        RawKeywordPtr rawKeyword;
-        std::string nextKeyword;
+template< typename Itr >
+inline Itr find_comment( Itr begin, Itr end ) {
 
+    auto itr = std::find( begin, end, '-' );
+    for( ; itr != end; itr = std::find( itr + 1, end, '-' ) )
+        if( (itr + 1) != end &&  *( itr + 1 ) == '-' ) return itr;
 
-        ParserState(const ParserState& parent)
-            : parseContext( parent.parseContext )
-        {
-            deck = parent.deck;
-            pathMap = parent.pathMap;
-            rootPath = parent.rootPath;
-        }
+    return end;
+}
 
-        ParserState(const ParseContext& __parseContext)
-            : parseContext( __parseContext ),
-              deck( new Deck() ),
-              pathMap( std::make_shared< std::map< std::string, std::string > >() ),
-              lineNR( 0 )
-        {}
+template< typename Itr, typename Term >
+inline Itr find_terminator( Itr begin, Itr end, Term terminator ) {
 
-        std::shared_ptr<ParserState> includeState(boost::filesystem::path& filename) {
-            std::shared_ptr<ParserState> childState = std::make_shared<ParserState>( *this );
-            childState->openFile( filename );
-            return childState;
-        }
+    auto pos = terminator( begin, end );
 
+    if( pos == end ) return end;
 
-        void openString(const std::string& input) {
-            dataFile = "";
-            inputstream.reset(new std::istringstream(input));
-        }
+    auto qbegin = std::find_if( begin, end, RawConsts::is_quote );
 
+    if( qbegin == end || qbegin > pos )
+        return pos;
 
-        void openStream(std::shared_ptr<std::istream> istream) {
-            dataFile = "";
-            inputstream = istream;
-        }
+    auto qend = std::find( qbegin + 1, end, *qbegin );
 
+    // Quotes are not balanced - probably an error?!
+    if( qend == end ) return end;
 
-        void openFile(const boost::filesystem::path& inputFile) {
+    return find_terminator( qend + 1, end, terminator );
+}
 
-            boost::filesystem::path inputFileCanonical;
-            try {
-                inputFileCanonical = boost::filesystem::canonical(inputFile);
-            } catch (boost::filesystem::filesystem_error fs_error) {
-                throw std::runtime_error(std::string("Parser::openFile fails: ") + fs_error.what());
-            }
+/**
+    This function will return a copy of the input string where all
+    characters following '--' are removed. The copy is a view and relies on
+    the source string to remain alive. The function handles quoting with
+    single quotes and double quotes:
 
-            std::ifstream *ifs = new std::ifstream(inputFileCanonical.string().c_str());
+    ABC --Comment                =>  ABC
+    ABC '--Comment1' --Comment2  =>  ABC '--Comment1'
+    ABC "-- Not balanced quote?  =>  ABC "-- Not balanced quote?
+*/
+static inline string_view strip_comments( string_view str ) {
+    return { str.begin(), find_terminator( str.begin(), str.end(),
+            find_comment< string_view::const_iterator > ) };
+}
 
-            // make sure the file we'd like to parse is readable
-            if (!ifs->is_open()) {
-                throw std::runtime_error(std::string("Input file '") +
-                                         inputFileCanonical.string() +
-                                         std::string("' is not readable"));
-            }
+template< typename Itr >
+inline Itr trim_left( Itr begin, Itr end ) {
 
-            inputstream.reset( ifs );
-            dataFile = inputFileCanonical;
-        }
+    return std::find_if_not( begin, end, RawConsts::is_separator );
+}
 
-        void openRootFile( const boost::filesystem::path& inputFile) {
-            openFile( inputFile );
-            deck->setDataFile(dataFile.string());
+template< typename Itr >
+inline Itr trim_right( Itr begin, Itr end ) {
 
-            const boost::filesystem::path& inputFileCanonical = boost::filesystem::canonical(inputFile);
-            rootPath = inputFileCanonical.parent_path();
-        }
+    std::reverse_iterator< Itr > rbegin( end );
+    std::reverse_iterator< Itr > rend( begin );
 
-        /*
-          We have encountered 'random' characters in the input file which
-          are not correctly formatted as a keyword heading, and not part
-          of the data section of any keyword.
-        */
+    return std::find_if_not( rbegin, rend, RawConsts::is_separator ).base();
+}
 
-        void handleRandomText(const std::string& keywordString ) const {
-            std::string errorKey;
-            std::stringstream msg;
-            std::string trimmedCopy = boost::algorithm::trim_copy( keywordString );
+inline string_view trim( string_view str ) {
+    auto fst = trim_left( str.begin(), str.end() );
+    auto lst = trim_right( fst, str.end() );
+    return { fst, lst };
+}
 
-            if (trimmedCopy == "/") {
-                errorKey = ParseContext::PARSE_RANDOM_SLASH;
-                msg << "Extra '/' detected at: " << dataFile << ":" << lineNR;
-            } else {
-                errorKey = ParseContext::PARSE_RANDOM_TEXT;
-                msg << "String \'" << keywordString << "\' not formatted/recognized as valid keyword at: " << dataFile << ":" << lineNR;
-            }
-
-            parseContext.handleError( errorKey , msg.str() );
-        }
-
+inline string_view strip_slash( string_view view ) {
+    using itr = string_view::const_iterator;
+    const auto term = []( itr begin, itr end ) {
+        return std::find( begin, end, '/' );
     };
 
-    static boost::filesystem::path getIncludeFilePath(ParserState& parserState, std::string path)
-    {
-        const std::string pathKeywordPrefix("$");
-        const std::string validPathNameCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+    auto begin = view.begin();
+    auto end = view.end();
+    auto slash = find_terminator( begin, end, term );
 
-        size_t positionOfPathName = path.find(pathKeywordPrefix);
+    /* we want to preserve terminating slashes */
+    if( slash != end ) ++slash;
 
-        if ( positionOfPathName != std::string::npos) {
-            std::string stringStartingAtPathName = path.substr(positionOfPathName+1);
-            size_t cutOffPosition = stringStartingAtPathName.find_first_not_of(validPathNameCharacters);
-            std::string stringToFind = stringStartingAtPathName.substr(0, cutOffPosition);
-            std::string stringToReplace = parserState.pathMap->at(stringToFind);
-            boost::replace_all(path, pathKeywordPrefix + stringToFind, stringToReplace);
-        }
+    return { begin, slash };
+}
 
-        boost::filesystem::path includeFilePath(path);
+inline bool getline( string_view& input, string_view& line ) {
+    if( input.empty() ) return false;
 
-        if (includeFilePath.is_relative())
-            includeFilePath = parserState.rootPath / includeFilePath;
+    auto end = std::find( input.begin(), input.end(), '\n' );
 
-        return includeFilePath;
+    line = string_view( input.begin(), end );
+    input = string_view( end + 1, input.end() );
+    return true;
+
+    /* we know that we always append a newline onto the input string, so we can
+     * safely assume that end+1 will either be end-of-input (i.e. empty range)
+     * or the start of the next line
+     */
+}
+
+/*
+ * Read the input file and remove everything that isn't interesting data,
+ * including stripping comments, removing leading/trailing whitespaces and
+ * everything after (terminating) slashes
+ */
+inline std::string clean( const std::string& str ) {
+    std::string dst;
+    dst.reserve( str.size() );
+
+    string_view input( str ), line;
+    while( getline( input, line ) ) {
+        line = trim( strip_slash( strip_comments( line ) ) );
+
+        //if( line.begin() == line.end() ) continue;
+
+        dst.append( line.begin(), line.end() );
+        dst.push_back( '\n' );
     }
 
+    return dst;
+}
+
+const std::string emptystr = "";
+
+struct file {
+    file( boost::filesystem::path p, const std::string& in ) :
+        input( in ), path( p )
+    {}
+
+    string_view input;
+    size_t lineNR = 0;
+    boost::filesystem::path path;
+};
+
+class InputStack {
+    public:
+        bool empty() const { return this->file_stack.empty(); }
+        file& peek() { return *this->file_stack.back(); }
+        const file& peek() const { return *this->file_stack.back(); }
+        void pop() { this->file_stack.pop_back(); };
+        void push( std::string&& input, boost::filesystem::path p = "" );
+
+    private:
+        std::list< std::string > string_storage;
+        std::list< file > file_storage;
+        std::vector< file* > file_stack;
+};
+
+void InputStack::push( std::string&& input, boost::filesystem::path p ) {
+    this->string_storage.push_back( std::move( input ) );
+    this->file_storage.emplace_back( p, this->string_storage.back() );
+    this->file_stack.push_back( &this->file_storage.back() );
+}
+
+class ParserState {
+    public:
+        ParserState( const ParseContext& );
+        ParserState( const ParseContext&, boost::filesystem::path );
+
+        void loadString( const std::string& );
+        void loadFile( const boost::filesystem::path& );
+        void openRootFile( const boost::filesystem::path& );
+
+        void handleRandomText(const string_view& ) const;
+        boost::filesystem::path getIncludeFilePath( std::string ) const;
+        void addPathAlias( const std::string& alias, const std::string& path );
+
+        const boost::filesystem::path& current_path() const;
+        size_t line() const;
+
+        bool done() const;
+        string_view getline();
+        void closeFile();
+
+    private:
+        InputStack input_stack;
+
+        std::map< std::string, std::string > pathMap;
+        boost::filesystem::path rootPath;
+
+    public:
+        RawKeywordPtr rawKeyword;
+        string_view nextKeyword = emptystr;
+        Deck* deck;
+        const ParseContext& parseContext;
+};
+
+
+const boost::filesystem::path& ParserState::current_path() const {
+    return this->input_stack.peek().path;
+}
+
+size_t ParserState::line() const {
+    return this->input_stack.peek().lineNR;
+}
+
+bool ParserState::done() const {
+
+    while( !this->input_stack.empty() &&
+            this->input_stack.peek().input.empty() )
+        const_cast< ParserState* >( this )->input_stack.pop();
+
+    return this->input_stack.empty();
+}
+
+string_view ParserState::getline() {
+    string_view line;
+
+    Opm::getline( this->input_stack.peek().input, line );
+    this->input_stack.peek().lineNR++;
+
+    return line;
+}
+
+void ParserState::closeFile() {
+    this->input_stack.pop();
+}
+
+ParserState::ParserState(const ParseContext& __parseContext)
+    : deck( new Deck() ),
+    parseContext( __parseContext )
+{}
+
+ParserState::ParserState( const ParseContext& context,
+                          boost::filesystem::path p ) :
+    rootPath( boost::filesystem::canonical( p ).parent_path() ),
+    deck( new Deck() ),
+    parseContext( context )
+{
+    loadFile( p );
+}
+
+void ParserState::loadString(const std::string& input) {
+    this->input_stack.push( clean( input + "\n" ) );
+}
+
+void ParserState::loadFile(const boost::filesystem::path& inputFile) {
+
+    boost::filesystem::path inputFileCanonical;
+    try {
+        inputFileCanonical = boost::filesystem::canonical(inputFile);
+    } catch (boost::filesystem::filesystem_error fs_error) {
+        throw std::runtime_error(std::string("Parser::loadFile fails: ") + fs_error.what());
+    }
+
+    const auto closer = []( std::FILE* f ) { std::fclose( f ); };
+    std::unique_ptr< std::FILE, decltype( closer ) > ufp(
+            std::fopen( inputFileCanonical.string().c_str(), "rb" ),
+            closer
+            );
+
+    // make sure the file we'd like to parse is readable
+    if( !ufp ) {
+        throw std::runtime_error(std::string("Input file '") +
+                inputFileCanonical.string() +
+                std::string("' is not readable"));
+    }
+
+    /*
+     * read the input file C-style. This is done for performance
+     * reasons, as streams are slow
+     */
+
+    auto* fp = ufp.get();
+    std::string buffer;
+    std::fseek( fp, 0, SEEK_END );
+    buffer.resize( std::ftell( fp ) + 1 );
+    std::rewind( fp );
+    std::fread( &buffer[ 0 ], 1, buffer.size() - 1, fp );
+    buffer.back() = '\n';
+
+    if( std::ferror( fp ) )
+        throw std::runtime_error( "Error when reading input file '"
+                                + inputFileCanonical.string() + "'" );
+
+    this->input_stack.push( clean( buffer ), inputFileCanonical );
+}
+
+/*
+ * We have encountered 'random' characters in the input file which
+ * are not correctly formatted as a keyword heading, and not part
+ * of the data section of any keyword.
+ */
+
+void ParserState::handleRandomText(const string_view& keywordString ) const {
+    std::string errorKey;
+    std::stringstream msg;
+    std::string trimmedCopy = keywordString.string();
+
+    if (trimmedCopy == "/") {
+        errorKey = ParseContext::PARSE_RANDOM_SLASH;
+        msg << "Extra '/' detected at: "
+            << this->current_path()
+            << ":" << this->line();
+    } else {
+        errorKey = ParseContext::PARSE_RANDOM_TEXT;
+        msg << "String \'" << keywordString
+            << "\' not formatted/recognized as valid keyword at: "
+            << this->current_path()
+            << ":" << this->line();
+    }
+
+    parseContext.handleError( errorKey , msg.str() );
+}
+
+void ParserState::openRootFile( const boost::filesystem::path& inputFile) {
+    this->loadFile( inputFile );
+    this->deck->setDataFile( inputFile.string() );
+    const boost::filesystem::path& inputFileCanonical = boost::filesystem::canonical(inputFile);
+    rootPath = inputFileCanonical.parent_path();
+}
+
+boost::filesystem::path ParserState::getIncludeFilePath( std::string path ) const {
+    static const std::string pathKeywordPrefix("$");
+    static const std::string validPathNameCharacters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_");
+
+    size_t positionOfPathName = path.find(pathKeywordPrefix);
+
+    if ( positionOfPathName != std::string::npos) {
+        std::string stringStartingAtPathName = path.substr(positionOfPathName+1);
+        size_t cutOffPosition = stringStartingAtPathName.find_first_not_of(validPathNameCharacters);
+        std::string stringToFind = stringStartingAtPathName.substr(0, cutOffPosition);
+        std::string stringToReplace = this->pathMap.at( stringToFind );
+        boost::replace_all(path, pathKeywordPrefix + stringToFind, stringToReplace);
+    }
+
+    boost::filesystem::path includeFilePath(path);
+
+    if (includeFilePath.is_relative())
+        return this->rootPath / includeFilePath;
+
+    return includeFilePath;
+}
+
+void ParserState::addPathAlias( const std::string& alias, const std::string& path ) {
+    this->pathMap.emplace( alias, path );
+}
+
+std::shared_ptr< RawKeyword > createRawKeyword( const string_view& kw, ParserState& parserState, const Parser& parser ) {
+    auto keywordString = ParserKeyword::getDeckName( kw );
+
+    if( !parser.isRecognizedKeyword( keywordString ) ) {
+        if( ParserKeyword::validDeckName( keywordString ) ) {
+            std::string msg = "Keyword " + keywordString + " not recognized.";
+            parserState.parseContext.handleError( ParseContext::PARSE_UNKNOWN_KEYWORD, msg );
+            return {};
+        }
+
+        parserState.handleRandomText( keywordString );
+        return {};
+
+    }
+
+    const auto* parserKeyword = parser.getParserKeywordFromDeckName( keywordString );
+
+    if( parserKeyword->getSizeType() == SLASH_TERMINATED || parserKeyword->getSizeType() == UNKNOWN) {
+
+        const auto rawSizeType = parserKeyword->getSizeType() == SLASH_TERMINATED
+                                ? Raw::SLASH_TERMINATED
+                                : Raw::UNKNOWN;
+
+        return std::make_shared< RawKeyword >( keywordString, rawSizeType,
+                                                parserState.current_path().string(),
+                                                parserState.line() );
+    }
+
+    if( parserKeyword->hasFixedSize() ) {
+        return std::make_shared< RawKeyword >( keywordString,
+                                                parserState.current_path().string(),
+                                                parserState.line(),
+                                                parserKeyword->getFixedSize(),
+                                                parserKeyword->isTableCollection() );
+    }
+
+    const auto& sizeKeyword = parserKeyword->getSizeDefinitionPair();
+    const auto* deck = parserState.deck;
+
+    if( deck->hasKeyword(sizeKeyword.first ) ) {
+        const auto& sizeDefinitionKeyword = deck->getKeyword(sizeKeyword.first);
+        const auto& record = sizeDefinitionKeyword.getRecord(0);
+        const auto targetSize = record.getItem( sizeKeyword.second ).get< int >( 0 );
+        return std::make_shared< RawKeyword >( keywordString,
+                                                parserState.current_path().string(),
+                                                parserState.line(),
+                                                targetSize,
+                                                parserKeyword->isTableCollection() );
+    }
+
+    std::string msg = "Expected the kewyord: " + sizeKeyword.first
+                    + " to infer the number of records in: " + keywordString;
+
+    parserState.parseContext.handleError(ParseContext::PARSE_MISSING_DIMS_KEYWORD , msg );
+
+    const auto* keyword = parser.getKeyword( sizeKeyword.first );
+    const auto record = keyword->getRecord(0);
+    const auto int_item = std::dynamic_pointer_cast<const ParserIntItem>( record->get( sizeKeyword.second ) );
+
+    const auto targetSize = int_item->getDefault( );
+    return std::make_shared< RawKeyword >( keywordString,
+                                            parserState.current_path().string(),
+                                            parserState.line(),
+                                            targetSize,
+                                            parserKeyword->isTableCollection() );
+}
+
+bool tryParseKeyword( ParserState& parserState, const Parser& parser ) {
+    if (parserState.nextKeyword.length() > 0) {
+        parserState.rawKeyword = createRawKeyword( parserState.nextKeyword, parserState, parser );
+        parserState.nextKeyword = emptystr;
+    }
+
+    if (parserState.rawKeyword && parserState.rawKeyword->isFinished())
+        return true;
+
+    while( !parserState.done() ) {
+        auto line = parserState.getline();
+
+        if( line.empty() ) continue;
+
+        std::string keywordString;
+
+        if( parserState.rawKeyword == NULL ) {
+            if( RawKeyword::isKeywordPrefix( line, keywordString ) ) {
+                parserState.rawKeyword = createRawKeyword( keywordString, parserState, parser );
+            } else
+                /* We are looking at some random gibberish?! */
+                parserState.handleRandomText( line );
+        } else {
+            if (parserState.rawKeyword->getSizeType() == Raw::UNKNOWN) {
+                if( parser.isRecognizedKeyword( line ) ) {
+                    parserState.rawKeyword->finalizeUnknownSize();
+                    parserState.nextKeyword = line;
+                    return true;
+                }
+            }
+            parserState.rawKeyword->addRawRecordString(line);
+        }
+
+        if (parserState.rawKeyword
+            && parserState.rawKeyword->isFinished()
+            && parserState.rawKeyword->getSizeType() != Raw::UNKNOWN)
+        {
+            return true;
+        }
+    }
+
+    if (parserState.rawKeyword
+        && parserState.rawKeyword->getSizeType() == Raw::UNKNOWN)
+    {
+        parserState.rawKeyword->finalizeUnknownSize();
+    }
+
+    return false;
+}
+
+bool parseState( ParserState& parserState, const Parser& parser ) {
+
+    while( !parserState.done() ) {
+
+        parserState.rawKeyword.reset();
+
+        const bool streamOK = tryParseKeyword( parserState, parser );
+        if( !parserState.rawKeyword && !streamOK )
+            continue;
+
+        if (parserState.rawKeyword->getKeywordName() == Opm::RawConsts::end)
+            return true;
+
+        if (parserState.rawKeyword->getKeywordName() == Opm::RawConsts::endinclude) {
+            parserState.closeFile();
+            continue;
+        }
+
+        if (parserState.rawKeyword->getKeywordName() == Opm::RawConsts::paths) {
+            for( const auto& record : *parserState.rawKeyword ) {
+                std::string pathName = readValueToken<std::string>(record.getItem(0));
+                std::string pathValue = readValueToken<std::string>(record.getItem(1));
+                parserState.addPathAlias( pathName, pathValue );
+            }
+
+            continue;
+        }
+
+        if (parserState.rawKeyword->getKeywordName() == Opm::RawConsts::include) {
+            auto& firstRecord = parserState.rawKeyword->getFirstRecord( );
+            std::string includeFileAsString = readValueToken<std::string>(firstRecord.getItem(0));
+            boost::filesystem::path includeFile = parserState.getIncludeFilePath( includeFileAsString );
+
+            parserState.loadFile( includeFile );
+            continue;
+        }
+
+        if( parser.isRecognizedKeyword( parserState.rawKeyword->getKeywordName() ) ) {
+            const auto& kwname = parserState.rawKeyword->getKeywordName();
+            const auto* parserKeyword = parser.getParserKeywordFromDeckName( kwname );
+            parserState.deck->addKeyword( parserKeyword->parse( parserState.parseContext, parserState.rawKeyword ) );
+        } else {
+            DeckKeyword deckKeyword( parserState.rawKeyword->getKeywordName(), false );
+            const std::string msg = "The keyword " + parserState.rawKeyword->getKeywordName() + " is not recognized";
+            deckKeyword.setLocation( parserState.rawKeyword->getFilename(),
+                    parserState.rawKeyword->getLineNR());
+            parserState.deck->addKeyword( std::move( deckKeyword ) );
+            parserState.deck->getMessageContainer().warning(
+                parserState.current_path().string(), msg, parserState.line() );
+        }
+    }
+
+    return true;
+}
+
+}
+
+
+    /* stripComments only exists so that the unit tests can verify it.
+     * strip_comment is the actual (internal) implementation
+     */
+    std::string Parser::stripComments( const std::string& str ) {
+        return { str.begin(), find_terminator( str.begin(), str.end(),
+                find_comment< std::string::const_iterator > ) };
+    }
 
     Parser::Parser(bool addDefault) {
         if (addDefault)
             addDefaultKeywords();
-    }
-
-
-    /**
-       This function will remove return a copy of the input string
-       where all characters following '--' are removed. The function
-       handles quoting with single quotes and double quotes:
-
-         ABC --Comment                =>  ABC
-         ABC '--Comment1' --Comment2  =>  ABC '--Comment1'
-         ABC "-- Not balanced quote?  =>  ABC "-- Not balanced quote?
-
-    */
-    std::string Parser::stripComments(const std::string& inputString) {
-        std::string uncommentedString;
-        size_t offset = 0;
-
-        while (true) {
-            size_t commentPos = inputString.find("--" , offset);
-            if (commentPos == std::string::npos) {
-                uncommentedString = inputString;
-                break;
-            } else {
-                size_t quoteStart = inputString.find_first_of("'\"" , offset);
-                if (quoteStart == std::string::npos || quoteStart > commentPos) {
-                    uncommentedString = inputString.substr(0 , commentPos );
-                    break;
-                } else {
-                    char quoteChar = inputString[quoteStart];
-                    size_t quoteEnd = inputString.find( quoteChar , quoteStart + 1);
-                    if (quoteEnd == std::string::npos) {
-                        // Quotes are not balanced - probably an error?!
-                        uncommentedString = inputString;
-                        break;
-                    } else
-                        offset = quoteEnd + 1;
-                }
-            }
-        }
-
-        return uncommentedString;
     }
 
 
@@ -227,22 +578,21 @@ namespace Opm {
      */
 
     Deck * Parser::newDeckFromFile(const std::string &dataFileName, const ParseContext& parseContext) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
-        parserState->openRootFile( dataFileName );
-        parseState(parserState);
-        applyUnitsToDeck(*parserState->deck);
+        ParserState parserState( parseContext, dataFileName );
+        parseState( parserState, *this );
+        applyUnitsToDeck( *parserState.deck );
 
-        return parserState->deck;
+        return parserState.deck;
     }
 
     Deck * Parser::newDeckFromString(const std::string &data, const ParseContext& parseContext) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
-        parserState->openString( data );
+        ParserState parserState( parseContext );
+        parserState.loadString( data );
 
-        parseState(parserState);
-        applyUnitsToDeck(*parserState->deck);
+        parseState( parserState, *this );
+        applyUnitsToDeck( *parserState.deck );
 
-        return parserState->deck;
+        return parserState.deck;
     }
 
 
@@ -252,16 +602,6 @@ namespace Opm {
 
     DeckPtr Parser::parseString(const std::string &data, const ParseContext& parseContext) const {
         return std::shared_ptr<Deck>( newDeckFromString( data , parseContext));
-    }
-
-    DeckPtr Parser::parseStream(std::shared_ptr<std::istream> inputStream, const ParseContext& parseContext) const {
-        std::shared_ptr<ParserState> parserState = std::make_shared<ParserState>(parseContext);
-        parserState->openStream( inputStream );
-
-        parseState(parserState);
-        applyUnitsToDeck(*parserState->deck);
-
-        return std::shared_ptr<Deck>( parserState->deck );
     }
 
     size_t Parser::size() const {
@@ -276,7 +616,7 @@ namespace Opm {
         return m_internalParserKeywords.at(internalKeywordName).get();
     }
 
-    const ParserKeyword* Parser::matchingKeyword(const std::string& name) const {
+    const ParserKeyword* Parser::matchingKeyword(const string_view& name) const {
         for (auto iter = m_wildCardKeywords.begin(); iter != m_wildCardKeywords.end(); ++iter) {
             if (iter->second->matches(name))
                 return iter->second;
@@ -288,29 +628,42 @@ namespace Opm {
         return (m_wildCardKeywords.count(internalKeywordName) > 0);
     }
 
-    bool Parser::isRecognizedKeyword(const std::string& deckKeywordName) const {
-        if (!ParserKeyword::validDeckName(deckKeywordName)) {
+    bool Parser::isRecognizedKeyword(const string_view& name ) const {
+        if( !ParserKeyword::validDeckName( name ) )
             return false;
+
+        if( m_deckParserKeywords.count( name ) )
+            return true;
+
+        return matchingKeyword( name );
     }
-
-    if (m_deckParserKeywords.count(deckKeywordName) > 0)
-        return true;
-
-    return matchingKeyword( deckKeywordName );
-}
 
 void Parser::addParserKeyword( std::unique_ptr< const ParserKeyword >&& parserKeyword) {
-    for (auto nameIt = parserKeyword->deckNamesBegin();
-            nameIt != parserKeyword->deckNamesEnd();
+    /* since string_view's don't own their memory, to update a value in the map
+     * we must *delete* the previous entry and then re-insert the equivalent
+     * new value. This is because the string_view borrows its memory from the
+     * ParserKeyword, and when the ParserKeyword is replaced it will most
+     * likely be free'd.
+     */
+
+    string_view name( parserKeyword->getName() );
+    m_internalParserKeywords.erase( name );
+    m_internalParserKeywords[ name ].swap( parserKeyword );
+    auto* ptr = m_internalParserKeywords[ name ].get();
+
+    for (auto nameIt = ptr->deckNamesBegin();
+            nameIt != ptr->deckNamesEnd();
             ++nameIt)
     {
-        m_deckParserKeywords[*nameIt] = parserKeyword.get();
+        string_view nm( *nameIt );
+        m_deckParserKeywords.erase( nm );
+        m_deckParserKeywords[ nm ] = ptr;
     }
 
-    if (parserKeyword->hasMatchRegex())
-        m_wildCardKeywords[parserKeyword->getName()] = parserKeyword.get();
-
-    m_internalParserKeywords[parserKeyword->getName()].swap( parserKeyword );
+    if (ptr->hasMatchRegex()) {
+        m_wildCardKeywords.erase( name );
+        m_wildCardKeywords[ name ] = ptr;
+    }
 
 }
 
@@ -320,91 +673,33 @@ void Parser::addParserKeyword(const Json::JsonObject& jsonKeyword) {
 }
 
 
-const ParserKeyword* Parser::getKeyword(const std::string& name ) const {
-    auto iter = m_deckParserKeywords.find( name );
-    if (iter == m_deckParserKeywords.end())
-        throw std::invalid_argument("Keyword not found");
-    else
-        return iter->second;
+const ParserKeyword* Parser::getKeyword( const std::string& name ) const {
+    return getParserKeywordFromDeckName( string_view( name ) );
 }
 
-const ParserKeyword* Parser::getParserKeywordFromDeckName(const std::string& deckKeywordName) const {
-    if (m_deckParserKeywords.count(deckKeywordName)) {
-        return m_deckParserKeywords.at(deckKeywordName);
-    } else {
-        const auto* wildCardKeyword = matchingKeyword( deckKeywordName );
+const ParserKeyword* Parser::getParserKeywordFromDeckName(const string_view& name ) const {
+    auto candidate = m_deckParserKeywords.find( name );
 
-        if (wildCardKeyword)
-            return wildCardKeyword;
-        else
-            throw std::invalid_argument("Do not have parser keyword for parsing: " + deckKeywordName);
-    }
+    if( candidate != m_deckParserKeywords.end() ) return candidate->second;
+
+    const auto* wildCardKeyword = matchingKeyword( name );
+
+    if ( !wildCardKeyword )
+        throw std::invalid_argument( "Do not have parser keyword for parsing: " + name );
+
+    return wildCardKeyword;
 }
 
 std::vector<std::string> Parser::getAllDeckNames () const {
     std::vector<std::string> keywords;
     for (auto iterator = m_deckParserKeywords.begin(); iterator != m_deckParserKeywords.end(); iterator++) {
-        keywords.push_back(iterator->first);
+        keywords.push_back(iterator->first.string());
     }
     for (auto iterator = m_wildCardKeywords.begin(); iterator != m_wildCardKeywords.end(); iterator++) {
-        keywords.push_back(iterator->first);
+        keywords.push_back(iterator->first.string());
     }
     return keywords;
 }
-
-bool Parser::parseState(std::shared_ptr<ParserState> parserState) const {
-    bool stopParsing = false;
-
-    if (parserState->inputstream) {
-        while (true) {
-            bool streamOK = tryParseKeyword(parserState);
-            if (parserState->rawKeyword) {
-                if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::end) {
-                    stopParsing = true;
-                    break;
-                }
-                else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::endinclude) {
-                    break;
-                }
-                else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::paths) {
-                    for( const auto& record : *parserState->rawKeyword ) {
-                            std::string pathName = readValueToken<std::string>(record.getItem(0));
-                            std::string pathValue = readValueToken<std::string>(record.getItem(1));
-                            parserState->pathMap->insert(std::pair<std::string, std::string>(pathName, pathValue));
-                    }
-                }
-                else if (parserState->rawKeyword->getKeywordName() == Opm::RawConsts::include) {
-                    auto& firstRecord = parserState->rawKeyword->getFirstRecord( );
-                    std::string includeFileAsString = readValueToken<std::string>(firstRecord.getItem(0));
-                    boost::filesystem::path includeFile = getIncludeFilePath(*parserState, includeFileAsString);
-                    std::shared_ptr<ParserState> newParserState = parserState->includeState( includeFile );
-
-
-                    stopParsing = parseState(newParserState);
-                    if (stopParsing) break;
-                } else {
-
-                    if (isRecognizedKeyword(parserState->rawKeyword->getKeywordName())) {
-                            const auto* parserKeyword = getParserKeywordFromDeckName(parserState->rawKeyword->getKeywordName());
-                            parserState->deck->addKeyword( parserKeyword->parse(parserState->parseContext , parserState->rawKeyword ) );
-                        } else {
-                            DeckKeyword deckKeyword(parserState->rawKeyword->getKeywordName(), false);
-                            const std::string msg = "The keyword " + parserState->rawKeyword->getKeywordName() + " is not recognized";
-                            deckKeyword.setLocation(parserState->rawKeyword->getFilename(),
-                                                     parserState->rawKeyword->getLineNR());
-                            parserState->deck->addKeyword( std::move( deckKeyword ) );
-                            parserState->deck->getMessageContainer().warning(parserState->dataFile.string(), msg, parserState->lineNR);
-                        }
-                    }
-                    parserState->rawKeyword.reset();
-                }
-                if (!streamOK)
-                    break;
-            }
-        } else
-            throw std::invalid_argument("Failed to open file: " + parserState->dataFile.string());
-        return stopParsing;
-    }
 
 
     void Parser::loadKeywords(const Json::JsonObject& jsonKeywords) {
@@ -415,134 +710,6 @@ bool Parser::parseState(std::shared_ptr<ParserState> parserState) const {
             }
         } else
             throw std::invalid_argument("Input JSON object is not an array");
-    }
-
-    RawKeywordPtr Parser::createRawKeyword(const std::string& initialLine, std::shared_ptr<ParserState> parserState) const {
-        std::string keywordString = ParserKeyword::getDeckName(initialLine);
-
-        if (isRecognizedKeyword(keywordString)) {
-            const auto* parserKeyword = getParserKeywordFromDeckName( keywordString );
-
-            if (parserKeyword->getSizeType() == SLASH_TERMINATED || parserKeyword->getSizeType() == UNKNOWN) {
-                Raw::KeywordSizeEnum rawSizeType;
-                if (parserKeyword->getSizeType() == SLASH_TERMINATED)
-                    rawSizeType = Raw::SLASH_TERMINATED;
-                else
-                    rawSizeType = Raw::UNKNOWN;
-
-                return RawKeywordPtr(new RawKeyword(keywordString , rawSizeType , parserState->dataFile.string(), parserState->lineNR));
-            } else {
-                size_t targetSize;
-
-                if (parserKeyword->hasFixedSize())
-                    targetSize = parserKeyword->getFixedSize();
-                else {
-                    const std::pair<std::string, std::string> sizeKeyword = parserKeyword->getSizeDefinitionPair();
-                    const Deck * deck = parserState->deck;
-                    if (deck->hasKeyword(sizeKeyword.first)) {
-                        const auto& sizeDefinitionKeyword = deck->getKeyword(sizeKeyword.first);
-                        const auto& record = sizeDefinitionKeyword.getRecord(0);
-                        targetSize = record.getItem( sizeKeyword.second ).get< int >( 0 );
-                    } else {
-                        std::string msg = "Expected the kewyord: " + sizeKeyword.first + " to infer the number of records in: " + keywordString;
-                        parserState->parseContext.handleError(ParseContext::PARSE_MISSING_DIMS_KEYWORD , msg );
-
-                        auto keyword = getKeyword( sizeKeyword.first );
-                        auto record = keyword->getRecord(0);
-                        auto int_item = std::dynamic_pointer_cast<const ParserIntItem>( record->get( sizeKeyword.second ) );
-
-                        targetSize = int_item->getDefault( );
-                    }
-                }
-                return RawKeywordPtr(new RawKeyword(keywordString, parserState->dataFile.string() , parserState->lineNR , targetSize , parserKeyword->isTableCollection()));
-            }
-        } else {
-            if (ParserKeyword::validDeckName(keywordString)) {
-                std::string msg = "Keyword " + keywordString + " not recognized ";
-                parserState->parseContext.handleError( ParseContext::PARSE_UNKNOWN_KEYWORD  , msg );
-                return std::shared_ptr<RawKeyword>(  );
-            } else {
-                parserState->handleRandomText( keywordString );
-                return std::shared_ptr<RawKeyword>(  );
-            }
-        }
-    }
-
-
-
-
-    static inline std::string& doSpecialHandlingForTitleKeyword(std::string& line, std::shared_ptr<ParserState> parserState) {
-        if ((parserState->rawKeyword != NULL) && (parserState->rawKeyword->getKeywordName() == "TITLE"))
-                line = line.append("/");
-        return line;
-    }
-
-    static inline std::string& trim_right( std::string& str ) {
-        /* because cctype functions can be macros, manually find the
-         * position to erase from. Written using isspace for performance.
-         */
-
-        size_t i = str.size();
-        for( ; i >= 1; --i )
-            if( !isspace( str[ i - 1 ] ) ) break;
-
-        return str.erase( i );
-    }
-
-    bool Parser::tryParseKeyword(std::shared_ptr<ParserState> parserState) const {
-        if (parserState->nextKeyword.length() > 0) {
-            parserState->rawKeyword = createRawKeyword(parserState->nextKeyword, parserState);
-            parserState->nextKeyword = "";
-        }
-
-        if (parserState->rawKeyword && parserState->rawKeyword->isFinished())
-            return true;
-
-        std::string line;
-        while (std::getline(*parserState->inputstream, line)) {
-            if (line.find("--") != std::string::npos)
-                line = stripComments( line );
-
-            line = trim_right( line ); // Removing garbage (eg. \r)
-            line = doSpecialHandlingForTitleKeyword(line, parserState);
-            std::string keywordString;
-            parserState->lineNR++;
-
-            // skip empty lines
-            if (line.size() == 0)
-                continue;
-
-            if (parserState->rawKeyword == NULL) {
-                if (RawKeyword::isKeywordPrefix(line, keywordString)) {
-                    parserState->rawKeyword = createRawKeyword(keywordString, parserState);
-                } else
-                    /* We are looking at some random gibberish?! */
-                    parserState->handleRandomText( line );
-            } else {
-                if (parserState->rawKeyword->getSizeType() == Raw::UNKNOWN) {
-                    if (isRecognizedKeyword(line)) {
-                        parserState->rawKeyword->finalizeUnknownSize();
-                        parserState->nextKeyword = line;
-                        return true;
-                    }
-                }
-                parserState->rawKeyword->addRawRecordString(line);
-            }
-
-            if (parserState->rawKeyword
-                && parserState->rawKeyword->isFinished()
-                && parserState->rawKeyword->getSizeType() != Raw::UNKNOWN)
-            {
-                return true;
-            }
-        }
-        if (parserState->rawKeyword
-            && parserState->rawKeyword->getSizeType() == Raw::UNKNOWN)
-        {
-            parserState->rawKeyword->finalizeUnknownSize();
-        }
-
-        return false;
     }
 
     bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
@@ -580,14 +747,14 @@ bool Parser::parseState(std::shared_ptr<ParserState> parserState) const {
 
 
     void Parser::applyUnitsToDeck(Deck& deck) const {
-        for (size_t index=0; index < deck.size(); ++index) {
-            auto& deckKeyword = deck.getKeyword( index );
-            if (isRecognizedKeyword( deckKeyword.name())) {
-                const auto* parserKeyword = getParserKeywordFromDeckName( deckKeyword.name() );
-                if (parserKeyword->hasDimension()) {
-                    parserKeyword->applyUnitsToDeck(deck , deckKeyword);
-                }
-            }
+        for( auto& deckKeyword : deck ) {
+
+            if( !isRecognizedKeyword( deckKeyword.name() ) ) continue;
+
+            const auto* parserKeyword = getParserKeywordFromDeckName( deckKeyword.name() );
+            if( !parserKeyword->hasDimension() ) continue;
+
+            parserKeyword->applyUnitsToDeck(deck , deckKeyword);
         }
     }
 

@@ -26,10 +26,12 @@
 #include <list>
 
 #include <opm/parser/eclipse/RawDeck/RawEnums.hpp>
+#include <opm/parser/eclipse/Utility/Stringview.hpp>
 
 namespace Opm {
 
     class RawRecord;
+    class string_view;
 
     /// Class representing a RawKeyword, meaning both the actual keyword phrase, and the records,
     /// represented as a list of RawRecord objects.
@@ -38,11 +40,11 @@ namespace Opm {
 
     class RawKeyword {
     public:
-        RawKeyword(const std::string& name , Raw::KeywordSizeEnum sizeType , const std::string& filename, size_t lineNR);
-        RawKeyword(const std::string& name , const std::string& filename, size_t lineNR , size_t inputSize , bool isTableCollection = false);
+        RawKeyword(const string_view& name , Raw::KeywordSizeEnum sizeType , const std::string& filename, size_t lineNR);
+        RawKeyword(const string_view& name , const std::string& filename, size_t lineNR , size_t inputSize , bool isTableCollection = false);
 
         const std::string& getKeywordName() const;
-        void addRawRecordString(const std::string& partialRecordString);
+        void addRawRecordString( const string_view& );
         size_t size() const;
         Raw::KeywordSizeEnum getSizeType() const;
 
@@ -51,7 +53,7 @@ namespace Opm {
         // iterator interface.
         const RawRecord& getFirstRecord( ) const;
 
-        static bool isKeywordPrefix(const std::string& line, std::string& keywordName);
+        static bool isKeywordPrefix(const string_view& line, std::string& keywordName);
 
         bool isPartialRecordStringEmpty() const;
         bool isFinished() const;
@@ -78,7 +80,7 @@ namespace Opm {
         size_t m_currentNumTables;
         std::string m_name;
         std::list< RawRecord > m_records;
-        std::string m_partialRecordString;
+        string_view m_partialRecordString;
 
         size_t m_lineNR;
         std::string m_filename;
