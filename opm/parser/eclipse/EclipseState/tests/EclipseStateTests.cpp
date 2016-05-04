@@ -284,16 +284,16 @@ BOOST_AUTO_TEST_CASE(GetTransMult) {
 BOOST_AUTO_TEST_CASE(GetFaults) {
     DeckPtr deck = createDeck();
     EclipseState state( deck, ParseContext() );
-    std::shared_ptr<const FaultCollection> faults = state.getFaults();
+    const auto& faults = state.getFaults();
 
-    BOOST_CHECK( faults->hasFault( "F1" ) );
-    BOOST_CHECK( faults->hasFault( "F2" ) );
+    BOOST_CHECK( faults.hasFault( "F1" ) );
+    BOOST_CHECK( faults.hasFault( "F2" ) );
 
-    std::shared_ptr<const Fault> F1 = faults->getFault( "F1" );
-    std::shared_ptr<const Fault> F2 = faults->getFault( "F2" );
+    const auto& F1 = faults.getFault( "F1" );
+    const auto& F2 = faults.getFault( "F2" );
 
-    BOOST_CHECK_EQUAL( 0.50, F1->getTransMult() );
-    BOOST_CHECK_EQUAL( 0.25, F2->getTransMult() );
+    BOOST_CHECK_EQUAL( 0.50, F1.getTransMult() );
+    BOOST_CHECK_EQUAL( 0.25, F2.getTransMult() );
 
     std::shared_ptr<const TransMult> transMult = state.getTransMult();
     BOOST_CHECK_EQUAL( transMult->getMultiplier( 0, 0, 0, FaceDir::XPlus ), 0.50 );
@@ -408,6 +408,20 @@ BOOST_AUTO_TEST_CASE(WithGridOptsDefaultRegion) {
     BOOST_CHECK_NE( &fluxnum  , &multnum );
 }
 
+BOOST_AUTO_TEST_CASE(TestIOConfigBaseName) {
+    ParseContext parseContext;
+    ParserPtr parser(new Parser());
+    DeckConstPtr deck = parser->parseFile("testdata/integration_tests/IOConfig/SPE1CASE2.DATA", parseContext);
+    EclipseState state(*deck, parseContext);
+    BOOST_CHECK_EQUAL(state.getIOConfig()->getBaseName(), "SPE1CASE2");
+    BOOST_CHECK_EQUAL(state.getIOConfig()->getOutputDir(), "testdata/integration_tests/IOConfig");
+
+    ParserPtr parser2(new Parser());
+    DeckConstPtr deck2 = createDeckWithGridOpts();
+    EclipseState state2(*deck2, parseContext);
+    BOOST_CHECK_EQUAL(state2.getIOConfig()->getBaseName(), "");
+    BOOST_CHECK_EQUAL(state2.getIOConfig()->getOutputDir(), ".");
+}
 
 BOOST_AUTO_TEST_CASE(TestIOConfigCreation) {
     const char * deckData  =
