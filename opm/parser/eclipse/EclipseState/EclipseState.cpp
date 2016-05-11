@@ -72,7 +72,7 @@ namespace Opm {
         }
 
         m_initConfig = std::make_shared<const InitConfig>(deck);
-        m_simulationConfig = std::make_shared<const SimulationConfig>(m_parseContext, *deck,
+        m_simulationConfig = std::make_shared<const SimulationConfig>(*deck,
                                                                       m_eclipseProperties);
 
         initTransMult();
