@@ -26,9 +26,15 @@
 #include <vector>
 
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/NNC.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
+#include <opm/parser/eclipse/EclipseState/SummaryConfig/SummaryConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/parser/eclipse/Parser/MessageContainer.hpp>
+#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 namespace Opm {
 
@@ -43,8 +49,6 @@ namespace Opm {
     class DeckRecord;
     class EclipseGrid;
     class Eclipse3DProperties;
-    class Fault;
-    class FaultCollection;
     class InitConfig;
     class IOConfig;
     class NNC;
@@ -66,7 +70,10 @@ namespace Opm {
             AllProperties = IntProperties | DoubleProperties
         };
 
-        EclipseState(std::shared_ptr< const Deck > deck , const ParseContext& parseContext);
+        EclipseState(const Deck& deck , ParseContext parseContext = ParseContext());
+
+        /// [deprecated]
+        EclipseState(std::shared_ptr< const Deck > deck , ParseContext parseContext = ParseContext());
 
         const ParseContext& getParseContext() const;
         std::shared_ptr< const Schedule > getSchedule() const;
@@ -76,58 +83,57 @@ namespace Opm {
         std::shared_ptr< const SimulationConfig > getSimulationConfig() const;
         std::shared_ptr< const EclipseGrid > getInputGrid() const;
         std::shared_ptr< EclipseGrid > getInputGridCopy() const;
+        const SummaryConfig& getSummaryConfig() const;
         const MessageContainer& getMessageContainer() const;
         MessageContainer& getMessageContainer();
         std::string getTitle() const;
 
-        std::shared_ptr<const FaultCollection> getFaults() const;
+        const FaultCollection& getFaults() const;
         std::shared_ptr<const TransMult> getTransMult() const;
-        std::shared_ptr<const NNC> getNNC() const;
+        const NNC& getNNC() const;
         bool hasNNC() const;
 
         const Eclipse3DProperties& get3DProperties() const;
 
         const TableManager& getTableManager() const;
 
-        std::vector< int > getRegions( const std::string& kw ) const;
-
         // the unit system used by the deck. note that it is rarely needed to convert
         // units because internally to opm-parser everything is represented by SI
         // units...
-        const UnitSystem& getDeckUnitSystem()  const;
-        void applyModifierDeck( std::shared_ptr<const Deck> deck);
+        const UnitSystem& getDeckUnitSystem() const;
+
+        /// [deprecated]
+        void applyModifierDeck(std::shared_ptr<const Deck>);
+        void applyModifierDeck(const Deck& deck);
 
     private:
-        void initTabdims(std::shared_ptr< const Deck > deck);
-        void initIOConfig(std::shared_ptr< const Deck > deck);
-        void initIOConfigPostSchedule(std::shared_ptr< const Deck > deck);
+        void initIOConfigPostSchedule(const Deck& deck);
         void initTransMult();
-        void initFaults(std::shared_ptr< const Deck > deck);
+        void initFaults(const Deck& deck);
 
+        void setMULTFLT(std::shared_ptr<const Opm::Section> section);
+        void initMULTREGT(const Deck& deck);
 
-        void setMULTFLT(std::shared_ptr<const Opm::Section> section) const;
-        void initMULTREGT(std::shared_ptr< const Deck > deck);
-
-        void complainAboutAmbiguousKeyword(std::shared_ptr< const Deck > deck,
+        void complainAboutAmbiguousKeyword(const Deck& deck,
                                            const std::string& keywordName);
 
+        ParseContext m_parseContext;
         std::shared_ptr< IOConfig >               m_ioConfig;
         std::shared_ptr< const InitConfig >       m_initConfig;
-        std::shared_ptr< const Schedule >         m_schedule;
-        std::shared_ptr< const SimulationConfig > m_simulationConfig;
-
-        std::string m_title;
-        std::shared_ptr<TransMult> m_transMult;
-        std::shared_ptr<FaultCollection> m_faults;
-        std::shared_ptr<NNC> m_nnc;
-
-
-        const UnitSystem& m_deckUnitSystem;
-        const ParseContext& m_parseContext;
         const TableManager m_tables;
         std::shared_ptr<EclipseGrid> m_inputGrid;
         Eclipse3DProperties m_eclipseProperties;
+        std::shared_ptr< const Schedule > m_schedule;
+        std::shared_ptr< const SimulationConfig > m_simulationConfig;
+        SummaryConfig m_summaryConfig;
+
+        std::string m_title;
+        std::shared_ptr<TransMult> m_transMult;
+        FaultCollection m_faults;
+        NNC m_nnc;
+
         MessageContainer m_messageContainer;
+        const UnitSystem& m_deckUnitSystem;
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

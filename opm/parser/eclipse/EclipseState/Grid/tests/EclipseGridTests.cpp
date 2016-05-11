@@ -87,8 +87,8 @@ BOOST_AUTO_TEST_CASE(MissingDimsThrows) {
 
 BOOST_AUTO_TEST_CASE(HasGridKeywords) {
     Opm::DeckPtr deck = createDeckHeaders();
-    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( deck ));
-    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( *deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( *deck ));
 }
 
 
@@ -369,29 +369,29 @@ BOOST_AUTO_TEST_CASE(DEPTHZ_EQUAL_TOPS) {
 
 BOOST_AUTO_TEST_CASE(HasCPKeywords) {
     Opm::DeckPtr deck = createCPDeck();
-    BOOST_CHECK(  Opm::EclipseGrid::hasCornerPointKeywords( deck ));
-    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( deck ));
+    BOOST_CHECK(  Opm::EclipseGrid::hasCornerPointKeywords( *deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( *deck ));
 }
 
 
 BOOST_AUTO_TEST_CASE(HasCartKeywords) {
     Opm::DeckPtr deck = createCARTDeck();
-    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( deck ));
-    BOOST_CHECK(  Opm::EclipseGrid::hasCartesianKeywords( deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( *deck ));
+    BOOST_CHECK(  Opm::EclipseGrid::hasCartesianKeywords( *deck ));
 }
 
 
 BOOST_AUTO_TEST_CASE(HasCartKeywordsDEPTHZ) {
     Opm::DeckPtr deck = createCARTDeckDEPTHZ();
-    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( deck ));
-    BOOST_CHECK(  Opm::EclipseGrid::hasCartesianKeywords( deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( *deck ));
+    BOOST_CHECK(  Opm::EclipseGrid::hasCartesianKeywords( *deck ));
 }
 
 
 BOOST_AUTO_TEST_CASE(HasINVALIDCartKeywords) {
     Opm::DeckPtr deck = createCARTInvalidDeck();
-    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( deck ));
-    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCornerPointKeywords( *deck ));
+    BOOST_CHECK( !Opm::EclipseGrid::hasCartesianKeywords( *deck ));
 }
 
 
@@ -646,6 +646,51 @@ BOOST_AUTO_TEST_CASE(ResetACTNUM) {
     grid.resetACTNUM( NULL );
     BOOST_CHECK_EQUAL( 1000U , grid.getNumActive() );
 }
+
+
+BOOST_AUTO_TEST_CASE(ACTNUM_BEST_EFFORT) {
+    const char *deckData1 =
+        "RUNSPEC\n"
+        "\n"
+        "DIMENS\n"
+        " 10 10 10 /\n"
+        "GRID\n"
+        "COORD\n"
+        "  726*1 / \n"
+        "ZCORN \n"
+        "  8000*1 / \n"
+        "ACTNUM \n"
+        "  100*1 /\n"
+        "EDIT\n"
+        "\n";
+
+    const char *deckData2 =
+        "RUNSPEC\n"
+        "\n"
+        "DIMENS\n"
+        " 10 10 10 /\n"
+        "GRID\n"
+        "COORD\n"
+        "  726*1 / \n"
+        "ZCORN \n"
+        "  8000*1 / \n"
+        "ACTNUM \n"
+        "  100*1 800*0 100*1 /\n"
+        "EDIT\n"
+        "\n";
+
+    Opm::ParserPtr parser(new Opm::Parser());
+    Opm::DeckConstPtr deck1 = parser->parseString(deckData1, Opm::ParseContext()) ;
+    Opm::DeckConstPtr deck2 = parser->parseString(deckData2, Opm::ParseContext()) ;
+
+    Opm::EclipseGrid grid1(deck1);
+    // Actnum vector is too short - ignored
+    BOOST_CHECK_EQUAL( 1000U , grid1.getNumActive());
+
+    Opm::EclipseGrid grid2(deck2);
+    BOOST_CHECK_EQUAL( 200U , grid2.getNumActive());
+}
+
 
 
 BOOST_AUTO_TEST_CASE(LoadFromBinary) {
