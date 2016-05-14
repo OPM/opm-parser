@@ -265,7 +265,7 @@ namespace Opm {
 
                 } else {
                     std::string msg = "OPM does not support grid property modifier " + keyword.name() + " in the Schedule section. Error at report: " + std::to_string( currentStep );
-                    parseContext.handleError( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , msg );
+                    parseContext.handleError( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , m_messages, msg );
                 }
             }
         }
@@ -326,7 +326,8 @@ namespace Opm {
             const auto& methodItem = record.getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
             if ((methodItem.get< std::string >(0) != "TRACK")  && (methodItem.get< std::string >(0) != "INPUT")) {
                 std::string msg = "The COMPORD keyword only handles 'TRACK' or 'INPUT' order.";
-                parseContext.handleError( ParseContext::UNSUPPORTED_COMPORD_TYPE , msg );
+                m_messages.error(msg);
+                parseContext.handleError( ParseContext::UNSUPPORTED_COMPORD_TYPE , m_messages, msg );
             }
         }
     }
