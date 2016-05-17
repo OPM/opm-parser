@@ -227,7 +227,19 @@ namespace Opm {
 
         using namespace std::placeholders;
         const auto handler = std::bind( handleKW, _1, schedule, props, n_xyz );
+
+#ifdef _MSC_VER
+        for (auto& x : section)
+        {
+            auto keywords = handler(x);
+            for (auto& keyword : keywords)
+            {
+                this->keywords.push_back(keyword);
+            }
+        }
+#else
         this->keywords = fun::concat( fun::map( handler, section ) );
+#endif
     }
 
     SummaryConfig::const_iterator SummaryConfig::begin() const {
