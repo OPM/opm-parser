@@ -75,9 +75,9 @@ if (USE_RUNPATH)
 endif (USE_RUNPATH)
 
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4996" )
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+if (MSVC)
+  add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4996 /wd4244 /wd4267")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 else()
   if (NOT DEFINED CMAKE_CXX_FLAGS)
     SET( CMAKE_CXX_FLAGS "-pipe -std=c++0x -pedantic -Wall -Wextra -Wformat-nonliteral -Wcast-align -Wpointer-arith -Wmissing-declarations -Wcast-qual -Wshadow -Wwrite-strings -Wchar-subscripts -Wredundant-decls")
@@ -85,7 +85,7 @@ else()
 
   SET( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}   -O0 -DDEBUG  -ggdb3")
   SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -mtune=native")
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+endif(MSVC)
 
 if (NOT DEFINED CMAKE_C_FLAGS)
   SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragmas -std=c99")
