@@ -145,14 +145,18 @@ public:
     */
     void checkLimits( T min, T max ) const;
 
+    /*
+      The runPostProcessor() method is public; and it is no harm in
+      calling it from arbitrary locations. But the intention is that
+      should only be called from the Eclipse3DProperties class
+      assembling the properties.
+    */
+    void runPostProcessor();
+
 
 private:
     const DeckItem& getDeckItem( const DeckKeyword& );
     void setDataPoint(size_t sourceIdx, size_t targetIdx, const DeckItem& deckItem);
-
-    void runPostProcessor();
-
-    friend class Eclipse3DProperties; // currently needed for runPostProcessor, see Eclipse3DProperties::getDoubleGridProperty
 
     size_t m_nx, m_ny, m_nz;
     SupportedKeywordInfo m_kwInfo;
@@ -163,9 +167,9 @@ private:
 // initialize the TEMPI grid property using the temperature vs depth
 // table (stemming from the TEMPVD or the RTEMPVD keyword)
 std::vector< double > temperature_lookup( size_t,
-                                            const TableManager*,
-                                            const EclipseGrid*,
-                                            GridProperties<int>* );
+                                          const TableManager*,
+                                          const EclipseGrid*,
+                                          const GridProperties<int>* );
 }
 
 #endif
