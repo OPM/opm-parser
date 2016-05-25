@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <cctype>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -29,7 +30,6 @@
 #include <opm/parser/eclipse/Generator/KeywordGenerator.hpp>
 #include <opm/parser/eclipse/Generator/KeywordLoader.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
-
 namespace Opm {
 
     KeywordGenerator::KeywordGenerator(bool verbose)
@@ -41,7 +41,7 @@ namespace Opm {
 
 
     std::string testHeader() {
-        std::string header = "#define BOOST_TEST_MODULE\n"
+        std::string header = "#define BOOST_TEST_MODULE ParserRecordTests\n"
             "#include <boost/filesystem.hpp>\n"
             "#include <boost/test/unit_test.hpp>\n"
             "#include <memory>\n"
