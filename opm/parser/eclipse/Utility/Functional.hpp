@@ -103,14 +103,7 @@ namespace fun {
      */
     template< typename A >
     std::vector< A > concat( std::vector< std::vector< A > >&& src ) {
-        const auto size = std::accumulate( src.begin(), src.end(), 0,
-                []( std::size_t acc, const std::vector< A >& x ) {
-                    return acc + x.size();
-                    }
-                );
-
         std::vector< A > dst;
-        dst.reserve( size );
 
         for( auto& x : src )
             std::move( x.begin(), x.end(), std::back_inserter( dst ) );
