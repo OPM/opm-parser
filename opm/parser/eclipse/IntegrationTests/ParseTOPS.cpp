@@ -65,3 +65,12 @@ BOOST_AUTO_TEST_CASE( PARSE_TOPS_OK) {
         }
     }
 }
+
+BOOST_AUTO_TEST_CASE(PARSE_SIMPLE_OK) {
+    ParserPtr parser(new Parser());
+    std::string deckFile("testdata/integration_tests/GRID/SIMPLE.DATA");
+    ParseContext parseContext;
+    parseContext.update(InputError::WARN);
+
+    DeckPtr deck = parser->parseFile(deckFile, parseContext);
+}
