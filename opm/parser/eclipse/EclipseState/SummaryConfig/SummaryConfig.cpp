@@ -38,6 +38,7 @@
 #include <ert/ecl/ecl_smspec.h>
 
 #include <algorithm>
+#include <iterator>
 #include <array>
 #include <functional>
 
@@ -252,7 +253,10 @@ namespace Opm {
 
         using namespace std::placeholders;
         const auto handler = std::bind( handleKW, _1, schedule, props, n_xyz );
-        this->keywords = fun::concat( fun::map( handler, section ) );
+
+        for (const auto& smspec_nodes : fun::map( handler, section ))
+            std::copy( smspec_nodes.begin() , smspec_nodes.end() , std::back_inserter( this->keywords ));
+
     }
 
     SummaryConfig::const_iterator SummaryConfig::begin() const {
