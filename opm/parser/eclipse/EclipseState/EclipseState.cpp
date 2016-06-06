@@ -49,30 +49,18 @@
 
 namespace Opm {
 
-    static IOConfig mkIOConfig( const Deck& deck ) {
-        IOConfig config( deck.getDataFile() );
-
-        if( Section::hasGRID( deck ) )
-            config.handleGridSection( GRIDSection( deck ) );
-
-        if( Section::hasRUNSPEC( deck ) )
-            config.handleRunspecSection( RUNSPECSection( deck ) );
-
-        return config;
-    }
-
     EclipseState::EclipseState(std::shared_ptr<const Deck> deckptr, ParseContext parseContext) :
         EclipseState(*deckptr, parseContext)
     {}
 
     EclipseState::EclipseState(const Deck& deck, ParseContext parseContext) :
         m_parseContext(      parseContext ),
-        m_ioConfig(          std::make_shared< IOConfig >( mkIOConfig( deck ) ) ),
+        m_inputGrid(         std::make_shared<EclipseGrid>(deck, nullptr) ),
+        m_schedule(          std::make_shared<Schedule>( m_parseContext, m_inputGrid, deck ) ),
+        m_ioConfig(          std::make_shared< IOConfig >( deck ) ),
         m_initConfig(        std::make_shared< InitConfig >( deck ) ),
         m_tables(            deck ),
-        m_inputGrid(         std::make_shared<EclipseGrid>(deck, nullptr) ),
         m_eclipseProperties( deck, m_tables, *m_inputGrid ),
-        m_schedule(          std::make_shared<Schedule>( m_parseContext, m_inputGrid, deck, m_ioConfig ) ),
         m_simulationConfig(  std::make_shared<SimulationConfig>( deck, m_eclipseProperties ) ),
         m_summaryConfig(     deck, *m_schedule, m_eclipseProperties, m_inputGrid->getNXYZ() ),
         m_inputNnc(          deck, m_inputGrid ),
