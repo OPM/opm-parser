@@ -258,8 +258,8 @@ namespace Opm {
          * The following code is a workaround for this compiler bug */
         for (auto& x : section)
         {
-            auto keywords = handler(x);
-            for (auto& keyword : keywords)
+            auto summaryKeywords = handler(x);
+            for (auto& keyword : summaryKeywords)
             {
                 this->keywords.push_back(keyword);
             }

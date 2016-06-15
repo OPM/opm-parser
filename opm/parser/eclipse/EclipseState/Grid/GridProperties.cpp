@@ -75,7 +75,7 @@ namespace Opm {
     }
 
     template<>
-    int GridProperties<int>::convertInputValue(const GridProperty<int>& property, double doubleValue) const {
+    int GridProperties<int>::convertInputValue(const GridProperty<int>& /* property */, double doubleValue) const {
         return convertInputValue(doubleValue);
     }
 
