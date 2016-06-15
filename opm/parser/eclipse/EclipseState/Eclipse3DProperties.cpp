@@ -107,7 +107,7 @@ namespace Opm {
         */
 
         void ACTNUMPostProcessor( std::vector<int>&       values,
-                                  const EclipseGrid*      eclipseGrid,
+                                  const EclipseGrid*      /* eclipseGrid */,
                                   const GridProperties<double>* doubleGridProperties)
         {
             const bool hasPORV = doubleGridProperties->hasKeyword( "PORV" ) || doubleGridProperties->hasKeyword( "PORO");
