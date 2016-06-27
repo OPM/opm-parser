@@ -44,7 +44,7 @@ function build_opm_parser {
   pushd .
   mkdir serial/build-opm-parser
   cd serial/build-opm-parser
-  build_module "-DCMAKE_PREFIX_PATH=$WORKSPACE/serial/install -DCMAKE_INSTALL_PREFIX=$WORKSPACE/serial/install -DOPM_DATA_ROOT=$OPM_DATA_ROOT" 1 $WORKSPACE
+  build_module "-DCMAKE_PREFIX_PATH=$WORKSPACE/serial/install -DCMAKE_INSTALL_PREFIX=$WORKSPACE/serial/install -DOPM_DATA_ROOT=$OPM_DATA_ROOT -DENABLE_PYTHON=ON" 1 $WORKSPACE
   test $? -eq 0 || exit 1
   popd
 }
