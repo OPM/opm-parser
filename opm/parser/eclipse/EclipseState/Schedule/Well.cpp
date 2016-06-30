@@ -33,8 +33,11 @@
 
 namespace Opm {
 
-    Well::Well(const std::string& name_, std::shared_ptr<const EclipseGrid> grid , int headI, int headJ, Value<double> refDepth , Phase::PhaseEnum preferredPhase,
-               TimeMapConstPtr timeMap, size_t creationTimeStep, WellCompletion::CompletionOrderEnum completionOrdering, bool allowCrossFlow)
+    Well::Well(const std::string& name_, std::shared_ptr<const EclipseGrid> grid, int headI,
+               int headJ, Value<double> refDepth , Phase::PhaseEnum preferredPhase,
+               TimeMapConstPtr timeMap, size_t creationTimeStep,
+               WellCompletion::CompletionOrderEnum completionOrdering,
+               bool allowCrossFlow, bool automaticShutIn)
         : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::SHUT)),
           m_isAvailableForGroupControl(new DynamicState<bool>(timeMap, true)),
           m_guideRate(new DynamicState<double>(timeMap, -1.0)),
@@ -45,6 +48,7 @@ namespace Opm {
           m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties() )),
           m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
           m_polymerProperties( new DynamicState<WellPolymerProperties>(timeMap, WellPolymerProperties() )),
+          m_econproductionlimits( new DynamicState<WellEconProductionLimits>(timeMap, WellEconProductionLimits()) ),
           m_solventFraction( new DynamicState<double>(timeMap, 0.0 )),
           m_groupName( new DynamicState<std::string>( timeMap , "" )),
           m_rft( new DynamicState<bool>(timeMap,false)),
@@ -57,6 +61,7 @@ namespace Opm {
           m_grid( grid ),
           m_comporder(completionOrdering),
           m_allowCrossFlow(allowCrossFlow),
+          m_automaticShutIn(automaticShutIn),
           m_segmentset(new DynamicState<SegmentSetConstPtr>(timeMap, SegmentSetPtr(new SegmentSet())))
     {
         m_name = name_;
@@ -164,6 +169,16 @@ namespace Opm {
     bool Well::setSolventFraction(size_t timeStep , const double fraction) {
         m_isProducer->update(timeStep , false);
         return m_solventFraction->update(timeStep, fraction);
+    }
+
+    bool Well::setEconProductionLimits(const size_t timeStep, const WellEconProductionLimits& productionlimits) {
+        // not sure if this keyword turning a well to be producer.
+        // not sure what will happen if we use this keyword to a injector.
+        return m_econproductionlimits->update(timeStep, productionlimits);
+    }
+
+    const WellEconProductionLimits& Well::getEconProductionLimits(const size_t timeStep) const {
+        return m_econproductionlimits->at(timeStep);
     }
 
     const double& Well::getSolventFraction(size_t timeStep) const {
@@ -386,6 +401,10 @@ namespace Opm {
 
     bool Well::getAllowCrossFlow() const {
         return m_allowCrossFlow;
+    }
+
+    bool Well::getAutomaticShutIn() const {
+        return m_automaticShutIn;
     }
 
     bool Well::canOpen(size_t currentStep) const {

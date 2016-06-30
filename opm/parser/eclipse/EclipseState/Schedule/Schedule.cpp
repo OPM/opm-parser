@@ -230,6 +230,10 @@ namespace Opm {
             if (keyword.name() == "VAPPARS")
                 handleVAPPARS(keyword, currentStep);
 
+            if (keyword.name() == "WECON") {
+                handleWECON(keyword, currentStep);
+            }
+
 
             if (geoModifiers.find( keyword.name() ) != geoModifiers.end()) {
                 bool supported = geoModifiers.at( keyword.name() );
@@ -653,6 +657,20 @@ namespace Opm {
             }
         }
     }
+
+
+
+    void Schedule::handleWECON( const DeckKeyword& keyword, size_t currentStep) {
+        for( const auto& record : keyword ) {
+            const std::string& wellNamePattern = record.getItem("WELL").getTrimmedString(0);
+            WellEconProductionLimits econ_production_limits(record);
+
+            for( auto* well : getWells( wellNamePattern ) ) {
+                well->setEconProductionLimits(currentStep, econ_production_limits);
+            }
+        }
+    }
+
 
     void Schedule::handleWSOLVENT( const DeckKeyword& keyword, size_t currentStep) {
 
@@ -1299,7 +1317,14 @@ namespace Opm {
         if (allowCrossFlowStr == "NO")
             allowCrossFlow = false;
 
-        auto well = std::make_shared<Well>(wellName, m_grid , headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep, wellCompletionOrder, allowCrossFlow);
+        bool automaticShutIn = true;
+        const std::string& automaticShutInStr = record.getItem<ParserKeywords::WELSPECS::AUTO_SHUTIN>().getTrimmedString(0);
+        if (automaticShutInStr == "STOP") {
+            automaticShutIn = false;
+        }
+
+        auto well = std::make_shared<Well>(wellName, m_grid , headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep,
+                                           wellCompletionOrder, allowCrossFlow, automaticShutIn);
         m_wells.insert( wellName  , well);
         m_events->addEvent( ScheduleEvents::NEW_WELL , timeStep );
     }
