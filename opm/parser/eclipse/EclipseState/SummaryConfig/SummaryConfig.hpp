@@ -47,11 +47,11 @@ namespace Opm {
             const_iterator begin() const;
             const_iterator end() const;
 
-            static std::vector <std::string> getAllExpandedKeywords();
+            SummaryConfig& merge( const SummaryConfig& );
+            SummaryConfig& merge( SummaryConfig&& );
 
         private:
             std::vector< ERT::smspec_node > keywords;
-            static const std::vector <std::string> __ALL_expands_keywords;
     };
 
 } //namespace Opm

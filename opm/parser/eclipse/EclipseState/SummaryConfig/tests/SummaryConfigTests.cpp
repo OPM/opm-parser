@@ -187,7 +187,70 @@ BOOST_AUTO_TEST_CASE(completions) {
     BOOST_CHECK_EQUAL_COLLECTIONS(
             keywords.begin(), keywords.end(),
             names.begin(), names.end() );
+
 }
+
+BOOST_AUTO_TEST_CASE( merge ) {
+    const auto input1 = "WWCT\n/\n";
+    auto summary1 = createSummary( input1 );
+
+    const auto keywords = { "FOPT", "WWCT", "WWCT", "WWCT", "WWCT" };
+    const auto wells = { "PRODUCER", "WX2", "W_1", "W_3" };
+
+    const auto input2 = "FOPT\n";
+    const auto summary2 = createSummary( input2 );
+
+    summary1.merge( summary2 );
+    const auto kw_names = sorted_keywords( summary1 );
+    const auto well_names = sorted_names( summary1 );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+            keywords.begin(), keywords.end(),
+            kw_names.begin(), kw_names.end() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+            wells.begin(), wells.end(),
+            well_names.begin(), well_names.end() );
+}
+
+BOOST_AUTO_TEST_CASE( merge_move ) {
+    const auto input = "WWCT\n/\n";
+    auto summary = createSummary( input );
+
+    const auto keywords = { "FOPT", "WWCT", "WWCT", "WWCT", "WWCT" };
+    const auto wells = { "PRODUCER", "WX2", "W_1", "W_3" };
+
+    summary.merge( createSummary( "FOPT\n" ) );
+
+    const auto kw_names = sorted_keywords( summary );
+    const auto well_names = sorted_names( summary );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+            keywords.begin(), keywords.end(),
+            kw_names.begin(), kw_names.end() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+            wells.begin(), wells.end(),
+            well_names.begin(), well_names.end() );
+}
+
+constexpr auto ALL_keywords =  {
+    "FAQR",  "FAQRG", "FAQT", "FAQTG", "FGIP", "FGIPG", "FGIPL",
+    "FGIR",  "FGIT",  "FGOR", "FGPR",  "FGPT", "FOIP",  "FOIPG",
+    "FOIPL", "FOIR",  "FOIT", "FOPR",  "FOPT", "FPR",   "FVIR",
+    "FVIT",  "FVPR",  "FVPT", "FWCT",  "FWGR", "FWIP",  "FWIR",
+    "FWIT",  "FWPR",  "FWPT",
+    "GGIR",  "GGIT",  "GGOR", "GGPR",  "GGPT", "GOIR",  "GOIT",
+    "GOPR",  "GOPT",  "GVIR", "GVIT",  "GVPR", "GVPT",  "GWCT",
+    "GWGR",  "GWIR",  "GWIT", "GWPR",  "GWPT",
+    "WBHP",  "WGIR",  "WGIT", "WGOR",  "WGPR", "WGPT",  "WOIR",
+    "WOIT",  "WOPR",  "WOPT", "WPI",   "WTHP", "WVIR",  "WVIT",
+    "WVPR",  "WVPT",  "WWCT", "WWGR",  "WWIR", "WWIT",  "WWPR",
+    "WWPT",
+    // ALL will not expand to these keywords yet
+    "AAQR",  "AAQRG", "AAQT", "AAQTG"
+};
+
 
 BOOST_AUTO_TEST_CASE(summary_ALL) {
 
@@ -198,7 +261,7 @@ BOOST_AUTO_TEST_CASE(summary_ALL) {
 
     std::vector<std::string> all;
 
-    for(const std::string& keyword: SummaryConfig::getAllExpandedKeywords()) {
+    for( std::string keyword: ALL_keywords ) {
         if(keyword[0]=='F') {
             all.push_back(keyword);
         }
@@ -261,4 +324,23 @@ BOOST_AUTO_TEST_CASE(INVALID_GROUP) {
 
     parseContext.updateKey( ParseContext::SUMMARY_UNKNOWN_GROUP , InputError::IGNORE );
     BOOST_CHECK_NO_THROW( createSummary( input , parseContext ));
+}
+
+BOOST_AUTO_TEST_CASE( REMOVE_DUPLICATED_ENTRIES ) {
+    ParseContext parseContext;
+    const auto input = "WGPR \n/\n"
+                       "WGPR \n/\n"
+                       "ALL\n";
+
+    const auto summary = createSummary( input );
+    const auto keys = sorted_key_names( summary );
+    auto uniq_keys = keys;
+    uniq_keys.erase( std::unique( uniq_keys.begin(),
+                                  uniq_keys.end(),
+                                  std::equal_to< std::string >() ),
+                     uniq_keys.end() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+            keys.begin(), keys.end(),
+            uniq_keys.begin(), uniq_keys.end() );
 }
