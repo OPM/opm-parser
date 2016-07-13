@@ -116,7 +116,7 @@ add_definitions(-DOPM_PARSER_DECK_API=1)
 # Requires BOOST filesystem version 3, thus 1.44 is necessary.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 find_package(Boost 1.44.0 COMPONENTS filesystem date_time system unit_test_framework regex REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 include_directories(BEFORE ${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
