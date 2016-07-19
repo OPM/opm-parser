@@ -57,6 +57,9 @@ namespace {
         1 / ( Metric::ReservoirVolume / Metric::Time ),
         1 / Metric::Transmissibility,
         1 / Metric::Mass,
+        1, /* gas-oil ratio */
+        1, /* oil-gas ratio */
+        1, /* water cut */
     };
 
     static const double from_metric[] = {
@@ -77,6 +80,32 @@ namespace {
         Metric::ReservoirVolume / Metric::Time,
         Metric::Transmissibility,
         Metric::Mass,
+        1, /* gas-oil ratio */
+        1, /* oil-gas ratio */
+        1, /* water cut */
+    };
+
+    static constexpr const char* metric_names[] = {
+        "",
+        "M",
+        "DAY",
+        "KG/M3",
+        "BARSA",
+        "K",
+        "C",
+        "CP",
+        "MD",
+        "SM3",
+        "SM3",
+        "RM3",
+        "SM3/DAY",
+        "SM3/DAY",
+        "RM3/DAY",
+        "CPR3/DAY/BARS",
+        "KG",
+        "SM3/SM3",
+        "SM3/SM3",
+        "SM3/SM3",
     };
 
     static const double to_field[] = {
@@ -97,6 +126,9 @@ namespace {
         1 / ( Field::ReservoirVolume / Field::Time ),
         1 / Field::Transmissibility,
         1 / Field::Mass,
+        1, /* gas-oil ratio */
+        1, /* oil-gas ratio */
+        1, /* water cut */
     };
 
     static const double from_field[] = {
@@ -117,8 +149,33 @@ namespace {
          Field::ReservoirVolume / Field::Time,
          Field::Transmissibility,
          Field::Mass,
+         1, /* gas-oil ratio */
+         1, /* oil-gas ratio */
+         1, /* water cut */
     };
 
+    static constexpr const char* field_names[] = {
+        "",
+        "FT",
+        "DAY",
+        "LB/FT3",
+        "PSIA",
+        "R",
+        "F",
+        "CP",
+        "MD",
+        "STB",
+        "MSCF",
+        "RB",
+        "STB/DAY",
+        "MSCF/DAY",
+        "RB/DAY",
+        "CPRB/DAY/PSI",
+        "LB",
+        "MSCF/STB",
+        "STB/MSCF",
+        "STB/STB",
+    };
 }
 
     UnitSystem::UnitSystem(const UnitType unit) :
@@ -129,11 +186,13 @@ namespace {
                 m_name = "Metric";
                 this->measure_table_from_si = to_metric;
                 this->measure_table_to_si = from_metric;
+                this->unit_name_table = metric_names;
                 break;
             case(UNIT_TYPE_FIELD):
                 m_name = "Field";
                 this->measure_table_from_si = to_field;
                 this->measure_table_to_si = from_field;
+                this->unit_name_table = field_names;
                 break;
             case(UNIT_TYPE_LAB):
                 m_name = "Lab";
@@ -261,6 +320,10 @@ namespace {
 
     double UnitSystem::to_si( measure m, double val ) const {
         return this->measure_table_to_si[ static_cast< int >( m ) ] * val;
+    }
+
+    const char* UnitSystem::name( measure m ) const {
+        return this->unit_name_table[ static_cast< int >( m ) ];
     }
 
     UnitSystem * UnitSystem::newMETRIC() {
