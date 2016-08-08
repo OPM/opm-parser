@@ -27,9 +27,7 @@
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
-#include <opm/parser/eclipse/Deck/DeckTimeStep.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
-#include <opm/parser/eclipse/Deck/SCHEDULESection.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/C.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/W.hpp>
@@ -136,90 +134,88 @@ namespace Opm {
             if (keyword.name() == "DATES")
                 currentStep += keyword.size();
 
-            if (keyword.name() == "TSTEP")
+            else if (keyword.name() == "TSTEP")
                 currentStep += keyword.getRecord(0).getItem(0).size(); // This is a bit weird API.
 
-            if (keyword.name() == "WELSPECS")
-                handleWELSPECS(section, keyword, currentStep);
+            else if (keyword.name() == "WELSPECS")
+                handleWELSPECS( section, keywordIdx, currentStep );
 
-            if (keyword.name() == "WCONHIST")
+            else if (keyword.name() == "WCONHIST")
                 handleWCONHIST(keyword, currentStep);
 
-            if (keyword.name() == "WCONPROD")
+            else if (keyword.name() == "WCONPROD")
                 handleWCONPROD(keyword, currentStep);
 
-            if (keyword.name() == "WCONINJE")
+            else if (keyword.name() == "WCONINJE")
                 handleWCONINJE(section, keyword, currentStep);
 
-            if (keyword.name() == "WPOLYMER")
+            else if (keyword.name() == "WPOLYMER")
                 handleWPOLYMER(keyword, currentStep);
 
-            if (keyword.name() == "WSOLVENT")
+            else if (keyword.name() == "WSOLVENT")
                 handleWSOLVENT(keyword, currentStep);
 
-            if (keyword.name() == "WCONINJH")
+            else if (keyword.name() == "WCONINJH")
                 handleWCONINJH(section, keyword, currentStep);
 
-            if (keyword.name() == "WGRUPCON")
+            else if (keyword.name() == "WGRUPCON")
                 handleWGRUPCON(keyword, currentStep);
 
-            if (keyword.name() == "COMPDAT")
+            else if (keyword.name() == "COMPDAT")
                 handleCOMPDAT(keyword, currentStep);
 
-            if (keyword.name() == "WELSEGS")
+            else if (keyword.name() == "WELSEGS")
                 handleWELSEGS(keyword, currentStep);
 
-            if (keyword.name() == "COMPSEGS")
+            else if (keyword.name() == "COMPSEGS")
                 handleCOMPSEGS(keyword, currentStep);
 
-            if (keyword.name() == "WELOPEN")
+            else if (keyword.name() == "WELOPEN")
                 handleWELOPEN(keyword, currentStep , section.hasKeyword("COMPLUMP"));
 
-            if (keyword.name() == "WELTARG")
+            else if (keyword.name() == "WELTARG")
                 handleWELTARG(section, keyword, currentStep);
 
-            if (keyword.name() == "GRUPTREE")
+            else if (keyword.name() == "GRUPTREE")
                 handleGRUPTREE(keyword, currentStep);
 
-            if (keyword.name() == "GCONINJE")
+            else if (keyword.name() == "GCONINJE")
                 handleGCONINJE(section, keyword, currentStep);
 
-            if (keyword.name() == "GCONPROD")
+            else if (keyword.name() == "GCONPROD")
                 handleGCONPROD(keyword, currentStep);
 
-            if (keyword.name() == "GEFAC")
+            else if (keyword.name() == "GEFAC")
                 handleGEFAC(keyword, currentStep);
 
-            if (keyword.name() == "TUNING")
+            else if (keyword.name() == "TUNING")
                 handleTUNING(keyword, currentStep);
 
-            if (keyword.name() == "WRFT")
+            else if (keyword.name() == "WRFT")
                 rftProperties.push_back( std::make_pair( &keyword , currentStep ));
 
-            if (keyword.name() == "WRFTPLT")
+            else if (keyword.name() == "WRFTPLT")
                 rftProperties.push_back( std::make_pair( &keyword , currentStep ));
 
-            if (keyword.name() == "WPIMULT")
+            else if (keyword.name() == "WPIMULT")
                 handleWPIMULT(keyword, currentStep);
 
-            if (keyword.name() == "COMPORD")
+            else if (keyword.name() == "COMPORD")
                 handleCOMPORD(parseContext , keyword, currentStep);
 
-            if (keyword.name() == "DRSDT")
+            else if (keyword.name() == "DRSDT")
                 handleDRSDT(keyword, currentStep);
 
-            if (keyword.name() == "DRVDT")
+            else if (keyword.name() == "DRVDT")
                 handleDRVDT(keyword, currentStep);
 
-            if (keyword.name() == "VAPPARS")
+            else if (keyword.name() == "VAPPARS")
                 handleVAPPARS(keyword, currentStep);
 
-            if (keyword.name() == "WECON") {
+            else if (keyword.name() == "WECON")
                 handleWECON(keyword, currentStep);
-            }
 
-
-            if (geoModifiers.find( keyword.name() ) != geoModifiers.end()) {
+            else if (geoModifiers.find( keyword.name() ) != geoModifiers.end()) {
                 bool supported = geoModifiers.at( keyword.name() );
                 if (supported) {
                     /*
@@ -284,9 +280,24 @@ namespace Opm {
 
 
 
-    void Schedule::handleWELSPECS( const SCHEDULESection& section, const DeckKeyword& keyword, size_t currentStep) {
+    void Schedule::handleWELSPECS( const SCHEDULESection& section,
+                                   size_t index,
+                                   size_t currentStep ) {
         bool needNewTree = false;
         GroupTreePtr newTree = m_rootGroupTree->get(currentStep)->deepCopy();
+
+        const auto COMPORD_in_timestep = [&]() -> const DeckKeyword* {
+            auto itr = section.begin() + index;
+            for( ; itr != section.end(); ++itr ) {
+                if( itr->name() == "DATES" ) return nullptr;
+                if( itr->name() == "TSTEP" ) return nullptr;
+                if( itr->name() == "COMPORD" ) return std::addressof( *itr );
+            }
+
+            return nullptr;
+        };
+
+        const auto& keyword = section.getKeyword( index );
 
         for (size_t recordNr = 0; recordNr < keyword.size(); recordNr++) {
             const auto& record = keyword.getRecord(recordNr);
@@ -299,9 +310,8 @@ namespace Opm {
             if (!hasWell(wellName)) {
                 WellCompletion::CompletionOrderEnum wellCompletionOrder = WellCompletion::TRACK;
 
-                DeckTimeStepConstPtr deckTimeStep = section.getDeckTimeStep(currentStep);
-                if (deckTimeStep->hasKeyword("COMPORD")) {
-                     const auto& compord = deckTimeStep->getKeyword("COMPORD");
+                if( const auto* compordp = COMPORD_in_timestep() ) {
+                     const auto& compord = *compordp;
 
                     for (size_t compordRecordNr = 0; compordRecordNr < compord.size(); compordRecordNr++) {
                         const auto& compordRecord = compord.getRecord(compordRecordNr);
@@ -544,7 +554,7 @@ namespace Opm {
                 properties.predictionMode = true;
 
                 if (!record.getItem("RATE").defaultApplied(0)) {
-                    properties.surfaceInjectionRate = convertInjectionRateToSI(record.getItem("RATE").get< double >(0) , injectorType, section.getActiveUnitSystem());
+                    properties.surfaceInjectionRate = convertInjectionRateToSI(record.getItem("RATE").get< double >(0) , injectorType, section.unitSystem());
                     properties.addInjectionControl(WellInjector::RATE);
                 } else
                     properties.dropInjectionControl(WellInjector::RATE);
@@ -669,7 +679,7 @@ namespace Opm {
             // convert injection rates to SI
             WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record.getItem("TYPE").getTrimmedString(0));
             double injectionRate = record.getItem("RATE").get< double >(0);
-            injectionRate = convertInjectionRateToSI(injectionRate, injectorType, section.getActiveUnitSystem());
+            injectionRate = convertInjectionRateToSI(injectionRate, injectorType, section.unitSystem());
 
             WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
 
@@ -811,7 +821,7 @@ namespace Opm {
     */
 
     void Schedule::handleWELTARG( const SCHEDULESection& section ,  const DeckKeyword& keyword, size_t currentStep) {
-        Opm::UnitSystem unitSystem = section.getActiveUnitSystem();
+        Opm::UnitSystem unitSystem = section.unitSystem();
         double siFactorL = unitSystem.parse("LiquidSurfaceVolume/Time")->getSIScaling();
         double siFactorG = unitSystem.parse("GasSurfaceVolume/Time")->getSIScaling();
         double siFactorP = unitSystem.parse("Pressure")->getSIScaling();
@@ -947,7 +957,7 @@ namespace Opm {
 
             // calculate SI injection rates for the group
             double surfaceInjectionRate = record.getItem("SURFACE_TARGET").get< double >(0);
-            surfaceInjectionRate = convertInjectionRateToSI(surfaceInjectionRate, wellPhase, section.getActiveUnitSystem());
+            surfaceInjectionRate = convertInjectionRateToSI(surfaceInjectionRate, wellPhase, section.unitSystem());
             double reservoirInjectionRate = record.getItem("RESV_TARGET").getSIDouble(0);
 
             group.setSurfaceMaxRate( currentStep , surfaceInjectionRate);
@@ -1447,10 +1457,10 @@ namespace Opm {
 
         case WellInjector::OIL:
         case WellInjector::WATER:
-            return rawRate * unitSystem.parse("LiquidSurfaceVolume/Time")->getSIScaling();
+            return unitSystem.to_si( UnitSystem::measure::liquid_surface_rate, rawRate );
 
         case WellInjector::GAS:
-            return rawRate * unitSystem.parse("GasSurfaceVolume/Time")->getSIScaling();
+            return unitSystem.to_si( UnitSystem::measure::gas_surface_rate, rawRate );
 
         default:
             throw std::logic_error("Unknown injector type");
@@ -1461,10 +1471,10 @@ namespace Opm {
         switch (wellPhase) {
         case Phase::OIL:
         case Phase::WATER:
-            return rawRate * unitSystem.parse("LiquidSurfaceVolume/Time")->getSIScaling();
+            return unitSystem.to_si( UnitSystem::measure::liquid_surface_rate, rawRate );
 
         case Phase::GAS:
-            return rawRate * unitSystem.parse("GasSurfaceVolume/Time")->getSIScaling();
+            return unitSystem.to_si( UnitSystem::measure::gas_surface_rate, rawRate );
 
         default:
             throw std::logic_error("Unknown injection phase");

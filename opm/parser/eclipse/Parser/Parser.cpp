@@ -47,15 +47,21 @@ namespace Opm {
 
 namespace {
 
-template< typename Itr >
-inline Itr find_comment( Itr begin, Itr end ) {
+struct find_comment {
+    /*
+     * A note on performance: using a function to plug functionality into
+     * find_terminator rather than plain functions because it almost ensures
+     * inlining, where the plain function can reduce to a function pointer.
+     */
+    template< typename Itr >
+    Itr operator()( Itr begin, Itr end ) const {
+        auto itr = std::find( begin, end, '-' );
+        for( ; itr != end; itr = std::find( itr + 1, end, '-' ) )
+            if( (itr + 1) != end &&  *( itr + 1 ) == '-' ) return itr;
 
-    auto itr = std::find( begin, end, '-' );
-    for( ; itr != end; itr = std::find( itr + 1, end, '-' ) )
-        if( (itr + 1) != end &&  *( itr + 1 ) == '-' ) return itr;
-
-    return end;
-}
+        return end;
+    }
+};
 
 template< typename Itr, typename Term >
 inline Itr find_terminator( Itr begin, Itr end, Term terminator ) {
@@ -64,7 +70,7 @@ inline Itr find_terminator( Itr begin, Itr end, Term terminator ) {
 
     if( pos == end ) return end;
 
-    auto qbegin = std::find_if( begin, end, RawConsts::is_quote );
+    auto qbegin = std::find_if( begin, end, RawConsts::is_quote() );
 
     if( qbegin == end || qbegin > pos )
         return pos;
@@ -88,14 +94,13 @@ inline Itr find_terminator( Itr begin, Itr end, Term terminator ) {
     ABC "-- Not balanced quote?  =>  ABC "-- Not balanced quote?
 */
 static inline string_view strip_comments( string_view str ) {
-    return { str.begin(), find_terminator( str.begin(), str.end(),
-            find_comment< string_view::const_iterator > ) };
+    return { str.begin(),
+             find_terminator( str.begin(), str.end(), find_comment() ) };
 }
 
 template< typename Itr >
 inline Itr trim_left( Itr begin, Itr end ) {
-
-    return std::find_if_not( begin, end, RawConsts::is_separator );
+    return std::find_if_not( begin, end, RawConsts::is_separator() );
 }
 
 template< typename Itr >
@@ -104,7 +109,7 @@ inline Itr trim_right( Itr begin, Itr end ) {
     std::reverse_iterator< Itr > rbegin( end );
     std::reverse_iterator< Itr > rend( begin );
 
-    return std::find_if_not( rbegin, rend, RawConsts::is_separator ).base();
+    return std::find_if_not( rbegin, rend, RawConsts::is_separator() ).base();
 }
 
 inline string_view trim( string_view str ) {
@@ -147,45 +152,24 @@ inline bool getline( string_view& input, string_view& line ) {
 /*
  * Read the input file and remove everything that isn't interesting data,
  * including stripping comments, removing leading/trailing whitespaces and
- * everything after (terminating) slashes
+ * everything after (terminating) slashes. Manually copying into the string for
+ * performance.
  */
 inline std::string clean( const std::string& str ) {
     std::string dst;
-    dst.reserve( str.size() );
+    dst.resize( str.size() );
 
     string_view input( str ), line;
+    auto dsti = dst.begin();
     while( getline( input, line ) ) {
         line = trim( strip_slash( strip_comments( line ) ) );
 
-        //if( line.begin() == line.end() ) continue;
-
-        dst.append( line.begin(), line.end() );
-        dst.push_back( '\n' );
+        std::copy( line.begin(), line.end(), dsti );
+        dsti += std::distance( line.begin(), line.end() );
+        *dsti++ = '\n';
     }
 
-    struct f {
-        bool inside_quotes = false;
-        bool operator()( char c ) {
-            if( c == ',' ) return true;
-            if( RawConsts::is_quote( c ) ) inside_quotes = !inside_quotes;
-            return false;
-        }
-    };
-
-    /* some decks use commas for item separation in records, but commas add
-     * nothing over whitespace. run over the deck and replace all non-quoted
-     * commas with whitespace. commas withing quotes are read verbatim and not
-     * to be touched.
-     *
-     * There's a known defect: considering the record
-     * foo bar, , , baz, , /
-     * baz will silently interpreted as item #3 instead of item #5. As of
-     * writing we're not sure if this is even legal, nor have we seen it
-     * happen, but the effort needed to support it is tremendous and will
-     * require significant changes throughout.
-     */
-    std::replace_if( dst.begin(), dst.end(), f(), ' ' );
-
+    dst.resize( std::distance( dst.begin(), dsti ) );
     return dst;
 }
 
@@ -581,8 +565,8 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
      * strip_comment is the actual (internal) implementation
      */
     std::string Parser::stripComments( const std::string& str ) {
-        return { str.begin(), find_terminator( str.begin(), str.end(),
-                find_comment< std::string::const_iterator > ) };
+        return { str.begin(),
+                 find_terminator( str.begin(), str.end(), find_comment() ) };
     }
 
     Parser::Parser(bool addDefault) {

@@ -19,8 +19,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <set>
 
-#include <boost/algorithm/string/join.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
@@ -637,34 +637,34 @@ namespace Opm {
                 if (deckKeyword.name() == "BOX")
                     handleBOXKeyword(deckKeyword, boxManager);
 
-                if (deckKeyword.name() == "ENDBOX")
+                else if (deckKeyword.name() == "ENDBOX")
                     handleENDBOXKeyword(boxManager);
 
 
-                if (deckKeyword.name() == "COPY")
+                else if (deckKeyword.name() == "COPY")
                     handleCOPYKeyword( deckKeyword , boxManager);
 
-                if (deckKeyword.name() == "EQUALS")
+                else if (deckKeyword.name() == "EQUALS")
                     handleEQUALSKeyword(deckKeyword, boxManager);
 
 
-                if (deckKeyword.name() == "ADD")
+                else if (deckKeyword.name() == "ADD")
                     handleADDKeyword( deckKeyword , boxManager);
 
-                if (deckKeyword.name() == "MULTIPLY")
+                else if (deckKeyword.name() == "MULTIPLY")
                     handleMULTIPLYKeyword(deckKeyword, boxManager);
 
 
-                if (deckKeyword.name() == "EQUALREG")
+                else if (deckKeyword.name() == "EQUALREG")
                     handleEQUALREGKeyword(deckKeyword);
 
-                if (deckKeyword.name() == "ADDREG")
+                else if (deckKeyword.name() == "ADDREG")
                     handleADDREGKeyword(deckKeyword);
 
-                if (deckKeyword.name() == "MULTIREG")
+                else if (deckKeyword.name() == "MULTIREG")
                     handleMULTIREGKeyword(deckKeyword);
 
-                if (deckKeyword.name() == "COPYREG")
+                else if (deckKeyword.name() == "COPYREG")
                     handleCOPYREGKeyword(deckKeyword);
 
                 boxManager.endKeyword();
