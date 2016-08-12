@@ -169,36 +169,6 @@ BOOST_AUTO_TEST_CASE( RFT_TIME) {
     BOOST_CHECK_EQUAL( ioConfig.getFirstRFTStep() , 2 );
 }
 
-BOOST_AUTO_TEST_CASE(RPTRST_mixed_mnemonics_int_list) {
-    const char* data = "RUNSPEC\n"
-                       "DIMENS\n"
-                       " 10 10 10 /\n"
-                       "GRID\n"
-                       "START             -- 0 \n"
-                       "19 JUN 2007 / \n"
-                       "SCHEDULE\n"
-                       "DATES             -- 1\n"
-                       " 10  OKT 2008 / \n"
-                       "/\n"
-                       "RPTRST\n"
-                       "BASIC=3 0 1 2\n"
-                       "/\n"
-                       "DATES             -- 2\n"
-                       " 20  JAN 2010 / \n"
-                       "/\n"
-                       "DATES             -- 3\n"
-                       " 20  FEB 2010 / \n"
-                       "/\n"
-                       "RPTSCHED\n"
-                       "BASIC=1\n"
-                       "/\n";
-
-    auto deck = Parser().parseString( data, ParseContext() );
-    BOOST_CHECK_THROW( IOConfig c( *deck ), std::runtime_error );
-}
-
-
-
 BOOST_AUTO_TEST_CASE(DefaultProperties) {
     const char* data =  "RUNSPEC\n"
                         "DIMENS\n"
@@ -316,43 +286,4 @@ BOOST_AUTO_TEST_CASE(OutputPaths) {
     BOOST_CHECK_EQUAL( output_dir3,  config3.getOutputDir() );
     BOOST_CHECK_EQUAL( "testString", config3.getBaseName() );
     BOOST_CHECK_EQUAL( testpath, config3.fullBasePath() );
-}
-
-
-BOOST_AUTO_TEST_CASE(RPTSCHED_and_RPTRST) {
-  const char *deckData =
-                        "RUNSPEC\n"
-                        "DIMENS\n"
-                        " 10 10 10 /\n"
-                        "GRID\n"
-                        "START             -- 0 \n"
-                        "19 JUN 2007 / \n"
-                        "SCHEDULE\n"
-                        "DATES             -- 1\n"
-                        " 10  OKT 2008 / \n"
-                        "/\n"
-                        "RPTRST\n"
-                        "BASIC=3 FREQ=3\n"
-                        "/\n"
-                        "DATES             -- 2\n"
-                        " 20  JAN 2010 / \n"
-                        "/\n"
-                        "DATES             -- 3\n"
-                        " 20  FEB 2010 / \n"
-                        "/\n"
-                        "RPTSCHED\n"
-                        "RESTART=1\n"
-                        "/\n";
-
-
-    Opm::Parser parser;
-    ParseContext ctx;
-
-    auto deck = parser.parseString( deckData, ctx );
-    IOConfig ioConfig( *deck );
-
-    BOOST_CHECK( !ioConfig.getWriteRestartFile( 0 ) );
-    BOOST_CHECK( !ioConfig.getWriteRestartFile( 1 ) );
-    BOOST_CHECK( !ioConfig.getWriteRestartFile( 2 ) );
-    BOOST_CHECK(  ioConfig.getWriteRestartFile( 3 ) );
 }
