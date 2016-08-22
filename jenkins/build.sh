@@ -2,7 +2,12 @@
 
 source `dirname $0`/build-opm-parser.sh
 
-ERT_REVISION=master
+declare -a upstreams
+upstreams=(ert)
+
+declare -A upstreamRev
+upstreamRev[ert]=master
+
 OPM_COMMON_REVISION=master
 
 build_opm_parser
