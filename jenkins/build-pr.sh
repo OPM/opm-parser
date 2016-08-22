@@ -2,20 +2,29 @@
 
 source `dirname $0`/build-opm-parser.sh
 
+# Registered upstreams
+declare -a upstreams
+upstreams=(ert)
+
 # Upstream revisions
-ERT_REVISION=master
+declare -A upstreamRev
+upstreamRev[ert]=master
 OPM_COMMON_REVISION=master
 
-if grep -q "ert=" <<< $ghprbCommentBody
-then
-  ERT_REVISION=pull/`echo $ghprbCommentBody | sed -r 's/.*ert=([0-9]+).*/\1/g'`/merge
-fi
 if grep -q "opm-common=" <<< $ghprbCommentBody
 then
   OPM_COMMON_REVISION=pull/`echo $ghprbCommentBody | sed -r 's/.*opm-common=([0-9]+).*/\1/g'`/merge
 fi
 
-echo "Building with ert=$ERT_REVISION opm-common=$OPM_COMMON_REVISION opm-parser=$sha1"
+for upstream in ${upstreams[*]}
+do
+  if grep -q "$upstream=" <<< $ghprbCommentBody
+  then
+    upstreamRev[$upstream]=pull/`echo $ghprbCommentBody | sed -r "s/.*$upstream=([0-9]+).*/\1/g"`/merge
+  fi
+done
+
+echo "Building with opm-common=$OPM_COMMON_REVISION ert=${upstreamRev[ert]} opm-parser=$sha1"
 
 build_opm_parser
 test $? -eq 0 || exit 1
