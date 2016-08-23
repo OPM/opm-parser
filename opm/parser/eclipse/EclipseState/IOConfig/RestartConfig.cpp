@@ -360,6 +360,22 @@ RPTSCHED( const DeckKeyword& keyword ) {
 }
 
 
+    void RestartConfig::addRestartKeywords( size_t timeStep , std::map<std::string, int> mnemonics) {
+        const auto allprops = mnemonics.find( "ALLPROPS");
+        if (allprops == mnemonics.end())
+            this->restart_keywords.update( timeStep , mnemonics );
+        else {
+            const auto value = allprops->second;
+            mnemonics.erase( "ALLPROPS" );
+
+            for (const auto& kw : {"BG","BO","BW","KRG","KRO","KRW","VOIL","VGAS","VWAT","DEN"})
+                mnemonics[kw] = value;
+
+            this->restart_keywords.update( timeStep , mnemonics );
+        }
+    }
+
+
 void RestartConfig::handleScheduleSection(const SCHEDULESection& schedule) {
     size_t current_step = 1;
     RestartSchedule unset;
@@ -392,15 +408,16 @@ void RestartConfig::handleScheduleSection(const SCHEDULESection& schedule) {
                       : RPTSCHED( keyword );
 
         /* add the missing entries from the previous step */
-        auto& mnemonics = config.first;
-        const auto& prev_mnemonics = this->restart_keywords.back();
-        mnemonics.insert( prev_mnemonics.begin(), prev_mnemonics.end() );
+        {
+            auto& mnemonics = config.first;
+            const auto& prev_mnemonics = this->restart_keywords.back();
+            mnemonics.insert( prev_mnemonics.begin(), prev_mnemonics.end() );
 
-        if( mnemonics.find( "NOTHING" ) != mnemonics.end() )
-            mnemonics.clear();
+            if( mnemonics.find( "NOTHING" ) != mnemonics.end() )
+                mnemonics.clear();
 
-        this->restart_keywords.update( current_step, mnemonics );
-
+            this->addRestartKeywords( current_step , mnemonics );
+        }
         const bool ignore_RESTART =
             !is_RPTRST && ignore_RPTSCHED_RESTART( this->restart_schedule );
 
@@ -488,6 +505,18 @@ void RestartConfig::handleScheduleSection(const SCHEDULESection& schedule) {
         return restart_keywords.at( timestep );
     }
 
+
+    int RestartConfig::getKeyword( const std::string& keyword, size_t timeStep) const {
+        const std::map< std::string, int >& keywords = this->getRestartKeywords( timeStep );
+        const auto iter  = keywords.find( keyword );
+        if (iter == keywords.end()) {
+            if (is_RPTRST_mnemonic( keyword ))
+                return 0;
+            else
+                throw std::invalid_argument("The mnenomic " + keyword + " is not recognized");
+        } else
+            return iter->second;
+    }
 
     /*
       Will initialize the internal variable holding the first report

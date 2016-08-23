@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED_INTEGER) {
                           " 20  JAN 2010 / \n"
                           "/\n"
                           "RPTRST  -- ALLPROPS,RK,VELOCITY,COMPRESS\n"
-                          "  18*0 1 8*0 /\n"
+                          "  18*0 0 8*0 /\n"
                           "DATES             -- 3\n"
                           " 20  FEB 2010 / \n"
                           "/\n"
@@ -87,12 +87,17 @@ BOOST_AUTO_TEST_CASE(RPTSCHED_INTEGER) {
     BOOST_CHECK_EQUAL_COLLECTIONS( expected1.begin(), expected1.end(),
                                    kw_list1.begin(), kw_list1.end() );
 
+    // ACIP is a valid mneonic - but not in this deck.
+    BOOST_CHECK_EQUAL( rstConfig1.getKeyword( "ACIP" , 0) , 0 );
+    BOOST_CHECK_EQUAL( rstConfig1.getKeyword( "COMPRESS" , 0) , 1 );
+    BOOST_CHECK_EQUAL( rstConfig1.getKeyword( "PCOG", 0) , 1 );
+    BOOST_CHECK_THROW( rstConfig1.getKeyword( "UNKNOWN_KW", 0) , std::invalid_argument);
 
     std::vector< std::string > kw_list2;
     for( const auto& pair : rstConfig1.getRestartKeywords( 3 ) )
         if( pair.second != 0 ) kw_list2.push_back( pair.first );
 
-    const auto expected2 = { "ALLPROPS", "COMPRESS", "RESTART", "RK", "VELOCITY" };
+    const auto expected2 = { "COMPRESS", "RESTART", "RK", "VELOCITY" };
     BOOST_CHECK_EQUAL_COLLECTIONS( expected2.begin(), expected2.end(),
                                    kw_list2.begin(), kw_list2.end() );
 }
@@ -261,7 +266,7 @@ BOOST_AUTO_TEST_CASE(RPTRST) {
                           "19 JUN 2007 / \n"
                           "SOLUTION\n"
                           "RPTRST\n"
-                          " KRG KRO KRW NORST SFREQ=10/\n"
+                          " ACIP KRG KRO KRW NORST SFREQ=10 ALLPROPS/\n"
                           "SCHEDULE\n"
                           "DATES             -- 1\n"
                           " 10  OKT 2008 / \n"
@@ -329,7 +334,8 @@ BOOST_AUTO_TEST_CASE(RPTRST) {
     BOOST_CHECK( !rstConfig1.getWriteRestartFile( 1 ) );
     BOOST_CHECK(  rstConfig1.getWriteRestartFile( 2 ) );
 
-    std::vector<std::string> expected = { "BASIC", "KRG", "KRO", "KRW", "NORST", "SFREQ" };
+
+    std::vector<std::string> expected = { "ACIP","BASIC", "BG","BO","BW","DEN","KRG", "KRO", "KRW", "NORST", "SFREQ", "VGAS", "VOIL", "VWAT"};
     const auto kw_list = fun::map( fst, rstConfig1.getRestartKeywords(2) );
 
     BOOST_CHECK_EQUAL_COLLECTIONS( expected.begin() ,expected.end(),
