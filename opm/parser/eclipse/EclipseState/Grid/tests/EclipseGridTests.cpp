@@ -696,7 +696,18 @@ BOOST_AUTO_TEST_CASE(ResetACTNUM) {
     actnum[6] = 1;
     grid.resetACTNUM( actnum.data() );
     BOOST_CHECK_EQUAL( 4U , grid.getNumActive() );
+    {
+        std::vector<int> full(grid.getCartesianSize());
+        for (int i=0; i < grid.getCartesianSize(); i++)
+            full[i] = i;
 
+        auto compressed = grid.compressedVector( full );
+        BOOST_CHECK_EQUAL( compressed.size() , 4U );
+        BOOST_CHECK_EQUAL( compressed[0] , 0 );
+        BOOST_CHECK_EQUAL( compressed[1] , 2 );
+        BOOST_CHECK_EQUAL( compressed[2] , 4 );
+        BOOST_CHECK_EQUAL( compressed[3] , 6 );
+    }
     {
         const auto& activeMap = grid.getActiveMap( );
         BOOST_CHECK_EQUAL( 4U , activeMap.size() );
@@ -1076,4 +1087,16 @@ BOOST_AUTO_TEST_CASE(ZcornMapper) {
                     BOOST_CHECK_EQUAL( zmp.index(g , c) , zmp.index( i,j,k,c));
                     BOOST_CHECK_EQUAL( zmp.index(i,j,k,c) , ecl_grid_zcorn_index( ert_grid, i , j , k, c));
                 }
+}
+
+
+
+BOOST_AUTO_TEST_CASE(MoveTest) {
+    int nx = 3;
+    int ny = 4;
+    int nz = 5;
+    Opm::EclipseGrid grid1(nx,ny,nz);
+    Opm::EclipseGrid grid2( std::move( grid1 )); // grid2 should be move constructed from grid1
+
+    BOOST_CHECK( !grid1.c_ptr() );               // We peek at some internal details ...
 }

@@ -55,7 +55,6 @@ namespace Opm {
     class EclipseGrid : public GridDims {
     public:
         explicit EclipseGrid(const std::string& filename);
-        EclipseGrid(const EclipseGrid& srcGrid);
 
         /*
           These constructors will make a copy of the src grid, with
@@ -84,9 +83,19 @@ namespace Opm {
         static bool hasCornerPointKeywords(const Deck&);
         static bool hasCartesianKeywords(const Deck&);
         size_t  getNumActive( ) const;
+        bool allActive() const;
 
         size_t activeIndex(size_t i, size_t j, size_t k) const;
         size_t activeIndex(size_t globalIndex) const;
+
+        /*
+          Observe that the there is a getGlobalIndex(i,j,k)
+          implementation in the base class. This method - translating
+          from an active index to a global index must be implemented
+          in the current class.
+        */
+        size_t getGlobalIndex(size_t active_index) const;
+        size_t getGlobalIndex(size_t i, size_t j, size_t k) const;
 
         bool isPinchActive( ) const;
         double getPinchThresholdThickness( ) const;
@@ -95,6 +104,24 @@ namespace Opm {
 
         MinpvMode::ModeEnum getMinpvMode() const;
         double getMinpvValue( ) const;
+
+
+        template<typename T>
+        std::vector<T> compressedVector(const std::vector<T>& full_vector) const {
+            if (full_vector.size() != getCartesianSize())
+                throw std::invalid_argument("Input vector must have full size");
+
+            {
+                std::vector<T> compressed_vector( this->getNumActive() );
+                const auto& active_map = this->getActiveMap( );
+
+                for (size_t i = 0; i < this->getNumActive(); ++i)
+                    compressed_vector[i] = full_vector[ active_map[i] ];
+
+                return compressed_vector;
+            }
+        }
+
 
         /// Will return a vector a length num_active; where the value
         /// of each element is the corresponding global index.
@@ -132,7 +159,23 @@ namespace Opm {
         PinchMode::ModeEnum m_pinchoutMode;
         PinchMode::ModeEnum m_multzMode;
         mutable std::vector< int > activeMap;
-        ERT::ert_unique_ptr<ecl_grid_type , ecl_grid_free> m_grid;
+
+        /*
+          The internal class grid_ptr is a a std::unique_ptr with
+          special copy semantics. The purpose of implementing this is
+          that the EclipseGrid class can now use the default
+          implementation for the copy and move constructors.
+        */
+        using ert_ptr = ERT::ert_unique_ptr<ecl_grid_type , ecl_grid_free>;
+        class grid_ptr : public ert_ptr {
+        public:
+            using ert_ptr::unique_ptr;
+            grid_ptr() = default;
+            grid_ptr(grid_ptr&&) = default;
+            grid_ptr(const grid_ptr& src) :
+                ert_ptr( ecl_grid_alloc_copy( src.get() ) ) {}
+        };
+        grid_ptr m_grid;
 
         void initCornerPointGrid(const std::array<int,3>& dims ,
                                  const std::vector<double>& coord ,
