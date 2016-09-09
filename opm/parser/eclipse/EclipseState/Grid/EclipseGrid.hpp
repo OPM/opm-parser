@@ -108,6 +108,16 @@ namespace Opm {
 
         template<typename T>
         std::vector<T> compressedVector(const std::vector<T>& full_vector) const {
+            if( full_vector.size() == this->getNumActive() ) {
+                /* Case reported in https://github.com/OPM/opm-output/issues/88
+                 *
+                 * The input vector might already be compressed to only active
+                 * cells, in which case this method should fall back to
+                 * returning the unmodified full_vector.
+                 */
+                return full_vector;
+            }
+
             if (full_vector.size() != getCartesianSize())
                 throw std::invalid_argument("Input vector must have full size");
 
