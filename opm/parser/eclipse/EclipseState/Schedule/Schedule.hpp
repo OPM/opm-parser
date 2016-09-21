@@ -68,6 +68,7 @@ namespace Opm
 
         size_t numWells() const;
         size_t numWells(size_t timestep) const;
+        size_t numOpenWells(size_t timestep) const;
         size_t getMaxNumCompletionsForWells(size_t timestep) const;
         bool hasWell(const std::string& wellName) const;
         const Well* getWell(const std::string& wellName) const;
