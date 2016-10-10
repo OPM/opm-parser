@@ -30,7 +30,17 @@ Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Provides: libopm-parser
 Description: OPM parser library
- The OPM parser library is the eclipse parser library within OPM 
+ The OPM parser library is the eclipse parser library within OPM
+
+Package: libopm-parser1-bin
+Section: science
+Pre-Depends: ${misc:Pre-Depends}, multiarch-support
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Provides: libopm-parser-bin
+Description: OPM parser library -- applications
+ The OPM parser library is the eclipse parser library within OPM
 
 Package: libopm-parser1-dbg
 Section: debug
