@@ -105,6 +105,7 @@ namespace Opm {
 
         const MessageContainer& getMessageContainer() const;
         MessageContainer& getMessageContainer();
+
         std::string getTitle() const;
 
         void applyModifierDeck(const Deck& deck);
@@ -134,6 +135,7 @@ namespace Opm {
         std::string m_title;
 
         MessageContainer m_messageContainer;
+
     };
 
     typedef std::shared_ptr<EclipseState> EclipseStatePtr;

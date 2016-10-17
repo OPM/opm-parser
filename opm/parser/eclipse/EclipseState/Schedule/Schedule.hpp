@@ -33,6 +33,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Tuning.hpp>
 #include <opm/parser/eclipse/EclipseState/Util/OrderedMap.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/MessageLimits.hpp>
 #include <opm/parser/eclipse/Parser/MessageContainer.hpp>
 
 namespace Opm
@@ -85,6 +86,7 @@ namespace Opm
         const Group& getGroup(const std::string& groupName) const;
         std::vector< const Group* > getGroups() const;
         const Tuning& getTuning() const;
+        const MessageLimits& getMessageLimits() const;
 
         const Events& getEvents() const;
         bool hasOilVaporizationProperties();
@@ -102,6 +104,7 @@ namespace Opm
         Events m_events;
         DynamicVector<std::shared_ptr<Deck> > m_modifierDeck;
         Tuning m_tuning;
+        MessageLimits m_messageLimits;
         MessageContainer m_messages;
         WellProducer::ControlModeEnum m_controlModeWHISTCTL;
 
@@ -141,6 +144,7 @@ namespace Opm
         void handleVAPPARS( const DeckKeyword& keyword, size_t currentStep);
         void handleWECON( const DeckKeyword& keyword, size_t currentStep);
         void handleWHISTCTL(const ParseContext& parseContext, const DeckKeyword& keyword);
+        void handleMESSAGES(const DeckKeyword& keyword, size_t currentStep);
 
         void checkUnhandledKeywords( const SCHEDULESection& ) const;
 

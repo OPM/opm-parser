@@ -65,7 +65,6 @@ namespace Opm {
         m_eclipseConfig(     deck, m_eclipseProperties, m_gridDims, *m_schedule , parseContext),
         m_inputNnc(          deck, m_gridDims ),
         m_deckUnitSystem(    deck.getActiveUnitSystem() )
-
     {
         m_inputGrid->resetACTNUM(m_eclipseProperties.getIntGridProperty("ACTNUM").getData().data());
 
