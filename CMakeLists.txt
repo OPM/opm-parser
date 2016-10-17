@@ -87,7 +87,7 @@ if (MSVC)
 else()
   # The cmake macros are expanded *after* our flags so that options can be
   # overriden via -DCMAKE_FLAGS from the command line or ccmake
-  SET( CMAKE_CXX_FLAGS "-pipe -std=c++0x  ${CMAKE_CXX_FLAGS}")
+  SET( CMAKE_CXX_FLAGS "-pipe  ${CMAKE_CXX_FLAGS}")
   SET( CMAKE_CXX_FLAGS_DEBUG   "-pedantic -Wall -Wextra -Wformat-nonliteral -Wcast-align -Wpointer-arith -Wmissing-declarations -Wcast-qual -Wshadow -Wwrite-strings -Wchar-subscripts -Wredundant-decls ${CMAKE_CXX_FLAGS_DEBUG}")
   SET( CMAKE_CXX_FLAGS_DEBUG   "-O0 -DDEBUG  -ggdb3        ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}  ")
   SET( CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -mtune=native ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
