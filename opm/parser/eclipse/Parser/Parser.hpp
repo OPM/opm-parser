@@ -52,15 +52,11 @@ namespace Opm {
         static std::string stripComments(const std::string& inputString);
 
         /// The starting point of the parsing process. The supplied file is parsed, and the resulting Deck is returned.
-        std::shared_ptr< Deck > parseFile(const std::string &dataFile, const ParseContext& parseContext) const;
-        std::shared_ptr< Deck > parseString(const std::string &data, const ParseContext& parseContext) const;
-        std::shared_ptr< Deck > parseStream(std::unique_ptr<std::istream>&& inputStream , const ParseContext& parseContext) const;
-
-        Deck * newDeckFromFile(const std::string &dataFileName, const ParseContext& parseContext) const;
-        Deck * newDeckFromString(const std::string &dataFileName, const ParseContext& parseContext) const;
-
-        std::shared_ptr< Deck > parseFile(const std::string &dataFile, bool strict = true) const;
-        std::shared_ptr< Deck > parseString(const std::string &data, bool strict = true) const;
+        Deck parseFile(const std::string &dataFile,
+                       const ParseContext& = ParseContext()) const;
+        Deck parseString(const std::string &data,
+                         const ParseContext& = ParseContext()) const;
+        Deck parseStream(std::unique_ptr<std::istream>&& inputStream , const ParseContext& parseContext) const;
 
         /// Method to add ParserKeyword instances, these holding type and size information about the keywords and their data.
         void addParserKeyword(const Json::JsonObject& jsonKeyword);
@@ -101,19 +97,19 @@ namespace Opm {
         /// Parses the deck specified in filename.  If context contains ParseContext::PARSE_PARTIAL_DECK,
         /// we construct only a lean grid, otherwise, we construct a full EclipseState and return the
         /// fully constructed InputGrid
-        static std::shared_ptr<const EclipseGrid> parseGrid(const std::string &filename,
+        static EclipseGrid parseGrid(const std::string &filename,
                 const ParseContext& context = ParseContext());
 
         /// Parses the provided deck.  If context contains ParseContext::PARSE_PARTIAL_DECK,
         /// we construct only a lean grid, otherwise, we construct a full EclipseState and return the
         /// fully constructed InputGrid
-        static std::shared_ptr<const EclipseGrid> parseGrid(const Deck& deck,
+        static EclipseGrid parseGrid(const Deck& deck,
                 const ParseContext& context = ParseContext());
 
         /// Parses the provided deck string.  If context contains ParseContext::PARSE_PARTIAL_DECK,
         /// we construct only a lean grid, otherwise, we construct a full EclipseState and return the
         /// fully constructed InputGrid
-        static std::shared_ptr<const EclipseGrid> parseGridData(const std::string &data,
+        static EclipseGrid parseGridData(const std::string &data,
                 const ParseContext& context = ParseContext());
 
     private:
@@ -131,9 +127,6 @@ namespace Opm {
         void addDefaultKeywords();
     };
 
-
-    typedef std::shared_ptr<Parser> ParserPtr;
-    typedef std::shared_ptr<const Parser> ParserConstPtr;
 } // namespace Opm
 #endif  /* PARSER_H */
 

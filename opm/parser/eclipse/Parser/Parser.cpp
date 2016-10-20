@@ -226,9 +226,9 @@ class ParserState {
         boost::filesystem::path rootPath;
 
     public:
-        RawKeywordPtr rawKeyword;
+        std::shared_ptr< RawKeyword > rawKeyword;
         string_view nextKeyword = emptystr;
-        Deck* deck;
+        Deck deck;
         const ParseContext& parseContext;
 };
 
@@ -263,15 +263,13 @@ void ParserState::closeFile() {
     this->input_stack.pop();
 }
 
-ParserState::ParserState(const ParseContext& __parseContext)
-    : deck( new Deck() ),
+ParserState::ParserState(const ParseContext& __parseContext) :
     parseContext( __parseContext )
 {}
 
 ParserState::ParserState( const ParseContext& context,
                           boost::filesystem::path p ) :
     rootPath( boost::filesystem::canonical( p ).parent_path() ),
-    deck( new Deck() ),
     parseContext( context )
 {
     openRootFile( p );
@@ -288,7 +286,7 @@ void ParserState::loadFile(const boost::filesystem::path& inputFile) {
         inputFileCanonical = boost::filesystem::canonical(inputFile);
     } catch (boost::filesystem::filesystem_error fs_error) {
         std::string msg = "Could not open file: " + inputFile.string();
-        parseContext.handleError( ParseContext::PARSE_MISSING_INCLUDE , deck->getMessageContainer() , msg);
+        parseContext.handleError( ParseContext::PARSE_MISSING_INCLUDE , deck.getMessageContainer() , msg);
         return;
     }
 
@@ -301,7 +299,7 @@ void ParserState::loadFile(const boost::filesystem::path& inputFile) {
     // make sure the file we'd like to parse is readable
     if( !ufp ) {
         std::string msg = "Could not read from file: " + inputFile.string();
-        parseContext.handleError( ParseContext::PARSE_MISSING_INCLUDE , deck->getMessageContainer() , msg);
+        parseContext.handleError( ParseContext::PARSE_MISSING_INCLUDE , deck.getMessageContainer() , msg);
         return;
     }
 
@@ -348,12 +346,12 @@ void ParserState::handleRandomText(const string_view& keywordString ) const {
             << this->current_path()
             << ":" << this->line();
     }
-    parseContext.handleError( errorKey , deck->getMessageContainer() , msg.str() );
+    parseContext.handleError( errorKey , deck.getMessageContainer() , msg.str() );
 }
 
 void ParserState::openRootFile( const boost::filesystem::path& inputFile) {
     this->loadFile( inputFile );
-    this->deck->setDataFile( inputFile.string() );
+    this->deck.setDataFile( inputFile.string() );
     const boost::filesystem::path& inputFileCanonical = boost::filesystem::canonical(inputFile);
     rootPath = inputFileCanonical.parent_path();
 }
@@ -390,7 +388,7 @@ std::shared_ptr< RawKeyword > createRawKeyword( const string_view& kw, ParserSta
     if( !parser.isRecognizedKeyword( keywordString ) ) {
         if( ParserKeyword::validDeckName( keywordString ) ) {
             std::string msg = "Keyword " + keywordString + " not recognized.";
-            auto& msgContainer = parserState.deck->getMessageContainer();
+            auto& msgContainer = parserState.deck.getMessageContainer();
             parserState.parseContext.handleError( ParseContext::PARSE_UNKNOWN_KEYWORD, msgContainer, msg );
             return {};
         }
@@ -422,10 +420,10 @@ std::shared_ptr< RawKeyword > createRawKeyword( const string_view& kw, ParserSta
     }
 
     const auto& sizeKeyword = parserKeyword->getSizeDefinitionPair();
-    const auto* deck = parserState.deck;
+    const auto& deck = parserState.deck;
 
-    if( deck->hasKeyword(sizeKeyword.first ) ) {
-        const auto& sizeDefinitionKeyword = deck->getKeyword(sizeKeyword.first);
+    if( deck.hasKeyword(sizeKeyword.first ) ) {
+        const auto& sizeDefinitionKeyword = deck.getKeyword(sizeKeyword.first);
         const auto& record = sizeDefinitionKeyword.getRecord(0);
         const auto targetSize = record.getItem( sizeKeyword.second ).get< int >( 0 );
         return std::make_shared< RawKeyword >( keywordString,
@@ -437,7 +435,7 @@ std::shared_ptr< RawKeyword > createRawKeyword( const string_view& kw, ParserSta
 
     std::string msg = "Expected the kewyord: " + sizeKeyword.first
                     + " to infer the number of records in: " + keywordString;
-    auto& msgContainer = parserState.deck->getMessageContainer();
+    auto& msgContainer = parserState.deck.getMessageContainer();
     parserState.parseContext.handleError(ParseContext::PARSE_MISSING_DIMS_KEYWORD , msgContainer, msg );
 
     const auto* keyword = parser.getKeyword( sizeKeyword.first );
@@ -543,14 +541,14 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
         if( parser.isRecognizedKeyword( parserState.rawKeyword->getKeywordName() ) ) {
             const auto& kwname = parserState.rawKeyword->getKeywordName();
             const auto* parserKeyword = parser.getParserKeywordFromDeckName( kwname );
-            parserState.deck->addKeyword( parserKeyword->parse( parserState.parseContext, parserState.deck->getMessageContainer(), parserState.rawKeyword ) );
+            parserState.deck.addKeyword( parserKeyword->parse( parserState.parseContext, parserState.deck.getMessageContainer(), parserState.rawKeyword ) );
         } else {
             DeckKeyword deckKeyword( parserState.rawKeyword->getKeywordName(), false );
             const std::string msg = "The keyword " + parserState.rawKeyword->getKeywordName() + " is not recognized";
             deckKeyword.setLocation( parserState.rawKeyword->getFilename(),
                     parserState.rawKeyword->getLineNR());
-            parserState.deck->addKeyword( std::move( deckKeyword ) );
-            parserState.deck->getMessageContainer().warning(
+            parserState.deck.addKeyword( std::move( deckKeyword ) );
+            parserState.deck.getMessageContainer().warning(
                 parserState.current_path().string(), msg, parserState.line() );
         }
     }
@@ -583,24 +581,6 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
      is retained in the current implementation.
      */
 
-    Deck * Parser::newDeckFromFile(const std::string &dataFileName, const ParseContext& parseContext) const {
-        ParserState parserState( parseContext, dataFileName );
-        parseState( parserState, *this );
-        applyUnitsToDeck( *parserState.deck );
-
-        return parserState.deck;
-    }
-
-    Deck * Parser::newDeckFromString(const std::string &data, const ParseContext& parseContext) const {
-        ParserState parserState( parseContext );
-        parserState.loadString( data );
-
-        parseState( parserState, *this );
-        applyUnitsToDeck( *parserState.deck );
-
-        return parserState.deck;
-    }
-
     inline void assertFullDeck(const ParseContext& context) {
         if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
             throw new std::logic_error("Cannot construct a state in partial deck context");
@@ -608,10 +588,7 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
 
     EclipseState Parser::parse(const std::string &filename, const ParseContext& context) {
         assertFullDeck(context);
-        Parser p;
-        DeckPtr deck = p.parseFile(filename, context);
-        EclipseState es(deck, context);
-        return es;
+        return EclipseState( Parser{}.parseFile( filename, context ), context );
     }
 
     EclipseState Parser::parse(const Deck& deck, const ParseContext& context) {
@@ -623,37 +600,47 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
         assertFullDeck(context);
         Parser p;
         auto deck = p.parseString(data, context);
-        return parse(*deck, context);
+        return parse(deck, context);
     }
 
-    std::shared_ptr<const EclipseGrid> Parser::parseGrid(const std::string &filename, const ParseContext& context) {
+    EclipseGrid Parser::parseGrid(const std::string &filename, const ParseContext& context) {
         if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
-            return std::make_shared<const EclipseGrid>(filename);
+            return EclipseGrid{ filename };
         return parse(filename, context).getInputGrid();
     }
 
-    std::shared_ptr<const EclipseGrid> Parser::parseGrid(const Deck& deck, const ParseContext& context)
+    EclipseGrid Parser::parseGrid(const Deck& deck, const ParseContext& context)
     {
         if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
-            return std::make_shared<const EclipseGrid>(deck);
+            return EclipseGrid{ deck };
         return parse(deck, context).getInputGrid();
     }
 
-    std::shared_ptr<const EclipseGrid> Parser::parseGridData(const std::string &data, const ParseContext& context) {
+    EclipseGrid Parser::parseGridData(const std::string &data, const ParseContext& context) {
         Parser parser;
         auto deck = parser.parseString(data, context);
         if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS)) {
-            return std::make_shared<const EclipseGrid>(deck);
+            return EclipseGrid{ deck };
         }
-        return parse(*deck, context).getInputGrid();
+        return parse(deck, context).getInputGrid();
     }
 
-    DeckPtr Parser::parseFile(const std::string &dataFileName, const ParseContext& parseContext) const {
-        return std::shared_ptr<Deck>( newDeckFromFile( dataFileName , parseContext));
+    Deck Parser::parseFile(const std::string &dataFileName, const ParseContext& parseContext) const {
+        ParserState parserState( parseContext, dataFileName );
+        parseState( parserState, *this );
+        applyUnitsToDeck( parserState.deck );
+
+        return std::move( parserState.deck );
     }
 
-    DeckPtr Parser::parseString(const std::string &data, const ParseContext& parseContext) const {
-        return std::shared_ptr<Deck>( newDeckFromString( data , parseContext));
+    Deck Parser::parseString(const std::string &data, const ParseContext& parseContext) const {
+        ParserState parserState( parseContext );
+        parserState.loadString( data );
+
+        parseState( parserState, *this );
+        applyUnitsToDeck( parserState.deck );
+
+        return std::move( parserState.deck );
     }
 
     size_t Parser::size() const {
@@ -771,7 +758,6 @@ std::vector<std::string> Parser::getAllDeckNames () const {
 
         try {
             Json::JsonObject jsonKeyword(configFile);
-            ParserKeywordConstPtr parserKeyword = std::make_shared<const ParserKeyword>(jsonKeyword);
             addParserKeyword( std::unique_ptr< ParserKeyword >( new ParserKeyword( jsonKeyword ) ) );
             return true;
         }
@@ -802,6 +788,18 @@ std::vector<std::string> Parser::getAllDeckNames () const {
 
 
     void Parser::applyUnitsToDeck(Deck& deck) const {
+        /*
+         * If multiple unit systems are requested, metric is preferred over
+         * lab, and field over metric, for as long as we have no easy way of
+         * figuring out which was requested last.
+         */
+        if( deck.hasKeyword( "LAB" ) )
+            deck.getActiveUnitSystem() = UnitSystem::newLAB();
+        if( deck.hasKeyword( "FIELD" ) )
+            deck.getActiveUnitSystem() = UnitSystem::newFIELD();
+        if( deck.hasKeyword( "METRIC" ) )
+            deck.getActiveUnitSystem() = UnitSystem::newMETRIC();
+
         for( auto& deckKeyword : deck ) {
 
             if( !isRecognizedKeyword( deckKeyword.name() ) ) continue;

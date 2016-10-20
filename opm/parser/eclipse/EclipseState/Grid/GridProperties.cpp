@@ -41,7 +41,9 @@ namespace Opm {
     GridProperties<double>::GridProperties(const EclipseGrid& eclipseGrid,
                                            const UnitSystem*  deckUnitSystem,
                                            std::vector< GridProperty<double>::SupportedKeywordInfo >&& supportedKeywords) :
-        m_eclipseGrid( eclipseGrid ),
+        nx( eclipseGrid.getNX() ),
+        ny( eclipseGrid.getNY() ),
+        nz( eclipseGrid.getNZ() ),
         m_deckUnitSystem( deckUnitSystem )
     {
         for (auto iter = supportedKeywords.begin(); iter != supportedKeywords.end(); ++iter)
@@ -52,7 +54,9 @@ namespace Opm {
     template <>
     GridProperties<int>::GridProperties(const EclipseGrid& eclipseGrid,
                                         std::vector< GridProperty<int>::SupportedKeywordInfo >&& supportedKeywords) :
-        m_eclipseGrid( eclipseGrid )
+        nx( eclipseGrid.getNX() ),
+        ny( eclipseGrid.getNY() ),
+        nz( eclipseGrid.getNZ() )
     {
         for (auto iter = supportedKeywords.begin(); iter != supportedKeywords.end(); ++iter)
             m_supportedKeywords.emplace( iter->getKeywordName(), std::move( *iter ) );
@@ -71,7 +75,7 @@ namespace Opm {
     template<>
     double GridProperties<double>::convertInputValue(const GridProperty<double>& property, double doubleValue) const {
         const std::string& dimensionString = property.getDimensionString( );
-        return m_deckUnitSystem->getDimension(dimensionString)->getSIScaling() * doubleValue;
+        return m_deckUnitSystem->getDimension(dimensionString).getSIScaling() * doubleValue;
     }
 
 
@@ -205,11 +209,8 @@ namespace Opm {
 
     template< typename T >
     void GridProperties<T>::insertKeyword(const SupportedKeywordInfo& supportedKeyword) const {
-        int nx = m_eclipseGrid.getNX();
-        int ny = m_eclipseGrid.getNY();
-        int nz = m_eclipseGrid.getNZ();
-
-        m_properties.emplace( supportedKeyword.getKeywordName() , GridProperty<T>( nx, ny , nz , supportedKeyword ));
+        m_properties.emplace( supportedKeyword.getKeywordName(), 
+                GridProperty<T>( this->nx, this->ny , this->nz , supportedKeyword ));
     }
 
 
@@ -276,7 +277,7 @@ namespace Opm {
             GridProperty<T>& property = getKeyword( field );
             T shiftValue  = convertInputValue( property , record.getItem("shift").get< double >(0) );
             setKeywordBox(record, boxManager);
-            property.add( shiftValue , *boxManager.getActiveBox() );
+            property.add( shiftValue , boxManager.getActiveBox() );
         } else
             throw std::invalid_argument("Fatal error processing ADD keyword. Tried to shift not defined keyword " + field);
     }
@@ -289,7 +290,7 @@ namespace Opm {
             GridProperty<T>& property = getKeyword( field );
             T factor  = convertInputValue( record.getItem("factor").get< double >(0) );
             setKeywordBox(record, boxManager);
-            property.scale( factor , *boxManager.getActiveBox() );
+            property.scale( factor , boxManager.getActiveBox() );
         } else
             throw std::invalid_argument("Fatal error processing ADD keyword. Tried to shift not defined keyword " + field);
     }
@@ -302,7 +303,7 @@ namespace Opm {
 
         if (hasKeyword( srcField )) {
             setKeywordBox(record, boxManager);
-            copyKeyword( srcField , targetField , *boxManager.getActiveBox() );
+            copyKeyword( srcField , targetField , boxManager.getActiveBox() );
         } else {
             if (!supportsKeyword( srcField))
                 throw std::invalid_argument("Fatal error processing COPY keyword."
@@ -320,7 +321,7 @@ namespace Opm {
             T targetValue = convertInputValue( property , value );
 
             setKeywordBox(record, boxManager);
-            property.setScalar( targetValue , *boxManager.getActiveBox() );
+            property.setScalar( targetValue , boxManager.getActiveBox() );
         } else
             throw std::invalid_argument("Fatal error processing EQUALS keyword. Tried to set not defined keyword " + field);
     }

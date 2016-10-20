@@ -305,19 +305,19 @@ namespace {
         m_unittype( unit )
     {
         switch(unit) {
-            case(UNIT_TYPE_METRIC):
+            case(UnitType::UNIT_TYPE_METRIC):
                 m_name = "Metric";
                 this->measure_table_from_si = to_metric;
                 this->measure_table_to_si = from_metric;
                 this->unit_name_table = metric_names;
                 break;
-            case(UNIT_TYPE_FIELD):
+            case(UnitType::UNIT_TYPE_FIELD):
                 m_name = "Field";
                 this->measure_table_from_si = to_field;
                 this->measure_table_to_si = from_field;
                 this->unit_name_table = field_names;
                 break;
-            case(UNIT_TYPE_LAB):
+            case(UnitType::UNIT_TYPE_LAB):
                 m_name = "Lab";
                 this->measure_table_from_si = to_lab;
                 this->measure_table_to_si = from_lab;
@@ -334,33 +334,25 @@ namespace {
     }
 
 
-    std::shared_ptr<const Dimension> UnitSystem::getNewDimension(const std::string& dimension) {
-        if (!hasDimension( dimension )) {
-            std::shared_ptr<const Dimension> newDimension = parse( dimension );
-            addDimension( newDimension );
-        }
+    const Dimension& UnitSystem::getNewDimension(const std::string& dimension) {
+        if( !hasDimension( dimension ) )
+            this->addDimension( parse( dimension ) );
+
         return getDimension( dimension );
     }
 
 
-    std::shared_ptr<const Dimension> UnitSystem::getDimension(const std::string& dimension) const {
-        if (hasDimension( dimension ))
-            return m_dimensions.at( dimension );
-        else
-            throw std::invalid_argument("Dimension: " + dimension + " not recognized ");
+    const Dimension& UnitSystem::getDimension(const std::string& dimension) const {
+        return this->m_dimensions.at( dimension );
     }
 
 
-    void UnitSystem::addDimension(std::shared_ptr<const Dimension> dimension) {
-        if (hasDimension(dimension->getName()))
-            m_dimensions.erase( dimension->getName() );
-
-        m_dimensions.insert( std::make_pair(dimension->getName() , dimension));
+    void UnitSystem::addDimension( Dimension dimension ) {
+        this->m_dimensions[ dimension.getName() ] = std::move( dimension );
     }
 
     void UnitSystem::addDimension(const std::string& dimension , double SIfactor, double SIoffset) {
-        std::shared_ptr<const Dimension> dim( new Dimension(dimension , SIfactor, SIoffset) );
-        addDimension(dim);
+        this->addDimension( Dimension { dimension, SIfactor, SIoffset } );
     }
 
     const std::string& UnitSystem::getName() const {
@@ -372,71 +364,64 @@ namespace {
     }
 
 
-    std::shared_ptr<const Dimension> UnitSystem::parseFactor(const std::string& dimension) const {
+    Dimension UnitSystem::parseFactor(const std::string& dimension) const {
         std::vector<std::string> dimensionList;
         boost::split(dimensionList , dimension , boost::is_any_of("*"));
+
         double SIfactor = 1.0;
-        for (auto iter = dimensionList.begin(); iter != dimensionList.end(); ++iter) {
-            std::shared_ptr<const Dimension> dim = getDimension( *iter );
+        for( const auto& x : dimensionList ) {
+            auto dim = getDimension( x );
 
             // all constituing dimension must be compositable. The
             // only exception is if there is the "composite" dimension
             // consists of exactly a single atomic dimension...
-            if (dimensionList.size() > 1 && !dim->isCompositable())
+            if (dimensionList.size() > 1 && !dim.isCompositable())
                 throw std::invalid_argument("Composite dimensions currently cannot require a conversion offset");
 
-            SIfactor *= dim->getSIScaling();
+            SIfactor *= dim.getSIScaling();
         }
-        return std::shared_ptr<Dimension>(Dimension::newComposite( dimension , SIfactor ));
+        return Dimension::newComposite( dimension , SIfactor );
     }
 
+    Dimension UnitSystem::parse(const std::string& dimension) const {
+        const size_t divCount = std::count( dimension.begin() , dimension.end() , '/' );
 
+        if( divCount > 1 )
+                throw std::invalid_argument("Dimension string can only have one division sign '/'");
 
-    std::shared_ptr<const Dimension> UnitSystem::parse(const std::string& dimension) const {
-        bool haveDivisor;
-        {
-            size_t divCount = std::count( dimension.begin() , dimension.end() , '/' );
-            if (divCount == 0)
-                haveDivisor = false;
-            else if (divCount == 1)
-                haveDivisor = true;
-            else
-                throw std::invalid_argument("Dimension string can only have one division sign /");
-        }
+        const bool haveDivisor = divCount == 1;
+        if( !haveDivisor ) return parseFactor( dimension );
 
-        if (haveDivisor) {
-            std::vector<std::string> parts;
-            boost::split(parts , dimension , boost::is_any_of("/"));
-            std::shared_ptr<const Dimension> dividend = parseFactor( parts[0] );
-            std::shared_ptr<const Dimension> divisor = parseFactor( parts[1] );
+        std::vector<std::string> parts;
+        boost::split(parts , dimension , boost::is_any_of("/"));
+        Dimension dividend = parseFactor( parts[0] );
+        Dimension divisor = parseFactor( parts[1] );
 
-            if (dividend->getSIOffset() != 0.0 || divisor->getSIOffset() != 0.0)
-                throw std::invalid_argument("Composite dimensions cannot currently require a conversion offset");
+        if (dividend.getSIOffset() != 0.0 || divisor.getSIOffset() != 0.0)
+            throw std::invalid_argument("Composite dimensions cannot currently require a conversion offset");
 
-            return std::shared_ptr<Dimension>( Dimension::newComposite( dimension , dividend->getSIScaling() / divisor->getSIScaling() ));
-        } else {
-            return parseFactor( dimension );
-        }
+        return Dimension::newComposite( dimension, dividend.getSIScaling() / divisor.getSIScaling() );
     }
 
 
     bool UnitSystem::equal(const UnitSystem& other) const {
-        bool equal_ = (m_dimensions.size() == other.m_dimensions.size());
+        return *this == other;
+    }
 
-        if (equal_) {
-            for (auto iter = m_dimensions.begin(); iter != m_dimensions.end(); ++iter) {
-                std::shared_ptr<const Dimension> dim = getDimension( iter->first );
+    bool UnitSystem::operator==( const UnitSystem& rhs ) const {
+        return this->m_name == rhs.m_name
+            && this->m_unittype == rhs.m_unittype
+            && this->m_dimensions.size() == rhs.m_dimensions.size()
+            && std::equal( this->m_dimensions.begin(),
+                           this->m_dimensions.end(),
+                           rhs.m_dimensions.begin() )
+            && this->measure_table_from_si == rhs.measure_table_from_si
+            && this->measure_table_to_si == rhs.measure_table_to_si
+            && this->unit_name_table == rhs.unit_name_table;
+    }
 
-                if (other.hasDimension( iter->first )) {
-                    std::shared_ptr<const Dimension> otherDim = other.getDimension( iter->first );
-                    if (!dim->equal(*otherDim))
-                        equal_ = false;
-                } else
-                    equal_ = false;
-
-            }
-        }
-        return equal_;
+    bool UnitSystem::operator!=( const UnitSystem& rhs ) const {
+        return !( *this == rhs );
     }
 
     double UnitSystem::from_si( measure m, double val ) const {
@@ -466,88 +451,88 @@ namespace {
         return this->unit_name_table[ static_cast< int >( m ) ];
     }
 
-    UnitSystem * UnitSystem::newMETRIC() {
-        UnitSystem * system = new UnitSystem(UNIT_TYPE_METRIC);
+    UnitSystem UnitSystem::newMETRIC() {
+        UnitSystem system( UnitType::UNIT_TYPE_METRIC );
 
-        system->addDimension("1"         , 1.0);
-        system->addDimension("Pressure"  , Metric::Pressure );
-        system->addDimension("Temperature", Metric::Temperature, Metric::TemperatureOffset);
-        system->addDimension("AbsoluteTemperature", Metric::AbsoluteTemperature);
-        system->addDimension("Length"    , Metric::Length);
-        system->addDimension("Time"      , Metric::Time );
-        system->addDimension("Mass"         , Metric::Mass );
-        system->addDimension("Permeability", Metric::Permeability );
-        system->addDimension("Transmissibility", Metric::Transmissibility );
-        system->addDimension("GasDissolutionFactor", Metric::GasDissolutionFactor);
-        system->addDimension("OilDissolutionFactor", Metric::OilDissolutionFactor);
-        system->addDimension("LiquidSurfaceVolume", Metric::LiquidSurfaceVolume );
-        system->addDimension("GasSurfaceVolume" , Metric::GasSurfaceVolume );
-        system->addDimension("ReservoirVolume", Metric::ReservoirVolume );
-        system->addDimension("Density"   , Metric::Density );
-        system->addDimension("PolymerDensity", Metric::PolymerDensity);
-        system->addDimension("Salinity", Metric::Salinity);
-        system->addDimension("Viscosity" , Metric::Viscosity);
-        system->addDimension("Timestep"  , Metric::Timestep);
-        system->addDimension("SurfaceTension"  , Metric::SurfaceTension);
-        system->addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
+        system.addDimension("1"         , 1.0);
+        system.addDimension("Pressure"  , Metric::Pressure );
+        system.addDimension("Temperature", Metric::Temperature, Metric::TemperatureOffset);
+        system.addDimension("AbsoluteTemperature", Metric::AbsoluteTemperature);
+        system.addDimension("Length"    , Metric::Length);
+        system.addDimension("Time"      , Metric::Time );
+        system.addDimension("Mass"         , Metric::Mass );
+        system.addDimension("Permeability", Metric::Permeability );
+        system.addDimension("Transmissibility", Metric::Transmissibility );
+        system.addDimension("GasDissolutionFactor", Metric::GasDissolutionFactor);
+        system.addDimension("OilDissolutionFactor", Metric::OilDissolutionFactor);
+        system.addDimension("LiquidSurfaceVolume", Metric::LiquidSurfaceVolume );
+        system.addDimension("GasSurfaceVolume" , Metric::GasSurfaceVolume );
+        system.addDimension("ReservoirVolume", Metric::ReservoirVolume );
+        system.addDimension("Density"   , Metric::Density );
+        system.addDimension("PolymerDensity", Metric::PolymerDensity);
+        system.addDimension("Salinity", Metric::Salinity);
+        system.addDimension("Viscosity" , Metric::Viscosity);
+        system.addDimension("Timestep"  , Metric::Timestep);
+        system.addDimension("SurfaceTension"  , Metric::SurfaceTension);
+        system.addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
         return system;
     }
 
 
 
-    UnitSystem * UnitSystem::newFIELD() {
-        UnitSystem * system = new UnitSystem(UNIT_TYPE_FIELD);
+    UnitSystem UnitSystem::newFIELD() {
+        UnitSystem system( UnitType::UNIT_TYPE_FIELD );
 
-        system->addDimension("1"    , 1.0);
-        system->addDimension("Pressure", Field::Pressure );
-        system->addDimension("Temperature", Field::Temperature, Field::TemperatureOffset);
-        system->addDimension("AbsoluteTemperature", Field::AbsoluteTemperature);
-        system->addDimension("Length", Field::Length);
-        system->addDimension("Time" , Field::Time);
-        system->addDimension("Mass", Field::Mass);
-        system->addDimension("Permeability", Field::Permeability );
-        system->addDimension("Transmissibility", Field::Transmissibility );
-        system->addDimension("GasDissolutionFactor" , Field::GasDissolutionFactor);
-        system->addDimension("OilDissolutionFactor", Field::OilDissolutionFactor);
-        system->addDimension("LiquidSurfaceVolume", Field::LiquidSurfaceVolume );
-        system->addDimension("GasSurfaceVolume", Field::GasSurfaceVolume );
-        system->addDimension("ReservoirVolume", Field::ReservoirVolume );
-        system->addDimension("Density", Field::Density );
-        system->addDimension("PolymerDensity", Field::PolymerDensity);
-        system->addDimension("Salinity", Field::Salinity);
-        system->addDimension("Viscosity", Field::Viscosity);
-        system->addDimension("Timestep", Field::Timestep);
-        system->addDimension("SurfaceTension"  , Field::SurfaceTension);
-        system->addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
+        system.addDimension("1"    , 1.0);
+        system.addDimension("Pressure", Field::Pressure );
+        system.addDimension("Temperature", Field::Temperature, Field::TemperatureOffset);
+        system.addDimension("AbsoluteTemperature", Field::AbsoluteTemperature);
+        system.addDimension("Length", Field::Length);
+        system.addDimension("Time" , Field::Time);
+        system.addDimension("Mass", Field::Mass);
+        system.addDimension("Permeability", Field::Permeability );
+        system.addDimension("Transmissibility", Field::Transmissibility );
+        system.addDimension("GasDissolutionFactor" , Field::GasDissolutionFactor);
+        system.addDimension("OilDissolutionFactor", Field::OilDissolutionFactor);
+        system.addDimension("LiquidSurfaceVolume", Field::LiquidSurfaceVolume );
+        system.addDimension("GasSurfaceVolume", Field::GasSurfaceVolume );
+        system.addDimension("ReservoirVolume", Field::ReservoirVolume );
+        system.addDimension("Density", Field::Density );
+        system.addDimension("PolymerDensity", Field::PolymerDensity);
+        system.addDimension("Salinity", Field::Salinity);
+        system.addDimension("Viscosity", Field::Viscosity);
+        system.addDimension("Timestep", Field::Timestep);
+        system.addDimension("SurfaceTension"  , Field::SurfaceTension);
+        system.addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
         return system;
     }
 
 
 
-    UnitSystem * UnitSystem::newLAB() {
-        UnitSystem * system = new UnitSystem(UNIT_TYPE_LAB);
+    UnitSystem UnitSystem::newLAB() {
+        UnitSystem system( UnitType::UNIT_TYPE_LAB );
 
-        system->addDimension("1"    , 1.0);
-        system->addDimension("Pressure", Lab::Pressure );
-        system->addDimension("Temperature", Lab::Temperature, Lab::TemperatureOffset);
-        system->addDimension("AbsoluteTemperature", Lab::AbsoluteTemperature);
-        system->addDimension("Length", Lab::Length);
-        system->addDimension("Time" , Lab::Time);
-        system->addDimension("Mass", Lab::Mass);
-        system->addDimension("Permeability", Lab::Permeability );
-        system->addDimension("Transmissibility", Lab::Transmissibility );
-        system->addDimension("GasDissolutionFactor" , Lab::GasDissolutionFactor);
-        system->addDimension("OilDissolutionFactor", Lab::OilDissolutionFactor);
-        system->addDimension("LiquidSurfaceVolume", Lab::LiquidSurfaceVolume );
-        system->addDimension("GasSurfaceVolume", Lab::GasSurfaceVolume );
-        system->addDimension("ReservoirVolume", Lab::ReservoirVolume );
-        system->addDimension("Density", Lab::Density );
-        system->addDimension("PolymerDensity", Lab::PolymerDensity);
-        system->addDimension("Salinity", Lab::Salinity);
-        system->addDimension("Viscosity", Lab::Viscosity);
-        system->addDimension("Timestep", Lab::Timestep);
-        system->addDimension("SurfaceTension"  , Lab::SurfaceTension);
-        system->addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
+        system.addDimension("1"    , 1.0);
+        system.addDimension("Pressure", Lab::Pressure );
+        system.addDimension("Temperature", Lab::Temperature, Lab::TemperatureOffset);
+        system.addDimension("AbsoluteTemperature", Lab::AbsoluteTemperature);
+        system.addDimension("Length", Lab::Length);
+        system.addDimension("Time" , Lab::Time);
+        system.addDimension("Mass", Lab::Mass);
+        system.addDimension("Permeability", Lab::Permeability );
+        system.addDimension("Transmissibility", Lab::Transmissibility );
+        system.addDimension("GasDissolutionFactor" , Lab::GasDissolutionFactor);
+        system.addDimension("OilDissolutionFactor", Lab::OilDissolutionFactor);
+        system.addDimension("LiquidSurfaceVolume", Lab::LiquidSurfaceVolume );
+        system.addDimension("GasSurfaceVolume", Lab::GasSurfaceVolume );
+        system.addDimension("ReservoirVolume", Lab::ReservoirVolume );
+        system.addDimension("Density", Lab::Density );
+        system.addDimension("PolymerDensity", Lab::PolymerDensity);
+        system.addDimension("Salinity", Lab::Salinity);
+        system.addDimension("Viscosity", Lab::Viscosity);
+        system.addDimension("Timestep", Lab::Timestep);
+        system.addDimension("SurfaceTension"  , Lab::SurfaceTension);
+        system.addDimension("ContextDependent", std::numeric_limits<double>::quiet_NaN());
         return system;
     }
 

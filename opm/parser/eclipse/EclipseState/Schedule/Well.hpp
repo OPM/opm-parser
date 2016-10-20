@@ -78,10 +78,11 @@ namespace Opm {
         bool isProducer(size_t timeStep) const;
         bool isInjector(size_t timeStep) const;
         void addWELSPECS(const DeckRecord& deckRecord);
-        void addCompletions(size_t time_step , const std::vector<std::shared_ptr< Completion >>& newCompletions);
-        void addCompletionSet(size_t time_step, const std::shared_ptr< const CompletionSet > newCompletionSet);
-        std::shared_ptr< const CompletionSet > getCompletions(size_t timeStep) const;
-        std::shared_ptr< const CompletionSet > getCompletions( ) const;
+
+        void addCompletions(size_t time_step, std::vector< Completion > );
+        void addCompletionSet(size_t time_step, CompletionSet );
+        const CompletionSet& getCompletions(size_t timeStep) const;
+        const CompletionSet& getCompletions() const;
 
         /* The rate of a given phase under the following assumptions:
          * * Returns zero if production is requested for an injector (and vice
@@ -131,9 +132,9 @@ namespace Opm {
 
         // for multi-segment wells
         bool isMultiSegment(size_t time_step) const;
-        std::shared_ptr< const SegmentSet > getSegmentSet(size_t time_step) const;
+        const SegmentSet& getSegmentSet(size_t time_step) const;
 
-        void addSegmentSet(size_t time_step, std::shared_ptr< const SegmentSet > new_segmentset);
+        void addSegmentSet(size_t time_step, SegmentSet new_segmentset);
 
         const MessageContainer& getMessageContainer() const;
     private:
@@ -173,7 +174,7 @@ namespace Opm {
         MessageContainer m_messages;
         // WELSEGS DATA - for mutli-segment wells
         // flag indicating if the well is a multi-segment well
-        std::shared_ptr<DynamicState<std::shared_ptr< const SegmentSet >>> m_segmentset;
+        std::shared_ptr<DynamicState< SegmentSet >> m_segmentset;
     };
 }
 

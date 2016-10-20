@@ -77,12 +77,12 @@ namespace Opm {
                         const EclipseGrid& grid,
                         const Deck& deck ) :
         m_timeMap( std::make_shared< TimeMap>( deck )),
-        m_rootGroupTree( m_timeMap, GroupTree{} ),
-        m_oilvaporizationproperties( m_timeMap, OilVaporizationProperties{} ),
-        m_events( m_timeMap ),
-        m_modifierDeck( m_timeMap, nullptr ),
-        m_tuning( m_timeMap ),
-        m_messageLimits(m_timeMap)
+        m_rootGroupTree( *m_timeMap, GroupTree{} ),
+        m_oilvaporizationproperties( *m_timeMap, OilVaporizationProperties{} ),
+        m_events( *m_timeMap ),
+        m_modifierDeck( *m_timeMap, nullptr ),
+        m_tuning( *m_timeMap ),
+        m_messageLimits( *m_timeMap )
 
     {
         m_controlModeWHISTCTL = WellProducer::CMODE_UNDEFINED;
@@ -511,9 +511,9 @@ namespace Opm {
             double wellPi = record.getItem("WELLPI").get< double >(0);
 
             for( auto* well : getWells( wellNamePattern ) ) {
-                CompletionSetConstPtr currentCompletionSet = well->getCompletions(currentStep);
+                const auto& currentCompletionSet = well->getCompletions(currentStep);
 
-                CompletionSetPtr newCompletionSet(new CompletionSet( ));
+                CompletionSet newCompletionSet;
 
                 Opm::Value<int> I  = getValueItem(record.getItem("I"));
                 Opm::Value<int> J  = getValueItem(record.getItem("J"));
@@ -521,51 +521,47 @@ namespace Opm {
                 Opm::Value<int> FIRST = getValueItem(record.getItem("FIRST"));
                 Opm::Value<int> LAST = getValueItem(record.getItem("LAST"));
 
-                size_t completionSize = currentCompletionSet->size();
+                size_t completionSize = currentCompletionSet.size();
 
                 for(size_t i = 0; i < completionSize;i++) {
-
-                    CompletionConstPtr currentCompletion = currentCompletionSet->get(i);
+                    const auto& currentCompletion = currentCompletionSet.get(i);
 
                     if (FIRST.hasValue()) {
                         if (i < (size_t) FIRST.getValue()) {
-                            newCompletionSet->add(currentCompletion);
+                            newCompletionSet.add(currentCompletion);
                             continue;
                         }
                     }
                     if (LAST.hasValue()) {
                         if (i > (size_t) LAST.getValue()) {
-                            newCompletionSet->add(currentCompletion);
+                            newCompletionSet.add(currentCompletion);
                             continue;
                         }
                     }
 
-                    int ci = currentCompletion->getI();
-                    int cj = currentCompletion->getJ();
-                    int ck = currentCompletion->getK();
+                    int ci = currentCompletion.getI();
+                    int cj = currentCompletion.getJ();
+                    int ck = currentCompletion.getK();
 
                     if (I.hasValue() && (!(I.getValue() == ci) )) {
-                        newCompletionSet->add(currentCompletion);
+                        newCompletionSet.add(currentCompletion);
                         continue;
                     }
 
                     if (J.hasValue() && (!(J.getValue() == cj) )) {
-                        newCompletionSet->add(currentCompletion);
+                        newCompletionSet.add(currentCompletion);
                         continue;
                     }
 
                     if (K.hasValue() && (!(K.getValue() == ck) )) {
-                        newCompletionSet->add(currentCompletion);
+                        newCompletionSet.add(currentCompletion);
                         continue;
                     }
 
-                    CompletionPtr newCompletion = std::make_shared<Completion>(currentCompletion, wellPi);
-                    newCompletionSet->add(newCompletion);
+                    newCompletionSet.add( Completion{ currentCompletion, wellPi } );
                 }
+
                 well->addCompletionSet(currentStep, newCompletionSet);
-
-
-
             }
         }
     }
@@ -762,9 +758,8 @@ namespace Opm {
             for( auto* well : getWells( wellNamePattern ) ) {
 
                 if(haveCompletionData){
-                    CompletionSetConstPtr currentCompletionSet = well->getCompletions(currentStep);
-
-                    CompletionSetPtr newCompletionSet(new CompletionSet( ));
+                    const auto& currentCompletionSet = well->getCompletions(currentStep);
+                    CompletionSet newCompletionSet;
 
                     Opm::Value<int> I  = getValueItem(record.getItem("I"));
                     Opm::Value<int> J  = getValueItem(record.getItem("J"));
@@ -777,51 +772,51 @@ namespace Opm {
                         throw std::exception();
                     }
 
-                    size_t completionSize = currentCompletionSet->size();
+                    size_t completionSize = currentCompletionSet.size();
 
                     for(size_t i = 0; i < completionSize;i++) {
 
-                        CompletionConstPtr currentCompletion = currentCompletionSet->get(i);
+                        const auto& currentCompletion = currentCompletionSet.get(i);
 
                         if (C1.hasValue()) {
                             if (i < (size_t) C1.getValue()) {
-                                newCompletionSet->add(currentCompletion);
+                                newCompletionSet.add(currentCompletion);
                                 continue;
                             }
                         }
                         if (C2.hasValue()) {
                             if (i > (size_t) C2.getValue()) {
-                                newCompletionSet->add(currentCompletion);
+                                newCompletionSet.add(currentCompletion);
                                 continue;
                             }
                         }
 
-                        int ci = currentCompletion->getI();
-                        int cj = currentCompletion->getJ();
-                        int ck = currentCompletion->getK();
+                        int ci = currentCompletion.getI();
+                        int cj = currentCompletion.getJ();
+                        int ck = currentCompletion.getK();
 
                         if (I.hasValue() && (!(I.getValue() == ci) )) {
-                            newCompletionSet->add(currentCompletion);
+                            newCompletionSet.add(currentCompletion);
                             continue;
                         }
 
                         if (J.hasValue() && (!(J.getValue() == cj) )) {
-                            newCompletionSet->add(currentCompletion);
+                            newCompletionSet.add(currentCompletion);
                             continue;
                         }
 
                         if (K.hasValue() && (!(K.getValue() == ck) )) {
-                            newCompletionSet->add(currentCompletion);
+                            newCompletionSet.add(currentCompletion);
                             continue;
                         }
+
                         WellCompletion::StateEnum completionStatus = WellCompletion::StateEnumFromString(record.getItem("STATUS").getTrimmedString(0));
-                        CompletionPtr newCompletion = std::make_shared<Completion>(currentCompletion, completionStatus);
-                        newCompletionSet->add(newCompletion);
+                        newCompletionSet.add( { currentCompletion, completionStatus } );
                     }
 
                     well->addCompletionSet(currentStep, newCompletionSet);
                     m_events.addEvent(ScheduleEvents::COMPLETION_CHANGE, currentStep);
-                    if (newCompletionSet->allCompletionsShut())
+                    if (newCompletionSet.allCompletionsShut())
                         updateWellStatus( *well, currentStep, WellCommon::StatusEnum::SHUT);
 
                 }
@@ -854,9 +849,9 @@ namespace Opm {
 
     void Schedule::handleWELTARG( const SCHEDULESection& section ,  const DeckKeyword& keyword, size_t currentStep) {
         Opm::UnitSystem unitSystem = section.unitSystem();
-        double siFactorL = unitSystem.parse("LiquidSurfaceVolume/Time")->getSIScaling();
-        double siFactorG = unitSystem.parse("GasSurfaceVolume/Time")->getSIScaling();
-        double siFactorP = unitSystem.parse("Pressure")->getSIScaling();
+        double siFactorL = unitSystem.parse("LiquidSurfaceVolume/Time").getSIScaling();
+        double siFactorG = unitSystem.parse("GasSurfaceVolume/Time").getSIScaling();
+        double siFactorP = unitSystem.parse("Pressure").getSIScaling();
 
         for( const auto& record : keyword ) {
 
@@ -1206,7 +1201,7 @@ namespace Opm {
         for( const auto pair : completions ) {
             auto& well = *this->m_wells.get( pair.first );
             well.addCompletions( currentStep, pair.second );
-            if (well.getCompletions( currentStep )->allCompletionsShut()) {
+            if (well.getCompletions( currentStep ).allCompletionsShut()) {
                 std::string msg =
                         "All completions in well " + well.name() + " is shut at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days. \n" +
                         "The well is therefore also shut.";
@@ -1218,11 +1213,11 @@ namespace Opm {
     }
 
     void Schedule::handleWELSEGS( const DeckKeyword& keyword, size_t currentStep) {
-        SegmentSetPtr newSegmentset= std::make_shared<SegmentSet>();
-        newSegmentset->segmentsFromWELSEGSKeyword(keyword);
+        SegmentSet newSegmentset;
+        newSegmentset.segmentsFromWELSEGSKeyword(keyword);
 
-        const std::string& well_name = newSegmentset->wellName();
-        auto well = this->m_wells.get( well_name );
+        const std::string& well_name = newSegmentset.wellName();
+        auto& well = this->m_wells.get( well_name );
 
         // update multi-segment related information for the well
         well->addSegmentSet(currentStep, newSegmentset);
@@ -1233,16 +1228,14 @@ namespace Opm {
         const std::string& well_name = record1.getItem("WELL").getTrimmedString(0);
         auto& well = *this->m_wells.get( well_name );
 
-        std::vector<CompsegsPtr> compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword( keyword );
+        auto compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword( keyword );
 
-        SegmentSetConstPtr current_segmentSet = well.getSegmentSet(currentStep);
+        const auto& current_segmentSet = well.getSegmentSet(currentStep);
         Compsegs::processCOMPSEGS(compsegs_vector, current_segmentSet);
 
-        CompletionSetConstPtr current_completionSet = well.getCompletions(currentStep);
         // it is necessary to update the segment related information for some completions.
-        CompletionSetPtr new_completionSet = CompletionSetPtr(current_completionSet->shallowCopy());
+        auto new_completionSet = well.getCompletions( currentStep );
         Compsegs::updateCompletionsWithSegment(compsegs_vector, new_completionSet);
-
         well.addCompletionSet(currentStep, new_completionSet);
     }
 
@@ -1355,8 +1348,8 @@ namespace Opm {
         }
     }
 
-    TimeMapConstPtr Schedule::getTimeMap() const {
-        return m_timeMap;
+    const TimeMap& Schedule::getTimeMap() const {
+        return *m_timeMap;
     }
 
     const GroupTree& Schedule::getGroupTree(size_t timeStep) const {
@@ -1479,7 +1472,7 @@ namespace Opm {
         if (!m_timeMap) {
             throw std::invalid_argument("TimeMap is null, can't add group named: " + groupName);
         }
-        m_groups.emplace( groupName, Group { groupName, m_timeMap, timeStep } );
+        m_groups.emplace( groupName, Group { groupName, *m_timeMap, timeStep } );
         m_events.addEvent( ScheduleEvents::NEW_GROUP , timeStep );
     }
 
@@ -1569,10 +1562,10 @@ namespace Opm {
     size_t Schedule::getMaxNumCompletionsForWells(size_t timestep) const {
       size_t ncwmax = 0;
       for( const auto* wellPtr : getWells() ) {
-        CompletionSetConstPtr completionsSetPtr = wellPtr->getCompletions(timestep);
+        const auto& completions = wellPtr->getCompletions(timestep);
 
-        if (completionsSetPtr->size() > ncwmax )
-          ncwmax = completionsSetPtr->size();
+        if( completions.size() > ncwmax )
+          ncwmax = completions.size();
 
       }
       return ncwmax;

@@ -215,7 +215,7 @@ inline void keywordC( std::vector< ERT::smspec_node >& list,
                       std::array< int, 3 > dims ) {
 
     const auto& keywordstring = keyword.name();
-    const auto last_timestep = schedule.getTimeMap()->last();
+    const auto last_timestep = schedule.getTimeMap().last();
 
     for( const auto& record : keyword ) {
 
@@ -236,9 +236,9 @@ inline void keywordC( std::vector< ERT::smspec_node >& list,
              * over a well's completions regardless of the desired block is
              * defaulted or not
              */
-            for( const auto& completion : *well->getCompletions( last_timestep ) ) {
+            for( const auto& completion : well->getCompletions( last_timestep ) ) {
                 /* block coordinates defaulted */
-                auto cijk = getijk( *completion );
+                auto cijk = getijk( completion );
 
                 if( record.getItem( 1 ).defaultApplied( 0 ) ) {
                     list.emplace_back( keywordstring, name, dims.data(), cijk.data() );
@@ -293,10 +293,10 @@ inline void uniq( std::vector< ERT::smspec_node >& vec ) {
 
 SummaryConfig::SummaryConfig( const Deck& deck, const EclipseState& es , const ParseContext& parseContext)
     : SummaryConfig( deck,
-                        *es.getSchedule(),
-                        es.get3DProperties(),
-                        parseContext,
-                        dimensions( *es.getInputGrid() ) )
+                     es.getSchedule(),
+                     es.get3DProperties(),
+                     parseContext,
+                     dimensions( es.getInputGrid() ) )
 {}
 
 SummaryConfig::SummaryConfig( const Deck& deck,

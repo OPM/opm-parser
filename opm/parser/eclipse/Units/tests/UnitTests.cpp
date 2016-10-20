@@ -26,6 +26,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <memory>
+#include <ostream>
 
 using namespace Opm;
 
@@ -36,9 +37,9 @@ BOOST_AUTO_TEST_CASE(CreateDimension) {
 }
 
 BOOST_AUTO_TEST_CASE(makeComposite) {
-    std::shared_ptr<Dimension> composite(Dimension::newComposite("Length*Length*Length/Time" , 100));
-    BOOST_CHECK_EQUAL("Length*Length*Length/Time" , composite->getName());
-    BOOST_CHECK_EQUAL(100 , composite->getSIScaling());
+    auto composite = Dimension::newComposite("Length*Length*Length/Time" , 100);
+    BOOST_CHECK_EQUAL("Length*Length*Length/Time" , composite.getName());
+    BOOST_CHECK_EQUAL(100 , composite.getSIScaling());
 }
 
 
@@ -53,13 +54,13 @@ BOOST_AUTO_TEST_CASE(CreateDimensionInvalidNameThrows) {
 
 
 BOOST_AUTO_TEST_CASE(CreateUnitSystem) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
     BOOST_CHECK_EQUAL("Metric" , system.getName());
 }
 
 
 BOOST_AUTO_TEST_CASE(UnitSystemEmptyHasNone) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
     BOOST_CHECK_EQUAL( false , system.hasDimension("Length"));
     BOOST_CHECK_EQUAL( false , system.hasDimension("LXY"));
 }
@@ -67,93 +68,93 @@ BOOST_AUTO_TEST_CASE(UnitSystemEmptyHasNone) {
 
 
 BOOST_AUTO_TEST_CASE(UnitSystemGetMissingDimensionThrows) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
-    BOOST_CHECK_THROW( system.getDimension("Length") , std::invalid_argument );
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
+    BOOST_CHECK_THROW( system.getDimension("Length") , std::out_of_range );
 }
 
 BOOST_AUTO_TEST_CASE(UnitSystemGetNewOK) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
     system.addDimension("Length" , 10 );
     system.addDimension("Time" , 100);
 
-    BOOST_CHECK_EQUAL( false , system.hasDimension("Length*Length/Time"));
-    std::shared_ptr<const Dimension> comp = system.getNewDimension("Length*Length/Time");
-    BOOST_CHECK_EQUAL( true , system.hasDimension("Length*Length/Time"));
-    BOOST_CHECK_EQUAL(1 , comp->getSIScaling());
+    BOOST_CHECK( !system.hasDimension("Length*Length/Time"));
+    Dimension comp = system.getNewDimension( "Length*Length/Time" );
+    BOOST_CHECK( system.hasDimension("Length*Length/Time"));
+    BOOST_CHECK_EQUAL(1 , comp.getSIScaling());
 }
 
 
 
 
 BOOST_AUTO_TEST_CASE(UnitSystemAddDimensions) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
     system.addDimension("Length" , 1 );
     system.addDimension("Time" , 86400 );
     system.addDimension("Temperature", 1.0, 273.15);
 
-    std::shared_ptr<const Dimension> length = system.getDimension("Length");
-    std::shared_ptr<const Dimension> time = system.getDimension("Time");
-    std::shared_ptr<const Dimension> temperature = system.getDimension("Temperature");
-    BOOST_CHECK_EQUAL(1     , length->getSIScaling());
-    BOOST_CHECK_EQUAL(86400 , time->getSIScaling());
-    BOOST_CHECK_EQUAL(1.0   , temperature->getSIScaling());
-    BOOST_CHECK_EQUAL(273.15, temperature->getSIOffset());
+    auto length = system.getDimension( "Length" );
+    auto time = system.getDimension( "Time" );
+    auto temperature = system.getDimension( "Temperature" );
+    BOOST_CHECK_EQUAL(1     , length.getSIScaling());
+    BOOST_CHECK_EQUAL(86400 , time.getSIScaling());
+    BOOST_CHECK_EQUAL(1.0   , temperature.getSIScaling());
+    BOOST_CHECK_EQUAL(273.15, temperature.getSIOffset());
 
     system.addDimension("Length" , 0.3048);
     length = system.getDimension("Length");
-    BOOST_CHECK_EQUAL(0.3048 , length->getSIScaling());
+    BOOST_CHECK_EQUAL(0.3048 , length.getSIScaling());
 }
 
 
 BOOST_AUTO_TEST_CASE(UnitSystemParseInvalidThrows) {
-    UnitSystem system(UnitSystem::UNIT_TYPE_METRIC);
+    UnitSystem system(UnitSystem::UnitType::UNIT_TYPE_METRIC);
     BOOST_CHECK_THROW( system.parse("//") , std::invalid_argument);
-    BOOST_CHECK_THROW( system.parse("Length * Length / Time") , std::invalid_argument);
+    BOOST_CHECK_THROW( system.parse("Length * Length / Time") , std::out_of_range );
 
     system.addDimension("Length" , 3.00 );
     system.addDimension("Time" , 9.0 );
 
-    std::shared_ptr<const Dimension> volumePerTime = system.parse("Length*Length*Length/Time");
-    BOOST_CHECK_EQUAL("Length*Length*Length/Time" , volumePerTime->getName() );
-    BOOST_CHECK_EQUAL(3.0 , volumePerTime->getSIScaling());
+    auto volumePerTime = system.parse( "Length*Length*Length/Time" );
+    BOOST_CHECK_EQUAL("Length*Length*Length/Time" , volumePerTime.getName() );
+    BOOST_CHECK_EQUAL(3.0 , volumePerTime.getSIScaling());
 }
 
 
 
-static void checkSystemHasRequiredDimensions(std::shared_ptr<const UnitSystem> system) {
-    BOOST_CHECK( system->hasDimension("1"));
-    BOOST_CHECK( system->hasDimension("Length"));
-    BOOST_CHECK( system->hasDimension("Mass"));
-    BOOST_CHECK( system->hasDimension("Time"));
-    BOOST_CHECK( system->hasDimension("Permeability"));
-    BOOST_CHECK( system->hasDimension("Pressure"));
-    BOOST_CHECK( system->hasDimension("Temperature"));
+static void checkSystemHasRequiredDimensions( const UnitSystem& system) {
+    BOOST_CHECK( system.hasDimension("1"));
+    BOOST_CHECK( system.hasDimension("Length"));
+    BOOST_CHECK( system.hasDimension("Mass"));
+    BOOST_CHECK( system.hasDimension("Time"));
+    BOOST_CHECK( system.hasDimension("Permeability"));
+    BOOST_CHECK( system.hasDimension("Pressure"));
+    BOOST_CHECK( system.hasDimension("Temperature"));
 }
 
 
 
 BOOST_AUTO_TEST_CASE(CreateMetricSystem) {
-    std::shared_ptr<UnitSystem> system = std::shared_ptr<UnitSystem>( UnitSystem::newMETRIC() );
+    auto system = UnitSystem::newMETRIC();
     checkSystemHasRequiredDimensions( system );
 
-    BOOST_CHECK_EQUAL( Metric::Length       , system->getDimension("Length")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Metric::Mass         , system->getDimension("Mass")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Metric::Time         , system->getDimension("Time")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Metric::Permeability , system->getDimension("Permeability")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Metric::Pressure     , system->getDimension("Pressure")->getSIScaling() );
+    BOOST_CHECK_EQUAL( Metric::Length       , system.getDimension("Length").getSIScaling() );
+    BOOST_CHECK_EQUAL( Metric::Mass         , system.getDimension("Mass").getSIScaling() );
+    BOOST_CHECK_EQUAL( Metric::Time         , system.getDimension("Time").getSIScaling() );
+    BOOST_CHECK_EQUAL( Metric::Permeability , system.getDimension("Permeability").getSIScaling() );
+    BOOST_CHECK_EQUAL( Metric::Pressure     , system.getDimension("Pressure").getSIScaling() );
 }
 
 
 
 BOOST_AUTO_TEST_CASE(CreateFieldSystem) {
-    std::shared_ptr<UnitSystem> system = std::shared_ptr<UnitSystem>( UnitSystem::newFIELD() );
+    auto system = UnitSystem::newFIELD();
     checkSystemHasRequiredDimensions( system );
 
-    BOOST_CHECK_EQUAL( Field::Length       , system->getDimension("Length")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Field::Mass         , system->getDimension("Mass")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Field::Time         , system->getDimension("Time")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Field::Permeability , system->getDimension("Permeability")->getSIScaling() );
-    BOOST_CHECK_EQUAL( Field::Pressure     , system->getDimension("Pressure")->getSIScaling() );
+    BOOST_CHECK_EQUAL( Field::Length       , system.getDimension("Length").getSIScaling() );
+    BOOST_CHECK_EQUAL( Field::Mass         , system.getDimension("Mass").getSIScaling() );
+    BOOST_CHECK_EQUAL( Field::Time         , system.getDimension("Time").getSIScaling() );
+    BOOST_CHECK_EQUAL( Field::Permeability , system.getDimension("Permeability").getSIScaling() );
+    BOOST_CHECK_EQUAL( Field::Pressure     , system.getDimension("Pressure").getSIScaling() );
 }
 
 
@@ -171,19 +172,24 @@ BOOST_AUTO_TEST_CASE(DimensionEqual) {
     BOOST_CHECK_EQUAL( false , d1.equal(d4) );
 }
 
+namespace Opm {
+inline std::ostream& operator<<( std::ostream& stream, const UnitSystem& us ) {
+    return stream << us.getName() << " :: " << us.getType();
+}
+}
+
 
 BOOST_AUTO_TEST_CASE(UnitSystemEqual) {
-    std::shared_ptr<UnitSystem> metric1 = std::shared_ptr<UnitSystem>( UnitSystem::newMETRIC() );
-    std::shared_ptr<UnitSystem> metric2 = std::shared_ptr<UnitSystem>( UnitSystem::newMETRIC() );
-    std::shared_ptr<UnitSystem> field = std::shared_ptr<UnitSystem>( UnitSystem::newFIELD() );
+    auto metric1 = UnitSystem::newMETRIC();
+    auto metric2 = UnitSystem::newMETRIC();
+    auto field = UnitSystem::newFIELD();
 
-    BOOST_CHECK_EQUAL( true   , metric1->equal( *metric1 ));
-    BOOST_CHECK_EQUAL( true   , metric1->equal( *metric2 ));
-    BOOST_CHECK_EQUAL( false  , metric1->equal( *field ));
-    metric1->addDimension("g" , 3.00 );
-    BOOST_CHECK_EQUAL( false  , metric1->equal( *metric2 ));
-    BOOST_CHECK_EQUAL( false  , metric2->equal( *metric1 ));
-
+    BOOST_CHECK_EQUAL( metric1, metric1 );
+    BOOST_CHECK_EQUAL( metric1, metric2 );
+    BOOST_CHECK_NE( metric1, field );
+    metric1.addDimension("g" , 3.00 );
+    BOOST_CHECK_NE( metric1, metric2 );
+    BOOST_CHECK_NE( metric2, metric1 );
 }
 
 
@@ -191,12 +197,12 @@ BOOST_AUTO_TEST_CASE(UnitSystemEqual) {
 BOOST_AUTO_TEST_CASE(LabUnitConversions) {
     using Meas = UnitSystem::measure;
 
-    auto lab = std::unique_ptr<UnitSystem>( UnitSystem::newLAB() );
+    auto lab = UnitSystem::newLAB();
 
     {
         const auto furlong = 660*unit::feet;
-        BOOST_CHECK_CLOSE( 2.01168e4 , lab->from_si( Meas::length , furlong ) , 1.0e-10 );
-        BOOST_CHECK_CLOSE( furlong   , lab->to_si( Meas::length , 2.01168e4 ) , 1.0e-10 );
+        BOOST_CHECK_CLOSE( 2.01168e4 , lab.from_si( Meas::length , furlong ) , 1.0e-10 );
+        BOOST_CHECK_CLOSE( furlong   , lab.to_si( Meas::length , 2.01168e4 ) , 1.0e-10 );
     }
 
     struct Factor { Meas m; double f; };
@@ -209,8 +215,8 @@ BOOST_AUTO_TEST_CASE(LabUnitConversions) {
                            Factor{ Meas::time                  , 3600.0 }   ,
                            Factor{ Meas::mass                  , 1.0e-3 }   })
     {
-        BOOST_CHECK_CLOSE( q.f , lab->to_si( q.m , 1.0 )   , 1.0e-10 );
-        BOOST_CHECK_CLOSE( 1.0 , lab->from_si( q.m , q.f ) , 1.0e-10 );
+        BOOST_CHECK_CLOSE( q.f , lab.to_si( q.m , 1.0 )   , 1.0e-10 );
+        BOOST_CHECK_CLOSE( 1.0 , lab.from_si( q.m , q.f ) , 1.0e-10 );
     }
 }
 
@@ -218,11 +224,9 @@ BOOST_AUTO_TEST_CASE(LabUnitConversions) {
 BOOST_AUTO_TEST_CASE( VectorConvert ) {
     std::vector<double> d0 = {1,2,3};
     std::vector<double> d1 = {1,2,3};
-    UnitSystem * units = UnitSystem::newLAB();
+    UnitSystem units = UnitSystem::newLAB();
 
-    units->from_si( UnitSystem::measure::pressure , d0 );
+    units.from_si( UnitSystem::measure::pressure , d0 );
     for (size_t i = 0; i < d1.size(); i++)
-        BOOST_CHECK_EQUAL( units->from_si( UnitSystem::measure::pressure , d1[i] ) , d0[i]);
-
-    delete units;
+        BOOST_CHECK_EQUAL( units.from_si( UnitSystem::measure::pressure , d1[i] ) , d0[i]);
 }

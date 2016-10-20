@@ -25,6 +25,7 @@
 
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseConfig.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/NNC.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/TransMult.hpp>
@@ -65,14 +66,11 @@ namespace Opm {
 
         EclipseState(const Deck& deck , ParseContext parseContext = ParseContext());
 
-        /// [deprecated]
-        EclipseState(std::shared_ptr< const Deck > deck , ParseContext parseContext = ParseContext());
-
         const ParseContext& getParseContext() const;
 
-        std::shared_ptr< const Schedule > getSchedule() const;
-        std::shared_ptr< const IOConfig > getIOConfigConst() const;
-        std::shared_ptr< IOConfig > getIOConfig() const;
+        const Schedule& getSchedule() const;
+        const IOConfig& getIOConfig() const;
+        IOConfig& getIOConfig();
 
         const InitConfig& getInitConfig() const;
         const SimulationConfig& getSimulationConfig() const;
@@ -80,8 +78,7 @@ namespace Opm {
         const RestartConfig& getRestartConfig() const;
         RestartConfig& getRestartConfig();
 
-        std::shared_ptr< const EclipseGrid > getInputGrid() const;
-        std::shared_ptr< EclipseGrid > getInputGridCopy() const;
+        const EclipseGrid& getInputGrid() const;
 
         const FaultCollection& getFaults() const;
         const TransMult& getTransMult() const;
@@ -123,11 +120,11 @@ namespace Opm {
         ParseContext m_parseContext;
         const TableManager m_tables;
         const GridDims m_gridDims;
-        std::shared_ptr<EclipseGrid> m_inputGrid;
-        TransMult m_transMult;
+        EclipseGrid m_inputGrid;
         std::shared_ptr< const Schedule > m_schedule;
         Eclipse3DProperties m_eclipseProperties;
         EclipseConfig m_eclipseConfig;
+        TransMult m_transMult;
         NNC m_inputNnc;
         UnitSystem m_deckUnitSystem;
 
@@ -137,9 +134,6 @@ namespace Opm {
         MessageContainer m_messageContainer;
 
     };
-
-    typedef std::shared_ptr<EclipseState> EclipseStatePtr;
-    typedef std::shared_ptr<const EclipseState> EclipseStateConstPtr;
 }
 
 #endif // OPM_ECLIPSE_STATE_HPP

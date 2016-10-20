@@ -19,6 +19,8 @@
 
 #include <stdexcept>
 
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Fault.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaultFace.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaultCollection.hpp>
@@ -29,20 +31,20 @@
 
 namespace Opm {
 
-    TransMult::TransMult(size_t nx , size_t ny , size_t nz) :
+    TransMult::TransMult(size_t nx , size_t ny , size_t nz,
+                         const Eclipse3DProperties& props,
+                         const std::vector< const DeckKeyword* >& keywords ) :
         m_nx(nx),
         m_ny(ny),
-        m_nz(nz)
-    {
-        m_names[FaceDir::XPlus]  = "MULTX";
-        m_names[FaceDir::YPlus]  = "MULTY";
-        m_names[FaceDir::ZPlus]  = "MULTZ";
-        m_names[FaceDir::XMinus] = "MULTX-";
-        m_names[FaceDir::YMinus] = "MULTY-";
-        m_names[FaceDir::ZMinus] = "MULTZ-";
-    }
-
-
+        m_nz(nz),
+        m_names( { { FaceDir::XPlus,  "MULTX"  },
+                   { FaceDir::YPlus,  "MULTY"  },
+                   { FaceDir::ZPlus,  "MULTZ"  },
+                   { FaceDir::XMinus, "MULTX-" },
+                   { FaceDir::YMinus, "MULTY-" },
+                   { FaceDir::ZMinus, "MULTZ-" }, } ),
+        m_multregtScanner( props, keywords )
+    {}
 
     void TransMult::assertIJK(size_t i , size_t j , size_t k) const {
         if ((i >= m_nx) || (j >= m_ny) || (k >= m_nz))
@@ -79,9 +81,7 @@ namespace Opm {
     }
 
     double TransMult::getRegionMultiplier(size_t globalCellIndex1,  size_t globalCellIndex2, FaceDir::DirEnum faceDir) const {
-        if (m_multregtScanner == nullptr)
-            throw new std::logic_error("MULTREGTScanner has not been initialized.");
-        return m_multregtScanner->getRegionMultiplier(globalCellIndex1, globalCellIndex2, faceDir);
+        return m_multregtScanner.getRegionMultiplier(globalCellIndex1, globalCellIndex2, faceDir);
     }
 
     bool TransMult::hasDirectionProperty(FaceDir::DirEnum faceDir) const {
@@ -115,13 +115,12 @@ namespace Opm {
     void TransMult::applyMULTFLT(const Fault& fault) {
         double transMult = fault.getTransMult();
 
-        for (auto face_iter = fault.begin(); face_iter != fault.end(); ++face_iter) {
-            std::shared_ptr<const FaultFace> face = *face_iter;
-            FaceDir::DirEnum faceDir = face->getDir();
+        for( const auto& face : fault ) {
+            FaceDir::DirEnum faceDir = face.getDir();
             auto& multProperty = getDirectionProperty(faceDir);
 
-            for (auto cell_iter = face->begin(); cell_iter != face->end(); ++cell_iter) {
-                size_t globalIndex = *cell_iter;
+
+            for( auto globalIndex : face ) {
                 multProperty.multiplyValueAtIndex( globalIndex , transMult);
             }
         }
@@ -133,12 +132,5 @@ namespace Opm {
             auto& fault = faults.getFault(faultIndex);
             applyMULTFLT(fault);
         }
-    }
-
-
-
-    void TransMult::createMultregtScanner(const Eclipse3DProperties& e3DProps,
-                                          std::vector< const DeckKeyword* > multregtKeywords) {
-        m_multregtScanner = new MULTREGTScanner(e3DProps, multregtKeywords);
     }
 }

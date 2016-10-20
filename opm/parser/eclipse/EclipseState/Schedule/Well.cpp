@@ -34,24 +34,24 @@ namespace Opm {
 
     Well::Well(const std::string& name_, int headI,
                int headJ, Value<double> refDepth , Phase::PhaseEnum preferredPhase,
-               TimeMapConstPtr timeMap, size_t creationTimeStep,
+               std::shared_ptr< const TimeMap > timeMap, size_t creationTimeStep,
                WellCompletion::CompletionOrderEnum completionOrdering,
                bool allowCrossFlow, bool automaticShutIn)
-        : m_status(new DynamicState<WellCommon::StatusEnum>(timeMap, WellCommon::SHUT)),
-          m_isAvailableForGroupControl(new DynamicState<int>(timeMap, true)),
-          m_guideRate(new DynamicState<double>(timeMap, -1.0)),
-          m_guideRatePhase(new DynamicState<GuideRate::GuideRatePhaseEnum>(timeMap, GuideRate::UNDEFINED)),
-          m_guideRateScalingFactor(new DynamicState<double>(timeMap, 1.0)),
-          m_isProducer(new DynamicState<int>(timeMap, true)) ,
-          m_completions( new DynamicState<CompletionSetConstPtr>( timeMap , CompletionSetConstPtr( new CompletionSet()) )),
-          m_productionProperties( new DynamicState<WellProductionProperties>(timeMap, WellProductionProperties() )),
-          m_injectionProperties( new DynamicState<WellInjectionProperties>(timeMap, WellInjectionProperties() )),
-          m_polymerProperties( new DynamicState<WellPolymerProperties>(timeMap, WellPolymerProperties() )),
-          m_econproductionlimits( new DynamicState<WellEconProductionLimits>(timeMap, WellEconProductionLimits()) ),
-          m_solventFraction( new DynamicState<double>(timeMap, 0.0 )),
-          m_groupName( new DynamicState<std::string>( timeMap , "" )),
-          m_rft( new DynamicState<int>(timeMap,false)),
-          m_plt( new DynamicState<int>(timeMap,false)),
+        : m_status(new DynamicState<WellCommon::StatusEnum>(*timeMap, WellCommon::SHUT)),
+          m_isAvailableForGroupControl(new DynamicState<int>(*timeMap, true)),
+          m_guideRate(new DynamicState<double>(*timeMap, -1.0)),
+          m_guideRatePhase(new DynamicState<GuideRate::GuideRatePhaseEnum>(*timeMap, GuideRate::UNDEFINED)),
+          m_guideRateScalingFactor(new DynamicState<double>(*timeMap, 1.0)),
+          m_isProducer(new DynamicState<int>(*timeMap, true)) ,
+          m_completions( new DynamicState< std::shared_ptr< const CompletionSet > >( *timeMap, std::make_shared< const CompletionSet >() ) ),
+          m_productionProperties( new DynamicState<WellProductionProperties>(*timeMap, WellProductionProperties() )),
+          m_injectionProperties( new DynamicState<WellInjectionProperties>(*timeMap, WellInjectionProperties() )),
+          m_polymerProperties( new DynamicState<WellPolymerProperties>(*timeMap, WellPolymerProperties() )),
+          m_econproductionlimits( new DynamicState<WellEconProductionLimits>(*timeMap, WellEconProductionLimits()) ),
+          m_solventFraction( new DynamicState<double>(*timeMap, 0.0 )),
+          m_groupName( new DynamicState<std::string>( *timeMap , "" )),
+          m_rft( new DynamicState<int>(*timeMap,false)),
+          m_plt( new DynamicState<int>(*timeMap,false)),
           m_timeMap( timeMap ),
           m_headI(headI),
           m_headJ(headJ),
@@ -60,7 +60,7 @@ namespace Opm {
           m_comporder(completionOrdering),
           m_allowCrossFlow(allowCrossFlow),
           m_automaticShutIn(automaticShutIn),
-          m_segmentset(new DynamicState<SegmentSetConstPtr>(timeMap, SegmentSetPtr(new SegmentSet())))
+          m_segmentset(new DynamicState< SegmentSet >(*timeMap, SegmentSet{} ) )
     {
         m_name = name_;
         m_creationTimeStep = creationTimeStep;
@@ -195,7 +195,7 @@ namespace Opm {
     }
 
     bool Well::setStatus(size_t timeStep, WellCommon::StatusEnum status) {
-        if ((WellCommon::StatusEnum::OPEN == status) && getCompletions(timeStep)->allCompletionsShut()) {
+        if ((WellCommon::StatusEnum::OPEN == status) && getCompletions(timeStep).allCompletionsShut()) {
             m_messages.note("When handling keyword for well " + name() + ": Cannot open a well where all completions are shut");
             return false;
         } else
@@ -269,10 +269,10 @@ namespace Opm {
     void Well::setRefDepthFromCompletions() const {
         size_t timeStep = m_creationTimeStep;
         while (true) {
-            auto completions = getCompletions( timeStep );
-            if (completions->size() > 0) {
-                auto firstCompletion = completions->get(0);
-                m_refDepth.setValue( firstCompletion->getCenterDepth() );
+            const auto& completions = getCompletions( timeStep );
+            if (completions.size() > 0) {
+                auto firstCompletion = completions.get(0);
+                m_refDepth.setValue( firstCompletion.getCenterDepth() );
                 break;
             } else {
                 timeStep++;
@@ -287,32 +287,31 @@ namespace Opm {
         return m_preferredPhase;
     }
 
-    CompletionSetConstPtr Well::getCompletions(size_t timeStep) const {
-        return m_completions->get( timeStep );
+    const CompletionSet& Well::getCompletions(size_t timeStep) const {
+        return *m_completions->get( timeStep );
     }
 
-    CompletionSetConstPtr Well::getCompletions() const {
-        return m_completions->back();
+    const CompletionSet& Well::getCompletions() const {
+        return *m_completions->back();
     }
 
-    void Well::addCompletions(size_t time_step , const std::vector<CompletionPtr>& newCompletions) {
-        CompletionSetConstPtr currentCompletionSet = m_completions->get(time_step);
-        CompletionSetPtr newCompletionSet = CompletionSetPtr( currentCompletionSet->shallowCopy() );
+    void Well::addCompletions(size_t time_step, std::vector< Completion > newCompletions ) {
+        auto new_set = this->getCompletions( time_step );
 
-        for (size_t ic = 0; ic < newCompletions.size(); ic++) {
-            newCompletions[ic]->fixDefaultIJ( m_headI , m_headJ );
-            newCompletionSet->add( newCompletions[ic] );
+        for( auto& completion : newCompletions ) {
+            completion.fixDefaultIJ( m_headI , m_headJ );
+            new_set.add( std::move( completion ) );
         }
 
-        addCompletionSet( time_step , newCompletionSet);
+        this->addCompletionSet( time_step, new_set );
     }
 
-    void Well::addCompletionSet(size_t time_step, const CompletionSetConstPtr newCompletionSet){
-        CompletionSetPtr mutable_copy(newCompletionSet->shallowCopy());
-        if (getWellCompletionOrdering() == WellCompletion::TRACK) {
-            mutable_copy->orderCompletions(m_headI, m_headJ);
+    void Well::addCompletionSet(size_t time_step, CompletionSet new_set ){
+        if( getWellCompletionOrdering() == WellCompletion::TRACK) {
+            new_set.orderCompletions(m_headI, m_headJ);
         }
-        m_completions->update(time_step, mutable_copy);
+
+        m_completions->update( time_step, std::make_shared< CompletionSet >( std::move( new_set ) ) );
     }
 
     const std::string Well::getGroupName(size_t time_step) const {
@@ -419,15 +418,15 @@ namespace Opm {
     }
 
 
-    SegmentSetConstPtr Well::getSegmentSet(size_t time_step) const {
+    const SegmentSet& Well::getSegmentSet(size_t time_step) const {
         return m_segmentset->get(time_step);
     }
 
     bool Well::isMultiSegment(size_t time_step) const {
-        return (getSegmentSet(time_step)->numberSegment() > 0);
+        return (getSegmentSet(time_step).numberSegment() > 0);
     }
 
-    void Well::addSegmentSet(size_t time_step, SegmentSetConstPtr new_segmentset_in) {
+    void Well::addSegmentSet(size_t time_step, SegmentSet new_segmentset ) {
         // to see if it is the first time entering WELSEGS input to this well.
         // if the well is not multi-segment well, it will be the first time
         // not sure if a well can switch between mutli-segment well and other
@@ -435,26 +434,22 @@ namespace Opm {
         // Here, we assume not
         const bool first_time = !isMultiSegment(time_step);
 
-        if (first_time) {
-            // overwrite the BHP reference depth with the one from WELSEGS keyword
-            const double ref_depth = new_segmentset_in->depthTopSegment();
-            m_refDepth.setValue(ref_depth);
-            SegmentSetPtr new_segmentset = SegmentSetPtr(new_segmentset_in->shallowCopy());
-            if (new_segmentset->lengthDepthType() == WellSegment::ABS) {
-                new_segmentset->processABS();
-            } else if (new_segmentset->lengthDepthType() == WellSegment::INC) {
-                new_segmentset->processINC(first_time);
-            } else {
-                throw std::logic_error(" unknown length_depth_type in the new_segmentset");
-            }
-            m_segmentset->update(time_step, new_segmentset);
-        } else {
+        if( !first_time ) {
             // checking the consistency of the input WELSEGS information
             throw std::logic_error("re-entering WELSEGS for a well is not supported yet!!.");
         }
+
+        // overwrite the BHP reference depth with the one from WELSEGS keyword
+        const double ref_depth = new_segmentset.depthTopSegment();
+        m_refDepth.setValue(ref_depth);
+
+        if (new_segmentset.lengthDepthType() == WellSegment::ABS) {
+            new_segmentset.processABS();
+        } else if (new_segmentset.lengthDepthType() == WellSegment::INC) {
+            new_segmentset.processINC(first_time);
+        } else {
+            throw std::logic_error(" unknown length_depth_type in the new_segmentset");
+        }
+        m_segmentset->update(time_step, new_segmentset);
     }
-
 }
-
-
-

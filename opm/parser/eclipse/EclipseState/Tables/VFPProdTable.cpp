@@ -201,13 +201,13 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
         //Need to change all of the convertToSI functions to support LAB/PVT-M
 
         if (units_string == "METRIC") {
-            table_unit_type = UnitSystem::UNIT_TYPE_METRIC;
+            table_unit_type = UnitSystem::UnitType::UNIT_TYPE_METRIC;
         }
         else if (units_string == "FIELD") {
-            table_unit_type = UnitSystem::UNIT_TYPE_FIELD;
+            table_unit_type = UnitSystem::UnitType::UNIT_TYPE_FIELD;
         }
         else if (units_string == "LAB") {
-            throw std::invalid_argument("Unsupported UNITS string: 'LAB'");
+            table_unit_type = UnitSystem::UnitType::UNIT_TYPE_LAB;
         }
         else if (units_string == "PVT-M") {
             throw std::invalid_argument("Unsupported UNITS string: 'PVT-M'");
@@ -276,7 +276,7 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
     }
 
     //FIXME: Unit for TEMP=Tubing head temperature is not Pressure, see BODY_DEF
-    const double table_scaling_factor = deck_unit_system.parse("Pressure")->getSIScaling();
+    const double table_scaling_factor = deck_unit_system.parse("Pressure").getSIScaling();
     for (size_t i=6; i<table.size(); ++i) {
         const auto& record = table.getRecord(i);
         //Get indices (subtract 1 to get 0-based index)
@@ -438,10 +438,10 @@ void VFPProdTable::convertFloToSI(const FLO_TYPE& type,
     switch (type) {
         case FLO_OIL:
         case FLO_LIQ:
-            scaling_factor = unit_system.parse("LiquidSurfaceVolume/Time")->getSIScaling();
+            scaling_factor = unit_system.parse("LiquidSurfaceVolume/Time").getSIScaling();
             break;
         case FLO_GAS:
-            scaling_factor = unit_system.parse("GasSurfaceVolume/Time")->getSIScaling();
+            scaling_factor = unit_system.parse("GasSurfaceVolume/Time").getSIScaling();
             break;
         default:
             throw std::logic_error("Invalid FLO type");
@@ -457,7 +457,7 @@ void VFPProdTable::convertFloToSI(const FLO_TYPE& type,
 
 void VFPProdTable::convertTHPToSI(std::vector<double>& values,
                                   const UnitSystem& unit_system) {
-    double scaling_factor = unit_system.parse("Pressure")->getSIScaling();
+    double scaling_factor = unit_system.parse("Pressure").getSIScaling();
     scaleValues(values, scaling_factor);
 }
 
@@ -474,10 +474,10 @@ void VFPProdTable::convertWFRToSI(const WFR_TYPE& type,
     switch (type) {
         case WFR_WOR:
         case WFR_WCT:
-            scaling_factor = unit_system.parse("LiquidSurfaceVolume/LiquidSurfaceVolume")->getSIScaling();
+            scaling_factor = unit_system.parse("LiquidSurfaceVolume/LiquidSurfaceVolume").getSIScaling();
             break;
         case WFR_WGR:
-            scaling_factor = unit_system.parse("LiquidSurfaceVolume/GasSurfaceVolume")->getSIScaling();
+            scaling_factor = unit_system.parse("LiquidSurfaceVolume/GasSurfaceVolume").getSIScaling();
             break;
         default:
             throw std::logic_error("Invalid FLO type");
@@ -498,10 +498,10 @@ void VFPProdTable::convertGFRToSI(const GFR_TYPE& type,
     switch (type) {
         case GFR_GOR:
         case GFR_GLR:
-            scaling_factor = unit_system.parse("GasSurfaceVolume/LiquidSurfaceVolume")->getSIScaling();
+            scaling_factor = unit_system.parse("GasSurfaceVolume/LiquidSurfaceVolume").getSIScaling();
             break;
         case GFR_OGR:
-            scaling_factor = unit_system.parse("LiquidSurfaceVolume/GasSurfaceVolume")->getSIScaling();
+            scaling_factor = unit_system.parse("LiquidSurfaceVolume/GasSurfaceVolume").getSIScaling();
             break;
         default:
             throw std::logic_error("Invalid FLO type");
@@ -521,11 +521,11 @@ void VFPProdTable::convertALQToSI(const ALQ_TYPE& type,
     double scaling_factor = 1.0;
     switch (type) {
         case ALQ_GRAT:
-            scaling_factor = unit_system.parse("GasSurfaceVolume/Time")->getSIScaling();
+            scaling_factor = unit_system.parse("GasSurfaceVolume/Time").getSIScaling();
             break;
         case ALQ_IGLR:
         case ALQ_TGLR:
-            scaling_factor = unit_system.parse("GasSurfaceVolume/LiquidSurfaceVolume")->getSIScaling();
+            scaling_factor = unit_system.parse("GasSurfaceVolume/LiquidSurfaceVolume").getSIScaling();
             break;
         case ALQ_PUMP:
         case ALQ_COMP:
