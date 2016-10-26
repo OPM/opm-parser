@@ -6,7 +6,7 @@ Build-Depends: build-essential, debhelper (>= 9), pkg-config, libopm-common-dev,
                libert.ecl-dev, git, libtool, doxygen, libboost-date-time-dev,
                texlive-latex-extra, texlive-latex-recommended, ghostscript,
                libboost-system-dev, libboost-test-dev, libboost-regex-dev,
-               python-ert.ecl, python-cwrap
+               python-ert.ecl, python-cwrap, python-dev
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://opm-project.org
