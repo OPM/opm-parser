@@ -2,7 +2,7 @@
 # spec file for package opm-parser
 #
 
-%define tag 0test0
+%define tag rc1
 
 Name:           opm-parser
 Version:        2016.10
