@@ -39,7 +39,7 @@ namespace Opm {
         SimpleTable(TableSchema, const DeckItem& deckItem);
         explicit SimpleTable( TableSchema );
         void addColumns();
-        void init(const DeckItem& deckItem);
+        void init(const DeckItem& deckItem, const bool jfunc = false);
         size_t numColumns() const;
         size_t numRows() const;
         void addRow( const std::vector<double>& row);

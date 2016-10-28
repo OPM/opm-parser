@@ -70,7 +70,7 @@ namespace Opm {
         return col[row];
     }
 
-    void SimpleTable::init( const DeckItem& deckItem ) {
+    void SimpleTable::init( const DeckItem& deckItem, const bool jfunc ) {
         this->addColumns();
 
         if ( (deckItem.size() % numColumns()) != 0)
@@ -84,6 +84,9 @@ namespace Opm {
                 size_t deckItemIdx = rowIdx*numColumns() + colIdx;
                 if (deckItem.defaultApplied(deckItemIdx))
                     column.addDefault( );
+                else if (jfunc) {
+                    column.addValue( deckItem.getData<double>()[deckItemIdx] );
+                }
                 else
                     column.addValue( deckItem.getSIDouble(deckItemIdx) );
             }

@@ -99,14 +99,14 @@ PvtoTable::PvtoTable( const DeckKeyword& keyword, size_t tableIdx) :
         PvtxTable::init(keyword , tableIdx);
     }
 
-SwofTable::SwofTable( const DeckItem& item ) {
+SwofTable::SwofTable( const DeckItem& item , const bool jfunc) {
 
     m_schema.addColumn( ColumnSchema( "SW"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE) );
     m_schema.addColumn( ColumnSchema( "KRW"  , Table::RANDOM              , Table::DEFAULT_LINEAR) );
     m_schema.addColumn( ColumnSchema( "KROW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
     m_schema.addColumn( ColumnSchema( "PCOW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
 
-    SimpleTable::init( item );
+    SimpleTable::init( item,  jfunc );
 }
 
 const TableColumn& SwofTable::getSwColumn() const {
@@ -151,13 +151,13 @@ const TableColumn& SgwfnTable::getPcgwColumn() const {
     return SimpleTable::getColumn(3); 
 }
 
-SgofTable::SgofTable( const DeckItem& item ) {
+SgofTable::SgofTable( const DeckItem& item , const bool jfunc) {
     m_schema.addColumn( ColumnSchema("SG"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE));
     m_schema.addColumn( ColumnSchema("KRG"  , Table::RANDOM              , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("KROG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init( item );
+    SimpleTable::init( item, jfunc );
 }
 
 const TableColumn& SgofTable::getSgColumn() const {
@@ -177,13 +177,13 @@ const TableColumn& SgofTable::getPcogColumn() const {
 
 }
 
-SlgofTable::SlgofTable( const DeckItem& item ) {
+SlgofTable::SlgofTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SL"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
     m_schema.addColumn( ColumnSchema("KRG"  , Table::DECREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("KROG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init( item );
+    SimpleTable::init( item ,  jfunc);
 
     if (getSlColumn().back() != 1.0) {
         throw std::invalid_argument("The last saturation of the SLGOF keyword must be 1!");
@@ -285,12 +285,12 @@ const TableColumn& PvdoTable::getViscosityColumn() const {
     return SimpleTable::getColumn(2);
 }
 
-SwfnTable::SwfnTable( const DeckItem& item ) {
+SwfnTable::SwfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SW"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
     m_schema.addColumn( ColumnSchema("KRW"  , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOW" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init(item);
+    SimpleTable::init(item, jfunc);
 }
 
 const TableColumn& SwfnTable::getSwColumn() const {
@@ -305,12 +305,12 @@ const TableColumn& SwfnTable::getPcowColumn() const {
     return SimpleTable::getColumn(2);
 }
 
-SgfnTable::SgfnTable( const DeckItem& item ) {
+SgfnTable::SgfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SG"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ) );
     m_schema.addColumn( ColumnSchema("KRG" , Table::INCREASING , Table::DEFAULT_LINEAR));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::INCREASING , Table::DEFAULT_LINEAR));
 
-    SimpleTable::init(item);
+    SimpleTable::init(item, jfunc);
 }
 
 

@@ -28,7 +28,7 @@ namespace Opm {
     class SlgofTable : public SimpleTable {
 
     public:
-        SlgofTable( const DeckItem& item );
+        SlgofTable( const DeckItem& item, const bool jfunc );
         const TableColumn& getSlColumn() const;
         const TableColumn& getKrgColumn() const;
         const TableColumn& getKrogColumn() const;

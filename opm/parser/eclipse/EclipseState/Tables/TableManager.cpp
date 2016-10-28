@@ -77,7 +77,8 @@ namespace Opm {
         :
         hasImptvd (deck.hasKeyword("IMPTVD")),
         hasEnptvd (deck.hasKeyword("ENPTVD")),
-        hasEqlnum (deck.hasKeyword("EQLNUM"))
+        hasEqlnum (deck.hasKeyword("EQLNUM")),
+        hasJFunc  (deck.hasKeyword("JFUNC"))
     {
         initPhases( deck );
         initDims( deck );
@@ -261,17 +262,20 @@ namespace Opm {
             addTables( "ROCKTAB", numRocktabTables);
         }
 
-        initSimpleTableContainer<SwofTable>(deck, "SWOF" , m_tabdims->getNumSatTables());
         initSimpleTableContainer<SgwfnTable>(deck, "SGWFN", m_tabdims->getNumSatTables());
-        initSimpleTableContainer<SgofTable>(deck, "SGOF" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<SlgofTable>(deck, "SLGOF" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<Sof2Table>(deck, "SOF2" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<Sof3Table>(deck, "SOF3" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<SwfnTable>(deck, "SWFN" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<SgfnTable>(deck, "SGFN" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<SsfnTable>(deck, "SSFN" , m_tabdims->getNumSatTables());
-        initSimpleTableContainer<MsfnTable>(deck, "MSFN" , m_tabdims->getNumSatTables());
+        initSimpleTableContainer<Sof2Table>(deck,  "SOF2",  m_tabdims->getNumSatTables());
+        initSimpleTableContainer<Sof3Table>(deck,  "SOF3",  m_tabdims->getNumSatTables());
 
+        { // JFUNC aware tables
+            initSimpleTableContainerWithJFunc<SwofTable>(deck, "SWOF", m_tabdims->getNumSatTables());
+            initSimpleTableContainerWithJFunc<SgofTable>(deck, "SGOF", m_tabdims->getNumSatTables());
+            initSimpleTableContainerWithJFunc<SwfnTable>(deck, "SWFN", m_tabdims->getNumSatTables());
+            initSimpleTableContainerWithJFunc<SgfnTable>(deck, "SGFN", m_tabdims->getNumSatTables());
+            initSimpleTableContainerWithJFunc<SlgofTable>(deck, "SLGOF", m_tabdims->getNumSatTables());
+        }
+
+        initSimpleTableContainer<SsfnTable>(deck, "SSFN", m_tabdims->getNumSatTables());
+        initSimpleTableContainer<MsfnTable>(deck, "MSFN", m_tabdims->getNumSatTables());
 
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
@@ -706,6 +710,9 @@ namespace Opm {
         return hasEqlnum;
     }
 
+    bool TableManager::useJFunc() const {
+        return hasJFunc;
+    }
 
     const MessageContainer& TableManager::getMessageContainer() const {
         return m_messages;
