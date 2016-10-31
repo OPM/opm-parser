@@ -232,9 +232,9 @@ namespace Opm {
             }
             addTables( "SORWMIS", numMiscibleTables);
             addTables( "SGCWMIS", numMiscibleTables);
-            addTables( "MISC", numMiscibleTables);
-            addTables( "PMISC", numMiscibleTables);
-            addTables( "TLPMIXPA", numMiscibleTables);
+            addTables( "MISC",    numMiscibleTables);
+            addTables( "PMISC",   numMiscibleTables);
+            addTables( "TLPMIXPA",numMiscibleTables);
         }
 
         {
