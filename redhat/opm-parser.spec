@@ -2,7 +2,7 @@
 # spec file for package opm-parser
 #
 
-%define tag rc1
+%define tag final
 
 Name:           opm-parser
 Version:        2016.10
@@ -80,7 +80,7 @@ The Open Porous Media (OPM) initiative provides a set of open-source tools cente
 %package -n python-opm-parser
 Summary:        ERT - Ensemble based Reservoir Tool - Python bindings
 Group:          Python/Libraries
-Requires:       libomp-cparser1 python-cwrap
+Requires:       libopm-cparser1 python-cwrap
 
 %description -n python-opm-parser
 OPM parser python bindings.
