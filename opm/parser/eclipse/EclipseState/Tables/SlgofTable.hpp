@@ -38,6 +38,8 @@ namespace Opm {
         // is inconsistent, but it is the one used in the Eclipse
         // manual...)
         const TableColumn& getPcogColumn() const;
+
+        const TableColumn& getJFuncColumn() const;
     };
 }
 

@@ -26,15 +26,17 @@
 namespace Opm {
 
     SimpleTable::SimpleTable( TableSchema schema, const DeckItem& deckItem) :
-        m_schema( std::move( schema ) ) {
-
+        m_schema( std::move( schema ) ),
+        m_jfunc (false)
+    {
         init( deckItem );
     }
 
 
     SimpleTable::SimpleTable( TableSchema schema ) :
-        m_schema( std::move( schema ) ) {
-
+        m_schema( std::move( schema ) ),
+        m_jfunc (false)
+    {
         addColumns();
     }
 
@@ -70,7 +72,7 @@ namespace Opm {
         return col[row];
     }
 
-    void SimpleTable::init( const DeckItem& deckItem, const bool jfunc ) {
+    void SimpleTable::init( const DeckItem& deckItem ) {
         this->addColumns();
 
         if ( (deckItem.size() % numColumns()) != 0)
@@ -84,7 +86,7 @@ namespace Opm {
                 size_t deckItemIdx = rowIdx*numColumns() + colIdx;
                 if (deckItem.defaultApplied(deckItemIdx))
                     column.addDefault( );
-                else if (jfunc) {
+                else if (m_jfunc) {
                     column.addValue( deckItem.getData<double>()[deckItemIdx] );
                 }
                 else
@@ -134,4 +136,12 @@ size_t SimpleTable::numRows() const {
         return valueColumn.eval( index );
     }
 
+    void SimpleTable::assertJFuncPressure(const bool jf) const {
+        if (jf == m_jfunc)
+            return;
+        if (m_jfunc)
+            throw std::invalid_argument("Cannot get pressure column with JFUNC in deck");
+        else
+            throw std::invalid_argument("Cannot get JFUNC column when JFUNC not in deck");
+    }
 }

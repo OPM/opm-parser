@@ -33,6 +33,8 @@ namespace Opm {
         const TableColumn& getSgColumn() const;
         const TableColumn& getKrgColumn() const;
         const TableColumn& getPcogColumn() const;
+
+        const TableColumn& getJFuncColumn() const;
     };
 }
 

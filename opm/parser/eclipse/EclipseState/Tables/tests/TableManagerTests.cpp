@@ -33,6 +33,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/PlyrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgwfnTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PlyadsTable.hpp>
@@ -119,6 +120,11 @@ Opm::Deck createSingleRecordDeckWithJFunc() {
     Opm::Parser parser;
     return parser.parseString(deckData, Opm::ParseContext());
 }
+
+/// used in BOOST_CHECK_CLOSE
+static float epsilon() {
+    return 0.00001;
+}
 }
 
 BOOST_AUTO_TEST_CASE( CreateTables ) {
@@ -151,23 +157,26 @@ BOOST_AUTO_TEST_CASE( CreateTablesWithVd ) {
             const auto col = tab.getColumn(c_idx);
             for (size_t i = 0; i < col.size(); i++) {
                 int idx = c_idx + i*3;
-                BOOST_CHECK_CLOSE( col[i], swfnData[idx], 0.00001 );
+                BOOST_CHECK_CLOSE( col[i], swfnData[idx], epsilon() );
             }
         }
     }
 
+    const auto& tt = swfnTab.getTable<Opm::SwfnTable>(0);
+    BOOST_CHECK_THROW(tt.getJFuncColumn(), std::invalid_argument);
+    BOOST_CHECK_NO_THROW(tt.getPcowColumn());
     BOOST_CHECK( ! tables.useJFunc() );
 }
 
 BOOST_AUTO_TEST_CASE( CreateTablesWithJFunc ) {
     auto deck = createSingleRecordDeckWithJFunc();
     Opm::TableManager tables(deck);
-    auto tabdims = tables.getTabdims();
-    BOOST_CHECK_EQUAL(tabdims->getNumSatTables(), 2);
+    const Opm::Tabdims& tabdims = *tables.getTabdims();
+    BOOST_CHECK_EQUAL(tabdims.getNumSatTables(), 2);
     BOOST_CHECK(tables.useImptvd());
     BOOST_CHECK(tables.useEnptvd());
 
-    const auto swfnTab = tables.getSwfnTables();
+    const auto& swfnTab = tables.getSwfnTables();
 
     const float swfnDataVerbatim[] =
         {0.22, 0.00, 7.00, 0.30, 0.00, 4.00, 0.50, 0.24, 2.50,
@@ -175,17 +184,25 @@ BOOST_AUTO_TEST_CASE( CreateTablesWithJFunc ) {
 
 
     for (size_t tab = 0; tab < swfnTab.size(); tab++) {
-        const auto t = swfnTab.getTable(tab);
+        const auto& t = swfnTab.getTable(tab);
         for (size_t c_idx = 0; c_idx < t.numColumns(); c_idx++) {
-            const auto col = t.getColumn(c_idx);
+            const auto& col = t.getColumn(c_idx);
             for (size_t i = 0; i < col.size(); i++) {
                 int idx = c_idx + i*3;
-                BOOST_CHECK_CLOSE( col[i], swfnDataVerbatim[idx], 0.00001 );
+                BOOST_CHECK_CLOSE( col[i], swfnDataVerbatim[idx], epsilon());
             }
         }
     }
 
-    BOOST_CHECK( tables.useJFunc() );
+    const auto& tt = swfnTab.getTable<Opm::SwfnTable>(0);
+    BOOST_CHECK_THROW(tt.getPcowColumn(), std::invalid_argument);
+
+    const auto& col = tt.getJFuncColumn();
+    for (size_t i = 0; i < col.size(); i++) {
+        BOOST_CHECK_CLOSE(col[i], swfnDataVerbatim[i*3 + 2], epsilon());
+    }
+
+    BOOST_CHECK(tables.useJFunc());
 }
 /*****************************************************************/
 

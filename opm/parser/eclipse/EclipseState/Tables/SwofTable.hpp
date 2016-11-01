@@ -35,6 +35,9 @@ namespace Opm {
         // this column is p_o - p_w (non-wetting phase pressure minus
         // wetting phase pressure for a given water saturation)
         const TableColumn& getPcowColumn() const;
+
+        /// use this function if JFUNC is set in the deck
+        const TableColumn& getJFuncColumn() const;
     };
 }
 

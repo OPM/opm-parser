@@ -106,7 +106,8 @@ SwofTable::SwofTable( const DeckItem& item , const bool jfunc) {
     m_schema.addColumn( ColumnSchema( "KROW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
     m_schema.addColumn( ColumnSchema( "PCOW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
 
-    SimpleTable::init( item,  jfunc );
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 const TableColumn& SwofTable::getSwColumn() const {
@@ -122,6 +123,12 @@ const TableColumn& SwofTable::getKrowColumn() const {
 }
 
 const TableColumn& SwofTable::getPcowColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(3);
+}
+
+const TableColumn& SwofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(3);
 }
 
@@ -157,7 +164,8 @@ SgofTable::SgofTable( const DeckItem& item , const bool jfunc) {
     m_schema.addColumn( ColumnSchema("KROG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init( item, jfunc );
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 const TableColumn& SgofTable::getSgColumn() const {
@@ -173,8 +181,13 @@ const TableColumn& SgofTable::getKrogColumn() const {
 }
 
 const TableColumn& SgofTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
     return SimpleTable::getColumn(3);
+}
 
+const TableColumn& SgofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
+    return SimpleTable::getColumn(3);
 }
 
 SlgofTable::SlgofTable( const DeckItem& item, const bool jfunc ) {
@@ -183,7 +196,8 @@ SlgofTable::SlgofTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("KROG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init( item ,  jfunc);
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 
     if (getSlColumn().back() != 1.0) {
         throw std::invalid_argument("The last saturation of the SLGOF keyword must be 1!");
@@ -203,6 +217,12 @@ const TableColumn& SlgofTable::getKrogColumn() const {
 }
 
 const TableColumn& SlgofTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(3);
+}
+
+const TableColumn& SlgofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(3);
 }
 
@@ -290,7 +310,8 @@ SwfnTable::SwfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("KRW"  , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOW" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init(item, jfunc);
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 const TableColumn& SwfnTable::getSwColumn() const {
@@ -302,15 +323,23 @@ const TableColumn& SwfnTable::getKrwColumn() const {
 }
 
 const TableColumn& SwfnTable::getPcowColumn() const {
+    SimpleTable::assertJFuncPressure(false);
     return SimpleTable::getColumn(2);
 }
+
+const TableColumn& SwfnTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
+    return SimpleTable::getColumn(2);
+}
+
 
 SgfnTable::SgfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SG"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ) );
     m_schema.addColumn( ColumnSchema("KRG" , Table::INCREASING , Table::DEFAULT_LINEAR));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::INCREASING , Table::DEFAULT_LINEAR));
 
-    SimpleTable::init(item, jfunc);
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 
@@ -323,6 +352,12 @@ const TableColumn& SgfnTable::getKrgColumn() const {
 }
 
 const TableColumn& SgfnTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(2);
+}
+
+const TableColumn& SgfnTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(2);
 }
 
