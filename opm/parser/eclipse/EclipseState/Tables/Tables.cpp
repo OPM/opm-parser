@@ -99,13 +99,14 @@ PvtoTable::PvtoTable( const DeckKeyword& keyword, size_t tableIdx) :
         PvtxTable::init(keyword , tableIdx);
     }
 
-SwofTable::SwofTable( const DeckItem& item ) {
+SwofTable::SwofTable( const DeckItem& item , const bool jfunc) {
 
     m_schema.addColumn( ColumnSchema( "SW"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE) );
     m_schema.addColumn( ColumnSchema( "KRW"  , Table::RANDOM              , Table::DEFAULT_LINEAR) );
     m_schema.addColumn( ColumnSchema( "KROW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
     m_schema.addColumn( ColumnSchema( "PCOW" , Table::RANDOM              , Table::DEFAULT_LINEAR) );
 
+    m_jfunc = jfunc;
     SimpleTable::init( item );
 }
 
@@ -122,6 +123,12 @@ const TableColumn& SwofTable::getKrowColumn() const {
 }
 
 const TableColumn& SwofTable::getPcowColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(3);
+}
+
+const TableColumn& SwofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(3);
 }
 
@@ -151,12 +158,13 @@ const TableColumn& SgwfnTable::getPcgwColumn() const {
     return SimpleTable::getColumn(3); 
 }
 
-SgofTable::SgofTable( const DeckItem& item ) {
+SgofTable::SgofTable( const DeckItem& item , const bool jfunc) {
     m_schema.addColumn( ColumnSchema("SG"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE));
     m_schema.addColumn( ColumnSchema("KRG"  , Table::RANDOM              , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("KROG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::RANDOM              , Table::DEFAULT_LINEAR ));
 
+    m_jfunc = jfunc;
     SimpleTable::init( item );
 }
 
@@ -173,16 +181,22 @@ const TableColumn& SgofTable::getKrogColumn() const {
 }
 
 const TableColumn& SgofTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
     return SimpleTable::getColumn(3);
-
 }
 
-SlgofTable::SlgofTable( const DeckItem& item ) {
+const TableColumn& SgofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
+    return SimpleTable::getColumn(3);
+}
+
+SlgofTable::SlgofTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SL"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
     m_schema.addColumn( ColumnSchema("KRG"  , Table::DECREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("KROG" , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
+    m_jfunc = jfunc;
     SimpleTable::init( item );
 
     if (getSlColumn().back() != 1.0) {
@@ -203,6 +217,12 @@ const TableColumn& SlgofTable::getKrogColumn() const {
 }
 
 const TableColumn& SlgofTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(3);
+}
+
+const TableColumn& SlgofTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(3);
 }
 
@@ -285,12 +305,13 @@ const TableColumn& PvdoTable::getViscosityColumn() const {
     return SimpleTable::getColumn(2);
 }
 
-SwfnTable::SwfnTable( const DeckItem& item ) {
+SwfnTable::SwfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SW"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
     m_schema.addColumn( ColumnSchema("KRW"  , Table::INCREASING , Table::DEFAULT_LINEAR ));
     m_schema.addColumn( ColumnSchema("PCOW" , Table::DECREASING , Table::DEFAULT_LINEAR ));
 
-    SimpleTable::init(item);
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 const TableColumn& SwfnTable::getSwColumn() const {
@@ -302,15 +323,23 @@ const TableColumn& SwfnTable::getKrwColumn() const {
 }
 
 const TableColumn& SwfnTable::getPcowColumn() const {
+    SimpleTable::assertJFuncPressure(false);
     return SimpleTable::getColumn(2);
 }
 
-SgfnTable::SgfnTable( const DeckItem& item ) {
+const TableColumn& SwfnTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
+    return SimpleTable::getColumn(2);
+}
+
+
+SgfnTable::SgfnTable( const DeckItem& item, const bool jfunc ) {
     m_schema.addColumn( ColumnSchema("SG"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ) );
     m_schema.addColumn( ColumnSchema("KRG" , Table::INCREASING , Table::DEFAULT_LINEAR));
     m_schema.addColumn( ColumnSchema("PCOG" , Table::INCREASING , Table::DEFAULT_LINEAR));
 
-    SimpleTable::init(item);
+    m_jfunc = jfunc;
+    SimpleTable::init( item );
 }
 
 
@@ -323,6 +352,12 @@ const TableColumn& SgfnTable::getKrgColumn() const {
 }
 
 const TableColumn& SgfnTable::getPcogColumn() const {
+    SimpleTable::assertJFuncPressure(false);
+    return SimpleTable::getColumn(2);
+}
+
+const TableColumn& SgfnTable::getJFuncColumn() const {
+    SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(2);
 }
 

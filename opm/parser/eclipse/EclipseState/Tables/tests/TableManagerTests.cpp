@@ -33,6 +33,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/PlyrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgwfnTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SgofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PlyadsTable.hpp>
@@ -90,6 +91,40 @@ Opm::Deck createSingleRecordDeckWithVd() {
     return parser.parseString(deckData, Opm::ParseContext());
 }
 
+Opm::Deck createSingleRecordDeckWithJFunc() {
+    const char *deckData =
+        "RUNSPEC\n"
+        "ENDSCALE\n"
+        "2* 1 2 /\n"
+        "PROPS\n"
+        "JFUNC\n"
+        "  WATER 22.0 /\n"
+        "TABDIMS\n"
+        " 2 /\n"
+        "\n"
+        "SWFN\n"
+        "0.22 .0   7.0 \n"
+        "0.3  .0   4.0 \n"
+        "0.5  .24  2.5 \n"
+        "0.8  .65  1.0 \n"
+        "0.9  .83  .5  \n"
+        "1.0  1.00 .0 /\n"
+        "/\n"
+        "IMPTVD\n"
+        "3000.0 6*0.1 0.31 1*0.1\n"
+        "9000.0 6*0.1 0.32 1*0.1/\n"
+        "ENPTVD\n"
+        "3000.0 0.20 0.20 1.0 0.0 0.04 1.0 0.18 0.22\n"
+        "9000.0 0.22 0.22 1.0 0.0 0.04 1.0 0.18 0.22 /";
+
+    Opm::Parser parser;
+    return parser.parseString(deckData, Opm::ParseContext());
+}
+
+/// used in BOOST_CHECK_CLOSE
+static float epsilon() {
+    return 0.00001;
+}
 }
 
 BOOST_AUTO_TEST_CASE( CreateTables ) {
@@ -105,12 +140,70 @@ BOOST_AUTO_TEST_CASE( CreateTablesWithVd ) {
     auto deck = createSingleRecordDeckWithVd();
     Opm::TableManager tables(deck);
     auto tabdims = tables.getTabdims();
-    BOOST_CHECK_EQUAL( tabdims->getNumSatTables() , 2 );
-    BOOST_CHECK( tables.useImptvd() );
-    BOOST_CHECK( tables.useEnptvd() );
+    BOOST_CHECK_EQUAL(tabdims->getNumSatTables(), 2);
+    BOOST_CHECK(tables.useImptvd());
+    BOOST_CHECK(tables.useEnptvd());
+
+    const auto swfnTab = tables.getSwfnTables();
+
+    const float swfnData[] =
+        {0.22, 0.00, 700000, 0.3, 0.00, 400000, 0.5, 0.24, 250000,
+         0.80, 0.65, 100000, 0.9, 0.83,  50000, 1.0, 1.00,      0};
+
+
+    for (size_t t_idx = 0; t_idx < swfnTab.size(); t_idx++) {
+        const auto tab = swfnTab.getTable(t_idx);
+        for (size_t c_idx = 0; c_idx < tab.numColumns(); c_idx++) {
+            const auto col = tab.getColumn(c_idx);
+            for (size_t i = 0; i < col.size(); i++) {
+                int idx = c_idx + i*3;
+                BOOST_CHECK_CLOSE( col[i], swfnData[idx], epsilon() );
+            }
+        }
+    }
+
+    const auto& tt = swfnTab.getTable<Opm::SwfnTable>(0);
+    BOOST_CHECK_THROW(tt.getJFuncColumn(), std::invalid_argument);
+    BOOST_CHECK_NO_THROW(tt.getPcowColumn());
+    BOOST_CHECK( ! tables.useJFunc() );
 }
 
+BOOST_AUTO_TEST_CASE( CreateTablesWithJFunc ) {
+    auto deck = createSingleRecordDeckWithJFunc();
+    Opm::TableManager tables(deck);
+    const Opm::Tabdims& tabdims = *tables.getTabdims();
+    BOOST_CHECK_EQUAL(tabdims.getNumSatTables(), 2);
+    BOOST_CHECK(tables.useImptvd());
+    BOOST_CHECK(tables.useEnptvd());
 
+    const auto& swfnTab = tables.getSwfnTables();
+
+    const float swfnDataVerbatim[] =
+        {0.22, 0.00, 7.00, 0.30, 0.00, 4.00, 0.50, 0.24, 2.50,
+         0.80, 0.65, 1.00, 0.90, 0.83, 0.50, 1.00, 1.00, 0.00};
+
+
+    for (size_t tab = 0; tab < swfnTab.size(); tab++) {
+        const auto& t = swfnTab.getTable(tab);
+        for (size_t c_idx = 0; c_idx < t.numColumns(); c_idx++) {
+            const auto& col = t.getColumn(c_idx);
+            for (size_t i = 0; i < col.size(); i++) {
+                int idx = c_idx + i*3;
+                BOOST_CHECK_CLOSE( col[i], swfnDataVerbatim[idx], epsilon());
+            }
+        }
+    }
+
+    const auto& tt = swfnTab.getTable<Opm::SwfnTable>(0);
+    BOOST_CHECK_THROW(tt.getPcowColumn(), std::invalid_argument);
+
+    const auto& col = tt.getJFuncColumn();
+    for (size_t i = 0; i < col.size(); i++) {
+        BOOST_CHECK_CLOSE(col[i], swfnDataVerbatim[i*3 + 2], epsilon());
+    }
+
+    BOOST_CHECK(tables.useJFunc());
+}
 /*****************************************************************/
 
 
@@ -130,8 +223,8 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
     Opm::Parser parser;
     auto deck = parser.parseString(deckData, Opm::ParseContext());
 
-    Opm::SwofTable swof1Table(deck.getKeyword("SWOF").getRecord(0).getItem(0));
-    Opm::SwofTable swof2Table(deck.getKeyword("SWOF").getRecord(1).getItem(0));
+    Opm::SwofTable swof1Table(deck.getKeyword("SWOF").getRecord(0).getItem(0), deck.hasKeyword("JFUNC"));
+    Opm::SwofTable swof2Table(deck.getKeyword("SWOF").getRecord(1).getItem(0), deck.hasKeyword("JFUNC"));
 
     BOOST_CHECK_EQUAL(swof1Table.numRows(), 2);
     BOOST_CHECK_EQUAL(swof2Table.numRows(), 3);
@@ -216,8 +309,8 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
     Opm::Parser parser;
     auto deck = parser.parseString(deckData, Opm::ParseContext());
 
-    Opm::SgofTable sgof1Table(deck.getKeyword("SGOF").getRecord(0).getItem(0));
-    Opm::SgofTable sgof2Table(deck.getKeyword("SGOF").getRecord(1).getItem(0));
+    Opm::SgofTable sgof1Table(deck.getKeyword("SGOF").getRecord(0).getItem(0), deck.hasKeyword("JFUNC"));
+    Opm::SgofTable sgof2Table(deck.getKeyword("SGOF").getRecord(1).getItem(0), deck.hasKeyword("JFUNC"));
 
     BOOST_CHECK_EQUAL(sgof1Table.numRows(), 2);
     BOOST_CHECK_EQUAL(sgof2Table.numRows(), 3);

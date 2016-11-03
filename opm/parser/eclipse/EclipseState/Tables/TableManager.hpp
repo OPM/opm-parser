@@ -113,6 +113,9 @@ namespace Opm {
         /// deck has keyword "EQLNUM" --- Equilibriation region numbers
         bool useEqlnum() const;
 
+        /// deck has keyword "JFUNC" --- Use Leverett's J Function for capillary pressure
+        bool useJFunc() const;
+
         const MessageContainer& getMessageContainer() const;
         MessageContainer& getMessageContainer();
 
@@ -138,6 +141,39 @@ namespace Opm {
         void initPlymaxTables(const Deck& deck);
         void initPlyrockTables(const Deck& deck);
         void initPlyshlogTables(const Deck& deck);
+
+
+
+
+        /**
+         * JFUNC
+         */
+        template <class TableType>
+        void initSimpleTableContainerWithJFunc(const Deck& deck,
+                                      const std::string& keywordName,
+                                      const std::string& tableName,
+                                      size_t numTables) {
+            if (!deck.hasKeyword(keywordName))
+                return; // the table is not featured by the deck...
+
+            auto& container = forceGetTables(tableName , numTables);
+
+            if (deck.count(keywordName) > 1) {
+                complainAboutAmbiguousKeyword(deck, keywordName);
+                return;
+            }
+
+            const auto& tableKeyword = deck.getKeyword(keywordName);
+            for (size_t tableIdx = 0; tableIdx < tableKeyword.size(); ++tableIdx) {
+                const auto& dataItem = tableKeyword.getRecord( tableIdx ).getItem( 0 );
+                if (dataItem.size() > 0) {
+                    std::shared_ptr<TableType> table = std::make_shared<TableType>( dataItem, useJFunc() );
+                    container.addTable( tableIdx , table );
+                }
+            }
+        }
+
+
 
         template <class TableType>
         void initSimpleTableContainer(const Deck& deck,
@@ -170,6 +206,15 @@ namespace Opm {
                                       size_t numTables) {
             initSimpleTableContainer<TableType>(deck , keywordName , keywordName , numTables);
         }
+
+
+        template <class TableType>
+        void initSimpleTableContainerWithJFunc(const Deck& deck,
+                                      const std::string& keywordName,
+                                      size_t numTables) {
+            initSimpleTableContainerWithJFunc<TableType>(deck , keywordName , keywordName , numTables);
+        }
+
 
 
         template <class TableType>
@@ -237,6 +282,7 @@ namespace Opm {
         const bool hasImptvd;// if deck has keyword IMPTVD
         const bool hasEnptvd;// if deck has keyword ENPTVD
         const bool hasEqlnum;// if deck has keyword EQLNUM
+        const bool hasJFunc; // if deck has keyword JFUNC
 
         MessageContainer m_messages;
     };
