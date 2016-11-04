@@ -5,8 +5,8 @@
 
 Module: opm-parser
 Description: Open Porous Media Initiative File Parser Library
-Version: 2016.10-pre
-Label: 2016.10-pre
+Version: 2017.04-pre
+Label: 2017.04-pre
 Maintainer: joaho@statoil.com
 MaintainerName: Joakim Hove
 Url: http://opm-project.org
