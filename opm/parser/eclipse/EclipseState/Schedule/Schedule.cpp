@@ -361,7 +361,7 @@ namespace Opm {
             const auto* currentWell = getWell(wellName);
             checkWELSPECSConsistency( *currentWell, keyword, recordNr);
 
-            addWellToGroup( this->m_groups.at( groupName ), *this->m_wells.get( wellName ), currentStep);
+            addWellToGroup( this->m_groups.at( groupName ), this->m_wells.get( wellName ), currentStep);
             if (handleGroupFromWELSPECS(groupName, newTree))
                 needNewTree = true;
 
@@ -716,7 +716,7 @@ namespace Opm {
 
             WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
 
-            auto& well = *this->m_wells.get( wellName );
+            auto& well = this->m_wells.get( wellName );
             updateWellStatus( well, currentStep, status );
             WellInjectionProperties properties(well.getInjectionPropertiesCopy(currentStep));
 
@@ -1200,7 +1200,7 @@ namespace Opm {
         auto completions = Completion::fromCOMPDAT( grid, keyword, wells );
 
         for( const auto pair : completions ) {
-            auto& well = *this->m_wells.get( pair.first );
+            auto& well = this->m_wells.get( pair.first );
             well.addCompletions( currentStep, pair.second );
             if (well.getCompletions( currentStep ).allCompletionsShut()) {
                 std::string msg =
@@ -1221,13 +1221,13 @@ namespace Opm {
         auto& well = this->m_wells.get( well_name );
 
         // update multi-segment related information for the well
-        well->addSegmentSet(currentStep, newSegmentset);
+        well.addSegmentSet(currentStep, newSegmentset);
     }
 
     void Schedule::handleCOMPSEGS( const DeckKeyword& keyword, size_t currentStep) {
         const auto& record1 = keyword.getRecord(0);
         const std::string& well_name = record1.getItem("WELL").getTrimmedString(0);
-        auto& well = *this->m_wells.get( well_name );
+        auto& well = this->m_wells.get( well_name );
 
         auto compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword( keyword );
 
@@ -1243,7 +1243,7 @@ namespace Opm {
     void Schedule::handleWGRUPCON( const DeckKeyword& keyword, size_t currentStep) {
         for( const auto& record : keyword ) {
             const std::string& wellName = record.getItem("WELL").getTrimmedString(0);
-            auto& well = *this->m_wells.get( wellName );
+            auto& well = this->m_wells.get( wellName );
 
             bool availableForGroupControl = convertEclipseStringToBool(record.getItem("GROUP_CONTROLLED").getTrimmedString(0));
             well.setAvailableForGroupControl(currentStep, availableForGroupControl);
@@ -1297,9 +1297,8 @@ namespace Opm {
             }
         }
 
-        for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
-            auto well = *iter;
-            well->setRFTForWellWhenFirstOpen(m_timeMap.numTimesteps(), currentStep);
+        for( auto& well : this->m_wells ) {
+            well.setRFTForWellWhenFirstOpen(m_timeMap.numTimesteps(), currentStep);
         }
     }
 
@@ -1379,9 +1378,13 @@ namespace Opm {
             automaticShutIn = false;
         }
 
-        auto well = std::make_shared<Well>(wellName, headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep,
-                                           wellCompletionOrder, allowCrossFlow, automaticShutIn);
-        m_wells.insert( wellName  , well);
+        Well well(wellName,
+                  headI, headJ, refDepth,
+                  preferredPhase, m_timeMap,
+                  timeStep,
+                  wellCompletionOrder, allowCrossFlow, automaticShutIn);
+
+        m_wells.insert( wellName, well );
         m_events.addEvent( ScheduleEvents::NEW_WELL , timeStep );
     }
 
@@ -1406,21 +1409,21 @@ namespace Opm {
             throw std::invalid_argument("Timestep to large");
         }
 
-        auto defined = [=]( const Well* w ) {
-            return w->hasBeenDefined( timeStep );
+        auto defined = [=]( const Well& w ) {
+            return w.hasBeenDefined( timeStep );
         };
 
         std::vector< const Well* > wells;
-        for( const auto well : m_wells ) {
-            if( !defined( well.get() ) ) continue;
-            wells.push_back( well.get() );
+        for( const auto& well : m_wells ) {
+            if( !defined( well ) ) continue;
+            wells.push_back( std::addressof( well ) );
         }
 
         return wells;
     }
 
     const Well* Schedule::getWell(const std::string& wellName) const {
-        return m_wells.get( wellName ).get();
+        return std::addressof( m_wells.get( wellName ) );
     }
 
 
@@ -1432,14 +1435,14 @@ namespace Opm {
 
     std::vector< const Well* > Schedule::getOpenWells(size_t timeStep) const {
 
-        auto open = [=]( const Well* w ) {
-            return w->getStatus( timeStep ) == WellCommon::OPEN;
+        auto open = [=]( const Well& w ) {
+            return w.getStatus( timeStep ) == WellCommon::OPEN;
         };
 
         std::vector< const Well* > wells;
-        for( const auto well : m_wells ) {
-            if( !open( well.get() ) ) continue;
-            wells.push_back( well.get() );
+        for( const auto& well : m_wells ) {
+            if( !open( well ) ) continue;
+            wells.push_back( std::addressof( well ) );
         }
 
         return wells;
@@ -1455,14 +1458,13 @@ namespace Opm {
 
         if( wildcard_pos != wellNamePattern.length()-1 ) {
             if( !m_wells.hasKey( wellNamePattern ) ) return {};
-            return { m_wells.get( wellNamePattern ).get() };
+            return { std::addressof( m_wells.get( wellNamePattern ) ) };
         }
 
         std::vector< Well* > wells;
-        for (auto wellIter = m_wells.begin(); wellIter != m_wells.end(); ++wellIter) {
-            Well* well = wellIter->get();
-            if (Well::wellNameInWellNamePattern(well->name(), wellNamePattern)) {
-                wells.push_back (well);
+        for( auto& well : this->m_wells ) {
+            if( Well::wellNameInWellNamePattern( well.name(), wellNamePattern ) ) {
+                wells.push_back( std::addressof( well ) );
             }
         }
 
