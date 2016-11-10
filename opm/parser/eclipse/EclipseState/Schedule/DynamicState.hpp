@@ -142,8 +142,8 @@ namespace Opm {
                 }
             }
 
-            m_data[index] = value;
-            m_currentValue = value;
+            m_currentValue = std::move( value );
+            m_data[index] = this->m_currentValue;
             if (m_initialRange == 0)
                 m_initialRange = index;
 
@@ -153,7 +153,7 @@ namespace Opm {
 
         /// Will return the index of the first occurence of @value, or
         /// -1 if @value is not found.
-        ssize_t find(const T& value) {
+        ssize_t find(const T& value) const {
             auto iter = std::find( m_data.begin() , m_data.end() , value);
             if (iter != m_data.end()) {
                 // Found normally

@@ -51,7 +51,6 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellPolymerProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/WellSet.hpp>
 #include <opm/parser/eclipse/Units/Dimension.hpp>
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
 
@@ -70,13 +69,13 @@ namespace Opm {
                         const EclipseGrid& grid,
                         const Deck& deck,
                         const Phases &phases ) :
-        m_timeMap( std::make_shared< TimeMap>( deck )),
-        m_rootGroupTree( *m_timeMap, GroupTree{} ),
-        m_oilvaporizationproperties( *m_timeMap, OilVaporizationProperties{} ),
-        m_events( *m_timeMap ),
-        m_modifierDeck( *m_timeMap, nullptr ),
-        m_tuning( *m_timeMap ),
-        m_messageLimits( *m_timeMap ),
+        m_timeMap( deck ),
+        m_rootGroupTree( this->m_timeMap, GroupTree{} ),
+        m_oilvaporizationproperties( this->m_timeMap, OilVaporizationProperties{} ),
+        m_events( this->m_timeMap ),
+        m_modifierDeck( this->m_timeMap, Deck{} ),
+        m_tuning( this->m_timeMap ),
+        m_messageLimits( this->m_timeMap ),
         m_phases(phases)
     {
         m_controlModeWHISTCTL = WellProducer::CMODE_UNDEFINED;
@@ -97,13 +96,12 @@ namespace Opm {
         }
 
         if (Section::hasSCHEDULE(deck)) {
-            std::shared_ptr<SCHEDULESection> scheduleSection = std::make_shared<SCHEDULESection>(deck);
-            iterateScheduleSection(parseContext , *scheduleSection , grid );
+            iterateScheduleSection( parseContext, SCHEDULESection( deck ), grid );
         }
     }
 
     boost::posix_time::ptime Schedule::getStartTime() const {
-        return m_timeMap->getStartTime(/*timeStepIdx=*/0);
+        return m_timeMap.getStartTime(/*timeStepIdx=*/0);
     }
 
     time_t Schedule::posixStartTime() const {
@@ -111,7 +109,7 @@ namespace Opm {
     }
 
     time_t Schedule::posixEndTime() const {
-        return posixTime( this->m_timeMap->getEndTime() );
+        return posixTime( this->m_timeMap.getEndTime() );
     }
 
     void Schedule::iterateScheduleSection(const ParseContext& parseContext , const SCHEDULESection& section , const EclipseGrid& grid) {
@@ -238,18 +236,8 @@ namespace Opm {
             else if (geoModifiers.find( keyword.name() ) != geoModifiers.end()) {
                 bool supported = geoModifiers.at( keyword.name() );
                 if (supported) {
-                    /*
-                      If the deck stored at currentStep is a null pointer (i.e. evaluates
-                      to false) we must first create a new deck and install that under
-                      index currentstep; then we fetch the deck (newly created - or old)
-                      from the container and add the keyword.
-                    */
-                    if (!m_modifierDeck.iget(currentStep))
-                        m_modifierDeck.iset( currentStep , std::make_shared<Deck>( ));
-
-                    m_modifierDeck.iget( currentStep )->addKeyword( keyword );
+                    this->m_modifierDeck[ currentStep ].addKeyword( keyword );
                     m_events.addEvent( ScheduleEvents::GEO_MODIFIER , currentStep);
-
                 } else {
                     std::string msg = "OPM does not support grid property modifier " + keyword.name() + " in the Schedule section. Error at report: " + std::to_string( currentStep );
                     parseContext.handleError( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , m_messages, msg );
@@ -278,12 +266,10 @@ namespace Opm {
 
 
     bool Schedule::handleGroupFromWELSPECS(const std::string& groupName, GroupTree& newTree) const {
-        bool treeUpdated = false;
-        if (!newTree.getNode(groupName)) {
-            treeUpdated = true;
-            newTree.updateTree(groupName);
-        }
-        return treeUpdated;
+        if( newTree.exists( groupName ) ) return false;
+
+        newTree.update( groupName );
+        return true;
     }
 
     void Schedule::handleWHISTCTL(const ParseContext& parseContext, const DeckKeyword& keyword) {
@@ -364,7 +350,7 @@ namespace Opm {
             const auto* currentWell = getWell(wellName);
             checkWELSPECSConsistency( *currentWell, keyword, recordNr);
 
-            addWellToGroup( this->m_groups.at( groupName ), *this->m_wells.get( wellName ), currentStep);
+            addWellToGroup( this->m_groups.at( groupName ), this->m_wells.get( wellName ), currentStep);
             if (handleGroupFromWELSPECS(groupName, newTree))
                 needNewTree = true;
 
@@ -481,7 +467,7 @@ namespace Opm {
 
                     std::string msg =
                             "Well " + well->name() + " is a history matched well with zero rate where crossflow is banned. " +
-                            "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                            "This well will be closed at " + std::to_string ( m_timeMap.getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
                     m_messages.note(msg);
                     updateWellStatus( *well, currentStep, WellCommon::StatusEnum::SHUT );
                 }
@@ -643,7 +629,7 @@ namespace Opm {
                 if ( ! well->getAllowCrossFlow() && (properties.surfaceInjectionRate == 0) ) {
                     std::string msg =
                             "Well " + well->name() + " is an injector with zero rate where crossflow is banned. " +
-                            "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                            "This well will be closed at " + std::to_string ( m_timeMap.getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
                     m_messages.note(msg);
                     updateWellStatus( *well, currentStep, WellCommon::StatusEnum::SHUT );
                 }
@@ -719,7 +705,7 @@ namespace Opm {
 
             WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
 
-            auto& well = *this->m_wells.get( wellName );
+            auto& well = this->m_wells.get( wellName );
             updateWellStatus( well, currentStep, status );
             WellInjectionProperties properties(well.getInjectionPropertiesCopy(currentStep));
 
@@ -740,7 +726,7 @@ namespace Opm {
             if ( ! well.getAllowCrossFlow() && (injectionRate == 0) ) {
                 std::string msg =
                         "Well " + well.name() + " is an injector with zero rate where crossflow is banned. " +
-                        "This well will be closed at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                        "This well will be closed at " + std::to_string ( m_timeMap.getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
                 m_messages.note(msg);
                 updateWellStatus( well, currentStep, WellCommon::StatusEnum::SHUT );
             }
@@ -833,7 +819,7 @@ namespace Opm {
                     if (status == WellCommon::StatusEnum::OPEN && !well->canOpen(currentStep)) {
                         std::string msg =
                                 "Well " + well->name() + " where crossflow is banned has zero total rate. " +
-                                "This well is prevented from opening at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
+                                "This well is prevented from opening at " + std::to_string ( m_timeMap.getTimePassedUntil(currentStep) / (60*60*24) ) + " days";
                         m_messages.note(msg);
                         continue;
                     }
@@ -1203,11 +1189,11 @@ namespace Opm {
         auto completions = Completion::fromCOMPDAT( grid, keyword, wells );
 
         for( const auto pair : completions ) {
-            auto& well = *this->m_wells.get( pair.first );
+            auto& well = this->m_wells.get( pair.first );
             well.addCompletions( currentStep, pair.second );
             if (well.getCompletions( currentStep ).allCompletionsShut()) {
                 std::string msg =
-                        "All completions in well " + well.name() + " is shut at " + std::to_string ( m_timeMap->getTimePassedUntil(currentStep) / (60*60*24) ) + " days. \n" +
+                        "All completions in well " + well.name() + " is shut at " + std::to_string ( m_timeMap.getTimePassedUntil(currentStep) / (60*60*24) ) + " days. \n" +
                         "The well is therefore also shut.";
                 m_messages.note(msg);
                 updateWellStatus( well, currentStep, WellCommon::StatusEnum::SHUT);
@@ -1224,13 +1210,13 @@ namespace Opm {
         auto& well = this->m_wells.get( well_name );
 
         // update multi-segment related information for the well
-        well->addSegmentSet(currentStep, newSegmentset);
+        well.addSegmentSet(currentStep, newSegmentset);
     }
 
     void Schedule::handleCOMPSEGS( const DeckKeyword& keyword, size_t currentStep) {
         const auto& record1 = keyword.getRecord(0);
         const std::string& well_name = record1.getItem("WELL").getTrimmedString(0);
-        auto& well = *this->m_wells.get( well_name );
+        auto& well = this->m_wells.get( well_name );
 
         auto compsegs_vector = Compsegs::compsegsFromCOMPSEGSKeyword( keyword );
 
@@ -1246,7 +1232,7 @@ namespace Opm {
     void Schedule::handleWGRUPCON( const DeckKeyword& keyword, size_t currentStep) {
         for( const auto& record : keyword ) {
             const std::string& wellName = record.getItem("WELL").getTrimmedString(0);
-            auto& well = *this->m_wells.get( wellName );
+            auto& well = this->m_wells.get( wellName );
 
             bool availableForGroupControl = convertEclipseStringToBool(record.getItem("GROUP_CONTROLLED").getTrimmedString(0));
             well.setAvailableForGroupControl(currentStep, availableForGroupControl);
@@ -1269,7 +1255,7 @@ namespace Opm {
         for( const auto& record : keyword ) {
             const std::string& childName = record.getItem("CHILD_GROUP").getTrimmedString(0);
             const std::string& parentName = record.getItem("PARENT_GROUP").getTrimmedString(0);
-            newTree.updateTree(childName, parentName);
+            newTree.update(childName, parentName);
 
             if (!hasGroup(parentName))
                 addGroup( parentName , currentStep );
@@ -1293,16 +1279,15 @@ namespace Opm {
             for( auto* well : getWells( wellNamePattern ) ) {
 
                 well->setRFTActive(currentStep, true);
-                size_t numStep = m_timeMap->numTimesteps();
+                size_t numStep = m_timeMap.numTimesteps();
                 if(currentStep<numStep){
                     well->setRFTActive(currentStep+1, false);
                 }
             }
         }
 
-        for (auto iter = m_wells.begin(); iter != m_wells.end(); ++iter) {
-            auto well = *iter;
-            well->setRFTForWellWhenFirstOpen(m_timeMap->numTimesteps(), currentStep);
+        for( auto& well : this->m_wells ) {
+            well.setRFTForWellWhenFirstOpen(m_timeMap.numTimesteps(), currentStep);
         }
     }
 
@@ -1327,7 +1312,7 @@ namespace Opm {
                         well->setRFTActive(currentStep, true);
                         break;
                     case RFTConnections::RFTEnum::FOPN:
-                        well->setRFTForWellWhenFirstOpen(m_timeMap->numTimesteps(),currentStep);
+                        well->setRFTForWellWhenFirstOpen(m_timeMap.numTimesteps(),currentStep);
                         break;
                     case RFTConnections::RFTEnum::NO:
                         well->setRFTActive(currentStep, false);
@@ -1353,7 +1338,7 @@ namespace Opm {
     }
 
     const TimeMap& Schedule::getTimeMap() const {
-        return *m_timeMap;
+        return this->m_timeMap;
     }
 
     const GroupTree& Schedule::getGroupTree(size_t timeStep) const {
@@ -1382,9 +1367,13 @@ namespace Opm {
             automaticShutIn = false;
         }
 
-        auto well = std::make_shared<Well>(wellName, headI, headJ, refDepth, preferredPhase, m_timeMap , timeStep,
-                                           wellCompletionOrder, allowCrossFlow, automaticShutIn);
-        m_wells.insert( wellName  , well);
+        Well well(wellName,
+                  headI, headJ, refDepth,
+                  preferredPhase, m_timeMap,
+                  timeStep,
+                  wellCompletionOrder, allowCrossFlow, automaticShutIn);
+
+        m_wells.insert( wellName, well );
         m_events.addEvent( ScheduleEvents::NEW_WELL , timeStep );
     }
 
@@ -1401,29 +1390,29 @@ namespace Opm {
     }
 
     std::vector< const Well* > Schedule::getWells() const {
-        return getWells(m_timeMap->size()-1);
+        return getWells(m_timeMap.size()-1);
     }
 
     std::vector< const Well* > Schedule::getWells(size_t timeStep) const {
-        if (timeStep >= m_timeMap->size()) {
+        if (timeStep >= m_timeMap.size()) {
             throw std::invalid_argument("Timestep to large");
         }
 
-        auto defined = [=]( const Well* w ) {
-            return w->hasBeenDefined( timeStep );
+        auto defined = [=]( const Well& w ) {
+            return w.hasBeenDefined( timeStep );
         };
 
         std::vector< const Well* > wells;
-        for( const auto well : m_wells ) {
-            if( !defined( well.get() ) ) continue;
-            wells.push_back( well.get() );
+        for( const auto& well : m_wells ) {
+            if( !defined( well ) ) continue;
+            wells.push_back( std::addressof( well ) );
         }
 
         return wells;
     }
 
     const Well* Schedule::getWell(const std::string& wellName) const {
-        return m_wells.get( wellName ).get();
+        return std::addressof( m_wells.get( wellName ) );
     }
 
 
@@ -1435,14 +1424,14 @@ namespace Opm {
 
     std::vector< const Well* > Schedule::getOpenWells(size_t timeStep) const {
 
-        auto open = [=]( const Well* w ) {
-            return w->getStatus( timeStep ) == WellCommon::OPEN;
+        auto open = [=]( const Well& w ) {
+            return w.getStatus( timeStep ) == WellCommon::OPEN;
         };
 
         std::vector< const Well* > wells;
-        for( const auto well : m_wells ) {
-            if( !open( well.get() ) ) continue;
-            wells.push_back( well.get() );
+        for( const auto& well : m_wells ) {
+            if( !open( well ) ) continue;
+            wells.push_back( std::addressof( well ) );
         }
 
         return wells;
@@ -1458,14 +1447,13 @@ namespace Opm {
 
         if( wildcard_pos != wellNamePattern.length()-1 ) {
             if( !m_wells.hasKey( wellNamePattern ) ) return {};
-            return { m_wells.get( wellNamePattern ).get() };
+            return { std::addressof( m_wells.get( wellNamePattern ) ) };
         }
 
         std::vector< Well* > wells;
-        for (auto wellIter = m_wells.begin(); wellIter != m_wells.end(); ++wellIter) {
-            Well* well = wellIter->get();
-            if (Well::wellNameInWellNamePattern(well->name(), wellNamePattern)) {
-                wells.push_back (well);
+        for( auto& well : this->m_wells ) {
+            if( Well::wellNameInWellNamePattern( well.name(), wellNamePattern ) ) {
+                wells.push_back( std::addressof( well ) );
             }
         }
 
@@ -1473,10 +1461,7 @@ namespace Opm {
     }
 
     void Schedule::addGroup(const std::string& groupName, size_t timeStep) {
-        if (!m_timeMap) {
-            throw std::invalid_argument("TimeMap is null, can't add group named: " + groupName);
-        }
-        m_groups.emplace( groupName, Group { groupName, *m_timeMap, timeStep } );
+        m_groups.emplace( groupName, Group { groupName, m_timeMap, timeStep } );
         m_events.addEvent( ScheduleEvents::NEW_GROUP , timeStep );
     }
 
@@ -1579,7 +1564,7 @@ namespace Opm {
       return this->m_tuning;
     }
 
-    std::shared_ptr<const Deck> Schedule::getModifierDeck(size_t timeStep) const {
+    const Deck& Schedule::getModifierDeck(size_t timeStep) const {
         return m_modifierDeck.iget( timeStep );
     }
 

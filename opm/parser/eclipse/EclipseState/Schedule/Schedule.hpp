@@ -32,6 +32,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/OilVaporizationProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Tuning.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/EclipseState/Util/OrderedMap.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/MessageLimits.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
@@ -48,7 +49,6 @@ namespace Opm
     class SCHEDULESection;
     class TimeMap;
     class UnitSystem;
-    class Well;
 
     class Schedule {
     public:
@@ -87,19 +87,19 @@ namespace Opm
 
         const Events& getEvents() const;
         bool hasOilVaporizationProperties();
-        std::shared_ptr<const Deck> getModifierDeck(size_t timeStep) const;
+        const Deck& getModifierDeck(size_t timeStep) const;
         const MessageContainer& getMessageContainer() const;
         MessageContainer& getMessageContainer();
 
 
     private:
-        std::shared_ptr< TimeMap > m_timeMap;
-        OrderedMap<std::shared_ptr< Well >> m_wells;
+        TimeMap m_timeMap;
+        OrderedMap< Well > m_wells;
         std::map<std::string, Group > m_groups;
         DynamicState< GroupTree > m_rootGroupTree;
         DynamicState< OilVaporizationProperties > m_oilvaporizationproperties;
         Events m_events;
-        DynamicVector<std::shared_ptr<Deck> > m_modifierDeck;
+        DynamicVector< Deck > m_modifierDeck;
         Tuning m_tuning;
         MessageLimits m_messageLimits;
         Phases m_phases;

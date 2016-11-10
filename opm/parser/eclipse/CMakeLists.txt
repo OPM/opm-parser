@@ -53,17 +53,34 @@ set( generator_source
 Generator/KeywordGenerator.cpp
 Generator/KeywordLoader.cpp )
 
-set( build_parser_source 
-Parser/ParseContext.cpp
+set( utility_source
+Utility/Functional.cpp
+Utility/Stringview.cpp
+)
+
+set( build_parser_source
+Deck/Deck.cpp
+Deck/DeckItem.cpp
+Deck/DeckKeyword.cpp
+Deck/DeckRecord.cpp
+Parser/createDefaultKeywordList.cpp
 Parser/MessageContainer.cpp
-Parser/ParserEnums.cpp
-Parser/ParserKeyword.cpp 
-Parser/ParserRecord.cpp
-Parser/ParserItem.cpp
-Parser/ParserIntItem.cpp  
+Parser/ParseContext
 Parser/ParserDoubleItem.cpp
-Parser/ParserStringItem.cpp  
+Parser/ParserEnums.cpp
+Parser/ParserIntItem.cpp
+Parser/ParserItem.cpp
+Parser/ParserItem.cpp
+Parser/ParserKeyword.cpp
+Parser/ParserRecord.cpp
+Parser/ParserStringItem.cpp
+RawDeck/RawKeyword.cpp
+RawDeck/RawRecord.cpp
+RawDeck/StarToken.cpp
+Units/Dimension.cpp
+Units/UnitSystem.cpp
 ${generator_source}
+${utility_source}
 )
 
 set (state_source
@@ -86,12 +103,10 @@ EclipseState/Schedule/WellEconProductionLimits.cpp
 EclipseState/Schedule/MSW/Segment.cpp
 EclipseState/Schedule/MSW/SegmentSet.cpp
 EclipseState/Schedule/MSW/Compsegs.cpp
-EclipseState/Schedule/WellSet.cpp
 EclipseState/Schedule/Group.cpp
 EclipseState/Schedule/Completion.cpp
 EclipseState/Schedule/CompletionSet.cpp
 EclipseState/Schedule/ScheduleEnums.cpp 
-EclipseState/Schedule/GroupTreeNode.cpp
 EclipseState/Schedule/GroupTree.cpp
 EclipseState/Schedule/Tuning.cpp
 EclipseState/Schedule/Events.cpp
@@ -132,11 +147,6 @@ EclipseState/SummaryConfig/SummaryConfig.cpp
 EclipseState/IOConfig/RestartConfig.cpp
 EclipseState/IOConfig/IOConfig.cpp)
 #
-
-set( utility_source
-Utility/Functional.cpp
-Utility/Stringview.cpp
-)
 
 set( HEADER_FILES
 RawDeck/RawConsts.hpp 
@@ -189,14 +199,12 @@ EclipseState/Schedule/WellEconProductionLimits.hpp
 EclipseState/Schedule/MSW/Segment.hpp
 EclipseState/Schedule/MSW/SegmentSet.hpp
 EclipseState/Schedule/MSW/Compsegs.hpp
-EclipseState/Schedule/WellSet.hpp
 EclipseState/Schedule/Group.hpp
 EclipseState/Schedule/DynamicState.hpp
 EclipseState/Schedule/DynamicVector.hpp
 EclipseState/Schedule/Completion.hpp
 EclipseState/Schedule/CompletionSet.hpp
 EclipseState/Schedule/ScheduleEnums.hpp
-EclipseState/Schedule/GroupTreeNode.hpp 
 EclipseState/Schedule/GroupTree.hpp
 EclipseState/Schedule/Tuning.hpp
 EclipseState/Schedule/Events.hpp
@@ -285,18 +293,13 @@ EclipseState/Tables/TableIndex.hpp
 Utility/Functional.hpp
 Utility/Stringview.hpp)
 
-add_library(buildParser ${rawdeck_source} ${build_parser_source} ${deck_source} ${unit_source} ${generator_source} ${utility_source})
-target_link_libraries(buildParser opmjson ${opm-common_LIBRARIES} ${Boost_LIBRARIES}  ${ERT_LIBRARIES})
-
 #-----------------------------------------------------------------
 # This section manages the generation of C++ code for the default keywords.
 
 # 1. Create an executable 'createDefaultKeywordList'.
 
-add_executable( createDefaultKeywordList Parser/createDefaultKeywordList.cpp )
-target_link_libraries( createDefaultKeywordList buildParser opmjson ${Boost_LIBRARIES})
-
-
+add_executable(createDefaultKeywordList ${build_parser_source})
+target_link_libraries( createDefaultKeywordList opmjson ${Boost_LIBRARIES} ${ERT_LIBRARIES})
 
 # 2. Run the generated application createDefaultKeywordlist - this
 #    application will recursively scan through all the json keyword
