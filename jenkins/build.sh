@@ -17,8 +17,8 @@ fi
 declare -a downstreams
 downstreams=(opm-material
              opm-output
-             opm-core
              opm-grid
+             opm-core
              ewoms
              opm-simulators
              opm-upscaling)
