@@ -665,7 +665,7 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
         if( !ParserKeyword::validDeckName( name ) )
             return false;
 
-        if( m_deckParserKeywords.count( name ) )
+        if( m_deckParserKeywords.count( name.string() ) )
             return true;
 
         return bool( matchingKeyword( name ) );

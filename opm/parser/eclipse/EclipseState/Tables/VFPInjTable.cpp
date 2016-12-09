@@ -34,9 +34,8 @@ namespace {
 /**
  * Trivial helper function that throws if a zero-sized item is found.
  */
-template <typename T>
-inline const Opm::DeckItem& getNonEmptyItem( const Opm::DeckRecord& record) {
-    const auto& retval = record.getItem<T>();
+inline const Opm::DeckItem& getNonEmptyItem( const std::string& name, const Opm::DeckRecord& record) {
+    const auto& retval = record.getItem( name );
     if (retval.size() == 0) {
         throw std::invalid_argument("Zero-sized record found where non-empty record expected");
     }
@@ -80,8 +79,6 @@ void VFPInjTable::init(int table_num,
 
 
 void VFPInjTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_system) {
-    using ParserKeywords::VFPINJ;
-
     //Check that the table has enough records
     if (table.size() < 4) {
         throw std::invalid_argument("VFPINJ table does not appear to have enough records to be valid");
@@ -91,21 +88,21 @@ void VFPInjTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_sy
     const auto& header = table.getRecord(0);
 
     //Get the different header items
-    m_table_num   = getNonEmptyItem<VFPINJ::TABLE>(header).get< int >(0);
-    m_datum_depth = getNonEmptyItem<VFPINJ::DATUM_DEPTH>(header).getSIDouble(0);
+    m_table_num   = getNonEmptyItem( "TABLE", header ).get< int >(0);
+    m_datum_depth = getNonEmptyItem( "DATUM_DEPTH", header ).getSIDouble(0);
 
-    m_flo_type = getFloType(getNonEmptyItem<VFPINJ::RATE_TYPE>(header).get< std::string >(0));
+    m_flo_type = getFloType(getNonEmptyItem( "RATE_TYPE", header ).get< std::string >(0));
 
     //Not used, but check that PRESSURE_DEF is indeed THP
-    std::string quantity_string = getNonEmptyItem<VFPINJ::PRESSURE_DEF>(header).get< std::string >(0);
+    std::string quantity_string = getNonEmptyItem( "PRESSURE_DEF", header ).get< std::string >(0);
     if (quantity_string != "THP") {
         throw std::invalid_argument("PRESSURE_DEF is required to be THP");
     }
 
     //Check units used for this table
     std::string units_string = "";
-    if (header.getItem<VFPINJ::UNITS>().hasValue(0)) {
-        units_string = header.getItem<VFPINJ::UNITS>().get< std::string >(0);
+    if( header.getItem( "UNITS" ).hasValue(0) ) {
+        units_string = header.getItem( "UNITS" ).get< std::string >(0);
     }
     else {
         //If units does not exist in record, the default value is the
@@ -141,18 +138,18 @@ void VFPInjTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_sy
     }
 
     //Quantity in the body of the table
-    std::string body_string = getNonEmptyItem<VFPINJ::BODY_DEF>(header).get< std::string >(0);
+    std::string body_string = getNonEmptyItem( "BODY_DEF", header ).get< std::string >(0);
     if (body_string != "BHP") {
         throw std::invalid_argument("Invalid BODY_DEF string");
     }
 
 
     //Get actual rate / flow values
-    m_flo_data = getNonEmptyItem<VFPINJ::FLOW_VALUES>(table.getRecord(1)).getData< double >();
+    m_flo_data = getNonEmptyItem( "FLOW_VALUES", table.getRecord(1) ).getData< double >();
     convertFloToSI(m_flo_type, m_flo_data, deck_unit_system);
 
     //Get actual tubing head pressure values
-    m_thp_data = getNonEmptyItem<VFPINJ::THP_VALUES>(table.getRecord(2)).getData< double >();
+    m_thp_data = getNonEmptyItem( "THP_VALUES", table.getRecord(2) ).getData< double >();
     convertTHPToSI(m_thp_data, deck_unit_system);
 
     //Finally, read the actual table itself.
@@ -173,10 +170,10 @@ void VFPInjTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_sy
     for (size_t i=3; i<table.size(); ++i) {
         const auto& record = table.getRecord(i);
         //Get indices (subtract 1 to get 0-based index)
-        int t = getNonEmptyItem<VFPINJ::THP_INDEX>(record).get< int >(0) - 1;
+        int t = getNonEmptyItem( "THP_INDEX", record ).get< int >(0) - 1;
 
         //Rest of values (bottom hole pressure or tubing head temperature) have index of flo value
-        const std::vector<double>& bhp_tht = getNonEmptyItem<VFPINJ::VALUES>(record).getData< double >();
+        const std::vector<double>& bhp_tht = getNonEmptyItem( "VALUES", record ).getData< double >();
 
         if (bhp_tht.size() != nf) {
             throw std::invalid_argument("VFPINJ table does not contain enough FLO values.");

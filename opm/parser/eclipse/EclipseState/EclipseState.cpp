@@ -246,14 +246,13 @@ namespace Opm {
     }
 
     void EclipseState::applyModifierDeck(const Deck& deck) {
-        using namespace ParserKeywords;
         for (const auto& keyword : deck) {
 
-            if (keyword.isKeyword<MULTFLT>()) {
+            if (keyword.isKeyword( "MULTFLT" )) {
                 for (const auto& record : keyword) {
-                    const std::string& faultName = record.getItem<MULTFLT::fault>().get< std::string >(0);
+                    const std::string& faultName = record.getItem( "fault" ).get< std::string >(0);
                     auto& fault = m_faults.getFault( faultName );
-                    double tmpMultFlt = record.getItem<MULTFLT::factor>().get< double >(0);
+                    double tmpMultFlt = record.getItem( "factor" ).get< double >(0);
                     double oldMultFlt = fault.getTransMult( );
                     double newMultFlt = oldMultFlt * tmpMultFlt;
 

@@ -54,9 +54,9 @@ BOOST_AUTO_TEST_CASE( PvtxNumTables1 ) {
     boost::filesystem::path deckFile("testdata/integration_tests/TABLES/PVTX1.DATA");
     ParseContext parseContext;
     auto deck =  parser.parseFile(deckFile.string(), parseContext);
-    BOOST_CHECK_EQUAL( PvtxTable::numTables( deck.getKeyword<ParserKeywords::PVTO>()) , 1);
+    BOOST_CHECK_EQUAL( PvtxTable::numTables( deck.getKeyword( "PVTO" )) , 1);
 
-    auto ranges = PvtxTable::recordRanges( deck.getKeyword<ParserKeywords::PVTO>() );
+    auto ranges = PvtxTable::recordRanges( deck.getKeyword( "PVTO" ) );
     auto range = ranges[0];
     BOOST_CHECK_EQUAL( range.first , 0 );
     BOOST_CHECK_EQUAL( range.second , 2 );
@@ -68,9 +68,9 @@ BOOST_AUTO_TEST_CASE( PvtxNumTables2 ) {
     boost::filesystem::path deckFile("testdata/integration_tests/TABLES/PVTO2.DATA");
     ParseContext parseContext;
     auto deck =  parser.parseFile(deckFile.string(), parseContext);
-    BOOST_CHECK_EQUAL( PvtxTable::numTables( deck.getKeyword<ParserKeywords::PVTO>()) , 3);
+    BOOST_CHECK_EQUAL( PvtxTable::numTables( deck.getKeyword( "PVTO" )) , 3);
 
-    auto ranges = PvtxTable::recordRanges( deck.getKeyword<ParserKeywords::PVTO>() );
+    auto ranges = PvtxTable::recordRanges( deck.getKeyword( "PVTO" ) );
     auto range1 = ranges[0];
     BOOST_CHECK_EQUAL( range1.first , 0 );
     BOOST_CHECK_EQUAL( range1.second , 41 );
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE( PvtxNumTables3 ) {
     Opm::Parser parser;
     auto deck = parser.parseString(deckData, Opm::ParseContext());
 
-    auto ranges = PvtxTable::recordRanges( deck.getKeyword<ParserKeywords::PVTO>() );
+    auto ranges = PvtxTable::recordRanges( deck.getKeyword( "PVTO" ) );
     BOOST_CHECK_EQUAL( 2 ,ranges.size() );
 
     auto range1 = ranges[0];

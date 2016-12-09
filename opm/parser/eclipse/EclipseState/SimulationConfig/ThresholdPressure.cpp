@@ -39,13 +39,13 @@ namespace Opm {
         SOLUTIONSection solutionSection( deck );
 
         bool       thpresOption     = false;
-        const bool thpresKeyword    = solutionSection.hasKeyword<ParserKeywords::THPRES>();
+        const bool thpresKeyword    = solutionSection.hasKeyword( "THPRES" );
         const bool hasEqlnumKeyword = eclipseProperties.hasDeckIntGridProperty( "EQLNUM" );
         int        maxEqlnum        = 0;
 
         //Is THPRES option set?
-        if( runspecSection.hasKeyword<ParserKeywords::EQLOPTS>() ) {
-            const auto& eqlopts = runspecSection.getKeyword<ParserKeywords::EQLOPTS>( );
+        if( runspecSection.hasKeyword( "EQLOPTS" ) ) {
+            const auto& eqlopts = runspecSection.getKeyword( "EQLOPTS" );
             const auto& rec = eqlopts.getRecord(0);
             for( const auto& item : rec ) {
                 if( !item.hasValue( 0 ) ) continue;
@@ -82,12 +82,12 @@ namespace Opm {
 
 
             // Fill threshold pressure table.
-            const auto& thpres = solutionSection.getKeyword<ParserKeywords::THPRES>( );
+            const auto& thpres = solutionSection.getKeyword( "THPRES" );
 
             for( const auto& rec : thpres ) {
-                const auto& region1Item = rec.getItem<ParserKeywords::THPRES::REGION1>();
-                const auto& region2Item = rec.getItem<ParserKeywords::THPRES::REGION2>();
-                const auto& thpressItem = rec.getItem<ParserKeywords::THPRES::VALUE>();
+                const auto& region1Item = rec.getItem( "REGION1" );
+                const auto& region2Item = rec.getItem( "REGION2" );
+                const auto& thpressItem = rec.getItem( "VALUE" );
 
                 if( !region1Item.hasValue( 0 ) || !region2Item.hasValue( 0 ) )
                     throw std::runtime_error("Missing region data for use of the THPRES keyword");

@@ -176,13 +176,13 @@ BOOST_AUTO_TEST_CASE(SimulationConfigCPRBoth) {
     BOOST_CHECK(  simulationConfig.useCPR());
     BOOST_CHECK(  summary.hasKeyword("CPR"));
 
-    const auto& cpr = summary.getKeyword<ParserKeywords::CPR>();
+    const auto& cpr = summary.getKeyword( "CPR" );
     const auto& record = cpr.getRecord(0);
     BOOST_CHECK_EQUAL( 1 , cpr.size());
-    BOOST_CHECK_EQUAL( record.getItem<ParserKeywords::CPR::WELL>().get< std::string >(0) , "well1");
-    BOOST_CHECK_EQUAL( record.getItem<ParserKeywords::CPR::I>().get< int >(0) , 10);
-    BOOST_CHECK_EQUAL( record.getItem<ParserKeywords::CPR::J>().get< int >(0) , 20);
-    BOOST_CHECK_EQUAL( record.getItem<ParserKeywords::CPR::K>().get< int >(0) , 30);
+    BOOST_CHECK_EQUAL( record.getItem( "WELL" ).get< std::string >(0) , "well1");
+    BOOST_CHECK_EQUAL( record.getItem( "I" ).get< int >(0) , 10);
+    BOOST_CHECK_EQUAL( record.getItem( "J" ).get< int >(0) , 20);
+    BOOST_CHECK_EQUAL( record.getItem( "K" ).get< int >(0) , 30);
 }
 
 
