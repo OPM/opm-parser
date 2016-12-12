@@ -1,6 +1,8 @@
 #ifndef OPM_PVTWTABLE_HPP
 #define OPM_PVTWTABLE_HPP
 
+#include <vector>
+
 namespace Opm {
 
 class DeckKeyword;
@@ -18,10 +20,10 @@ class PvtwTable {
         PvtwTable() = default;
         explicit PvtwTable( const DeckKeyword& );
 
-        const record& operator[]( size_t region ) const;
-        const record& at( size_t region ) const;
+        const record& operator[]( std::size_t region ) const;
+        const record& at( std::size_t region ) const;
         bool empty() const;
-        size_t size() const;
+        std::size_t size() const;
 
         using const_iterator = std::vector< record >::const_iterator;
         const_iterator begin() const;

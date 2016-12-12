@@ -23,7 +23,7 @@
 #include <string>
 #include <vector>
 
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/Utility/Typetools.hpp>
 
 namespace Json {

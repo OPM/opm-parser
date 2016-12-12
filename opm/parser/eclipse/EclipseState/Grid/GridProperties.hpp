@@ -25,9 +25,7 @@
 #include <unordered_map>
 #include <map>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/Section.hpp>
-
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>

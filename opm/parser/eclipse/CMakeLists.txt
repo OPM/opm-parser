@@ -3,7 +3,6 @@ include_directories(BEFORE ${PROJECT_BINARY_DIR}/generated-source/include)
 add_subdirectory(Parser/tests)
 add_subdirectory(Generator/tests)
 add_subdirectory(RawDeck/tests)
-add_subdirectory(Deck/tests)
 add_subdirectory(Units/tests)
 add_subdirectory(EclipseState/tests)
 add_subdirectory(EclipseState/Schedule/tests)
@@ -29,11 +28,7 @@ Units/UnitSystem.cpp
 Units/Dimension.cpp)
 
 set( deck_source
-Deck/Deck.cpp
-Deck/DeckKeyword.cpp
-Deck/DeckRecord.cpp
-Deck/DeckItem.cpp
-Deck/Section.cpp
+Parser/Deck.cpp
 )
 
 set( parser_source
@@ -56,16 +51,13 @@ Utility/Stringview.cpp
 )
 
 set( build_parser_source
-Deck/Deck.cpp
-Deck/DeckItem.cpp
-Deck/DeckKeyword.cpp
-Deck/DeckRecord.cpp
+Parser/Deck.cpp
 Parser/MessageContainer.cpp
 Parser/ParseContext.cpp
+Parser/ParserEnums.cpp
 Parser/ParserItem.cpp
 Parser/ParserKeyword.cpp
 Parser/ParserRecord.cpp
-Parser/ParserEnums.cpp
 RawDeck/RawKeyword.cpp
 RawDeck/RawRecord.cpp
 RawDeck/StarToken.cpp
@@ -147,20 +139,15 @@ RawDeck/RawRecord.hpp
 RawDeck/StarToken.hpp
 RawDeck/RawEnums.hpp
 #
-Deck/Deck.hpp
-Deck/DeckKeyword.hpp
-Deck/DeckRecord.hpp
-Deck/DeckItem.hpp
-Deck/Section.hpp
-#
-Parser/ParserEnums.hpp
-Parser/ParserKeyword.hpp 
-Parser/Parser.hpp 
-Parser/ParserRecord.hpp
-Parser/ParserItem.hpp
+Parser/Deck.hpp
 Parser/InputErrorAction.hpp
-Parser/ParseContext.hpp
 Parser/MessageContainer.hpp
+Parser/ParseContext.hpp
+Parser/ParserEnums.hpp
+Parser/Parser.hpp 
+Parser/ParserItem.hpp
+Parser/ParserKeyword.hpp
+Parser/ParserRecord.hpp
 #
 Generator/KeywordLoader.hpp
 Generator/KeywordGenerator.hpp
