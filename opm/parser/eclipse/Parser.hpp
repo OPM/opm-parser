@@ -20,9 +20,7 @@
 #ifndef OPM_PARSER_HPP
 #define OPM_PARSER_HPP
 
-#include <iosfwd>
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
