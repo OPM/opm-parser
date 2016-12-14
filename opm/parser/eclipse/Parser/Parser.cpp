@@ -756,39 +756,6 @@ std::vector<std::string> Parser::getAllDeckNames () const {
             throw std::invalid_argument("Input JSON object is not an array");
     }
 
-    bool Parser::loadKeywordFromFile(const boost::filesystem::path& configFile) {
-
-        try {
-            Json::JsonObject jsonKeyword(configFile);
-            addParserKeyword( std::unique_ptr< ParserKeyword >( new ParserKeyword( jsonKeyword ) ) );
-            return true;
-        }
-        catch (...) {
-            return false;
-        }
-    }
-
-
-    void Parser::loadKeywordsFromDirectory(const boost::filesystem::path& directory, bool recursive) {
-        if (!boost::filesystem::exists(directory))
-            throw std::invalid_argument("Directory: " + directory.string() + " does not exist.");
-        else {
-            boost::filesystem::directory_iterator end;
-            for (boost::filesystem::directory_iterator iter(directory); iter != end; iter++) {
-                if (boost::filesystem::is_directory(*iter)) {
-                    if (recursive)
-                        loadKeywordsFromDirectory(*iter, recursive);
-                } else {
-                    if (ParserKeyword::validInternalName(iter->path().filename().string())) {
-                        if (!loadKeywordFromFile(*iter))
-                            std::cerr << "** Warning: failed to load keyword from file:" << iter->path() << std::endl;
-                    }
-                }
-            }
-        }
-    }
-
-
     void Parser::applyUnitsToDeck(Deck& deck) const {
         /*
          * If multiple unit systems are requested, metric is preferred over

@@ -25,7 +25,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <boost/filesystem.hpp>
 
 #include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
@@ -73,9 +72,7 @@ namespace Opm {
         std::vector<std::string> getAllDeckNames () const;
 
         void loadKeywords(const Json::JsonObject& jsonKeywords);
-        bool loadKeywordFromFile(const boost::filesystem::path& configFile);
 
-        void loadKeywordsFromDirectory(const boost::filesystem::path& directory , bool recursive = true);
         void applyUnitsToDeck(Deck& deck) const;
 
         /*!
