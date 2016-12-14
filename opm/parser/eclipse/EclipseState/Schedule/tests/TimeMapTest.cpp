@@ -29,7 +29,7 @@
 
 
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>

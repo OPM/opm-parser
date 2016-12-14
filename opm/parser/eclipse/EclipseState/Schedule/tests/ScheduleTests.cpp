@@ -27,7 +27,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Group.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/GroupTree.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>

@@ -176,10 +176,10 @@ EclipseState/Runspec.hpp
 #
 EclipseState/checkDeck.hpp
 #
+EclipseState/Schedule.hpp
 EclipseState/Schedule/MessageLimits.hpp
 EclipseState/Schedule/OilVaporizationProperties.hpp
 EclipseState/Schedule/TimeMap.hpp
-EclipseState/Schedule/Schedule.hpp
 EclipseState/Schedule/Well.hpp
 EclipseState/Schedule/WellProductionProperties.hpp
 EclipseState/Schedule/WellInjectionProperties.hpp

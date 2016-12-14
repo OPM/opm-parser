@@ -34,7 +34,7 @@
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Events.hpp>
 
 using namespace Opm;

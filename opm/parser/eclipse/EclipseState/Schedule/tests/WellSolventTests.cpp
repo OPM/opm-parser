@@ -23,7 +23,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
