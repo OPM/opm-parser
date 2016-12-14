@@ -26,8 +26,8 @@
 
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 
 using namespace Opm;
 

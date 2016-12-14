@@ -34,9 +34,9 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
-#include <opm/parser/eclipse/Units/Units.hpp>
+#include <opm/parser/eclipse/Units.hpp>
 
 static Opm::Deck createDeck() {
     const char *deckData = "RUNSPEC\n"

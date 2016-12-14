@@ -20,7 +20,7 @@
 
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/bits/Deck/Section.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
 namespace Opm {
 bool checkDeck( Deck& deck, const Parser& parser, size_t enabledChecks) {

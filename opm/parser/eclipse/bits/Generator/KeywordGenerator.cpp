@@ -52,7 +52,7 @@ const std::string sourceHeader =
     "#include <opm/parser/eclipse/Parser/ParserKeyword.hpp>\n"
     "#include <opm/parser/eclipse/Parser/ParserItem.hpp>\n"
     "#include <opm/parser/eclipse/Parser/ParserRecord.hpp>\n"
-    "#include <opm/parser/eclipse/Parser/Parser.hpp>\n"
+    "#include <opm/parser/eclipse/Parser.hpp>\n"
     "#include <opm/parser/eclipse/Parser/ParserKeywords.hpp>\n\n\n"
     "namespace Opm {\n"
     "namespace ParserKeywords {\n\n";

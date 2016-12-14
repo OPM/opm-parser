@@ -23,7 +23,7 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
 using namespace Opm;
 

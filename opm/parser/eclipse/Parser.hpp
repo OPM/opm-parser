@@ -27,7 +27,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/bits/Utility/Stringview.hpp>
 

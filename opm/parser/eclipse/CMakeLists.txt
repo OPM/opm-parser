@@ -153,9 +153,9 @@ bits/Deck/DeckRecord.hpp
 bits/Deck/DeckItem.hpp
 bits/Deck/Section.hpp
 #
+Parser.hpp
 Parser/ParserEnums.hpp
 Parser/ParserKeyword.hpp 
-Parser/Parser.hpp 
 Parser/ParserRecord.hpp
 Parser/ParserItem.hpp
 Parser/InputErrorAction.hpp
@@ -165,11 +165,11 @@ Parser/MessageContainer.hpp
 bits/Generator/KeywordLoader.hpp
 bits/Generator/KeywordGenerator.hpp
 #
+Units.hpp
 Units/UnitSystem.hpp
 Units/Dimension.hpp
-Units/Units.hpp
 #
-EclipseState/EclipseState.hpp
+EclipseState.hpp
 EclipseState/EclipseConfig.hpp
 EclipseState/Eclipse3DProperties.hpp
 EclipseState/Runspec.hpp
