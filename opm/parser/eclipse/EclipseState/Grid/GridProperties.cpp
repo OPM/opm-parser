@@ -21,7 +21,7 @@
 
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
-#include <opm/parser/eclipse/Utility/String.hpp>
+#include <opm/parser/eclipse/bits/Utility/String.hpp>
 
 namespace Opm {
 

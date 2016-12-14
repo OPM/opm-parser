@@ -26,11 +26,11 @@
 
 #include <opm/json/JsonObject.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
-#include <opm/parser/eclipse/Deck/Section.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -38,12 +38,12 @@
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
-#include <opm/parser/eclipse/RawDeck/RawConsts.hpp>
-#include <opm/parser/eclipse/RawDeck/RawEnums.hpp>
-#include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
-#include <opm/parser/eclipse/RawDeck/RawKeyword.hpp>
-#include <opm/parser/eclipse/RawDeck/StarToken.hpp>
-#include <opm/parser/eclipse/Utility/Stringview.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawConsts.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawEnums.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawRecord.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawKeyword.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/StarToken.hpp>
+#include <opm/parser/eclipse/bits/Utility/Stringview.hpp>
 
 namespace Opm {
 

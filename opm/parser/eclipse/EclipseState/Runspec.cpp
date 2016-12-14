@@ -19,7 +19,7 @@
 #include <ostream>
 #include <type_traits>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
 
 namespace Opm {

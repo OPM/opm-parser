@@ -26,7 +26,7 @@
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
 
-#include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawRecord.hpp>
 
 #include <cmath>
 

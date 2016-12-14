@@ -29,7 +29,7 @@
 
 #include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
-#include <opm/parser/eclipse/Utility/Stringview.hpp>
+#include <opm/parser/eclipse/bits/Utility/Stringview.hpp>
 
 namespace Json {
     class JsonObject;

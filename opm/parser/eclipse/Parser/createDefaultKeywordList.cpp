@@ -27,8 +27,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include <opm/parser/eclipse/Generator/KeywordGenerator.hpp>
-#include <opm/parser/eclipse/Generator/KeywordLoader.hpp>
+#include <opm/parser/eclipse/bits/Generator/KeywordGenerator.hpp>
+#include <opm/parser/eclipse/bits/Generator/KeywordLoader.hpp>
 
 
 int main(int argc , char ** argv) {

@@ -24,11 +24,11 @@
 #include <boost/test/unit_test.hpp>
 
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/RestartConfig.hpp>
-#include <opm/parser/eclipse/Utility/Functional.hpp>
+#include <opm/parser/eclipse/bits/Utility/Functional.hpp>
 
 inline std::string fst( const std::pair< std::string, int >& p ) {
     return p.first;
