@@ -22,6 +22,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
@@ -47,7 +48,7 @@ static Deck createDeckWithOutSolvent() {
             "WCONINJE\n"
             "     'W_1' 'WATER' 'OPEN' 'BHP' 1 2 3/\n/\n";
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 static Deck createDeckWithGasInjector() {
@@ -66,7 +67,7 @@ static Deck createDeckWithGasInjector() {
             "     'W_1'        1 / \n "
             "/\n";
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 static Deck createDeckWithDynamicWSOLVENT() {
@@ -97,7 +98,7 @@ static Deck createDeckWithDynamicWSOLVENT() {
             "     'W_1'        0 / \n "
             "/\n";
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 static Deck createDeckWithOilInjector() {
@@ -116,7 +117,7 @@ static Deck createDeckWithOilInjector() {
             "     'W_1'        1 / \n "
             "/\n";
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 static Deck createDeckWithWaterInjector() {
@@ -135,7 +136,7 @@ static Deck createDeckWithWaterInjector() {
             "     'W_1'        1 / \n "
             "/\n";
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 BOOST_AUTO_TEST_CASE(TestNoSolvent) {
     auto deck = createDeckWithOutSolvent();

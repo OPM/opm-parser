@@ -21,6 +21,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
@@ -37,7 +38,7 @@ BOOST_AUTO_TEST_CASE( parse_TITLE_OK ) {
     Parser parser;
     std::string fileWithTitleKeyword("testdata/integration_tests/TITLE/TITLE1.txt");
 
-    auto deck = parser.parseFile(fileWithTitleKeyword, ParseContext());
+    auto deck = ecl::parseDeck( parser, fileWithTitleKeyword, ParseContext());
 
     BOOST_CHECK_EQUAL(size_t(2), deck.size());
     BOOST_CHECK_EQUAL (true, deck.hasKeyword("TITLE"));

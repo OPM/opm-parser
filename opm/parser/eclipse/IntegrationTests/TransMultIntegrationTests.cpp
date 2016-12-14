@@ -20,6 +20,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -33,7 +34,7 @@ BOOST_AUTO_TEST_CASE(MULTFLT_IN_SCHEDULE) {
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/TRANS/Deck1");
     ParseContext parseContext;
-    auto deck = parser.parseFile(scheduleFile, parseContext);
+    auto deck = ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseState state(deck, parseContext);
     const auto& trans = state.getTransMult();
     const auto& schedule = state.getSchedule();

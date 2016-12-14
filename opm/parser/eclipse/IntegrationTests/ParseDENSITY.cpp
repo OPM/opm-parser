@@ -23,6 +23,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -40,7 +41,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE(ParseDENSITY) {
     Parser parser;
     std::string file("testdata/integration_tests/DENSITY/DENSITY1");
-    auto deck =  parser.parseFile(file, ParseContext());
+    auto deck =  ecl::parseDeck( parser, file, ParseContext());
     const auto& densityKw = deck.getKeyword("DENSITY" , 0);
 
 

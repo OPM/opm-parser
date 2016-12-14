@@ -21,6 +21,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
@@ -31,6 +32,8 @@
 
 #include <string>
 #include <memory>
+
+using namespace Opm;
 
 inline Opm::Deck createSWOFDeck() {
     const char *deckData =
@@ -43,7 +46,7 @@ inline Opm::Deck createSWOFDeck() {
         " 9 10 11 12 /\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext());
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext() );
 }
 
 BOOST_AUTO_TEST_CASE( CreateContainer ) {

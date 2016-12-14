@@ -20,6 +20,7 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -33,7 +34,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE( parse_WCHONHIST_OK ) {
     Parser parser;
     std::string wconhistFile("testdata/integration_tests/WCONHIST/WCONHIST1");
-    auto deck =  parser.parseFile(wconhistFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, wconhistFile, ParseContext());
     const auto& kw1 = deck.getKeyword("WCONHIST" , 0);
     BOOST_CHECK_EQUAL( 3U , kw1.size() );
 

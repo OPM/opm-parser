@@ -26,7 +26,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
@@ -39,6 +39,8 @@
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
+
+using namespace Opm;
 
 
 static Opm::Deck createDeckInvalidArray1() {
@@ -57,7 +59,7 @@ static Opm::Deck createDeckInvalidArray1() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 static Opm::Deck createDeckInvalidArray2() {
@@ -76,7 +78,7 @@ static Opm::Deck createDeckInvalidArray2() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -96,7 +98,7 @@ static Opm::Deck createDeckInvalidTypeMismatch() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -117,7 +119,7 @@ static Opm::Deck createDeckInvalidRegion() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -138,7 +140,7 @@ static Opm::Deck createDeckUnInitialized() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -175,7 +177,7 @@ static Opm::Deck createValidIntDeck() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 

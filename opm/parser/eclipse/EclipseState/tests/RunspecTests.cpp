@@ -21,9 +21,11 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
+#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 using namespace Opm;
 
@@ -49,7 +51,7 @@ BOOST_AUTO_TEST_CASE(TwoPhase) {
     Parser parser;
     ParseContext parseContext;
 
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser,input, parseContext);
 
     Runspec runspec( deck );
     const auto& phases = runspec.phases();
@@ -70,7 +72,7 @@ BOOST_AUTO_TEST_CASE(ThreePhase) {
     Parser parser;
     ParseContext parseContext;
 
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser,input, parseContext);
 
     Runspec runspec( deck );
     const auto& phases = runspec.phases();
@@ -95,7 +97,7 @@ BOOST_AUTO_TEST_CASE(TABDIMS) {
     Parser parser;
     ParseContext parseContext;
 
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser,input, parseContext);
 
     Runspec runspec( deck );
     const auto& tabdims = runspec.tabdims();

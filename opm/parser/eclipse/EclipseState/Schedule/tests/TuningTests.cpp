@@ -22,6 +22,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -62,7 +63,7 @@ const std::string& deckStr =  "START\n"
 
 static Deck createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 

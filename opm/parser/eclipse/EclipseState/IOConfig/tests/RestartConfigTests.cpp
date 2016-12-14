@@ -23,7 +23,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED_INTEGER) {
     Parser parser;
     ParseContext ctx;
 
-    auto deck1 = parser.parseString( deckData1, ctx );
+    auto deck1 = ecl::parseDeckString( parser, deckData1, ctx );
     RestartConfig rstConfig1( deck1 );
 
     BOOST_CHECK(  rstConfig1.getWriteRestartFile( 0 ) );
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(RPTRST_mixed_mnemonics_int_list) {
                        "BASIC=1\n"
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     BOOST_CHECK_THROW( RestartConfig c( deck ), std::runtime_error );
 }
 
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(RPTRST) {
     Opm::Parser parser;
     ParseContext ctx;
 
-    auto deck1 = parser.parseString( deckData1, ctx );
+    auto deck1 = ecl::parseDeckString( parser, deckData1, ctx );
     RestartConfig rstConfig1( deck1 );
 
     // Observe that this is true due to some undocumented guessing that
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE(RPTRST) {
 
     BOOST_CHECK_EQUAL( rstConfig1.getKeyword( "ALLPROPS" , 2 ) , 0);
 
-    auto deck2 = parser.parseString( deckData2, ctx );
+    auto deck2 = ecl::parseDeckString( parser, deckData2, ctx );
     RestartConfig rstConfig2( deck2 );
 
     const auto expected2 = { "BASIC", "FLOWS", "FREQ" };
@@ -359,7 +359,7 @@ BOOST_AUTO_TEST_CASE(RPTRST) {
     BOOST_CHECK(  rstConfig2.getWriteRestartFile( 2 ) );
     BOOST_CHECK( !rstConfig2.getWriteRestartFile( 3 ) );
 
-    auto deck3 = parser.parseString( deckData3, ctx );
+    auto deck3 = ecl::parseDeckString( parser, deckData3, ctx );
     RestartConfig rstConfig3( deck3 );
 
     BOOST_CHECK( !rstConfig3.getWriteRestartFile( 0 ) );
@@ -455,7 +455,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED) {
     Parser parser;
     ParseContext ctx;
 
-    auto deck1 = parser.parseString( deckData1, ctx );
+    auto deck1 = ecl::parseDeckString( parser, deckData1, ctx );
     RestartConfig rstConfig1( deck1 );
 
     BOOST_CHECK( !rstConfig1.getWriteRestartFile( 0 ) );
@@ -464,7 +464,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED) {
     BOOST_CHECK(  rstConfig1.getWriteRestartFile( 3 ) );
 
 
-    auto deck2 = parser.parseString( deckData2, ctx );
+    auto deck2 = ecl::parseDeckString( parser, deckData2, ctx );
     RestartConfig rstConfig2( deck2 );
 
     BOOST_CHECK( !rstConfig2.getWriteRestartFile( 0 ) );
@@ -478,7 +478,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED) {
                                    kw_list2.begin(), kw_list2.end() );
 
 
-    auto deck3 = parser.parseString( deckData3, ctx );
+    auto deck3 = ecl::parseDeckString( parser, deckData3, ctx );
     RestartConfig rstConfig3( deck3 );
     //Older ECLIPSE 100 data set may use integer controls instead of mnemonics
     BOOST_CHECK(  rstConfig3.getWriteRestartFile( 0 ) );
@@ -521,7 +521,7 @@ BOOST_AUTO_TEST_CASE(RPTSCHED_and_RPTRST) {
     Opm::Parser parser;
     ParseContext ctx;
 
-    auto deck = parser.parseString( deckData, ctx );
+    auto deck = ecl::parseDeckString( parser, deckData, ctx );
     RestartConfig rstConfig( deck );
 
     BOOST_CHECK( !rstConfig.getWriteRestartFile( 0 ) );
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE(NO_BASIC) {
                        "RPTSCHED\n"
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     for( size_t ts = 0; ts < 4; ++ts )
@@ -582,7 +582,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_1) {
                        "BASIC=1\n"
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     for( size_t ts = 0; ts < 3; ++ts )
@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_3) {
                         " 6 JAN 1982 14:56:45.123 /\n"  // timestep 11
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     const size_t freq = 3;
@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_4) {
                         " 6 JAN 1983 14:56:45.123 /\n"  // timestep 12
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     /* BASIC=4, restart file is written at the first report step of each year.
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_4_FREQ_2) {
                         " 1 JAN 1986 /\n" 
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     /* BASIC=4, restart file is written at the first report step of each year.
@@ -734,7 +734,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_5) {
                         "  2 JUN 1983 /\n"
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     /* BASIC=5, restart file is written at the first report step of each month.
@@ -772,7 +772,7 @@ BOOST_AUTO_TEST_CASE(BASIC_EQ_0) {
                         "  2 JUN 1983 /\n"
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     /* RESTART=0, no restart file is written
@@ -808,7 +808,7 @@ BOOST_AUTO_TEST_CASE(RESTART_EQ_0) {
                         "  2 JUN 1983 /\n"
                         "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     /* RESTART=0, no restart file is written
@@ -848,7 +848,7 @@ BOOST_AUTO_TEST_CASE(RESTART_BASIC_GT_2) {
                         " 1 JAN 1986 /\n" 
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     for( size_t ts : { 1, 2, 3, 4, 5, 7, 8, 10, 11  } )
@@ -889,7 +889,7 @@ BOOST_AUTO_TEST_CASE(RESTART_BASIC_LEQ_2) {
                         " 1 JAN 1986 /\n"
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(), data, ParseContext() );
     RestartConfig ioConfig( deck );
 
     BOOST_CHECK( ioConfig.getWriteRestartFile( 1 ) );

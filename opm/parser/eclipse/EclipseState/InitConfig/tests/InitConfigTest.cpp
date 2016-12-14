@@ -23,6 +23,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
@@ -104,7 +105,7 @@ const std::string& deckWithEquil =
 
 static Deck createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, Opm::ParseContext());
+    return ecl::parseDeckString( parser, input, Opm::ParseContext());
 }
 
 BOOST_AUTO_TEST_CASE(InitConfigTest) {

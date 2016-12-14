@@ -23,6 +23,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/PvtoTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -60,7 +61,7 @@ PVTO\n\
 
 BOOST_AUTO_TEST_CASE( parse_PVTO_OK ) {
     Parser parser;
-    auto deck =  parser.parseString(pvtoData, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, pvtoData, ParseContext());
     const auto& kw1 = deck.getKeyword("PVTO" , 0);
     BOOST_CHECK_EQUAL(5U , kw1.size());
 

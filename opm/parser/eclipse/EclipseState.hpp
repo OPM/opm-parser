@@ -23,6 +23,9 @@
 #include <memory>
 #include <vector>
 
+#include <opm/parser/eclipse/Parser.hpp>
+#include <opm/parser/eclipse/Parser/MessageContainer.hpp>
+#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/EclipseConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
@@ -32,8 +35,6 @@
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
-#include <opm/parser/eclipse/Parser/MessageContainer.hpp>
-#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 namespace Opm {
 
@@ -138,6 +139,31 @@ namespace Opm {
         MessageContainer m_messageContainer;
 
     };
+
+namespace ecl {
+    EclipseState parse( const std::string& filename,
+                        const ParseContext& = ParseContext(),
+                        const Parser& = Parser() );
+
+    EclipseState parseString( const std::string& string,
+                              const ParseContext& = ParseContext(),
+                              const Parser& = Parser() );
+
+    /// Parses the deck specified in filename.  If context contains ParseContext::PARSE_PARTIAL_DECK,
+    /// we construct only a lean grid, otherwise, we construct a full EclipseState and return the
+    /// fully constructed InputGrid
+    EclipseGrid parseGrid( const std::string& filename,
+                           const ParseContext& = ParseContext(),
+                           const Parser& = Parser() );
+
+    /// Parses the provided deck string.  If context contains ParseContext::PARSE_PARTIAL_DECK,
+    /// we construct only a lean grid, otherwise, we construct a full EclipseState and return the
+    /// fully constructed InputGrid
+    EclipseGrid parseGridString( const std::string& string,
+                                 const ParseContext& = ParseContext(),
+                                 const Parser& = Parser() );
+}
+
 }
 
 #endif // OPM_ECLIPSE_STATE_HPP

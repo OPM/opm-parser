@@ -27,6 +27,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
@@ -39,6 +40,8 @@
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
+using namespace Opm;
+
 static const Opm::DeckKeyword createSATNUMKeyword( ) {
     const char* deckData =
     "SATNUM \n"
@@ -46,7 +49,7 @@ static const Opm::DeckKeyword createSATNUMKeyword( ) {
     "\n";
 
     Opm::Parser parser;
-    Opm::Deck deck = parser.parseString(deckData, Opm::ParseContext());
+    Opm::Deck deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     return deck.getKeyword("SATNUM");
 }
 
@@ -57,7 +60,7 @@ static const Opm::DeckKeyword createTABDIMSKeyword( ) {
     "\n";
 
     Opm::Parser parser;
-    Opm::Deck deck = parser.parseString(deckData, Opm::ParseContext());
+    Opm::Deck deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     return deck.getKeyword("TABDIMS");
 }
 
@@ -348,7 +351,7 @@ BOOST_AUTO_TEST_CASE(GridPropertyInitialization) {
     Opm::ParseContext parseContext;
     Opm::Parser parser;
 
-    auto deck = parser.parseString(deckString, parseContext);
+    auto deck = ecl::parseDeckString( parser, deckString, parseContext);
     Opm::TableManager tm(deck);
     Opm::EclipseGrid eg(deck);
     Opm::Eclipse3DProperties props(deck, tm, eg);

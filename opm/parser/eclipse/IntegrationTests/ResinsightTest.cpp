@@ -20,6 +20,7 @@
 #define BOOST_TEST_MODULE ResinsightIntegrationTests
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/Section.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE( test_parse ) {
     parser.addKeyword<ParserKeywords::SPECGRID>();
     parser.addKeyword<ParserKeywords::FAULTS>();
 
-    auto deck = parser.parseFile("testdata/integration_tests/Resinsight/DECK1.DATA" , parseContext);
+    auto deck = ecl::parseDeck( parser, "testdata/integration_tests/Resinsight/DECK1.DATA" , parseContext);
 
     BOOST_CHECK( deck.hasKeyword<ParserKeywords::SPECGRID>() );
     BOOST_CHECK( deck.hasKeyword<ParserKeywords::FAULTS>() );
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_CASE( test_state ) {
     parser.addKeyword<ParserKeywords::SPECGRID>();
     parser.addKeyword<ParserKeywords::FAULTS>();
     parser.addKeyword<ParserKeywords::GRID>();
-    auto deck = parser.parseFile("testdata/integration_tests/Resinsight/DECK1.DATA" , parseContext);
+    auto deck = ecl::parseDeck( parser, "testdata/integration_tests/Resinsight/DECK1.DATA" , parseContext);
 
     GridDims grid(deck);
     GRIDSection gsec(deck);

@@ -26,8 +26,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-
-
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
@@ -36,6 +35,8 @@
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
+
+using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(CreateTimeMap_InvalidThrow) {
     boost::gregorian::date startDate;
@@ -232,7 +233,7 @@ BOOST_AUTO_TEST_CASE(TimeStepsCorrect) {
         " 6 7 /\n";
 
     Opm::Parser parser( true );
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     Opm::TimeMap tmap(deck);
 
     BOOST_CHECK_EQUAL(tmap.getStartTime(/*timeLevelIdx=*/0),
@@ -303,7 +304,7 @@ BOOST_AUTO_TEST_CASE(initTimestepsYearsAndMonths) {
         " 6 7 /\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser,deckData, Opm::ParseContext());
     const Opm::TimeMap tmap(deck);
 
     /*deckData timesteps:

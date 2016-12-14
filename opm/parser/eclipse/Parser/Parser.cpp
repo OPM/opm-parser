@@ -31,8 +31,7 @@
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/bits/Deck/Section.hpp>
-#include <opm/parser/eclipse/EclipseState.hpp>
-#include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
@@ -332,23 +331,24 @@ void ParserState::loadFile(const boost::filesystem::path& inputFile) {
  */
 
 void ParserState::handleRandomText(const string_view& keywordString ) const {
+    std::string msg;
     std::string errorKey;
-    std::stringstream msg;
-    std::string trimmedCopy = keywordString.string();
 
-    if (trimmedCopy == "/") {
+    if ( keywordString == "/" ) {
         errorKey = ParseContext::PARSE_RANDOM_SLASH;
-        msg << "Extra '/' detected at: "
-            << this->current_path()
-            << ":" << this->line();
+        msg = "Extra '/' detected at: "
+            + this->current_path().string()
+            + ":"
+            + std::to_string( this->line() );
     } else {
         errorKey = ParseContext::PARSE_RANDOM_TEXT;
-        msg << "String \'" << keywordString
-            << "\' not formatted/recognized as valid keyword at: "
-            << this->current_path()
-            << ":" << this->line();
+        msg = "String \'" + keywordString
+            + "\' not formatted/recognized as valid keyword at: "
+            + this->current_path().string()
+            + ":"
+            + std::to_string( this->line() );
     }
-    parseContext.handleError( errorKey , deck.getMessageContainer() , msg.str() );
+    parseContext.handleError( errorKey , deck.getMessageContainer() , msg );
 }
 
 void ParserState::openRootFile( const boost::filesystem::path& inputFile) {
@@ -583,67 +583,6 @@ bool parseState( ParserState& parserState, const Parser& parser ) {
      is retained in the current implementation.
      */
 
-    inline void assertFullDeck(const ParseContext& context) {
-        if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
-            throw new std::logic_error("Cannot construct a state in partial deck context");
-    }
-
-    EclipseState Parser::parse(const std::string &filename, const ParseContext& context) {
-        assertFullDeck(context);
-        return EclipseState( Parser{}.parseFile( filename, context ), context );
-    }
-
-    EclipseState Parser::parse(const Deck& deck, const ParseContext& context) {
-        assertFullDeck(context);
-        return EclipseState(deck, context);
-    }
-
-    EclipseState Parser::parseData(const std::string &data, const ParseContext& context) {
-        assertFullDeck(context);
-        Parser p;
-        auto deck = p.parseString(data, context);
-        return parse(deck, context);
-    }
-
-    EclipseGrid Parser::parseGrid(const std::string &filename, const ParseContext& context) {
-        if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
-            return EclipseGrid{ filename };
-        return parse(filename, context).getInputGrid();
-    }
-
-    EclipseGrid Parser::parseGrid(const Deck& deck, const ParseContext& context)
-    {
-        if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
-            return EclipseGrid{ deck };
-        return parse(deck, context).getInputGrid();
-    }
-
-    EclipseGrid Parser::parseGridData(const std::string &data, const ParseContext& context) {
-        Parser parser;
-        auto deck = parser.parseString(data, context);
-        if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS)) {
-            return EclipseGrid{ deck };
-        }
-        return parse(deck, context).getInputGrid();
-    }
-
-    Deck Parser::parseFile(const std::string &dataFileName, const ParseContext& parseContext) const {
-        ParserState parserState( parseContext, dataFileName );
-        parseState( parserState, *this );
-        applyUnitsToDeck( parserState.deck );
-
-        return std::move( parserState.deck );
-    }
-
-    Deck Parser::parseString(const std::string &data, const ParseContext& parseContext) const {
-        ParserState parserState( parseContext );
-        parserState.loadString( data );
-
-        parseState( parserState, *this );
-        applyUnitsToDeck( parserState.deck );
-
-        return std::move( parserState.deck );
-    }
 
     size_t Parser::size() const {
         return m_deckParserKeywords.size();
@@ -754,30 +693,6 @@ std::vector<std::string> Parser::getAllDeckNames () const {
             }
         } else
             throw std::invalid_argument("Input JSON object is not an array");
-    }
-
-    void Parser::applyUnitsToDeck(Deck& deck) const {
-        /*
-         * If multiple unit systems are requested, metric is preferred over
-         * lab, and field over metric, for as long as we have no easy way of
-         * figuring out which was requested last.
-         */
-        if( deck.hasKeyword( "LAB" ) )
-            deck.getActiveUnitSystem() = UnitSystem::newLAB();
-        if( deck.hasKeyword( "FIELD" ) )
-            deck.getActiveUnitSystem() = UnitSystem::newFIELD();
-        if( deck.hasKeyword( "METRIC" ) )
-            deck.getActiveUnitSystem() = UnitSystem::newMETRIC();
-
-        for( auto& deckKeyword : deck ) {
-
-            if( !isRecognizedKeyword( deckKeyword.name() ) ) continue;
-
-            const auto* parserKeyword = getParserKeywordFromDeckName( deckKeyword.name() );
-            if( !parserKeyword->hasDimension() ) continue;
-
-            parserKeyword->applyUnitsToDeck(deck , deckKeyword);
-        }
     }
 
     static bool isSectionDelimiter( const DeckKeyword& keyword ) {
@@ -922,5 +837,56 @@ std::vector<std::string> Parser::getAllDeckNames () const {
 
         return deckValid;
     }
+
+namespace {
+
+void applyUnitsToDeck( const Parser& p, Deck& deck ) {
+    /*
+        * If multiple unit systems are requested, metric is preferred over
+        * lab, and field over metric, for as long as we have no easy way of
+        * figuring out which was requested last.
+        */
+    if( deck.hasKeyword( "LAB" ) )
+        deck.getActiveUnitSystem() = UnitSystem::newLAB();
+    if( deck.hasKeyword( "FIELD" ) )
+        deck.getActiveUnitSystem() = UnitSystem::newFIELD();
+    if( deck.hasKeyword( "METRIC" ) )
+        deck.getActiveUnitSystem() = UnitSystem::newMETRIC();
+
+    for( auto& deckKeyword : deck ) {
+
+        if( !p.isRecognizedKeyword( deckKeyword.name() ) ) continue;
+
+        const auto* parserKeyword = p.getParserKeywordFromDeckName( deckKeyword.name() );
+        if( !parserKeyword->hasDimension() ) continue;
+
+        parserKeyword->applyUnitsToDeck(deck , deckKeyword);
+    }
+}
+
+}
+
+namespace ecl {
+
+Deck parseDeck( const Parser& p, const std::string& file, const ParseContext& mode ) {
+    ParserState parserState( mode, file );
+    parseState( parserState, p );
+    applyUnitsToDeck( p, parserState.deck );
+
+    return std::move( parserState.deck );
+}
+
+Deck parseDeckString( const Parser& p, const std::string& data, const ParseContext& mode ) {
+    ParserState parserState( mode );
+    parserState.loadString( data );
+
+    parseState( parserState, p );
+    applyUnitsToDeck( p, parserState.deck );
+
+    return std::move( parserState.deck );
+
+}
+
+}
 
 } // namespace Opm

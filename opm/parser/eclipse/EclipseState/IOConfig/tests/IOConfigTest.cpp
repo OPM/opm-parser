@@ -23,7 +23,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/IOConfig.hpp>
@@ -156,7 +158,7 @@ const std::string deckStr_RFT = "RUNSPEC\n"
 
 static Deck createDeck(const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, Opm::ParseContext());
+    return ecl::parseDeckString( parser, input, Opm::ParseContext());
 }
 
 
@@ -200,7 +202,7 @@ BOOST_AUTO_TEST_CASE(DefaultProperties) {
                         " 1 JAN 1986 /\n" 
                        "/\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(),  data, ParseContext() );
     IOConfig ioConfig( deck );
 
     /*If no GRIDFILE nor NOGGF keywords are specified, default output an EGRID file*/
@@ -234,7 +236,7 @@ BOOST_AUTO_TEST_CASE(OutputProperties) {
                         "SCHEDULE\n";
 
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(),  data, ParseContext() );
     IOConfig ioConfig( deck );
 
     BOOST_CHECK( !ioConfig.getWriteEGRIDFile() );
@@ -256,7 +258,7 @@ BOOST_AUTO_TEST_CASE(NoGRIDFILE) {
                         " 0 0 /\n"
                         "\n";
 
-    auto deck = Parser().parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( Parser(),  data, ParseContext() );
     IOConfig ioConfig( deck );
 
     /*If GRIDFILE 0 0 is specified, no EGRID file is written */

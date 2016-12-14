@@ -20,6 +20,7 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -34,7 +35,7 @@ BOOST_AUTO_TEST_CASE( PARSE_TOPS_OK) {
     Parser parser;
     std::string deckFile("testdata/integration_tests/GRID/TOPS.DATA");
     ParseContext parseContext;
-    auto deck =  parser.parseFile(deckFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, deckFile, parseContext);
     EclipseState state(deck, parseContext);
     const auto& grid = state.getInputGrid();
 

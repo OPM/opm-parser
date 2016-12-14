@@ -141,6 +141,7 @@ EclipseState/IOConfig/IOConfig.cpp)
 #
 
 set( HEADER_FILES
+bits/Parsers.hpp
 bits/RawDeck/RawConsts.hpp
 bits/RawDeck/RawKeyword.hpp
 bits/RawDeck/RawRecord.hpp

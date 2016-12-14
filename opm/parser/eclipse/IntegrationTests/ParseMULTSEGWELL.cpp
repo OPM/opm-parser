@@ -23,6 +23,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -37,7 +38,7 @@ BOOST_AUTO_TEST_CASE( PARSE_MULTISEGMENT_ABS ) {
 
     Parser parser;
     std::string deckFile("testdata/integration_tests/SCHEDULE/SCHEDULE_MULTISEGMENT_WELL");
-    auto deck =  parser.parseFile(deckFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, deckFile, ParseContext());
     // for WELSEGS keyword
     const auto& kw = deck.getKeyword("WELSEGS");
 

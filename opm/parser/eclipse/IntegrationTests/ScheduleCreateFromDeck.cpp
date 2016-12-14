@@ -24,6 +24,7 @@
 #include <boost/test/test_tools.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE(CreateSchedule) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE1");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,10);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true) );
     const auto& timeMap = sched.getTimeMap();
@@ -58,7 +59,7 @@ BOOST_AUTO_TEST_CASE(CreateSchedule_Comments_After_Keywords) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_COMMENTS_AFTER_KEYWORDS");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,10);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true) );
     const auto& timeMap = sched.getTimeMap();
@@ -71,7 +72,7 @@ BOOST_AUTO_TEST_CASE(WCONPROD_MissingCmode) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_MISSING_CMODE");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     BOOST_CHECK_NO_THROW( Schedule(parseContext , grid , deck, Phases(true, true, true) ) );
 }
@@ -81,7 +82,7 @@ BOOST_AUTO_TEST_CASE(WCONPROD_Missing_DATA) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_CMODE_MISSING_DATA");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
 
     BOOST_CHECK_THROW( Schedule(parseContext , grid , deck, Phases(true, true, true) ) , std::invalid_argument );
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(WellTestRefDepth) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     BOOST_CHECK_EQUAL(3, 3);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true) );
@@ -111,7 +112,7 @@ BOOST_AUTO_TEST_CASE(WellTestOpen) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true) );
 
@@ -151,7 +152,7 @@ BOOST_AUTO_TEST_CASE(WellTesting) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true) );
 
@@ -267,7 +268,7 @@ BOOST_AUTO_TEST_CASE(WellTestCOMPDAT_DEFAULTED_ITEMS) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_COMPDAT1");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     Schedule sched(parseContext , grid, deck, Phases(true, true, true));
 }
@@ -277,7 +278,7 @@ BOOST_AUTO_TEST_CASE(WellTestCOMPDAT) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -307,7 +308,7 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_GRUPTREE_with_explicit_L0_parenting) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_GRUPTREE_EXPLICIT_PARENTING");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -331,7 +332,7 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_GRUPTREE_correct) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELSPECS_GRUPTREE");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule schedule(parseContext , grid , deck, Phases(true, true, true));
 
@@ -350,7 +351,7 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_WELSPECS_AND_GRUPTREE_correct_size ) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELSPECS_GROUPS");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule schedule(parseContext , grid , deck, Phases(true, true, true));
 
@@ -365,7 +366,7 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_WELSPECS_AND_GRUPTREE_correct_tree) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELSPECS_GROUPS");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule schedule(parseContext , grid , deck, Phases(true, true, true));
 
@@ -396,7 +397,7 @@ BOOST_AUTO_TEST_CASE(GroupTreeTest_GRUPTREE_WITH_REPARENT_correct_tree) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_GROUPS_REPARENT");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule schedule(parseContext , grid , deck, Phases(true, true, true));
 
@@ -415,7 +416,7 @@ BOOST_AUTO_TEST_CASE( WellTestGroups ) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_GROUPS");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -457,7 +458,7 @@ BOOST_AUTO_TEST_CASE( WellTestGroupAndWellRelation ) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS_AND_GROUPS");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -484,7 +485,7 @@ BOOST_AUTO_TEST_CASE(WellTestWELSPECSDataLoaded) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELLS2");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,60,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -517,7 +518,7 @@ BOOST_AUTO_TEST_CASE(WellTestWELSPECSDataLoaded) {
 BOOST_AUTO_TEST_CASE(WellTestWELOPEN_ConfigWithIndexes_Throws) {
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELOPEN_INVALID");
-    auto deck =  parser.parseFile(scheduleFile);
+    auto deck =  ecl::parseDeck( parser, scheduleFile);
     std::shared_ptr<const EclipseGrid> grid = std::make_shared<const EclipseGrid>(10,10,3);
     BOOST_CHECK_THROW(Schedule(grid , deck), std::logic_error);
 }
@@ -526,7 +527,7 @@ BOOST_AUTO_TEST_CASE(WellTestWELOPEN_ConfigWithIndexes_Throws) {
 BOOST_AUTO_TEST_CASE(WellTestWELOPENControlsSet) {
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WELOPEN");
-    auto deck =  parser.parseFile(scheduleFile);
+    auto deck =  ecl::parseDeck( parser, scheduleFile);
     std::shared_ptr<const EclipseGrid> grid = std::make_shared<const EclipseGrid>( 10,10,10 );
     Schedule sched(grid , deck);
 
@@ -546,7 +547,7 @@ BOOST_AUTO_TEST_CASE(WellTestWGRUPCONWellPropertiesSet) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WGRUPCON");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,10);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -585,7 +586,7 @@ WELSPECS \n\
 COMPDAT \n\
      'W1'   2*    1    1      'OPEN'  1*     32.948      0.311   3047.839  2*         'X'     22.100 /\n\
 /\n";
-    auto deck =  parser.parseString(deckString, parseContext);
+    auto deck =  ecl::parseDeckString( parser, deckString, parseContext);
     EclipseGrid grid(30,30,10);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
     const auto* well = sched.getWell("W1");
@@ -603,7 +604,7 @@ BOOST_AUTO_TEST_CASE(OpmCode) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/wells_group.data");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(10,10,3);
     BOOST_CHECK_NO_THROW( Schedule(parseContext , grid , deck, Phases(true, true, true)) );
 }
@@ -614,7 +615,7 @@ BOOST_AUTO_TEST_CASE(WELLS_SHUT) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_SHUT_WELL");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(20,40,1);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -638,7 +639,7 @@ BOOST_AUTO_TEST_CASE(WellTestWPOLYMER) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_POLYMER");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(30,30,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -686,7 +687,7 @@ BOOST_AUTO_TEST_CASE(WellTestWECON) {
     ParseContext parseContext;
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_WECON");
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(30,30,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
 
@@ -796,7 +797,7 @@ BOOST_AUTO_TEST_CASE(TestEvents) {
     Parser parser;
     std::string scheduleFile("testdata/integration_tests/SCHEDULE/SCHEDULE_EVENTS");
 
-    auto deck =  parser.parseFile(scheduleFile, parseContext);
+    auto deck =  ecl::parseDeck( parser, scheduleFile, parseContext);
     EclipseGrid grid(40,40,30);
     Schedule sched(parseContext , grid , deck, Phases(true, true, true));
     const Events& events = sched.getEvents();

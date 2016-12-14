@@ -33,7 +33,7 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(noNNC)
 {
-    auto eclipseState = Parser::parse("testdata/integration_tests/NNC/noNNC.DATA");
+    auto eclipseState = ecl::parse("testdata/integration_tests/NNC/noNNC.DATA");
     const auto& nnc = eclipseState.getInputNNC();
     BOOST_CHECK(!eclipseState.hasInputNNC());
     BOOST_CHECK(!nnc.hasNNC());
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(noNNC)
 
 BOOST_AUTO_TEST_CASE(readDeck)
 {
-    auto eclipseState = Parser::parse("testdata/integration_tests/NNC/NNC.DATA");
+    auto eclipseState = ecl::parse("testdata/integration_tests/NNC/NNC.DATA");
     const auto& nnc = eclipseState.getInputNNC();
     BOOST_CHECK(nnc.hasNNC());
     const std::vector<NNCdata>& nncdata = nnc.nncdata();
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(readDeck)
 
 BOOST_AUTO_TEST_CASE(addNNCfromDeck)
 {
-    auto eclipseState = Parser::parse("testdata/integration_tests/NNC/NNC.DATA");
+    auto eclipseState = ecl::parse("testdata/integration_tests/NNC/NNC.DATA");
     auto nnc = eclipseState.getInputNNC();
     BOOST_CHECK(nnc.hasNNC());
     const std::vector<NNCdata>& nncdata = nnc.nncdata();

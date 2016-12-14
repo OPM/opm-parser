@@ -21,6 +21,7 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -54,7 +55,7 @@ const char *parserData =
 
 BOOST_AUTO_TEST_CASE( parse_SWOF_OK ) {
     Parser parser;
-    auto deck =  parser.parseString(parserData, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, parserData, ParseContext());
 
     const auto& kw1 = deck.getKeyword("SWOF");
     const auto& record0 = kw1.getRecord(0);

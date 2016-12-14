@@ -22,6 +22,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -73,12 +74,12 @@ BOOST_AUTO_TEST_CASE( PARSE_SORWMIS) {
 Parser parser;
 
 // missing miscible keyword
-BOOST_CHECK_THROW (parser.parseString(sorwmisData, ParseContext()), std::invalid_argument );
+BOOST_CHECK_THROW (ecl::parseDeckString( parser, sorwmisData, ParseContext()), std::invalid_argument );
 
 //too many tables
-BOOST_CHECK_THROW( parser.parseString(miscibleTightData + sorwmisData, ParseContext()), std::invalid_argument);
+BOOST_CHECK_THROW( ecl::parseDeckString( parser, miscibleTightData + sorwmisData, ParseContext()), std::invalid_argument);
 
-auto deck1 =  parser.parseString(miscibleData + sorwmisData, ParseContext());
+auto deck1 =  ecl::parseDeckString( parser, miscibleData + sorwmisData, ParseContext());
 
 const auto& sorwmis = deck1.getKeyword("SORWMIS");
 const auto& miscible = deck1.getKeyword("MISCIBLE");
@@ -110,7 +111,7 @@ BOOST_CHECK_EQUAL(0.8, sorwmisTable1.getMiscibleResidualOilColumn()[2]);
 BOOST_AUTO_TEST_CASE( PARSE_SGCWMIS) {
     Parser parser;
 
-    auto deck1 =  parser.parseString(miscibleData + sgcwmisData, ParseContext());
+    auto deck1 =  ecl::parseDeckString( parser, miscibleData + sgcwmisData, ParseContext());
 
     const auto& sgcwmis = deck1.getKeyword("SGCWMIS");
     const auto& miscible = deck1.getKeyword("MISCIBLE");
@@ -172,18 +173,18 @@ BOOST_AUTO_TEST_CASE(PARSE_MISC) {
     Parser parser;
 
     // out of range MISC keyword
-    auto deck1 = parser.parseString(miscOutOfRangeData, ParseContext());
+    auto deck1 = ecl::parseDeckString( parser, miscOutOfRangeData, ParseContext());
     const auto& item = deck1.getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable1(item);
 
 
     // too litle range of MISC keyword
-    auto deck2 = parser.parseString(miscTooSmallRangeData, ParseContext());
+    auto deck2 = ecl::parseDeckString( parser, miscTooSmallRangeData, ParseContext());
     const auto& item2 = deck2.getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable2(item2);
 
     // test table input
-    auto deck3 =  parser.parseString(miscData, ParseContext());
+    auto deck3 =  ecl::parseDeckString( parser, miscData, ParseContext());
     const auto& item3 = deck3.getKeyword("MISC").getRecord(0).getItem(0);
     Opm::MiscTable miscTable3(item3);
     BOOST_CHECK_EQUAL(3U, miscTable3.getSolventFractionColumn().size());
@@ -206,7 +207,7 @@ BOOST_AUTO_TEST_CASE(PARSE_PMISC)
     Parser parser;
 
     // test table input
-    auto deck =  parser.parseString(pmiscData, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, pmiscData, ParseContext());
     Opm::PmiscTable pmiscTable(deck.getKeyword("PMISC").getRecord(0).getItem(0));
     BOOST_CHECK_EQUAL(3U, pmiscTable.getOilPhasePressureColumn().size());
     BOOST_CHECK_EQUAL(200*1e5, pmiscTable.getOilPhasePressureColumn()[1]);
@@ -227,7 +228,7 @@ MSFN\n\
 
 BOOST_AUTO_TEST_CASE(PARSE_MSFN) {
 Parser parser;
-auto deck =  parser.parseString(msfnData, ParseContext());
+auto deck =  ecl::parseDeckString( parser, msfnData, ParseContext());
 
 // test table input 1
  Opm::MsfnTable msfnTable1(deck.getKeyword("MSFN").getRecord(0).getItem(0));
@@ -258,7 +259,7 @@ BOOST_AUTO_TEST_CASE(PARSE_TLPMIXPA) {
     Parser parser;
 
     // test table input
-    auto deck =  parser.parseString(tlpmixpa, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, tlpmixpa, ParseContext());
     Opm::TlpmixpaTable tlpmixpaTable(deck.getKeyword("TLPMIXPA").getRecord(0).getItem(0));
     BOOST_CHECK_EQUAL(3U, tlpmixpaTable.getOilPhasePressureColumn().size());
     BOOST_CHECK_EQUAL(200*1e5, tlpmixpaTable.getOilPhasePressureColumn()[1]);

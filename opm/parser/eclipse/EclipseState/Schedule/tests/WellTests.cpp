@@ -25,6 +25,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Units.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
@@ -194,7 +195,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestTRACK) {
 
 
     Opm::ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser, input, parseContext);
     Opm::EclipseGrid grid(10,10,10);
     Opm::Schedule schedule(Opm::ParseContext() , grid , deck, Opm::Phases(true, true, true) );
     auto* op_1 = schedule.getWell("OP_1");
@@ -233,7 +234,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestDefaultTRACK) {
 
 
     Opm::ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser, input, parseContext);
     Opm::EclipseGrid grid(10,10,10);
     Opm::Schedule schedule(Opm::ParseContext() , grid , deck, Opm::Phases(true, true, true) );
     auto* op_1 = schedule.getWell("OP_1");
@@ -274,7 +275,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestINPUT) {
 
 
     Opm::ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser, input, parseContext);
     Opm::EclipseGrid grid(10,10,10);
     Opm::Schedule schedule(Opm::ParseContext() , grid , deck, Opm::Phases(true, true, true) );
     auto* op_1 = schedule.getWell("OP_1");

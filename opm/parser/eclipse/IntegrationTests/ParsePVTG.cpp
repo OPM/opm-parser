@@ -20,6 +20,7 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -57,7 +58,7 @@ PVTG\n\
 
 BOOST_AUTO_TEST_CASE( parse_PVTG_OK ) {
     Parser parser;
-    auto deck =  parser.parseString(pvtgData, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, pvtgData, ParseContext());
     const auto& kw1 = deck.getKeyword("PVTG" , 0);
     BOOST_CHECK_EQUAL(5U , kw1.size());
 

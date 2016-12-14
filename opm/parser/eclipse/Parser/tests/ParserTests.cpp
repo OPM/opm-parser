@@ -25,6 +25,7 @@
 
 #include <opm/json/JsonObject.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 
@@ -231,8 +232,8 @@ BOOST_AUTO_TEST_CASE( PATHS_has_global_scope ) {
     ParseContext parseContext;
 
     parseContext.update( ParseContext::PARSE_MISSING_INCLUDE , Opm::InputError::THROW_EXCEPTION);
-    parser.parseFile( "testdata/parser/PATHSInInclude.data", parseContext );
-    BOOST_CHECK_THROW( parser.parseFile( "testdata/parser/PATHSInIncludeInvalid.data", ParseContext() ), std::invalid_argument );
+    ecl::parseDeck( parser, "testdata/parser/PATHSInInclude.data", parseContext );
+    BOOST_CHECK_THROW( ecl::parseDeck( parser, "testdata/parser/PATHSInIncludeInvalid.data", ParseContext() ), std::invalid_argument );
 }
 
 BOOST_AUTO_TEST_CASE( handle_empty_title ) {
@@ -242,7 +243,7 @@ BOOST_AUTO_TEST_CASE( handle_empty_title ) {
                              "EQLDIMS\n/\n";
 
     Parser parser;
-    const auto deck = parser.parseString( input_deck, ParseContext() );
+    const auto deck = ecl::parseDeckString( parser, input_deck, ParseContext() );
     BOOST_CHECK_EQUAL( "untitled", deck.getKeyword( "TITLE" ).getStringData().front() );
  }
 
@@ -271,7 +272,7 @@ SWOF
 /
 )";
 
-    BOOST_CHECK_NO_THROW( Parser().parseString( deck, ParseContext() ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( Parser(), deck, ParseContext() ) );
  }
 
 
@@ -287,7 +288,7 @@ BOOST_AUTO_TEST_CASE(ParseTNUM) {
 
     Opm::ParseContext parseContext;
     Opm::Parser parser;
-    auto deck = parser.parseString( deck1 , parseContext );
+    auto deck = ecl::parseDeckString( parser, deck1 , parseContext );
     BOOST_CHECK( deck.hasKeyword("TNUMFSGS"));
     BOOST_CHECK( deck.hasKeyword("TNUMFXXX"));
 }

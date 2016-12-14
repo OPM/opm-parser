@@ -21,6 +21,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
@@ -38,8 +39,7 @@ inline Deck createCOMPSEGSDeck() {
         " 1 1 1 1  100  100  X  10/\n"
         "/\n";
 
-    Parser parser;
-    return parser.parseString(deckData, ParseContext());
+    return ecl::parseDeckString( Parser(), deckData, ParseContext() );
 }
 
 

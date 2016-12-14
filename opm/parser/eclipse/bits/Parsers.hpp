@@ -1,5 +1,5 @@
 /*
-  Copyright 2013 Statoil ASA.
+  Copyright 2016 Statoil ASA.
 
   This file is part of the Open Porous Media project (OPM).
 
@@ -17,26 +17,28 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_TEST_MODULE ParserTVPD
-#include <boost/test/unit_test.hpp>
+#ifndef BITS_PARSERS_HPP
+#define BITS_PARSERS_HPP
 
-#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <string>
+
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
-#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
-using namespace Opm;
+namespace Opm {
+namespace ecl {
 
+/*
+ * A set of free functions that parses input files into internal
+ * representations
+ */
 
-BOOST_AUTO_TEST_CASE(ParseTVDP) {
-    Parser parser;
-    std::string poroFile("testdata/integration_tests/TVDP/TVDP1");
-    auto deck =  ecl::parseDeck( parser, poroFile, ParseContext());
+/* deck and deckString are implemented in eclipse/Parser.cpp */
+Deck parseDeck( const Parser&, const std::string& file, const ParseContext& );
+Deck parseDeckString( const Parser&, const std::string& file, const ParseContext& );
 
-    BOOST_CHECK(!deck.hasKeyword("TVDP*"));
-    BOOST_CHECK( deck.hasKeyword("TVDPA"));
-    BOOST_CHECK( deck.hasKeyword("TVDP1"));
-    BOOST_CHECK( deck.hasKeyword("TVDPXX"));
-    BOOST_CHECK( deck.hasKeyword("TVDPYY"));
 }
+}
+
+#endif //BITS_PARSERS_HPP
 

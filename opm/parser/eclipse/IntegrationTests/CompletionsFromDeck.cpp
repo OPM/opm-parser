@@ -21,10 +21,12 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
+#include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Completion.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
@@ -36,7 +38,7 @@ BOOST_AUTO_TEST_CASE( CreateCompletionsFromKeyword ) {
 
     Parser parser;
     const auto scheduleFile = "testdata/integration_tests/SCHEDULE/SCHEDULE_COMPDAT1";
-    auto deck =  parser.parseFile(scheduleFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, scheduleFile, ParseContext());
     EclipseGrid grid(10,10,10);
     const Schedule schedule( ParseContext(), grid, deck, Phases(true, true, true) );
     const auto& COMPDAT1 = deck.getKeyword("COMPDAT" , 1);

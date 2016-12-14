@@ -20,6 +20,7 @@
 #define BOOST_TEST_MODULE ParserWellProbe
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE(ParseWellProbe) {
     BOOST_CHECK_THROW(parser->parseString(invalidDeckString), std::invalid_argument);
 */
 
-    auto deck = parser.parseString(validDeckString, ParseContext());
+    auto deck = ecl::parseDeckString( parser, validDeckString, ParseContext());
     BOOST_CHECK( !deck.hasKeyword("WELL_PROBE"));
     BOOST_CHECK(  deck.hasKeyword("WBHP"));
     BOOST_CHECK(  deck.hasKeyword("WOPR"));

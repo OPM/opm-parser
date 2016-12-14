@@ -23,7 +23,7 @@
 #define BOOST_TEST_MODULE GeoModifiersTests
 #include <boost/test/unit_test.hpp>
 
-
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
 #include <opm/parser/eclipse/Parser/InputErrorAction.hpp>
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( CheckUnsoppertedInSCHEDULE ) {
     ParseContext parseContext;
     Parser parser(true);
 
-    auto deck = parser.parseString( deckString , parseContext );
+    auto deck = ecl::parseDeckString( parser, deckString , parseContext );
     EclipseGrid grid( deck );
 
     parseContext.update( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , InputError::IGNORE );

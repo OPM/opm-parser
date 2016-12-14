@@ -26,6 +26,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 
@@ -37,6 +38,8 @@
 #include <opm/parser/eclipse/Parser.hpp>
 
 #include <opm/parser/eclipse/Units.hpp>
+
+using namespace Opm;
 
 static Opm::Deck createDeck() {
     const char *deckData = "RUNSPEC\n"
@@ -77,7 +80,7 @@ static Opm::Deck createDeck() {
             "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext() );
+    return ecl::parseDeckString( parser,deckData, Opm::ParseContext() );
 }
 
 
@@ -116,7 +119,7 @@ static Opm::Deck createValidIntDeck() {
             "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext() );
+    return ecl::parseDeckString( parser,deckData, Opm::ParseContext() );
 }
 
 static Opm::Deck createValidPERMXDeck() {
@@ -162,7 +165,7 @@ static Opm::Deck createValidPERMXDeck() {
             "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext() );
+    return ecl::parseDeckString( parser,deckData, Opm::ParseContext() );
 }
 
 
@@ -303,7 +306,7 @@ BOOST_AUTO_TEST_CASE(getRegions) {
             "FIPNUM\n"
             "1 1 2 3 /\n";
 
-    Setup s( Opm::Parser().parseString(input, Opm::ParseContext() ) );
+    Setup s( ecl::parseDeckString( Parser(), input, Opm::ParseContext() ) );
 
     std::vector< int > ref = { 1, 2, 3 };
     const auto regions = s.props.getRegions( "FIPNUM" );
