@@ -21,8 +21,8 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 
 using namespace Opm;

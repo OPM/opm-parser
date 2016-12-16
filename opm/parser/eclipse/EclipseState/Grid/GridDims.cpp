@@ -21,10 +21,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
-
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridDims.hpp>
 
 #include <opm/parser/eclipse/Parser/ParserKeywords/D.hpp> // DIMENS

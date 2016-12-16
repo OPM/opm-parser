@@ -21,9 +21,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
 
 // generic table classes
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>

@@ -24,8 +24,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 
 namespace Opm {
     class GridDims

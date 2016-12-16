@@ -25,8 +25,7 @@
 
 #include <opm/json/JsonObject.hpp>
 
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/Parser/ParserConst.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>

@@ -19,7 +19,6 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdexcept>
 #include <iostream>
-#include <boost/filesystem.hpp>
 
 #define BOOST_TEST_MODULE EclipseStateTests
 
@@ -42,10 +41,9 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 #include <opm/parser/eclipse/EclipseState/IOConfig/IOConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/parser/eclipse/Units/Units.hpp>
+#include <opm/parser/eclipse/Parser/Deck.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
 
 using namespace Opm;
 
