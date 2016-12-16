@@ -26,11 +26,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <opm/parser/eclipse/bits/Parsers.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/MessageLimits.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 using namespace Opm;
@@ -77,7 +78,7 @@ BOOST_AUTO_TEST_CASE(MESSAGES) {
         ;
 
     ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser, input, parseContext );
     EclipseGrid grid(10,10,10);
     Schedule schedule(parseContext , grid, deck, Phases(true, true, true) );
     const MessageLimits limits = schedule.getMessageLimits();

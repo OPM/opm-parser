@@ -26,9 +26,9 @@
 */
 
 #include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 
 namespace Opm {
     class Tabdims {

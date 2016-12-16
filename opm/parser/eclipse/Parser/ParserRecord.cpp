@@ -17,13 +17,13 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
 #include <opm/parser/eclipse/Parser/MessageContainer.hpp>
-#include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawRecord.hpp>
 #include <opm/parser/eclipse/Units/UnitSystem.hpp>
 
 namespace Opm {

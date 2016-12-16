@@ -21,12 +21,14 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 #include <boost/filesystem.hpp>
-#include <ostream>
+
+#include <iostream>
 #include <fstream>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 
@@ -150,7 +152,7 @@ BOOST_AUTO_TEST_CASE(parse_fileWithWWCTKeyword_deckReturned) {
     path datafile;
     Parser parser;
     createDeckWithInclude (datafile, "");
-    auto deck =  parser.parseFile(datafile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, datafile.string(), ParseContext());
 
     BOOST_CHECK( deck.hasKeyword("START"));
     BOOST_CHECK( deck.hasKeyword("DIMENS"));
@@ -161,7 +163,7 @@ BOOST_AUTO_TEST_CASE(parse_fileWithENDINCKeyword_deckReturned) {
     path datafile;
     Parser parser;
     createDeckWithInclude (datafile, "ENDINC");
-    auto deck =  parser.parseFile(datafile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, datafile.string(), ParseContext());
 
     BOOST_CHECK( deck.hasKeyword("START"));
     BOOST_CHECK( !deck.hasKeyword("DIMENS"));
@@ -172,7 +174,7 @@ BOOST_AUTO_TEST_CASE(parse_fileWithENDKeyword_deckReturned) {
     path datafile;
     Parser parser;
     createDeckWithInclude (datafile, "END");
-    auto deck =  parser.parseFile(datafile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, datafile.string(), ParseContext());
 
     BOOST_CHECK( deck.hasKeyword("START"));
     BOOST_CHECK( !deck.hasKeyword("DIMENS"));
@@ -183,7 +185,7 @@ BOOST_AUTO_TEST_CASE(parse_fileWithPathsKeyword_IncludeExtendsPath) {
     path datafile;
     Parser parser;
     createDeckWithInclude (datafile, "");
-    auto deck =  parser.parseFile(datafile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, datafile.string(), ParseContext());
 
     BOOST_CHECK( deck.hasKeyword("TITLE"));
     BOOST_CHECK( deck.hasKeyword("BOX"));

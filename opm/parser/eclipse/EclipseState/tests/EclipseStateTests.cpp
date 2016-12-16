@@ -26,12 +26,13 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/checkDeck.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
@@ -41,11 +42,11 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 #include <opm/parser/eclipse/EclipseState/Grid/TransMult.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/IOConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
-#include <opm/parser/eclipse/Units/Units.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Units.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 
 using namespace Opm;
 
@@ -89,7 +90,7 @@ static Deck createDeckTOP() {
 "\n";
 
     Parser parser;
-    return parser.parseString( deckData, ParseContext() );
+    return ecl::parseDeckString( parser, deckData, ParseContext() );
 }
 
 BOOST_AUTO_TEST_CASE(GetPOROTOPBased) {
@@ -154,7 +155,7 @@ const char *deckData =
 "\n";
 
     Parser parser;
-    return parser.parseString( deckData, ParseContext() );
+    return ecl::parseDeckString( parser, deckData, ParseContext() );
 }
 
 
@@ -190,7 +191,7 @@ const char *deckData =
 "\n";
 
     Parser parser;
-    return parser.parseString( deckData, ParseContext() );
+    return ecl::parseDeckString( parser, deckData, ParseContext() );
 }
 
 BOOST_AUTO_TEST_CASE(CreateSchedule) {
@@ -233,7 +234,7 @@ const std::string& inputStr = "RUNSPEC\n"
 
 
     Parser parser;
-    return parser.parseString( inputStr, ParseContext() );
+    return ecl::parseDeckString( parser, inputStr, ParseContext() );
 }
 
 BOOST_AUTO_TEST_CASE(CreateSimulationConfig) {
@@ -379,7 +380,7 @@ static Deck createDeckNoGridOpts() {
         "  1000*1 /\n";
 
     Parser parser;
-    return parser.parseString(deckData, ParseContext()) ;
+    return ecl::parseDeckString( parser,deckData, ParseContext()) ;
 }
 
 
@@ -406,7 +407,7 @@ static Deck createDeckWithGridOpts() {
         "  1000*1 /\n";
 
     Parser parser;
-    return parser.parseString( deckData, ParseContext() );
+    return ecl::parseDeckString( parser, deckData, ParseContext() );
 }
 
 
@@ -439,8 +440,7 @@ BOOST_AUTO_TEST_CASE(WithGridOptsDefaultRegion) {
 
 BOOST_AUTO_TEST_CASE(TestIOConfigBaseName) {
     ParseContext parseContext;
-    Parser parser;
-    auto deck = parser.parseFile("testdata/integration_tests/IOConfig/SPE1CASE2.DATA", parseContext);
+    auto deck = ecl::parseDeck( Parser(), "testdata/integration_tests/IOConfig/SPE1CASE2.DATA", parseContext);
     EclipseState state(deck, parseContext);
     const auto& io = state.cfg().io();
     BOOST_CHECK_EQUAL(io.getBaseName(), "SPE1CASE2");
@@ -488,7 +488,7 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreation) {
 
 
     Parser parser(new Parser());
-    auto deck = parser.parseString(deckData, ParseContext()) ;
+    auto deck = ecl::parseDeckString( parser,deckData, ParseContext()) ;
     EclipseState state(deck , ParseContext());
 
     const RestartConfig& rstConfig = state.cfg().restart();
@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTRST) {
 
     ParseContext parseContext;
     Parser parser;
-    auto deck = parser.parseString(deckData, parseContext) ;
+    auto deck = ecl::parseDeckString( parser, deckData, parseContext );
     EclipseState state(deck, parseContext);
 
     const RestartConfig& rstConfig = state.cfg().restart();
@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTSOL) {
     Parser parser;
 
     {   //mnemnonics
-        auto deck = parser.parseString(deckData, parseContext) ;
+        auto deck = ecl::parseDeckString( parser, deckData, parseContext );
         EclipseState state(deck, parseContext);
 
         const RestartConfig& rstConfig = state.cfg().restart();
@@ -639,7 +639,7 @@ BOOST_AUTO_TEST_CASE(TestIOConfigCreationWithSolutionRPTSOL) {
     }
 
     {   //old fashion integer mnemonics
-        auto deck = parser.parseString(deckData2, parseContext) ;
+        auto deck = ecl::parseDeckString( parser, deckData2, parseContext );
         EclipseState state(deck, parseContext);
 
         const RestartConfig& rstConfig = state.cfg().restart();

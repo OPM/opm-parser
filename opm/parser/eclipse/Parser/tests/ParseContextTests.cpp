@@ -24,7 +24,10 @@
 #include <boost/test/unit_test.hpp>
 
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/D.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/O.hpp>
@@ -34,7 +37,7 @@
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 
 using namespace Opm;
 
@@ -60,26 +63,26 @@ BOOST_AUTO_TEST_CASE(TestUnkownKeyword) {
 
     parser.addKeyword<ParserKeywords::DIMENS>();
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deck1 , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck1 , parseContext ) , std::invalid_argument);
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck1 , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck1 , parseContext ) );
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::THROW_EXCEPTION );
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::IGNORE );
-    BOOST_CHECK_THROW( parser.parseString( deck2 , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck2 , parseContext ) , std::invalid_argument);
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::IGNORE );
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck2 , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck2 , parseContext ) );
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::IGNORE );
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deck2 , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck2 , parseContext ) , std::invalid_argument);
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::IGNORE );
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck2 , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck2 , parseContext ) );
 }
 
 
@@ -100,18 +103,16 @@ BOOST_AUTO_TEST_CASE(TEST_UNKNOWN_OPERATE) {
     Parser parser(false);
 
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deck , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck, parseContext ) , std::invalid_argument);
 
     parseContext.update(ParseContext::PARSE_RANDOM_SLASH , InputError::IGNORE );
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::IGNORE );
-    parser.parseString( deck , parseContext );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck , parseContext ) );
 
     parser.addKeyword<ParserKeywords::OPERATE>();
-    parser.parseString( deck , parseContext );
     parseContext.update(ParseContext::PARSE_RANDOM_SLASH , InputError::THROW_EXCEPTION );
     parseContext.update(ParseContext::PARSE_UNKNOWN_KEYWORD , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck, parseContext ) );
 }
 
 
@@ -133,10 +134,10 @@ BOOST_AUTO_TEST_CASE( CheckMissingSizeKeyword) {
     parser.addKeyword<ParserKeywords::SOLUTION>();
 
     parseContext.update( ParseContext::PARSE_MISSING_DIMS_KEYWORD , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deck , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck , parseContext ) , std::invalid_argument);
 
     parseContext.update( ParseContext::PARSE_MISSING_DIMS_KEYWORD , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck , parseContext ) );
 }
 
 
@@ -186,8 +187,8 @@ BOOST_AUTO_TEST_CASE( CheckUnsupportedInSCHEDULE ) {
     ParseContext parseContext;
     Parser parser(true);
 
-    auto deckSupported = parser.parseString( deckStringSupported , parseContext );
-    auto deckUnSupported = parser.parseString( deckStringUnSupported , parseContext );
+    auto deckSupported = ecl::parseDeckString( parser, deckStringSupported, parseContext );
+    auto deckUnSupported = ecl::parseDeckString( parser, deckStringUnSupported , parseContext );
     EclipseGrid grid( deckSupported );
 
     parseContext.update( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , InputError::IGNORE );
@@ -225,14 +226,14 @@ BOOST_AUTO_TEST_CASE(TestRandomSlash) {
 
     parseContext.update(ParseContext::PARSE_RANDOM_SLASH , InputError::THROW_EXCEPTION);
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::IGNORE);
-    BOOST_CHECK_THROW( parser.parseString( deck1 , parseContext ) , std::invalid_argument);
-    BOOST_CHECK_THROW( parser.parseString( deck2 , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck1, parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deck2, parseContext ) , std::invalid_argument);
 
 
     parseContext.update(ParseContext::PARSE_RANDOM_SLASH , InputError::IGNORE);
     parseContext.update(ParseContext::PARSE_RANDOM_TEXT , InputError::THROW_EXCEPTION);
-    BOOST_CHECK_NO_THROW( parser.parseString( deck1 , parseContext ) );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck2 , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck1 , parseContext ) );
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, deck2 , parseContext ) );
 }
 
 
@@ -260,7 +261,7 @@ BOOST_AUTO_TEST_CASE(TestCOMPORD) {
 
     ParseContext parseContext;
     Parser parser(true);
-    auto deck = parser.parseString( deckString , parseContext );
+    auto deck = ecl::parseDeckString( parser, deckString , parseContext );
 
     EclipseGrid grid( deck );
 
@@ -341,8 +342,8 @@ BOOST_AUTO_TEST_CASE( test_too_much_data ) {
 
 
     parseContext.update(ParseContext::PARSE_EXTRA_DATA , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deckString , parseContext ) , std::invalid_argument);
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, deckString , parseContext ) , std::invalid_argument);
 
     parseContext.update(ParseContext::PARSE_EXTRA_DATA , InputError::IGNORE );
-    auto deck = parser.parseString( deckString , parseContext );
+    auto deck = ecl::parseDeckString( parser, deckString , parseContext );
 }

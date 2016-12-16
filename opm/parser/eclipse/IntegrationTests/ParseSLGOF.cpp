@@ -19,12 +19,13 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Tables/SlgofTable.hpp>
@@ -52,7 +53,7 @@ const char *parserData =
 
 BOOST_AUTO_TEST_CASE( parse_SLGOF_OK ) {
     Parser parser;
-    auto deck =  parser.parseString(parserData, ParseContext());
+    auto deck =  ecl::parseDeckString( parser, parserData, ParseContext());
 
     const auto& kw1 = deck.getKeyword("SLGOF");
     const auto& record0 = kw1.getRecord(0);

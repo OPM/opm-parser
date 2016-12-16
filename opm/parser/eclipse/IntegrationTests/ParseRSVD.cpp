@@ -20,10 +20,11 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 using namespace Opm;
@@ -31,7 +32,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE( parse_EQUIL_OK ) {
     Parser parser;
     std::string pvtgFile("testdata/integration_tests/RSVD/RSVD.txt");
-    auto deck =  parser.parseFile(pvtgFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, pvtgFile, ParseContext());
     const auto& kw1 = deck.getKeyword("RSVD" , 0);
     BOOST_CHECK_EQUAL( 6U , kw1.size() );
 

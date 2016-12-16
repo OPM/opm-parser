@@ -25,16 +25,19 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
-#include <opm/parser/eclipse/Deck/Section.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
+
+using namespace Opm;
 
 static Opm::Deck createCARTDeck() {
     const char* deckData =
@@ -55,7 +58,7 @@ static Opm::Deck createCARTDeck() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 static Opm::Deck createDeckWithPORO() {
@@ -79,7 +82,7 @@ static Opm::Deck createDeckWithPORO() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 static Opm::Deck createDeckWithPORVPORO() {
@@ -108,7 +111,7 @@ static Opm::Deck createDeckWithPORVPORO() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -148,7 +151,7 @@ static Opm::Deck createDeckWithMULTPV() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -180,7 +183,7 @@ static Opm::Deck createDeckWithBOXPORV() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -215,7 +218,7 @@ static Opm::Deck createDeckWithNTG() {
 
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 static Opm::Deck createDeckWithMULTREGP() {
@@ -248,7 +251,7 @@ static Opm::Deck createDeckWithMULTREGP() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 BOOST_AUTO_TEST_CASE(PORV_cartesianDeck) {
@@ -399,7 +402,7 @@ static Opm::Deck createDeckNakedGRID() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -441,7 +444,7 @@ static Opm::Deck createDeckWithPOROZero() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 BOOST_AUTO_TEST_CASE(PORO_ZERO_ACTNUM_CORRECT) {

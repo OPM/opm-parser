@@ -22,12 +22,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
-#include <opm/parser/eclipse/Units/Units.hpp>
+#include <opm/parser/eclipse/Units.hpp>
 
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 
@@ -37,7 +38,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE(ParsePOROandPERMX) {
     Parser parser;
     std::string poroFile("testdata/integration_tests/PORO/PORO1");
-    auto deck =  parser.parseFile(poroFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, poroFile, ParseContext());
     const auto& kw1 = deck.getKeyword("PORO" , 0);
     const auto& kw2 = deck.getKeyword("PERMX" , 0);
 

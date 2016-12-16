@@ -23,8 +23,8 @@
 #include <string>
 #include <vector>
 
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Utility/Typetools.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Utility/Typetools.hpp>
 
 namespace Json {
     class JsonObject;

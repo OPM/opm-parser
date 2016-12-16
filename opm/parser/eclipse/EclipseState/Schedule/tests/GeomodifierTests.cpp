@@ -23,18 +23,18 @@
 #define BOOST_TEST_MODULE GeoModifiersTests
 #include <boost/test/unit_test.hpp>
 
-
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
 #include <opm/parser/eclipse/Parser/InputErrorAction.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Events.hpp>
 
 using namespace Opm;
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( CheckUnsoppertedInSCHEDULE ) {
     ParseContext parseContext;
     Parser parser(true);
 
-    auto deck = parser.parseString( deckString , parseContext );
+    auto deck = ecl::parseDeckString( parser, deckString , parseContext );
     EclipseGrid grid( deck );
 
     parseContext.update( ParseContext::UNSUPPORTED_SCHEDULE_GEO_MODIFIER , InputError::IGNORE );

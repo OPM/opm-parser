@@ -26,12 +26,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
@@ -173,7 +174,7 @@ const std::string& inputStrMissingPressure = "RUNSPEC\n"
 
 static Deck createDeck(const ParseContext& parseContext, const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, parseContext);
+    return ecl::parseDeckString( parser, input, parseContext);
 }
 
 /// Setup fixture

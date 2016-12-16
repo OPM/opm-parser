@@ -20,8 +20,9 @@
 #define BOOST_TEST_MODULE ParserTVPD
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 using namespace Opm;
@@ -30,7 +31,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE(ParseTVDP) {
     Parser parser;
     std::string poroFile("testdata/integration_tests/TVDP/TVDP1");
-    auto deck =  parser.parseFile(poroFile, ParseContext());
+    auto deck =  ecl::parseDeck( parser, poroFile, ParseContext());
 
     BOOST_CHECK(!deck.hasKeyword("TVDP*"));
     BOOST_CHECK( deck.hasKeyword("TVDPA"));

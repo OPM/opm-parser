@@ -21,10 +21,11 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-#include <opm/parser/eclipse/Deck/Section.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/Box.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/BoxManager.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
@@ -38,7 +39,7 @@
 #include <opm/parser/eclipse/EclipseState/InitConfig/InitConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/IOConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
@@ -284,4 +285,51 @@ namespace Opm {
             }
         }
     }
+
+namespace ecl {
+
+inline void assertFullDeck(const ParseContext& context) {
+    if (context.hasKey(ParseContext::PARSE_MISSING_SECTIONS))
+        throw new std::logic_error("Cannot construct a state in partial deck context");
+}
+
+EclipseState parse( const std::string& file,
+                    const ParseContext& mode,
+                    const Parser& p ) {
+
+    assertFullDeck( mode );
+    return EclipseState( parseDeck( p, file, mode ), mode );
+}
+
+EclipseState parseString( const std::string& data,
+                          const ParseContext& mode,
+                          const Parser& p ) {
+    assertFullDeck( mode );
+    return EclipseState( parseDeckString( p, data, mode ) );
+}
+
+EclipseGrid parseGrid( const std::string& file,
+                       const ParseContext& mode,
+                       const Parser& p ) {
+
+    if( mode.hasKey( ParseContext::PARSE_MISSING_SECTIONS ) )
+        return EclipseGrid{ file };
+
+    return parse( file, mode, p ).getInputGrid();
+}
+
+EclipseGrid parseGridString( const std::string& data,
+                             const ParseContext& mode,
+                             const Parser& p ) {
+    Parser parser;
+    auto deck = parseDeckString( p, data, mode );
+
+    if( mode.hasKey( ParseContext::PARSE_MISSING_SECTIONS ) )
+        return EclipseGrid{ deck };
+
+    return EclipseState( deck ).getInputGrid();
+}
+
+}
+
 }

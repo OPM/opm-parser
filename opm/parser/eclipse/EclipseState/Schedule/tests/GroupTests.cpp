@@ -25,12 +25,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/Util/Value.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Well.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/Group.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
@@ -279,7 +280,7 @@ BOOST_AUTO_TEST_CASE(createDeckWithGEFAC) {
             "/\n";
 
     Opm::ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser,input, parseContext);
     EclipseGrid grid(10,10,10);
     Opm::Schedule schedule(parseContext , grid, deck, Opm::Phases(true, true, true) );
 
@@ -326,7 +327,7 @@ BOOST_AUTO_TEST_CASE(createDeckWithWGRUPCONandWCONPROD) {
            
 
     Opm::ParseContext parseContext;
-    auto deck = parser.parseString(input, parseContext);
+    auto deck = ecl::parseDeckString( parser,input, parseContext);
     EclipseGrid grid(10,10,10);
     Opm::Schedule schedule(parseContext , grid, deck, Opm::Phases(true, true, true) );
     const auto* currentWell = schedule.getWell("B-37T2");

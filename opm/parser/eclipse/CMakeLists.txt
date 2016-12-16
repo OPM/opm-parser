@@ -1,9 +1,10 @@
 include_directories(BEFORE ${PROJECT_BINARY_DIR}/generated-source/include)
 
+add_subdirectory(bits/Generator/tests)
+add_subdirectory(bits/RawDeck/tests)
+add_subdirectory(bits/Deck/tests)
+add_subdirectory(bits/Utility/tests)
 add_subdirectory(Parser/tests)
-add_subdirectory(Generator/tests)
-add_subdirectory(RawDeck/tests)
-add_subdirectory(Deck/tests)
 add_subdirectory(Units/tests)
 add_subdirectory(EclipseState/tests)
 add_subdirectory(EclipseState/Schedule/tests)
@@ -14,26 +15,25 @@ add_subdirectory(EclipseState/Util/tests)
 add_subdirectory(EclipseState/IOConfig/tests)
 add_subdirectory(EclipseState/InitConfig/tests)
 add_subdirectory(EclipseState/SummaryConfig/tests)
-add_subdirectory(Utility/tests)
 
 add_subdirectory(Applications)
 add_subdirectory(IntegrationTests)
 
 set( rawdeck_source 
-RawDeck/StarToken.cpp
-RawDeck/RawKeyword.cpp 
-RawDeck/RawRecord.cpp )
+bits/RawDeck/StarToken.cpp
+bits/RawDeck/RawKeyword.cpp
+bits/RawDeck/RawRecord.cpp )
 
 set( unit_source
 Units/UnitSystem.cpp
 Units/Dimension.cpp)
 
 set( deck_source
-Deck/Deck.cpp
-Deck/DeckKeyword.cpp
-Deck/DeckRecord.cpp
-Deck/DeckItem.cpp
-Deck/Section.cpp
+bits/Deck/Deck.cpp
+bits/Deck/DeckKeyword.cpp
+bits/Deck/DeckRecord.cpp
+bits/Deck/DeckItem.cpp
+bits/Deck/Section.cpp
 )
 
 set( parser_source
@@ -47,28 +47,28 @@ Parser/ParserItem.cpp
 )
 
 set( generator_source
-Generator/KeywordGenerator.cpp
-Generator/KeywordLoader.cpp )
+bits/Generator/KeywordGenerator.cpp
+bits/Generator/KeywordLoader.cpp )
 
 set( utility_source
-Utility/Functional.cpp
-Utility/Stringview.cpp
+bits/Utility/Functional.cpp
+bits/Utility/Stringview.cpp
 )
 
 set( build_parser_source
-Deck/Deck.cpp
-Deck/DeckItem.cpp
-Deck/DeckKeyword.cpp
-Deck/DeckRecord.cpp
+bits/Deck/Deck.cpp
+bits/Deck/DeckItem.cpp
+bits/Deck/DeckKeyword.cpp
+bits/Deck/DeckRecord.cpp
 Parser/MessageContainer.cpp
 Parser/ParseContext.cpp
 Parser/ParserItem.cpp
 Parser/ParserKeyword.cpp
 Parser/ParserRecord.cpp
 Parser/ParserEnums.cpp
-RawDeck/RawKeyword.cpp
-RawDeck/RawRecord.cpp
-RawDeck/StarToken.cpp
+bits/RawDeck/RawKeyword.cpp
+bits/RawDeck/RawRecord.cpp
+bits/RawDeck/StarToken.cpp
 Units/Dimension.cpp
 Units/UnitSystem.cpp
 ${generator_source}
@@ -141,45 +141,46 @@ EclipseState/IOConfig/IOConfig.cpp)
 #
 
 set( HEADER_FILES
-RawDeck/RawConsts.hpp 
-RawDeck/RawKeyword.hpp 
-RawDeck/RawRecord.hpp 
-RawDeck/StarToken.hpp
-RawDeck/RawEnums.hpp
+bits/Parsers.hpp
+bits/RawDeck/RawConsts.hpp
+bits/RawDeck/RawKeyword.hpp
+bits/RawDeck/RawRecord.hpp
+bits/RawDeck/StarToken.hpp
+bits/RawDeck/RawEnums.hpp
 #
-Deck/Deck.hpp
-Deck/DeckKeyword.hpp
-Deck/DeckRecord.hpp
-Deck/DeckItem.hpp
-Deck/Section.hpp
+bits/Deck/Deck.hpp
+bits/Deck/DeckKeyword.hpp
+bits/Deck/DeckRecord.hpp
+bits/Deck/DeckItem.hpp
+bits/Deck/Section.hpp
 #
+Parser.hpp
 Parser/ParserEnums.hpp
 Parser/ParserKeyword.hpp 
-Parser/Parser.hpp 
 Parser/ParserRecord.hpp
 Parser/ParserItem.hpp
 Parser/InputErrorAction.hpp
 Parser/ParseContext.hpp
 Parser/MessageContainer.hpp
 #
-Generator/KeywordLoader.hpp
-Generator/KeywordGenerator.hpp
+bits/Generator/KeywordLoader.hpp
+bits/Generator/KeywordGenerator.hpp
 #
+Units.hpp
 Units/UnitSystem.hpp
 Units/Dimension.hpp
-Units/Units.hpp
 #
-EclipseState/EclipseState.hpp
+EclipseState.hpp
 EclipseState/EclipseConfig.hpp
 EclipseState/Eclipse3DProperties.hpp
 EclipseState/Runspec.hpp
 #
 EclipseState/checkDeck.hpp
 #
+EclipseState/Schedule.hpp
 EclipseState/Schedule/MessageLimits.hpp
 EclipseState/Schedule/OilVaporizationProperties.hpp
 EclipseState/Schedule/TimeMap.hpp
-EclipseState/Schedule/Schedule.hpp
 EclipseState/Schedule/Well.hpp
 EclipseState/Schedule/WellProductionProperties.hpp
 EclipseState/Schedule/WellInjectionProperties.hpp
@@ -279,9 +280,9 @@ EclipseState/Tables/TableEnums.hpp
 EclipseState/Tables/TableSchema.hpp
 EclipseState/Tables/TableIndex.hpp
 #
-Utility/Functional.hpp
-Utility/Stringview.hpp
-Utility/Typetools.hpp)
+bits/Utility/Functional.hpp
+bits/Utility/Stringview.hpp
+bits/Utility/Typetools.hpp)
 
 #-----------------------------------------------------------------
 # This section manages the generation of C++ code for the default keywords.

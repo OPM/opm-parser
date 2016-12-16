@@ -25,12 +25,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/Section.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 
 using namespace Opm;
@@ -39,7 +40,7 @@ using namespace Opm;
 BOOST_AUTO_TEST_CASE(CreateCPGrid) {
     Parser parser;
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT.DATA");
-    auto deck =  parser.parseFile(scheduleFile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, scheduleFile.string(), ParseContext());
     EclipseState es(deck, ParseContext());
     const auto& grid = es.getInputGrid();
 
@@ -53,7 +54,7 @@ BOOST_AUTO_TEST_CASE(CreateCPGrid) {
 BOOST_AUTO_TEST_CASE(CreateCPActnumGrid) {
     Parser parser;
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT_ACTNUM.DATA");
-    auto deck =  parser.parseFile(scheduleFile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, scheduleFile.string(), ParseContext());
     EclipseState es(deck, ParseContext());
     const auto& grid = es.getInputGrid();
 
@@ -67,7 +68,7 @@ BOOST_AUTO_TEST_CASE(CreateCPActnumGrid) {
 BOOST_AUTO_TEST_CASE(ExportFromCPGridAllActive) {
     Parser parser;
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT.DATA");
-    auto deck =  parser.parseFile(scheduleFile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, scheduleFile.string(), ParseContext());
     EclipseState es(deck, ParseContext());
     const auto& grid = es.getInputGrid();
 
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(ExportFromCPGridAllActive) {
 BOOST_AUTO_TEST_CASE(ExportFromCPGridACTNUM) {
     Parser parser;
     boost::filesystem::path scheduleFile("testdata/integration_tests/GRID/CORNERPOINT_ACTNUM.DATA");
-    auto deck =  parser.parseFile(scheduleFile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, scheduleFile.string(), ParseContext());
     EclipseState es(deck, ParseContext());
     auto& grid = es.getInputGrid();
 

@@ -24,11 +24,12 @@
 
 #include <boost/filesystem/path.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 
@@ -38,7 +39,7 @@ using namespace Opm;
 inline EclipseState makeState(const std::string& fileName) {
     Parser parser;
     boost::filesystem::path boxFile(fileName);
-    auto deck =  parser.parseFile(boxFile.string(), ParseContext());
+    auto deck =  ecl::parseDeck( parser, boxFile.string(), ParseContext());
     return EclipseState( deck, ParseContext() );
 }
 

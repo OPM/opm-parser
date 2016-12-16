@@ -25,12 +25,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
-#include <opm/parser/eclipse/Deck/Section.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/MULTREGTScanner.hpp>
@@ -41,8 +42,7 @@
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 
-
-
+using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(TestRegionName) {
     BOOST_CHECK_EQUAL( "FLUXNUM" , Opm::MULTREGT::RegionNameFromDeckValue( "F"));
@@ -102,7 +102,7 @@ static Opm::Deck createInvalidMULTREGTDeck() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -173,7 +173,7 @@ static Opm::Deck createNotSupportedMULTREGTDeck() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 
@@ -244,7 +244,7 @@ static Opm::Deck createCopyMULTNUMDeck() {
         "\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext()) ;
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext()) ;
 }
 
 BOOST_AUTO_TEST_CASE(MULTREGT_COPY_MULTNUM) {

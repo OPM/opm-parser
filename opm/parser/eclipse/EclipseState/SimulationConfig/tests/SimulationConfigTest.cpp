@@ -24,11 +24,12 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
-#include <opm/parser/eclipse/Deck/Section.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Section.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/C.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 
@@ -105,7 +106,7 @@ const std::string& inputStr_vap_dis = "RUNSPEC\n"
 
 static Deck createDeck(const ParseContext& parseContext , const std::string& input) {
     Opm::Parser parser;
-    return parser.parseString(input, parseContext);
+    return ecl::parseDeckString( parser, input, parseContext);
 }
 
 

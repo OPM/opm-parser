@@ -21,9 +21,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 
 // generic table classes
 #include <opm/parser/eclipse/EclipseState/Tables/SimpleTable.hpp>
@@ -45,6 +46,8 @@
 #include <stdexcept>
 #include <iostream>
 
+using namespace Opm;
+
 namespace {
 
 Opm::Deck createSingleRecordDeck() {
@@ -58,7 +61,7 @@ Opm::Deck createSingleRecordDeck() {
         " 9 10 11 12 /\n";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext());
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext());
 }
 
 
@@ -87,7 +90,7 @@ Opm::Deck createSingleRecordDeckWithVd() {
         "9000.0 0.22 0.22 1.0 0.0 0.04 1.0 0.18 0.22 /";
 
     Opm::Parser parser;
-    return parser.parseString(deckData, Opm::ParseContext());
+    return ecl::parseDeckString( parser, deckData, Opm::ParseContext());
 }
 
 }
@@ -128,7 +131,7 @@ BOOST_AUTO_TEST_CASE(SwofTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
 
     Opm::SwofTable swof1Table(deck.getKeyword("SWOF").getRecord(0).getItem(0));
     Opm::SwofTable swof2Table(deck.getKeyword("SWOF").getRecord(1).getItem(0));
@@ -171,7 +174,7 @@ BOOST_AUTO_TEST_CASE(SgwfnTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
 
 
     Opm::SgwfnTable sgwfn1Table(deck.getKeyword("SGWFN").getRecord(0).getItem(0));
@@ -214,7 +217,7 @@ BOOST_AUTO_TEST_CASE(SgofTable_Tests) {
         " 17 18 19 20/\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
 
     Opm::SgofTable sgof1Table(deck.getKeyword("SGOF").getRecord(0).getItem(0));
     Opm::SgofTable sgof2Table(deck.getKeyword("SGOF").getRecord(1).getItem(0));
@@ -260,7 +263,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
         Opm::Parser parser;
-        auto deck = parser.parseString(correctDeckData, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, correctDeckData, Opm::ParseContext());
         const auto& plyadsKeyword = deck.getKeyword("PLYADS");
         Opm::PlyadsTable plyadsTable(plyadsKeyword.getRecord(0).getItem(0));
 
@@ -289,7 +292,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000030 /\n";
         Opm::Parser parser;
-        auto deck = parser.parseString(incorrectDeckData, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, incorrectDeckData, Opm::ParseContext());
         const auto& plyadsKeyword = deck.getKeyword("PLYADS");
 
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword.getRecord(0).getItem(0)), std::invalid_argument);
@@ -312,7 +315,7 @@ BOOST_AUTO_TEST_CASE(PlyadsTable_Tests) {
             "2.00    0.000030\n"
             "3.00    0.000029 /\n";
         Opm::Parser parser;
-        auto deck = parser.parseString(incorrectDeckData, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, incorrectDeckData, Opm::ParseContext());
         const auto& plyadsKeyword = deck.getKeyword("PLYADS");
 
         BOOST_CHECK_THROW(Opm::PlyadsTable(plyadsKeyword.getRecord(0).getItem(0)), std::invalid_argument);
@@ -360,7 +363,7 @@ VFPPROD \n\
 2 2 2 2 46.5 47.5 48.5 / \n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     auto units = Opm::UnitSystem::newMETRIC();
     const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
 
@@ -487,7 +490,7 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
     auto units = Opm::UnitSystem::newMETRIC();
 
@@ -599,7 +602,7 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_values, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_values, Opm::ParseContext());
         const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPPROD"), 1);
@@ -634,7 +637,7 @@ VFPPROD \n\
 1 1 1 1 1.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_values, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_values, Opm::ParseContext());
         const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPPROD"), 1);
@@ -669,7 +672,7 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_metadata, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_metadata, Opm::ParseContext());
         const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPPROD"), 1);
@@ -705,7 +708,7 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(wrong_metadata, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, wrong_metadata, Opm::ParseContext());
         const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPPROD"), 1);
@@ -740,7 +743,7 @@ VFPPROD \n\
 1 1 1 1 1.5 2.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_axes, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_axes, Opm::ParseContext());
         const auto& vfpprodKeyword = deck.getKeyword("VFPPROD");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPPROD"), 1);
@@ -773,7 +776,7 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(deckData, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, deckData, Opm::ParseContext());
     const auto& vfpprodKeyword = deck.getKeyword("VFPINJ");
     auto units = Opm::UnitSystem::newMETRIC();
 
@@ -842,7 +845,7 @@ VFPINJ \n\
 
 
 
-BOOST_AUTO_TEST_CASE(TableContainer) {
+BOOST_AUTO_TEST_CASE(TableContainerGet) {
     auto deck = createSingleRecordDeck();
     Opm::TableManager tables( deck );
     BOOST_CHECK_EQUAL( false , tables.hasTables("SGOF") );
@@ -875,7 +878,7 @@ VFPINJ \n\
 2 4.5 5.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_values, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_values, Opm::ParseContext());
         const auto& vfpinjKeyword = deck.getKeyword("VFPINJ");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPINJ"), 1);
@@ -906,7 +909,7 @@ VFPINJ \n\
 1 1.5 2.5 3.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_values, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_values, Opm::ParseContext());
         const auto& vfpinjKeyword = deck.getKeyword("VFPINJ");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPINJ"), 1);
@@ -934,7 +937,7 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_metadata, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_metadata, Opm::ParseContext());
         const auto& vfpinjKeyword = deck.getKeyword("VFPINJ");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPINJ"), 1);
@@ -963,7 +966,7 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(wrong_metadata, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, wrong_metadata, Opm::ParseContext());
         const auto& vfpinjKeyword = deck.getKeyword("VFPINJ");
         auto units(Opm::UnitSystem::newMETRIC());
         BOOST_CHECK_EQUAL(deck.count("VFPINJ"), 1);
@@ -993,7 +996,7 @@ VFPINJ \n\
 2 4.5 5.5 6.5 /    \n";
 
         Opm::Parser parser;
-        auto deck = parser.parseString(missing_axes, Opm::ParseContext());
+        auto deck = ecl::parseDeckString( parser, missing_axes, Opm::ParseContext());
         const auto& vfpinjKeyword = deck.getKeyword("VFPINJ");
         auto units = Opm::UnitSystem::newMETRIC();
         BOOST_CHECK_EQUAL(deck.count("VFPINJ"), 1);
@@ -1015,7 +1018,7 @@ BOOST_AUTO_TEST_CASE( TestPLYROCK ) {
         " 10 20 30 40 50 /\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(data, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, data, Opm::ParseContext());
     Opm::TableManager tables( deck );
     const Opm::TableContainer& plyrock = tables.getPlyrockTables();
 
@@ -1043,7 +1046,7 @@ BOOST_AUTO_TEST_CASE( TestPLYMAX ) {
         " 10 20 /\n";
 
     Opm::Parser parser;
-    auto deck = parser.parseString(data, Opm::ParseContext());
+    auto deck = ecl::parseDeckString( parser, data, Opm::ParseContext());
     Opm::TableManager tables( deck );
     const Opm::TableContainer& plymax = tables.getPlymaxTables();
 
@@ -1067,5 +1070,5 @@ BOOST_AUTO_TEST_CASE( TestParseTABDIMS ) {
       "TABDIMS\n"
       "  1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 /\n";
     Opm::Parser parser;
-    BOOST_CHECK_NO_THROW( parser.parseString(data, Opm::ParseContext()));
+    BOOST_CHECK_NO_THROW( ecl::parseDeckString( parser, data, Opm::ParseContext()));
 }

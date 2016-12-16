@@ -21,15 +21,15 @@
 #define BOOST_TEST_MODULE ParserTests
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserItem.hpp>
-#include <opm/parser/eclipse/RawDeck/RawRecord.hpp>
+#include <opm/parser/eclipse/bits/RawDeck/RawRecord.hpp>
 #include <boost/test/test_tools.hpp>
 
-#include "opm/parser/eclipse/RawDeck/RawKeyword.hpp"
+#include "opm/parser/eclipse/bits/RawDeck/RawKeyword.hpp"
 #include "opm/parser/eclipse/Parser/ParserKeyword.hpp"
 
 

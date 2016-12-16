@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellEconProductionLimits.hpp>
 
 

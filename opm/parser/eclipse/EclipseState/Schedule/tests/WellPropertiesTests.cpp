@@ -20,16 +20,19 @@
 #define BOOST_TEST_MODULE WellPropertiesTest
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellProductionProperties.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
 #include <string>
+
+using namespace Opm;
 
 namespace {
     namespace WCONHIST {
@@ -87,7 +90,7 @@ namespace {
         Opm::WellProductionProperties properties(const std::string& input) {
             Opm::Parser parser;
 
-            auto deck = parser.parseString(input, Opm::ParseContext());
+            auto deck = ecl::parseDeckString( parser, input, Opm::ParseContext());
             const auto& record = deck.getKeyword("WCONHIST").getRecord(0);
             Opm::WellProductionProperties hist = Opm::WellProductionProperties::history( 100 , record);;
 
@@ -112,7 +115,7 @@ namespace {
         {
             Opm::Parser parser;
 
-            auto deck = parser.parseString(input, Opm::ParseContext());
+            auto deck = ecl::parseDeckString( parser, input, Opm::ParseContext());
             const auto& kwd     = deck.getKeyword("WCONHIST");
             const auto&  record = kwd.getRecord(0);
             Opm::WellProductionProperties pred = Opm::WellProductionProperties::prediction( record, false );

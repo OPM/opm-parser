@@ -21,12 +21,13 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/C.hpp>
 
 using namespace Opm;
@@ -38,8 +39,7 @@ inline Deck createCOMPSEGSDeck() {
         " 1 1 1 1  100  100  X  10/\n"
         "/\n";
 
-    Parser parser;
-    return parser.parseString(deckData, ParseContext());
+    return ecl::parseDeckString( Parser(), deckData, ParseContext() );
 }
 
 

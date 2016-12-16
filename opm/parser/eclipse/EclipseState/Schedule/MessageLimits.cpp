@@ -17,10 +17,10 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/MessageLimits.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 
 namespace Opm {
 

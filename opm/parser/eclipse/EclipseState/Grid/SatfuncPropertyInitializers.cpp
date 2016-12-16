@@ -18,7 +18,7 @@
 #include <array>
 
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/GridProperty.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/SatfuncPropertyInitializers.hpp>
@@ -31,7 +31,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
-#include <opm/parser/eclipse/Utility/Functional.hpp>
+#include <opm/parser/eclipse/bits/Utility/Functional.hpp>
 
 namespace Opm {
 

@@ -25,14 +25,15 @@
 #include <vector>
 #include <boost/date_time.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/EclipseGrid.hpp>
 #include <opm/parser/eclipse/EclipseState/IOConfig/RestartConfig.hpp>
-#include <opm/parser/eclipse/EclipseState/Schedule/Schedule.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/TimeMap.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
 using namespace Opm;
 
@@ -296,7 +297,7 @@ BOOST_AUTO_TEST_CASE( NorneRestartConfig ) {
     rptConfig.push_back( std::make_tuple(241 , true , boost::gregorian::date( 2006,10,10)) );
 
 
-    auto state = Parser::parse("testdata/integration_tests/IOConfig/RPTRST_DECK.DATA");
+    auto state = ecl::parse("testdata/integration_tests/IOConfig/RPTRST_DECK.DATA");
     verifyRestartConfig(state.cfg().restart(), rptConfig);
 }
 
@@ -337,7 +338,7 @@ BOOST_AUTO_TEST_CASE( RestartConfig2 ) {
 
     ParseContext parseContext;
     Parser parser;
-    auto deck = parser.parseFile("testdata/integration_tests/IOConfig/RPT_TEST2.DATA", parseContext);
+    auto deck = ecl::parseDeck( parser, "testdata/integration_tests/IOConfig/RPT_TEST2.DATA", parseContext);
     EclipseState state( deck , parseContext );
     const auto& rstConfig = state.cfg().restart();
     verifyRestartConfig( rstConfig, rptConfig );
@@ -350,6 +351,6 @@ BOOST_AUTO_TEST_CASE( RestartConfig2 ) {
 BOOST_AUTO_TEST_CASE( SPE9END ) {
     ParseContext parseContext;
     Parser parser;
-    auto deck = parser.parseFile("testdata/integration_tests/IOConfig/SPE9_END.DATA", parseContext);
+    auto deck = ecl::parseDeck( parser, "testdata/integration_tests/IOConfig/SPE9_END.DATA", parseContext);
     BOOST_CHECK_NO_THROW( EclipseState state( deck , parseContext ) );
 }

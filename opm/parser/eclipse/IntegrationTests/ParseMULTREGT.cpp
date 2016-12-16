@@ -21,9 +21,10 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
 #include <opm/parser/eclipse/Parser/ParserEnums.hpp>
@@ -31,7 +32,7 @@
 #include <opm/parser/eclipse/EclipseState/Grid/MULTREGTScanner.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/FaceDir.hpp>
 #include <opm/parser/eclipse/EclipseState/Grid/TransMult.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 using namespace Opm;
 
 
@@ -39,7 +40,7 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_MULTREGT_OK ) {
     Parser parser;
-    auto deck =  parser.parseFile("testdata/integration_tests/MULTREGT/MULTREGT", ParseContext());
+    auto deck =  ecl::parseDeck( parser, "testdata/integration_tests/MULTREGT/MULTREGT", ParseContext());
     BOOST_CHECK_NO_THROW( deck.getKeyword("MULTREGT" , 0); );
 }
 
@@ -48,7 +49,7 @@ BOOST_AUTO_TEST_CASE( parse_MULTREGT_OK ) {
 BOOST_AUTO_TEST_CASE( MULTREGT_ECLIPSE_STATE ) {
     ParseContext parseContext;
     Parser parser;
-    auto deck =  parser.parseFile("testdata/integration_tests/MULTREGT/MULTREGT.DATA", parseContext);
+    auto deck =  ecl::parseDeck( parser, "testdata/integration_tests/MULTREGT/MULTREGT.DATA", parseContext);
     EclipseState state(deck , parseContext);
     const auto& transMult = state.getTransMult();
 

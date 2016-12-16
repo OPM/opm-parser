@@ -21,11 +21,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/EclipseState.hpp>
 #include <opm/parser/eclipse/EclipseState/SummaryConfig/SummaryConfig.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 
 using namespace Opm;
 
@@ -62,7 +63,7 @@ static Deck createDeck( const std::string& summary ) {
             "SUMMARY\n"
             + summary;
 
-    return parser.parseString(input, ParseContext());
+    return ecl::parseDeckString( parser, input, ParseContext());
 }
 
 static std::vector< std::string > sorted_names( const SummaryConfig& summary ) {

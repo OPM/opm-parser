@@ -23,12 +23,13 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Deck/DeckItem.hpp>
-#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
-#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckItem.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckKeyword.hpp>
+#include <opm/parser/eclipse/bits/Deck/DeckRecord.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
 #include <opm/parser/eclipse/Parser/ParserRecord.hpp>
@@ -50,7 +51,7 @@ ENKRVD\n\
 
 BOOST_AUTO_TEST_CASE( ParseMissingRECORD_THrows) {
     Parser parser;
-    BOOST_CHECK_THROW( parser.parseString( dataMissingRecord, ParseContext() ), std::invalid_argument );
+    BOOST_CHECK_THROW( ecl::parseDeckString( parser, dataMissingRecord, ParseContext() ), std::invalid_argument );
 }
 
 
@@ -70,7 +71,7 @@ ENKRVD\n\
 
 BOOST_AUTO_TEST_CASE( parse_DATAWithDefult_OK ) {
     Parser parser;
-    auto deck = parser.parseString( data, ParseContext() );
+    auto deck = ecl::parseDeckString( parser, data, ParseContext() );
     const auto& keyword = deck.getKeyword( "ENKRVD" );
     const auto& rec0 = keyword.getRecord(0);
     const auto& rec1 = keyword.getRecord(1);

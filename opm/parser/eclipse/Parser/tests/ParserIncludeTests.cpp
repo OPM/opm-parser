@@ -22,12 +22,15 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeyword.hpp>
-#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 #include "opm_parser_build_config.hpp"
+
+using namespace Opm;
 
 
 #ifdef OPM_PARSER_BUILD_HAVE_SYMLINK
@@ -39,10 +42,10 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeInvalid) {
     Opm::ParseContext parseContext;
 
     parseContext.update(Opm::ParseContext::PARSE_MISSING_INCLUDE , Opm::InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW(parser.parseFile(inputFilePath.string() , parseContext) , std::invalid_argument);
+    BOOST_CHECK_THROW(ecl::parseDeck( parser, inputFilePath.string() , parseContext) , std::invalid_argument);
 
     parseContext.update(Opm::ParseContext::PARSE_MISSING_INCLUDE , Opm::InputError::IGNORE );
-    BOOST_CHECK_NO_THROW(parser.parseFile(inputFilePath.string() , parseContext));
+    BOOST_CHECK_NO_THROW(ecl::parseDeck( parser, inputFilePath.string() , parseContext));
 }
 
 
@@ -50,7 +53,7 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeInvalid) {
 BOOST_AUTO_TEST_CASE(Verify_find_includes_Data_file_is_a_symlink) {
     boost::filesystem::path inputFilePath("testdata/parser/includeSymlinkTestdata/symlink1/case_symlink.data");
     Opm::Parser parser;
-    auto deck = parser.parseFile(inputFilePath.string() , Opm::ParseContext());
+    auto deck = ecl::parseDeck( parser, inputFilePath.string() , Opm::ParseContext());
 
     BOOST_CHECK_EQUAL(true , deck.hasKeyword("OIL"));
     BOOST_CHECK_EQUAL(false , deck.hasKeyword("WATER"));
@@ -60,7 +63,7 @@ BOOST_AUTO_TEST_CASE(Verify_find_includes_Data_file_is_a_symlink) {
 BOOST_AUTO_TEST_CASE(Verify_find_includes_Data_file_has_include_that_is_a_symlink) {
     boost::filesystem::path inputFilePath("testdata/parser/includeSymlinkTestdata/symlink2/caseWithIncludedSymlink.data");
     Opm::Parser parser;
-    auto deck = parser.parseFile(inputFilePath.string() , Opm::ParseContext());
+    auto deck = ecl::parseDeck( parser, inputFilePath.string() , Opm::ParseContext());
 
     BOOST_CHECK_EQUAL(true , deck.hasKeyword("OIL"));
     BOOST_CHECK_EQUAL(false , deck.hasKeyword("WATER"));
@@ -70,7 +73,7 @@ BOOST_AUTO_TEST_CASE(Verify_find_includes_Data_file_has_include_that_is_a_symlin
 BOOST_AUTO_TEST_CASE(Verify_find_includes_Data_file_has_include_file_that_again_includes_a_symlink) {
     boost::filesystem::path inputFilePath("testdata/parser/includeSymlinkTestdata/symlink3/case.data");
     Opm::Parser parser;
-    auto deck = parser.parseFile(inputFilePath.string() , Opm::ParseContext());
+    auto deck = ecl::parseDeck( parser, inputFilePath.string() , Opm::ParseContext());
 
     BOOST_CHECK_EQUAL(true , deck.hasKeyword("OIL"));
     BOOST_CHECK_EQUAL(false , deck.hasKeyword("WATER"));
@@ -83,7 +86,7 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeValid) {
     boost::filesystem::path inputFilePath("testdata/parser/includeValid.data");
 
     Opm::Parser parser;
-    auto deck = parser.parseFile(inputFilePath.string() , Opm::ParseContext());
+    auto deck = ecl::parseDeck( parser, inputFilePath.string() , Opm::ParseContext());
 
     BOOST_CHECK_EQUAL(true , deck.hasKeyword("OIL"));
     BOOST_CHECK_EQUAL(false , deck.hasKeyword("WATER"));
@@ -109,19 +112,19 @@ BOOST_AUTO_TEST_CASE(ParserKeyword_includeWrongCase) {
     Opm::ParseContext parseContext;
     parseContext.update(Opm::ParseContext::PARSE_MISSING_INCLUDE , Opm::InputError::THROW_EXCEPTION );
 
-    BOOST_CHECK_THROW(parser.parseFile(inputFile1Path.string(), parseContext), std::invalid_argument);
-    BOOST_CHECK_THROW(parser.parseFile(inputFile2Path.string(), parseContext), std::invalid_argument);
-    BOOST_CHECK_THROW(parser.parseFile(inputFile3Path.string(), parseContext), std::invalid_argument);
+    BOOST_CHECK_THROW(ecl::parseDeck( parser, inputFile1Path.string(), parseContext), std::invalid_argument);
+    BOOST_CHECK_THROW(ecl::parseDeck( parser, inputFile2Path.string(), parseContext), std::invalid_argument);
+    BOOST_CHECK_THROW(ecl::parseDeck( parser, inputFile3Path.string(), parseContext), std::invalid_argument);
 #else
     // for case-insensitive filesystems, the include statement will
     // always work regardless of how the capitalization of the
     // included files is wrong...
-    BOOST_CHECK_EQUAL(true, parser.parseFile(inputFile1Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser.parseFile(inputFile1Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
-    BOOST_CHECK_EQUAL(true, parser.parseFile(inputFile2Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser.parseFile(inputFile2Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
-    BOOST_CHECK_EQUAL(true, parser.parseFile(inputFile3Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
-    BOOST_CHECK_EQUAL(false, parser.parseFile(inputFile3Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, ecl::parseDeck( parser, inputFile1Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, ecl::parseDeck( parser, inputFile1Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, ecl::parseDeck( parser, inputFile2Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, ecl::parseDeck( parser, inputFile2Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
+    BOOST_CHECK_EQUAL(true, ecl::parseDeck( parser, inputFile3Path.string(), Opm::ParseContext()).hasKeyword("OIL"));
+    BOOST_CHECK_EQUAL(false, ecl::parseDeck( parser, inputFile3Path.string(), Opm::ParseContext()).hasKeyword("WATER"));
 #endif
 }
 

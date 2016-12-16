@@ -20,8 +20,9 @@
 #define BOOST_TEST_MODULE ParserIntegrationTests
 #include <boost/test/unit_test.hpp>
 
-#include <opm/parser/eclipse/Deck/Deck.hpp>
-#include <opm/parser/eclipse/Parser/Parser.hpp>
+#include <opm/parser/eclipse/bits/Parsers.hpp>
+#include <opm/parser/eclipse/bits/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Parser.hpp>
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/PlyviscTable.hpp>
@@ -33,7 +34,7 @@ using namespace Opm;
 
 BOOST_AUTO_TEST_CASE( parse_polymer_tables ) {
     Parser parser;
-    auto deck = parser.parseFile("testdata/integration_tests/POLYMER/POLY.inc", ParseContext());
+    auto deck = ecl::parseDeck( parser, "testdata/integration_tests/POLYMER/POLY.inc", ParseContext());
     Opm::TableManager tables( deck );
     const TableContainer& plymax = tables.getPlymaxTables();
     const TableContainer& plyrock = tables.getPlyrockTables();
