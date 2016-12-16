@@ -376,3 +376,92 @@ BOOST_AUTO_TEST_CASE( REMOVE_DUPLICATED_ENTRIES ) {
             keys.begin(), keys.end(),
             uniq_keys.begin(), uniq_keys.end() );
 }
+
+BOOST_AUTO_TEST_CASE( ANALYTICAL_AQUIFERS ) {
+    const std::string input = R"(
+            AAQR
+                1 2 /
+            AAQP
+                2 1 /
+            AAQT
+                /
+            AAQRG
+                /
+            AAQTG
+                /
+            AAQTD
+                /
+            AAQPD
+                /
+    )";
+    const auto summary = createSummary( input );
+}
+
+BOOST_AUTO_TEST_CASE( NUMERICAL_AQUIFERS ) {
+    const std::string input = R"(
+            ANQR
+                1 2 /
+            ANQP
+                2 1 /
+            ANQT
+                /
+    )";
+    const auto summary = createSummary( input );
+}
+
+static const auto GMWSET_keywords = {
+    "GMCTG", "GMWPT", "GMWPR", "GMWPA", "GMWPU", "GMWPG", "GMWPO", "GMWPS",
+    "GMWPV", "GMWPP", "GMWPL", "GMWIT", "GMWIN", "GMWIA", "GMWIU", "GMWIG",
+    "GMWIS", "GMWIV", "GMWIP", "GMWDR", "GMWDT", "GMWWO", "GMWWT"
+};
+
+BOOST_AUTO_TEST_CASE( summary_GMWSET ) {
+
+    const auto input = "GMWSET\n";
+    const auto summary = createSummary( input );
+    const auto key_names = sorted_key_names( summary );
+
+    std::vector< std::string > all;
+
+    for( std::string kw : GMWSET_keywords ) {
+        all.emplace_back(kw + ":G");
+        all.emplace_back(kw + ":OP");
+    }
+
+    std::sort( all.begin(), all.end() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS( all.begin(), all.end(),
+                                   key_names.begin(), key_names.end() );
+
+    BOOST_CHECK( summary.hasKeyword( "GMWPS" ) );
+    BOOST_CHECK( summary.hasKeyword( "GMWPT" ) );
+    BOOST_CHECK( summary.hasKeyword( "GMWPR" ) );
+
+    BOOST_CHECK( !summary.hasKeyword("NO-NOT-THIS") );
+}
+
+static const auto FMWSET_keywords = {
+    "FMCTF", "FMWPT", "FMWPR", "FMWPA", "FMWPU", "FMWPF", "FMWPO", "FMWPS",
+    "FMWPV", "FMWPP", "FMWPL", "FMWIT", "FMWIN", "FMWIA", "FMWIU", "FMWIF",
+    "FMWIS", "FMWIV", "FMWIP", "FMWDR", "FMWDT", "FMWWO", "FMWWT"
+};
+
+BOOST_AUTO_TEST_CASE( summary_FMWSET ) {
+
+    const auto input = "FMWSET\n";
+    const auto summary = createSummary( input );
+    const auto key_names = sorted_key_names( summary );
+
+    std::vector< std::string > all( FMWSET_keywords.begin(),
+                                    FMWSET_keywords.end() );
+    std::sort( all.begin(), all.end() );
+
+    BOOST_CHECK_EQUAL_COLLECTIONS( all.begin(), all.end(),
+                                   key_names.begin(), key_names.end() );
+
+    BOOST_CHECK( summary.hasKeyword( "FMWPS" ) );
+    BOOST_CHECK( summary.hasKeyword( "FMWPT" ) );
+    BOOST_CHECK( summary.hasKeyword( "FMWPR" ) );
+
+    BOOST_CHECK( !summary.hasKeyword("NO-NOT-THIS") );
+}

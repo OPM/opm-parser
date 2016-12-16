@@ -66,6 +66,20 @@ namespace {
         "AAQR",  "AAQRG", "AAQT", "AAQTG"
     };
 
+    const Deck GMWSET_keywords = {
+        "SUMMARY",
+        "GMCTG", "GMWPT", "GMWPR", "GMWPA", "GMWPU", "GMWPG", "GMWPO", "GMWPS",
+        "GMWPV", "GMWPP", "GMWPL", "GMWIT", "GMWIN", "GMWIA", "GMWIU", "GMWIG",
+        "GMWIS", "GMWIV", "GMWIP", "GMWDR", "GMWDT", "GMWWO", "GMWWT"
+    };
+
+    const Deck FMWSET_keywords = {
+        "SUMMARY",
+        "FMCTF", "FMWPT", "FMWPR", "FMWPA", "FMWPU", "FMWPF", "FMWPO", "FMWPS",
+        "FMWPV", "FMWPP", "FMWPL", "FMWIT", "FMWIN", "FMWIA", "FMWIU", "FMWIF",
+        "FMWIS", "FMWIV", "FMWIP", "FMWDR", "FMWDT", "FMWWO", "FMWWT"
+    };
+
 /*
     When the error handling config says that the error should be
     logged, the handleMissingWell and handleMissingGroup routines
@@ -137,6 +151,8 @@ inline void keywordG( std::vector< ERT::smspec_node >& list,
 
     const auto type = ECL_SMSPEC_GROUP_VAR;
 
+    if( keyword.name() == "GMWSET" ) return;
+
     if( keyword.size() == 0 ||
         !keyword.getDataRecord().getDataItem().hasValue( 0 ) ) {
 
@@ -160,6 +176,7 @@ inline void keywordG( std::vector< ERT::smspec_node >& list,
 
 inline void keywordF( std::vector< ERT::smspec_node >& list,
                       const DeckKeyword& keyword ) {
+    if( keyword.name() == "FMWSET" ) return;
     list.emplace_back( keyword.name() );
 }
 
@@ -313,6 +330,12 @@ SummaryConfig::SummaryConfig( const Deck& deck,
 
     if( section.hasKeyword( "ALL" ) )
         this->merge( { ALL_keywords, schedule, props, parseContext, n_xyz } );
+
+    if( section.hasKeyword( "GMWSET" ) )
+        this->merge( { GMWSET_keywords, schedule, props, parseContext, n_xyz } );
+
+    if( section.hasKeyword( "FMWSET" ) )
+        this->merge( { FMWSET_keywords, schedule, props, parseContext, n_xyz } );
 
     uniq( this->keywords );
     for (const auto& kw: this->keywords)

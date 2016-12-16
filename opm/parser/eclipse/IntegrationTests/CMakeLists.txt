@@ -1,14 +1,15 @@
 add_definitions( -DKEYWORD_DIRECTORY="${PROJECT_SOURCE_DIR}/opm/parser/share/keywords/000_Eclipse100")
 
 foreach(tapp TransMultIntegrationTests CheckDeckValidity IntegrationTests ParseWellProbe
-             ParseTITLE ParseTOPS ParseWCONHIST ParseWellWithWildcards
+             ParseDEBUG ParseTITLE ParseTOPS ParseWCONHIST ParseWellWithWildcards
              ParsePORO ParsePLYVISC ParsePLYDHFLF ParsePLYSHLOG ParseDATAWithDefault
-             ParseTVDP ParseDENSITY ParseVFPPROD ScheduleCreateFromDeck
-             CompletionsFromDeck ParseEND IncludeTest ParseEQUIL
-             ParseRSVD ParsePVTG ParsePVTO ParseSWOF BoxTest
+             ParseTVDP ParseDENSITY ParseVFPPROD ParsePRORDER ScheduleCreateFromDeck
+             CompletionsFromDeck ParseEND ParseLGR ParseTRACERS IncludeTest ParseEQUIL
+             ParseRSVD ParsePVTG ParsePVTO ParseSWOF ParseCOORDSYS ParseGRUPRIG BoxTest
              ParseMULTREGT ParseSGOF ParseSLGOF EclipseGridCreateFromDeck NNCTests
-             ResinsightTest IOConfigIntegrationTest
-             Polymer ParsePLYADSS ParseMULTSEGWELL ParseMiscible)
+             ResinsightTest IOConfigIntegrationTest ParseCECON ParseWDFACCOR
+             ParseWORKLIM ParseTUNINGDP
+             ParseWEFAC Polymer ParsePLYADSS ParseMULTSEGWELL ParseMiscible)
   opm_add_test(run${tapp} SOURCES ${tapp}.cpp LIBRARIES opmparser ${Boost_LIBRARIES})
 endforeach()
 
