@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013 by Andreas Lauser
+  Copyright (C) 2013 by Andreas Lauser, 2016 Statoil ASA
 
   This file is part of the Open Porous Media project (OPM).
 
@@ -26,15 +26,17 @@
 namespace Opm {
 
     SimpleTable::SimpleTable( TableSchema schema, const DeckItem& deckItem) :
-        m_schema( std::move( schema ) ) {
-
+        m_schema( std::move( schema ) ),
+        m_jfunc (false)
+    {
         init( deckItem );
     }
 
 
     SimpleTable::SimpleTable( TableSchema schema ) :
-        m_schema( std::move( schema ) ) {
-
+        m_schema( std::move( schema ) ),
+        m_jfunc (false)
+    {
         addColumns();
     }
 
@@ -84,6 +86,9 @@ namespace Opm {
                 size_t deckItemIdx = rowIdx*numColumns() + colIdx;
                 if (deckItem.defaultApplied(deckItemIdx))
                     column.addDefault( );
+                else if (m_jfunc) {
+                    column.addValue( deckItem.getData<double>()[deckItemIdx] );
+                }
                 else
                     column.addValue( deckItem.getSIDouble(deckItemIdx) );
             }
@@ -101,6 +106,11 @@ namespace Opm {
     }
 
     const TableColumn& SimpleTable::getColumn( const std::string& name) const {
+        if (!this->m_jfunc)
+            return m_columns.get( name );
+
+        if (name == "PCOW" || name == "PCOG")
+            assertJFuncPressure(false); // this will throw since m_jfunc=true
         return m_columns.get( name );
     }
 
@@ -110,6 +120,11 @@ namespace Opm {
 
 
     TableColumn& SimpleTable::getColumn( const std::string& name) {
+        if (!this->m_jfunc)
+            return m_columns.get( name );
+
+        if (name == "PCOW" || name == "PCOG")
+            assertJFuncPressure(false); // this will throw since m_jfunc=true
         return m_columns.get( name );
     }
 
@@ -131,4 +146,15 @@ namespace Opm {
         return valueColumn.eval( index );
     }
 
+    void SimpleTable::assertJFuncPressure(const bool jf) const {
+        if (jf == m_jfunc)
+            return;
+        // if we reach here, wrong values are read from the deck! (JFUNC is used
+        // incorrectly.)  This function writes to std err for now, but will
+        // after a grace period be rewritten to throw (std::invalid_argument).
+        if (m_jfunc)
+            std::cerr << "Developer warning: Pressure column is read with JFUNC in deck." << std::endl;
+        else
+            std::cerr << "Developer warning: Raw values from JFUNC column is read, but JFUNC not provided in deck." << std::endl;
+    }
 }
