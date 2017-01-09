@@ -210,3 +210,204 @@ BOOST_AUTO_TEST_CASE(SimulationConfig_VAPOIL_DISGAS) {
     BOOST_CHECK_EQUAL( true , simulationConfig_vd.hasDISGAS());
     BOOST_CHECK_EQUAL( true , simulationConfig_vd.hasVAPOIL());
 }
+
+BOOST_AUTO_TEST_CASE( default_relperm_model ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+GRID
+PROPS
+
+SOLUTION
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK_EQUAL( RelpermOptions::Model::DEFAULT, sim.relperm().model() );
+}
+
+BOOST_AUTO_TEST_CASE( STONE1_model ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+GRID
+PROPS
+STONE1
+
+SOLUTION
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK_EQUAL( RelpermOptions::Model::STONE1, sim.relperm().model() );
+}
+
+BOOST_AUTO_TEST_CASE( STONE_model ) {
+    const std::string input1 = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+GRID
+PROPS
+STONE
+
+SOLUTION
+    )";
+
+    const std::string input2 = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+GRID
+PROPS
+STONE2
+
+SOLUTION
+    )";
+
+    for( const auto& input : { input1, input2 } ) {
+
+        const auto deck = Parser{}.parseString( input, ParseContext() );
+        TableManager tm(deck);
+        EclipseGrid eg(10, 3, 4);
+        Eclipse3DProperties ep(deck, tm, eg);
+        SimulationConfig sim(deck, ep);
+
+        BOOST_CHECK_EQUAL( RelpermOptions::Model::STONE2, sim.relperm().model() );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( STONE1_STONE2_model ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+GRID
+PROPS
+STONE2
+STONE1
+
+SOLUTION
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK_EQUAL( RelpermOptions::Model::STONE2, sim.relperm().model() );
+}
+
+BOOST_AUTO_TEST_CASE( SATOPTS_unspecified ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK(  sim.relperm().nondirectional() );
+    BOOST_CHECK( !sim.relperm().directional() );
+    BOOST_CHECK(  sim.relperm().reversible() );
+    BOOST_CHECK( !sim.relperm().irreversible() );
+    BOOST_CHECK( !sim.relperm().hysteresis() );
+    BOOST_CHECK( !sim.relperm().capillaryPressureCanVaryWithSurfaceTension() );
+}
+
+BOOST_AUTO_TEST_CASE( SATOPTS_directional ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    DIRECT /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK( !sim.relperm().nondirectional() );
+    BOOST_CHECK(  sim.relperm().directional() );
+    BOOST_CHECK(  sim.relperm().reversible() );
+    BOOST_CHECK( !sim.relperm().hysteresis() );
+    BOOST_CHECK( !sim.relperm().capillaryPressureCanVaryWithSurfaceTension() );
+}
+
+BOOST_AUTO_TEST_CASE( SATOPTS_irrevers ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    irrevers / -- also test lowercase keys
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK(  sim.relperm().nondirectional() );
+    BOOST_CHECK( !sim.relperm().reversible() );
+    BOOST_CHECK(  sim.relperm().irreversible() );
+    BOOST_CHECK( !sim.relperm().hysteresis() );
+    BOOST_CHECK( !sim.relperm().capillaryPressureCanVaryWithSurfaceTension() );
+}
+
+BOOST_AUTO_TEST_CASE( SATOPTS_ALL ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    DIRECT irrevers UNKNOWN HYSTER 'SURFTENS' /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK( sim.relperm().directional() );
+    BOOST_CHECK( sim.relperm().irreversible() );
+    BOOST_CHECK( sim.relperm().hysteresis() );
+    BOOST_CHECK( sim.relperm().capillaryPressureCanVaryWithSurfaceTension() );
+}
