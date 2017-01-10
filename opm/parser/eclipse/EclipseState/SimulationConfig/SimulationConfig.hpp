@@ -23,6 +23,7 @@
 #include <bitset>
 
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
+#include <opm/parser/eclipse/EclipseState/SimulationConfig/HysteresisOptions.hpp>
 
 namespace Opm {
 
@@ -78,6 +79,7 @@ namespace Opm {
         bool hasDISGAS() const;
         bool hasVAPOIL() const;
         const RelpermOptions& relperm() const noexcept;
+        const HysteresisOptions& hysteresis() const noexcept;
 
     private:
         ThresholdPressure m_ThresholdPressure;
@@ -85,6 +87,7 @@ namespace Opm {
         bool m_DISGAS;
         bool m_VAPOIL;
         RelpermOptions m_relperm_opts;
+        HysteresisOptions m_hysteresis_opts;
     };
 
 } //namespace Opm

@@ -411,3 +411,124 @@ SATOPTS
     BOOST_CHECK( sim.relperm().hysteresis() );
     BOOST_CHECK( sim.relperm().capillaryPressureCanVaryWithSurfaceTension() );
 }
+
+BOOST_AUTO_TEST_CASE( defaulted_hysteresis ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    HYSTER /
+
+PROPS
+
+EHYSTR
+    /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    BOOST_CHECK( bool( sim.hysteresis() ) );
+}
+
+BOOST_AUTO_TEST_CASE( configured_hysteresis ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    HYSTER /
+
+PROPS
+
+EHYSTR
+    0.07 2 1.0 0.1 both RETR /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    const auto& hys = sim.hysteresis();
+
+    BOOST_CHECK( bool( hys ) );
+    BOOST_CHECK_CLOSE( 0.07, hys.curvatureCapillaryPressure(), 1e-5 );
+    BOOST_CHECK_EQUAL( HysteresisOptions::Model::KilloughHysteresisNonWettingDrainageWetting, hys.model() );
+    BOOST_CHECK_CLOSE( 1.0, hys.curvatureForKilloughWettingPhase(), 1e-5 );
+    BOOST_CHECK_CLOSE( 0.1, hys.modificationForTrappedNonWettingKillough(), 1e-5 );
+    BOOST_CHECK( hys.applyToCapillaryPressure() );
+    BOOST_CHECK( hys.applyToRelativePermeability() );
+    BOOST_CHECK( hys.applyToBothCapillaryPressureAndRelativePermeability() );
+    BOOST_CHECK_EQUAL( HysteresisOptions::CapillaryPressureScanningCurveShape::RETR, hys.curveShapesOnSecondaryReversal() );
+    BOOST_CHECK(  hys.initialMobilityCorrectionAppliesToDrainageCurve() );
+    BOOST_CHECK( !hys.initialMobilityCorrectionAppliesToImbibitionCurve() );
+    BOOST_CHECK( !hys.initialMobilityCorrectionAppliesToBothCurves() );
+    BOOST_CHECK_EQUAL( Phase::OIL, hys.wettingPhase() );
+    BOOST_CHECK( !hys.oilPhaseUseBaker() );
+    BOOST_CHECK( !hys.gasPhaseUseBaker() );
+    BOOST_CHECK( !hys.waterPhaseUseBaker() );
+    BOOST_CHECK_CLOSE( 0.0, hys.thresholdSaturationKillough(), 1e-5 );
+    BOOST_CHECK_EQUAL( 0, hys.wettingPhaseRelpermModification() );
+}
+
+BOOST_AUTO_TEST_CASE( broken_hysteresis ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    HYSTER /
+
+PROPS
+
+EHYSTR
+    0.07 2 1.0 0.1 broken RETR /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    BOOST_CHECK_THROW( SimulationConfig( deck, ep ), std::invalid_argument );
+}
+
+BOOST_AUTO_TEST_CASE( BAKER_OIL_YES ) {
+    const std::string input = R"(
+RUNSPEC
+
+DIMENS
+    10 3 4 /
+
+SATOPTS
+    HYSTER /
+
+PROPS
+
+EHYSTR
+    8* YES NO Y /
+    )";
+
+    const auto deck = Parser{}.parseString( input, ParseContext() );
+    TableManager tm(deck);
+    EclipseGrid eg(10, 3, 4);
+    Eclipse3DProperties ep(deck, tm, eg);
+    SimulationConfig sim(deck, ep);
+
+    const auto& hys = sim.hysteresis();
+
+    BOOST_CHECK( bool( hys ) );
+    BOOST_CHECK( hys.oilPhaseUseBaker() );
+    BOOST_CHECK( !hys.gasPhaseUseBaker() );
+}

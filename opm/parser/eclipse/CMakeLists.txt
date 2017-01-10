@@ -135,6 +135,7 @@ EclipseState/Grid/PinchMode.cpp
 #
 EclipseState/InitConfig/InitConfig.cpp
 EclipseState/InitConfig/Equil.cpp
+EclipseState/SimulationConfig/HysteresisOptions.cpp
 EclipseState/SimulationConfig/SimulationConfig.cpp
 EclipseState/SimulationConfig/ThresholdPressure.cpp
 EclipseState/SummaryConfig/SummaryConfig.cpp
@@ -222,6 +223,7 @@ EclipseState/Grid/TransMult.hpp
 #
 EclipseState/InitConfig/InitConfig.hpp
 EclipseState/InitConfig/Equil.hpp
+EclipseState/SimulationConfig/HysteresisOptions.hpp
 EclipseState/SimulationConfig/SimulationConfig.hpp
 EclipseState/SimulationConfig/ThresholdPressure.hpp
 EclipseState/SummaryConfig/SummaryConfig.hpp

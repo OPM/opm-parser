@@ -22,14 +22,13 @@
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 #include <opm/parser/eclipse/Deck/Section.hpp>
 #include <opm/parser/eclipse/EclipseState/Eclipse3DProperties.hpp>
+#include <opm/parser/eclipse/EclipseState/SimulationConfig/HysteresisOptions.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/SimulationConfig.hpp>
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/C.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/D.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
 #include <opm/parser/eclipse/Utility/String.hpp>
-
-
 
 /*
   The internalization of the CPR keyword has been temporarily
@@ -48,7 +47,7 @@
 namespace Opm {
 
 namespace {
-RelpermOptions::Model read_relperm_model( const Deck& deck ) {
+RelpermOptions::Model readRelpermModel( const Deck& deck ) {
     /*
      * STONE is an alias for STONE2.
      *
@@ -69,7 +68,7 @@ RelpermOptions::Model read_relperm_model( const Deck& deck ) {
 }
 
 RelpermOptions::RelpermOptions( const Deck& deck ) :
-    rp_model( read_relperm_model( deck ) ) {
+    rp_model( readRelpermModel( deck ) ) {
     if( !deck.hasKeyword( "SATOPTS" ) ) return;
 
     const auto index = []( option o ) { return static_cast< ue >( o ); };
@@ -81,6 +80,9 @@ RelpermOptions::RelpermOptions( const Deck& deck ) :
         else if( key == "HYSTER" )   this->options.set( index( option::hysteresis ) );
         else if( key == "SURFTENS" ) this->options.set( index( option::surface_tension ) );
     }
+
+    if( deck.hasKeyword( "HYST" ) )
+        this->options.set( index( option::hysteresis ) );
 }
 
 bool RelpermOptions::directional() const noexcept {
@@ -117,7 +119,10 @@ RelpermOptions::Model RelpermOptions::model() const noexcept {
         m_useCPR(false),
         m_DISGAS(false),
         m_VAPOIL(false),
-        m_relperm_opts( deck )
+        m_relperm_opts( deck ),
+        m_hysteresis_opts( this->m_relperm_opts.hysteresis()
+                            ? HysteresisOptions( deck )
+                            : HysteresisOptions() )
     {
         if (Section::hasRUNSPEC(deck)) {
             const RUNSPECSection runspec(deck);
@@ -159,6 +164,10 @@ RelpermOptions::Model RelpermOptions::model() const noexcept {
 
     const RelpermOptions& SimulationConfig::relperm() const noexcept {
         return this->m_relperm_opts;
+    }
+
+    const HysteresisOptions& SimulationConfig::hysteresis() const noexcept {
+        return this->m_hysteresis_opts;
     }
 
 } //namespace Opm
