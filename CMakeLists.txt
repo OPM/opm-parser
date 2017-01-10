@@ -17,6 +17,7 @@ endif()
 set( OPM_COMMON_ROOT "" CACHE PATH "Root directory containing OPM related cmake modules")
 option(SIBLING_SEARCH "Search for other modules in sibling directories?" ON)
 option(BUILD_TESTING "Build test applications by default?" ON)
+option(BUILD_SHARED_LIBS  "Build dynamically?  (Python needs this.)" ON)
 
 if(NOT OPM_COMMON_ROOT)
   find_package(opm-common QUIET)
