@@ -242,6 +242,7 @@ EclipseState/Tables/PvdsTable.hpp
 EclipseState/Tables/SimpleTable.hpp
 EclipseState/Tables/PlymaxTable.hpp
 EclipseState/Tables/PlyrockTable.hpp
+EclipseState/Tables/Stone1exTable.hpp
 EclipseState/Tables/SwofTable.hpp
 EclipseState/Tables/SgwfnTable.hpp
 EclipseState/Tables/SwfnTable.hpp

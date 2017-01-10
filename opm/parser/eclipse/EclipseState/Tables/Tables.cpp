@@ -65,6 +65,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/SorwmisTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SsfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/Stone1exTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
@@ -131,6 +132,15 @@ const TableColumn& SwofTable::getPcowColumn() const {
 const TableColumn& SwofTable::getJFuncColumn() const {
     SimpleTable::assertJFuncPressure(true);
     return SimpleTable::getColumn(3);
+}
+
+Stone1exTable::Stone1exTable( const DeckItem& item ) {
+    m_schema.addColumn( ColumnSchema( "EXP", Table::RANDOM, item.get< double >( 0 ) ) );
+    SimpleTable::init( item );
+}
+
+const TableColumn& Stone1exTable::getExpColumn() const {
+    return SimpleTable::getColumn(0);
 }
 
 SgwfnTable::SgwfnTable( const DeckItem& item ) {

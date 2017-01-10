@@ -1296,3 +1296,87 @@ BOOST_AUTO_TEST_CASE( TestParseTABDIMS ) {
     Opm::Parser parser;
     BOOST_CHECK_NO_THROW( parser.parseString(data, Opm::ParseContext()));
 }
+
+BOOST_AUTO_TEST_CASE( TestParseSTONE1X_defaulted ) {
+    const std::string input = R"(
+        RUNSPEC
+        PROPS
+        TABDIMS
+            3 /
+
+        STONE1EX
+            * /
+            * /
+            * /
+    )";
+
+    TableManager tm( Parser{}.parseString( input, ParseContext() ) );
+    BOOST_CHECK_CLOSE( 1.0, tm.getStone1exTables()[ 0 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 1.0, tm.getStone1exTables()[ 1 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 1.0, tm.getStone1exTables()[ 2 ].get( 0, 0 ), 1e-5 );
+}
+
+BOOST_AUTO_TEST_CASE_EXPECTED_FAILURES( TestParseSTONE1X_first_set_rest_defaulted, 2 );
+BOOST_AUTO_TEST_CASE( TestParseSTONE1X_first_set_rest_defaulted ) {
+    const std::string input = R"(
+        RUNSPEC
+        PROPS
+        TABDIMS
+            3 /
+
+        STONE1EX
+            2.1 /
+            * /
+            * /
+    )";
+
+    TableManager tm( Parser{}.parseString( input, ParseContext() ) );
+    /*
+     * There's currently a bug in the SimpleTable implementation for keywords
+     * like STONE1EX - the manual says that a defaulted value should copy the
+     * previous table's entry, but there's no local knowledge of the previous
+     * table's corresponding when the table entry is determined, so we need to
+     * fall back to the item default (1.0).
+     */
+    BOOST_CHECK_CLOSE( 2.1, tm.getStone1exTables()[ 0 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 2.1, tm.getStone1exTables()[ 1 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 2.1, tm.getStone1exTables()[ 2 ].get( 0, 0 ), 1e-5 );
+}
+
+BOOST_AUTO_TEST_CASE( TestParseSTONE1X ) {
+    const std::string input = R"(
+        RUNSPEC
+        PROPS
+        TABDIMS
+            3 /
+
+        STONE1EX
+            1.1 /
+            2.1 /
+            3.1 /
+    )";
+
+    TableManager tm( Parser{}.parseString( input, ParseContext() ) );
+    BOOST_CHECK_CLOSE( 1.1, tm.getStone1exTables()[ 0 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 2.1, tm.getStone1exTables()[ 1 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 3.1, tm.getStone1exTables()[ 2 ].get( 0, 0 ), 1e-5 );
+}
+
+BOOST_AUTO_TEST_CASE( TestParseSTONE1X_first_defaulted ) {
+    const std::string input = R"(
+        RUNSPEC
+        PROPS
+        TABDIMS
+            3 /
+
+        STONE1EX
+            * /
+            2.1 /
+            3.1 /
+    )";
+
+    TableManager tm( Parser{}.parseString( input, ParseContext() ) );
+    BOOST_CHECK_CLOSE( 1.0, tm.getStone1exTables()[ 0 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 2.1, tm.getStone1exTables()[ 1 ].get( 0, 0 ), 1e-5 );
+    BOOST_CHECK_CLOSE( 3.1, tm.getStone1exTables()[ 2 ].get( 0, 0 ), 1e-5 );
+}

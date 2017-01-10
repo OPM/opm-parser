@@ -64,6 +64,7 @@
 #include <opm/parser/eclipse/EclipseState/Tables/SsfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/Stone1exTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
 
@@ -189,6 +190,8 @@ namespace Opm {
         addTables( "SSFN",  m_tabdims.getNumSatTables() );
         addTables( "MSFN",  m_tabdims.getNumSatTables() );
 
+        addTables( "STONE1EX", m_tabdims.getNumSatTables() );
+
         addTables( "PLYADS", m_tabdims.getNumSatTables() );
         addTables( "PLYROCK", m_tabdims.getNumSatTables());
         addTables( "PLYVISC", m_tabdims.getNumPVTTables());
@@ -246,6 +249,7 @@ namespace Opm {
         }
 
 
+        initSimpleTableContainer<Stone1exTable>(deck, "STONE1EX", m_tabdims.getNumSatTables());
         initSimpleTableContainer<SgwfnTable>(deck, "SGWFN", m_tabdims.getNumSatTables());
         initSimpleTableContainer<Sof2Table>(deck, "SOF2" , m_tabdims.getNumSatTables());
         initSimpleTableContainer<Sof3Table>(deck, "SOF3" , m_tabdims.getNumSatTables());
@@ -644,6 +648,10 @@ namespace Opm {
 
     const TableContainer& TableManager::getPlyshlogTables() const {
         return getTables("PLYSHLOG");
+    }
+
+    const TableContainer& TableManager::getStone1exTables() const {
+        return getTables("STONE1EX");
     }
 
     const std::vector<PvtgTable>& TableManager::getPvtgTables() const {
