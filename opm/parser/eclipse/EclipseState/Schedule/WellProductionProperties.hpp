@@ -49,7 +49,7 @@ namespace Opm {
         bool operator!=(const WellProductionProperties& other) const;
         WellProductionProperties();
 
-        static WellProductionProperties history(double BHPLimit, const DeckRecord& record, const Phases &phases = Phases(true, true, true) );
+        static WellProductionProperties history(const double BHPLimit, const DeckRecord& record);
         static WellProductionProperties prediction( const DeckRecord& record, bool addGroupProductionControl );
 
         bool hasProductionControl(WellProducer::ControlModeEnum controlModeArg) const {

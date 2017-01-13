@@ -89,7 +89,7 @@ namespace {
 
             auto deck = parser.parseString(input, Opm::ParseContext());
             const auto& record = deck.getKeyword("WCONHIST").getRecord(0);
-            Opm::WellProductionProperties hist = Opm::WellProductionProperties::history( 100 , record);;
+            Opm::WellProductionProperties hist = Opm::WellProductionProperties::history(100., record);
 
             return hist;
         }
