@@ -48,6 +48,7 @@ namespace Opm {
                    const Value<double>& diameter,
                    const Value<double>& skinFactor,
                    const int satTableId,
+                   const bool isSatTableIdDefault,
                    const WellCompletion::DirectionEnum direction = WellCompletion::DirectionEnum::Z);
 
         Completion(const Completion&, WellCompletion::StateEnum newStatus);
@@ -68,6 +69,7 @@ namespace Opm {
         double getDiameter() const;
         double getSkinFactor() const;
         int getSatTableId() const;
+        bool isSatTableIdDefault() const;
         void   fixDefaultIJ(int wellHeadI , int wellHeadJ);
         void   shift_complnum( int );
         int getSegmentNumber() const;
@@ -94,6 +96,7 @@ namespace Opm {
         double m_wellPi;
         Value<double> m_skinFactor;
         int m_satTableId;
+        bool m_isSatTableIdDefault;
         WellCompletion::StateEnum m_state;
         WellCompletion::DirectionEnum m_direction;
         Value<double> getDiameterAsValueObject() const;

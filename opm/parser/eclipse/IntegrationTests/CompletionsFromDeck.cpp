@@ -93,5 +93,8 @@ BOOST_AUTO_TEST_CASE( CreateCompletionsFromKeyword ) {
     BOOST_CHECK_EQUAL( 1 , W1_completion0.getSatTableId());
     BOOST_CHECK_EQUAL( 2 , W1_completion3.getSatTableId());
     BOOST_CHECK_EQUAL( 3 , W1_completion4.getSatTableId());
+    BOOST_CHECK( W1_completion0.isSatTableIdDefault());
+    BOOST_CHECK( !W1_completion3.isSatTableIdDefault());
+    BOOST_CHECK( W1_completion4.isSatTableIdDefault());
 
 }
