@@ -26,6 +26,7 @@
 #include <vector>
 
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
+#include <opm/parser/eclipse/EclipseState/Schedule/Events.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/CompletionSet.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/DynamicState.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellEconProductionLimits.hpp>
@@ -132,6 +133,12 @@ namespace Opm {
         bool getPLTActive(size_t time_step) const;
         void setPLTActive(size_t time_step, bool value);
         int  findWellFirstOpen(int startTimeStep) const;
+
+        /*
+          Will return the report step when the well is created with
+          WELSPECS, actually opening the well might be later.
+        */
+        size_t firstTimeStep( ) const;
         void setRFTForWellWhenFirstOpen(int numSteps,size_t currentStep);
 
         static bool wellNameInWellNamePattern(const std::string& wellName, const std::string& wellNamePattern);
@@ -150,6 +157,9 @@ namespace Opm {
         void addSegmentSet(size_t time_step, SegmentSet new_segmentset);
 
         const MessageContainer& getMessageContainer() const;
+        const Events& getEvents() const;
+        void addEvent(ScheduleEvents::Events event, size_t reportStep);
+        bool hasEvent(uint64_t eventMask, size_t reportStep) const;
     private:
         size_t m_creationTimeStep;
         std::string m_name;
@@ -185,6 +195,7 @@ namespace Opm {
         // flag indicating if the well is a multi-segment well
         DynamicState< SegmentSet > m_segmentset;
         size_t timesteps;
+        Events events;
     };
 }
 
