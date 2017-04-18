@@ -2,10 +2,10 @@
 # spec file for package opm-parser
 #
 
-%define tag 0test0
+%define tag rc1
 
 Name:           opm-parser
-Version:        2016.10
+Version:        2017.04
 Release:        0
 Summary:        Open Porous Media - parser library
 License:        GPL-3.0
