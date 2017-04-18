@@ -20,7 +20,7 @@ override_dh_auto_build:
 
 # consider using -DUSE_VERSIONED_DIR=ON if backporting
 override_dh_auto_configure:
-	dh_auto_configure --buildsystem=cmake -- -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 -DENABLE_PYTHON=1
+	dh_auto_configure --buildsystem=cmake -- -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 -DENABLE_PYTHON=1 -DCMAKE_PREFIX_PATH=/usr
 
 override_dh_installdocs:
 	dh_installdocs --link-doc=libopm-parser1
