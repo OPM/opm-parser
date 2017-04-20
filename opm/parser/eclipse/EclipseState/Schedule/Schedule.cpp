@@ -1428,6 +1428,10 @@ namespace Opm {
         return this->getWells( timestep ).size();
     }
 
+    size_t Schedule::numOpenWells(size_t timestep) const {
+        return this->getOpenWells( timestep ).size();
+    }
+
     bool Schedule::hasWell(const std::string& wellName) const {
         return m_wells.hasKey( wellName );
     }
