@@ -128,6 +128,23 @@ namespace Opm {
         const MessageContainer& getMessageContainer() const;
         MessageContainer& getMessageContainer();
 
+        /*
+         * REFs largely exists for opm-material and can change at any moment.
+         * Temperature support in parser is poor. These reference tables are
+         * used downstream, but there's no real support here. Reading REFs data
+         * is *not* recommended, until a better solution supersedes this.
+         */
+        struct REFs {
+            std::vector< double > TREF;
+            std::vector< double > PREF;
+            std::vector< double > CREF;
+            std::vector< double > THERMEX1;
+            int oil_component_index = -1;
+            int gas_component_index = -1;
+        };
+
+        const REFs get_refs_material() const;
+
     private:
         TableContainer& forceGetTables( const std::string& tableName , size_t numTables);
 
@@ -289,6 +306,8 @@ namespace Opm {
         RockTable m_rockTable;
         ViscrefTable m_viscrefTable;
         WatdentTable m_watdentTable;
+
+        REFs refs_material;
 
         Tabdims m_tabdims;
         std::shared_ptr<Regdims> m_regdims;

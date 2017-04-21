@@ -105,6 +105,54 @@ namespace Opm {
         if( deck.hasKeyword( "WATDENT" ) )
             this->m_watdentTable = WatdentTable( deck.getKeyword( "WATDENT" ) );
 
+        if( deck.hasKeyword( "THERMEX1" ) ) {
+            const auto& thermex1 = deck.getKeyword( "THERMEX1" )
+                                       .getRecord( 0 )
+                                       .getItem( 0 );
+
+                this->refs_material.THERMEX1 = thermex1.getSIDoubleData();
+        }
+
+        if( deck.hasKeyword( "TREF" ) ) {
+            const auto& thermex1 = deck.getKeyword( "TREF" )
+                                       .getRecord( 0 )
+                                       .getItem( 0 );
+
+                this->refs_material.TREF = thermex1.getSIDoubleData();
+        }
+
+        if( deck.hasKeyword( "PREF" ) ) {
+            const auto& thermex1 = deck.getKeyword( "PREF" )
+                                       .getRecord( 0 )
+                                       .getItem( 0 );
+
+                this->refs_material.PREF = thermex1.getSIDoubleData();
+        }
+
+        if( deck.hasKeyword( "CREF" ) ) {
+            const auto& thermex1 = deck.getKeyword( "CREF" )
+                                       .getRecord( 0 )
+                                       .getItem( 0 );
+
+                this->refs_material.CREF = thermex1.getSIDoubleData();
+        }
+
+        if( deck.hasKeyword( "OCOMPIDX" ) ) {
+            this->refs_material.oil_component_index =
+                 deck.getKeyword( "OCOMOPIDX" )
+                .getRecord( 0 )
+                .getItem( "OIL_COMPONENT_INDEX" )
+                .get< int >( 0 ) - 1;
+        }
+
+        if( deck.hasKeyword( "GCOMPIDX" ) ) {
+            this->refs_material.oil_component_index =
+                 deck.getKeyword( "GCOMOPIDX" )
+                .getRecord( 0 )
+                .getItem( "GAS_COMPONENT_INDEX" )
+                .get< int >( 0 ) - 1;
+        }
+
         initVFPProdTables(deck, m_vfpprodTables);
         initVFPInjTables(deck,  m_vfpinjTables);
     }
@@ -737,6 +785,10 @@ namespace Opm {
 
     MessageContainer& TableManager::getMessageContainer() {
         return m_messages;
+    }
+
+    const TableManager::REFs TableManager::get_refs_material() const {
+        return this->refs_material;
     }
 
 
