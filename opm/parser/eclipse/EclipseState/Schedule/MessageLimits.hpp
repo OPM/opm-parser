@@ -28,18 +28,18 @@ namespace Opm {
     class TimeMap;
 
     struct MLimits {
-        int message_print_limit = ParserKeywords::MESSAGES::MESSAGE_PRINT_LIMIT::defaultValue;
-        int comment_print_limit = ParserKeywords::MESSAGES::COMMENT_PRINT_LIMIT::defaultValue;
-        int warning_print_limit = ParserKeywords::MESSAGES::WARNING_PRINT_LIMIT::defaultValue;
-        int problem_print_limit = ParserKeywords::MESSAGES::PROBLEM_PRINT_LIMIT::defaultValue;
-        int error_print_limit   = ParserKeywords::MESSAGES::ERROR_PRINT_LIMIT::defaultValue;
-        int bug_print_limit     = ParserKeywords::MESSAGES::BUG_PRINT_LIMIT::defaultValue;
-        int message_stop_limit  = ParserKeywords::MESSAGES::MESSAGE_STOP_LIMIT::defaultValue;
-        int comment_stop_limit  = ParserKeywords::MESSAGES::COMMENT_STOP_LIMIT::defaultValue;
-        int warning_stop_limit  = ParserKeywords::MESSAGES::WARNING_STOP_LIMIT::defaultValue;
-        int problem_stop_limit  = ParserKeywords::MESSAGES::PROBLEM_STOP_LIMIT::defaultValue;
-        int error_stop_limit    = ParserKeywords::MESSAGES::ERROR_STOP_LIMIT::defaultValue;
-        int bug_stop_limit      = ParserKeywords::MESSAGES::BUG_STOP_LIMIT::defaultValue;
+        int message_print_limit = 1000000;
+        int comment_print_limit = 1000000;
+        int warning_print_limit = 10000;
+        int problem_print_limit = 100;
+        int error_print_limit   = 100;
+        int bug_print_limit     = 100;
+        int message_stop_limit  = 1000000;
+        int comment_stop_limit  = 1000000;
+        int warning_stop_limit  = 10000;
+        int problem_stop_limit  = 100;
+        int error_stop_limit    = 10;
+        int bug_stop_limit      = 1;
 
 
         bool operator==(const MLimits& other) const {

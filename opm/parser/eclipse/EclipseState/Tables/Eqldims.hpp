@@ -32,11 +32,11 @@ namespace Opm {
     public:
 
         Eqldims() :
-            m_ntequl( ParserKeywords::EQLDIMS::NTEQUL::defaultValue ),
-            m_depth_nodes_p( ParserKeywords::EQLDIMS::DEPTH_NODES_P::defaultValue ),
-            m_depth_nodes_tab( ParserKeywords::EQLDIMS::DEPTH_NODES_TAB::defaultValue ),
-            m_nttrvd(  ParserKeywords::EQLDIMS::NTTRVD::defaultValue ),
-            m_nstrvd(  ParserKeywords::EQLDIMS::NSTRVD::defaultValue )
+            m_ntequl( 1 ),
+            m_depth_nodes_p( 100 ),
+            m_depth_nodes_tab( 20 ),
+            m_nttrvd( 1 ),
+            m_nstrvd( 20 )
         { }
 
 

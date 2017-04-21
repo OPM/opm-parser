@@ -158,8 +158,6 @@ void VFPProdTable::init(int table_num,
 }
 
 void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_system) {
-    using ParserKeywords::VFPPROD;
-
     //Check that the table has enough records
     if (table.size() < 7) {
         throw std::invalid_argument("VFPPROD table does not appear to have enough records to be valid");
@@ -169,25 +167,25 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
     const auto& header = table.getRecord(0);
 
     //Get the different header items
-    m_table_num   = header.getItem<VFPPROD::TABLE>().get< int >(0);
-    m_datum_depth = header.getItem<VFPPROD::DATUM_DEPTH>().getSIDouble(0);
+    m_table_num   = header.getItem( "TABLE" ).get< int >(0);
+    m_datum_depth = header.getItem( "DATUM_DEPTH" ).getSIDouble(0);
 
-    m_flo_type = Opm::getFloType(header.getItem<VFPPROD::RATE_TYPE>());
-    m_wfr_type = Opm::getWFRType(header.getItem<VFPPROD::WFR>());
-    m_gfr_type = Opm::getGFRType(header.getItem<VFPPROD::GFR>());
+    m_flo_type = Opm::getFloType(header.getItem( "RATE_TYPE" ));
+    m_wfr_type = Opm::getWFRType(header.getItem( "WFR" ));
+    m_gfr_type = Opm::getGFRType(header.getItem( "GFR" ));
 
     //Not used, but check that PRESSURE_DEF is indeed THP
-    std::string quantity_string = header.getItem<VFPPROD::PRESSURE_DEF>().get< std::string >(0);
+    std::string quantity_string = header.getItem( "PRESSURE_DEF" ).get< std::string >(0);
     if (quantity_string != "THP") {
         throw std::invalid_argument("PRESSURE_DEF is required to be THP");
     }
 
-    m_alq_type = Opm::getALQType(header.getItem<VFPPROD::ALQ_DEF>());
+    m_alq_type = Opm::getALQType(header.getItem( "ALQ_DEF" ));
 
     //Check units used for this table
     std::string units_string = "";
-    if (header.getItem<VFPPROD::UNITS>().hasValue(0)) {
-        units_string = header.getItem<VFPPROD::UNITS>().get< std::string >(0);
+    if( header.getItem( "UNITS" ).hasValue(0) ) {
+        units_string = header.getItem( "UNITS" ).get< std::string >(0);
     }
     else {
         //If units does not exist in record, the default value is the
@@ -223,7 +221,7 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
     }
 
     //Quantity in the body of the table
-    std::string body_string = header.getItem<VFPPROD::BODY_DEF>().get< std::string >(0);
+    std::string body_string = header.getItem( "BODY_DEF" ).get< std::string >(0);
     if (body_string == "TEMP") {
         throw std::invalid_argument("Invalid BODY_DEF string: TEMP not supported");
     }
@@ -236,23 +234,23 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
 
 
     //Get actual rate / flow values
-    m_flo_data = table.getRecord(1).getItem<VFPPROD::FLOW_VALUES>().getData< double >();
+    m_flo_data = table.getRecord(1).getItem( "FLOW_VALUES" ).getData< double >();
     convertFloToSI(m_flo_type, m_flo_data, deck_unit_system);
 
     //Get actual tubing head pressure values
-    m_thp_data = table.getRecord(2).getItem<VFPPROD::THP_VALUES>().getData< double >();
+    m_thp_data = table.getRecord(2).getItem( "THP_VALUES" ).getData< double >();
     convertTHPToSI(m_thp_data, deck_unit_system);
 
     //Get actual water fraction values
-    m_wfr_data = table.getRecord(3).getItem<VFPPROD::WFR_VALUES>().getData< double >();
+    m_wfr_data = table.getRecord(3).getItem( "WFR_VALUES" ).getData< double >();
     convertWFRToSI(m_wfr_type, m_wfr_data, deck_unit_system);
 
     //Get actual gas fraction values
-    m_gfr_data = table.getRecord(4).getItem<VFPPROD::GFR_VALUES>().getData< double >();
+    m_gfr_data = table.getRecord(4).getItem( "GFR_VALUES" ).getData< double >();
     convertGFRToSI(m_gfr_type, m_gfr_data, deck_unit_system);
 
     //Get actual gas fraction values
-    m_alq_data = table.getRecord(5).getItem<VFPPROD::ALQ_VALUES>().getData< double >();
+    m_alq_data = table.getRecord(5).getItem( "ALQ_VALUES" ).getData< double >();
     convertALQToSI(m_alq_type, m_alq_data, deck_unit_system);
 
     //Finally, read the actual table itself.
@@ -280,13 +278,13 @@ void VFPProdTable::init( const DeckKeyword& table, const UnitSystem& deck_unit_s
     for (size_t i=6; i<table.size(); ++i) {
         const auto& record = table.getRecord(i);
         //Get indices (subtract 1 to get 0-based index)
-        int t = record.getItem<VFPPROD::THP_INDEX>().get< int >(0) - 1;
-        int w = record.getItem<VFPPROD::WFR_INDEX>().get< int >(0) - 1;
-        int g = record.getItem<VFPPROD::GFR_INDEX>().get< int >(0) - 1;
-        int a = record.getItem<VFPPROD::ALQ_INDEX>().get< int >(0) - 1;
+        int t = record.getItem( "THP_INDEX" ).get< int >(0) - 1;
+        int w = record.getItem( "WFR_INDEX" ).get< int >(0) - 1;
+        int g = record.getItem( "GFR_INDEX" ).get< int >(0) - 1;
+        int a = record.getItem( "ALQ_INDEX" ).get< int >(0) - 1;
 
         //Rest of values (bottom hole pressure or tubing head temperature) have index of flo value
-        const std::vector<double>& bhp_tht = record.getItem<VFPPROD::VALUES>().getData< double >();
+        const std::vector<double>& bhp_tht = record.getItem( "VALUES" ).getData< double >();
 
         if (bhp_tht.size() != nf) {
             throw std::invalid_argument("VFPPROD table does not contain enough FLO values.");

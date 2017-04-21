@@ -295,7 +295,7 @@ namespace Opm {
 
     void Schedule::handleCOMPORD(const ParseContext& parseContext, const DeckKeyword& compordKeyword, size_t /* currentStep */) {
         for (const auto& record : compordKeyword) {
-            const auto& methodItem = record.getItem<ParserKeywords::COMPORD::ORDER_TYPE>();
+            const auto& methodItem = record.getItem( "ORDER_TYPE" );
             if ((methodItem.get< std::string >(0) != "TRACK")  && (methodItem.get< std::string >(0) != "INPUT")) {
                 std::string msg = "The COMPORD keyword only handles 'TRACK' or 'INPUT' order.";
                 m_messages.error(msg);
@@ -1400,12 +1400,12 @@ namespace Opm {
                         : -1.0;
 
         bool allowCrossFlow = true;
-        const std::string& allowCrossFlowStr = record.getItem<ParserKeywords::WELSPECS::CROSSFLOW>().getTrimmedString(0);
+        const std::string& allowCrossFlowStr = record.getItem( "CROSSFLOW" ).getTrimmedString(0);
         if (allowCrossFlowStr == "NO")
             allowCrossFlow = false;
 
         bool automaticShutIn = true;
-        const std::string& automaticShutInStr = record.getItem<ParserKeywords::WELSPECS::AUTO_SHUTIN>().getTrimmedString(0);
+        const std::string& automaticShutInStr = record.getItem( "AUTO_SHUTIN" ).getTrimmedString(0);
         if (automaticShutInStr == "STOP") {
             automaticShutIn = false;
         }

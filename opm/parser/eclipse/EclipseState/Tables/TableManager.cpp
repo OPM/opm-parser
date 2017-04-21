@@ -17,17 +17,8 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableManager.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/E.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/M.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/P.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
-#include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp> // Phase::PhaseEnum
 #include <opm/parser/eclipse/EclipseState/Tables/EnkrvdTable.hpp>
@@ -110,29 +101,28 @@ namespace Opm {
     }
 
     void TableManager::initDims(const Deck& deck) {
-        using namespace Opm::ParserKeywords;
 
-        if (deck.hasKeyword<EQLDIMS>()) {
-            const auto& keyword = deck.getKeyword<EQLDIMS>();
+        if( deck.hasKeyword( "EQLDIMS" ) ) {
+            const auto& keyword = deck.getKeyword( "EQLDIMS" );
             const auto& record = keyword.getRecord(0);
-            int ntsequl   = record.getItem<EQLDIMS::NTEQUL>().get< int >(0);
-            int nodes_p   = record.getItem<EQLDIMS::DEPTH_NODES_P>().get< int >(0);
-            int nodes_tab = record.getItem<EQLDIMS::DEPTH_NODES_TAB>().get< int >(0);
-            int nttrvd    = record.getItem<EQLDIMS::NTTRVD>().get< int >(0);
-            int ntsrvd    = record.getItem<EQLDIMS::NSTRVD>().get< int >(0);
+            int ntsequl   = record.getItem( "NTEQUL" ).get< int >(0);
+            int nodes_p   = record.getItem( "DEPTH_NODES_P" ).get< int >(0);
+            int nodes_tab = record.getItem( "DEPTH_NODES_TAB" ).get< int >(0);
+            int nttrvd    = record.getItem( "NTTRVD" ).get< int >(0);
+            int ntsrvd    = record.getItem( "NSTRVD" ).get< int >(0);
 
             m_eqldims = std::make_shared<Eqldims>(ntsequl , nodes_p , nodes_tab , nttrvd , ntsrvd );
         } else
             m_eqldims = std::make_shared<Eqldims>();
 
-        if (deck.hasKeyword<REGDIMS>()) {
-            const auto& keyword = deck.getKeyword<REGDIMS>();
+        if( deck.hasKeyword( "REGDIMS" ) ) {
+            const auto& keyword = deck.getKeyword( "REGDIMS" );
             const auto& record = keyword.getRecord(0);
-            int ntfip  = record.getItem<REGDIMS::NTFIP>().get< int >(0);
-            int nmfipr = record.getItem<REGDIMS::NMFIPR>().get< int >(0);
-            int nrfreg = record.getItem<REGDIMS::NRFREG>().get< int >(0);
-            int ntfreg = record.getItem<REGDIMS::NTFREG>().get< int >(0);
-            int nplmix = record.getItem<REGDIMS::NPLMIX>().get< int >(0);
+            int ntfip  = record.getItem( "NTFIP" ).get< int >(0);
+            int nmfipr = record.getItem( "NMFIPR" ).get< int >(0);
+            int nrfreg = record.getItem( "NRFREG" ).get< int >(0);
+            int ntfreg = record.getItem( "NTFREG" ).get< int >(0);
+            int nplmix = record.getItem( "NPLMIX" ).get< int >(0);
             m_regdims = std::make_shared<Regdims>( ntfip , nmfipr , nrfreg , ntfreg , nplmix );
         } else
             m_regdims = std::make_shared<Regdims>();
@@ -207,40 +197,51 @@ namespace Opm {
         addTables( "RVVD", m_eqldims->getNumEquilRegions());
 
         {
-            size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
-            if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
-                const auto& keyword = deck.getKeyword<ParserKeywords::MISCIBLE>();
+            size_t numMiscibleTables = 1; // NTMISC default value
+            if( deck.hasKeyword( "MISCIBLE" ) ) {
+                const auto& keyword = deck.getKeyword( "MISCIBLE" );
                 const auto& record = keyword.getRecord(0);
-                numMiscibleTables =  static_cast<size_t>(record.getItem<ParserKeywords::MISCIBLE::NTMISC>().get< int >(0));
+                numMiscibleTables =  record.getItem( "NTMISC" ).get< int >( 0 );
             }
             addTables( "SORWMIS", numMiscibleTables);
             addTables( "SGCWMIS", numMiscibleTables);
             addTables( "MISC",    numMiscibleTables);
             addTables( "PMISC",   numMiscibleTables);
             addTables( "TLPMIXPA",numMiscibleTables);
+
+            initSimpleTableContainer<SorwmisTable>(deck, "SORWMIS", numMiscibleTables);
+            initSimpleTableContainer<SgcwmisTable>(deck, "SGCWMIS", numMiscibleTables);
+            initSimpleTableContainer<MiscTable>(deck, "MISC", numMiscibleTables);
+            initSimpleTableContainer<PmiscTable>(deck, "PMISC", numMiscibleTables);
+            initSimpleTableContainer<TlpmixpaTable>(deck, "TLPMIXPA", numMiscibleTables);
         }
 
         {
-            size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
+            size_t numEndScaleTables = 1;// NUM_TABLES default value
 
-            if (deck.hasKeyword<ParserKeywords::ENDSCALE>()) {
-                const auto& keyword = deck.getKeyword<ParserKeywords::ENDSCALE>();
+            if( deck.hasKeyword( "ENDSCALE" ) ) {
+                const auto& keyword = deck.getKeyword( "ENDSCALE" );
                 const auto& record = keyword.getRecord(0);
-                numEndScaleTables = static_cast<size_t>(record.getItem<ParserKeywords::ENDSCALE::NUM_TABLES>().get< int >(0));
+                numEndScaleTables = record.getItem( "NUM_TABLES" ).get< int >( 0 );
             }
 
             addTables( "ENKRVD", numEndScaleTables);
             addTables( "ENPTVD", numEndScaleTables);
             addTables( "IMKRVD", numEndScaleTables);
             addTables( "IMPTVD", numEndScaleTables);
+
+            initSimpleTableContainer<EnkrvdTable>( deck, "ENKRVD", numEndScaleTables );
+            initSimpleTableContainer<EnptvdTable>( deck, "ENPTVD", numEndScaleTables );
+            initSimpleTableContainer<ImkrvdTable>( deck, "IMKRVD", numEndScaleTables );
+            initSimpleTableContainer<ImptvdTable>( deck, "IMPTVD", numEndScaleTables );
         }
         {
-            size_t numRocktabTables = ParserKeywords::ROCKCOMP::NTROCC::defaultValue;
+            size_t numRocktabTables = 1;// NTROCC default value
 
-            if (deck.hasKeyword<ParserKeywords::ROCKCOMP>()) {
-                const auto& keyword = deck.getKeyword<ParserKeywords::ROCKCOMP>();
+            if( deck.hasKeyword( "ROCKCOMP" ) ) {
+                const auto& keyword = deck.getKeyword( "ROCKCOMP" );
                 const auto& record = keyword.getRecord(0);
-                numRocktabTables = static_cast<size_t>(record.getItem<ParserKeywords::ROCKCOMP::NTROCC>().get< int >(0));
+                numRocktabTables = record.getItem( "NTROCC" ).get< int >( 0 );
             }
             addTables( "ROCKTAB", numRocktabTables);
         }
@@ -262,35 +263,6 @@ namespace Opm {
 
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
-        {
-            size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
-
-            if (deck.hasKeyword<ParserKeywords::ENDSCALE>()) {
-                const auto& keyword = deck.getKeyword<ParserKeywords::ENDSCALE>();
-                const auto& record = keyword.getRecord(0);
-                numEndScaleTables = static_cast<size_t>(record.getItem<ParserKeywords::ENDSCALE::NUM_TABLES>().get< int >(0));
-            }
-
-            initSimpleTableContainer<EnkrvdTable>( deck , "ENKRVD", numEndScaleTables);
-            initSimpleTableContainer<EnptvdTable>( deck , "ENPTVD", numEndScaleTables);
-            initSimpleTableContainer<ImkrvdTable>( deck , "IMKRVD", numEndScaleTables);
-            initSimpleTableContainer<ImptvdTable>( deck , "IMPTVD", numEndScaleTables);
-        }
-
-        {
-            size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
-            if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
-                const auto& keyword = deck.getKeyword<ParserKeywords::MISCIBLE>();
-                const auto& record = keyword.getRecord(0);
-                numMiscibleTables =  static_cast<size_t>(record.getItem<ParserKeywords::MISCIBLE::NTMISC>().get< int >(0));
-            }
-            initSimpleTableContainer<SorwmisTable>(deck, "SORWMIS", numMiscibleTables);
-            initSimpleTableContainer<SgcwmisTable>(deck, "SGCWMIS", numMiscibleTables);
-            initSimpleTableContainer<MiscTable>(deck, "MISC", numMiscibleTables);
-            initSimpleTableContainer<PmiscTable>(deck, "PMISC", numMiscibleTables);
-            initSimpleTableContainer<TlpmixpaTable>(deck, "TLPMIXPA", numMiscibleTables);
-
-        }
 
         initSimpleTableContainer<PvdgTable>(deck, "PVDG", m_tabdims.getNumPVTTables());
         initSimpleTableContainer<PvdoTable>(deck, "PVDO", m_tabdims.getNumPVTTables());
@@ -308,7 +280,6 @@ namespace Opm {
         initRocktabTables(deck);
         initPlyshlogTables(deck);
     }
-
 
     void TableManager::initRTempTables(const Deck& deck) {
         // the temperature vs depth table. the problem here is that
@@ -395,7 +366,7 @@ namespace Opm {
             return;
         }
 
-        const auto& keyword = deck.getKeyword<ParserKeywords::PLYROCK>();
+        const auto& keyword = deck.getKeyword( "PLYROCK" );
         auto& container = forceGetTables(keywordName , numTables);
         for (size_t tableIdx = 0; tableIdx < keyword.size(); ++tableIdx) {
             const auto& tableRecord = keyword.getRecord( tableIdx );
@@ -417,7 +388,7 @@ namespace Opm {
             return;
         }
 
-        const auto& keyword = deck.getKeyword<ParserKeywords::PLYMAX>();
+        const auto& keyword = deck.getKeyword( "PLYMAX" );
         auto& container = forceGetTables(keywordName , numTables);
         for (size_t tableIdx = 0; tableIdx < keyword.size(); ++tableIdx) {
             const auto& tableRecord = keyword.getRecord( tableIdx );
@@ -436,18 +407,18 @@ namespace Opm {
             complainAboutAmbiguousKeyword(deck, "ROCKTAB");
             return;
         }
-        const auto& rockcompKeyword = deck.getKeyword<ParserKeywords::ROCKCOMP>();
+        const auto& rockcompKeyword = deck.getKeyword( "ROCKCOMP" );
         const auto& record = rockcompKeyword.getRecord( 0 );
-        size_t numTables = record.getItem<ParserKeywords::ROCKCOMP::NTROCC>().get< int >(0);
+        size_t numTables = record.getItem( "NTROCC" ).get< int >(0);
         auto& container = forceGetTables("ROCKTAB" , numTables);
         const auto rocktabKeyword = deck.getKeyword("ROCKTAB");
 
-        bool isDirectional = deck.hasKeyword<ParserKeywords::RKTRMDIR>();
+        bool isDirectional = deck.hasKeyword( "RKTRMDIR" );
         bool useStressOption = false;
-        if (deck.hasKeyword<ParserKeywords::ROCKOPTS>()) {
-            const auto rockoptsKeyword = deck.getKeyword<ParserKeywords::ROCKOPTS>();
+        if( deck.hasKeyword( "ROCKOPTS" ) ) {
+            const auto rockoptsKeyword = deck.getKeyword( "ROCKOPTS" );
             const auto& rockoptsRecord = rockoptsKeyword.getRecord(0);
-            const auto& item = rockoptsRecord.getItem<ParserKeywords::ROCKOPTS::METHOD>();
+            const auto& item = rockoptsRecord.getItem( "METHOD" );
             useStressOption = (item.getTrimmedString(0) == "STRESS");
         }
 
@@ -465,12 +436,12 @@ namespace Opm {
 
     void TableManager::initVFPProdTables(const Deck& deck,
                                           std::map<int, VFPProdTable>& tableMap) {
-        if (!deck.hasKeyword(ParserKeywords::VFPPROD::keywordName)) {
-            return;
-        }
 
-        int num_tables = deck.count(ParserKeywords::VFPPROD::keywordName);
-        const auto& keywords = deck.getKeywordList<ParserKeywords::VFPPROD>();
+        if( !deck.hasKeyword( "VFPPROD" ) )
+            return;
+
+        int num_tables = deck.count( "VFPPROD" );
+        const auto& keywords = deck.getKeywordList( "VFPPROD" );
         const auto& unit_system = deck.getActiveUnitSystem();
         for (int i=0; i<num_tables; ++i) {
             const auto& keyword = *keywords[i];
@@ -492,12 +463,11 @@ namespace Opm {
 
     void TableManager::initVFPInjTables(const Deck& deck,
                                         std::map<int, VFPInjTable>& tableMap) {
-        if (!deck.hasKeyword(ParserKeywords::VFPINJ::keywordName)) {
+        if( !deck.hasKeyword( "VFPINJ" ) )
             return;
-        }
 
-        int num_tables = deck.count(ParserKeywords::VFPINJ::keywordName);
-        const auto& keywords = deck.getKeywordList<ParserKeywords::VFPINJ>();
+        int num_tables = deck.count( "VFPINJ" );
+        const auto& keywords = deck.getKeywordList( "VFPINJ" );
         const auto& unit_system = deck.getActiveUnitSystem();
         for (int i=0; i<num_tables; ++i) {
             const auto& keyword = *keywords[i];

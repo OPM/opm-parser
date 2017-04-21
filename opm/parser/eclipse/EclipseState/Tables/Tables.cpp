@@ -508,12 +508,12 @@ PlyshlogTable::PlyshlogTable(
         const DeckRecord& dataRecord ) {
 
     {
-        const auto& item = indexRecord.getItem<ParserKeywords::PLYSHLOG::REF_POLYMER_CONCENTRATION>();
+        const auto& item = indexRecord.getItem( "REF_POLYMER_CONCENTRATION" );
         setRefPolymerConcentration(item.get< double >(0));
     }
 
     {
-        const auto& item = indexRecord.getItem<ParserKeywords::PLYSHLOG::REF_SALINITY>();
+        const auto& item = indexRecord.getItem( "REF_SALINITY" );
         if (item.hasValue(0)) {
             setHasRefSalinity(true);
             setRefSalinity(item.get< double >(0));
@@ -522,7 +522,7 @@ PlyshlogTable::PlyshlogTable(
     }
 
     {
-        const auto& item = indexRecord.getItem<ParserKeywords::PLYSHLOG::REF_TEMPERATURE>();
+        const auto& item = indexRecord.getItem( "REF_TEMPERATURE" );
         if (item.hasValue(0)) {
             setHasRefTemperature(true);
             setRefTemperature(item.get< double >(0));
@@ -533,7 +533,7 @@ PlyshlogTable::PlyshlogTable(
     m_schema.addColumn( ColumnSchema("WaterVelocity"   , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE));
     m_schema.addColumn( ColumnSchema("ShearMultiplier" , Table::RANDOM , Table::DEFAULT_NONE));
 
-    SimpleTable::init( dataRecord.getItem<ParserKeywords::PLYSHLOG::DATA>() );
+    SimpleTable::init( dataRecord.getItem( "DATA" ) );
 }
 
 double PlyshlogTable::getRefPolymerConcentration() const {
@@ -614,7 +614,7 @@ const TableColumn& WatvisctTable::getWaterViscosityColumn() const {
 } 
 
 GasvisctTable::GasvisctTable( const Deck& deck, const DeckItem& deckItem ) {
-    int numComponents = deck.getKeyword<ParserKeywords::COMPS>().getRecord(0).getItem(0).get< int >(0);
+    int numComponents = deck.getKeyword( "COMPS" ).getRecord(0).getItem(0).get< int >(0);
 
     auto temperatureDimension = deck.getActiveUnitSystem().getDimension("Temperature");
     auto viscosityDimension = deck.getActiveUnitSystem().getDimension("Viscosity");

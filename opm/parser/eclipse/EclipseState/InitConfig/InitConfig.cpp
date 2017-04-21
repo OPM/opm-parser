@@ -33,8 +33,8 @@
 namespace Opm {
 
     static inline Equil equils( const Deck& deck ) {
-        if( !deck.hasKeyword<ParserKeywords::EQUIL>( ) ) return {};
-        return Equil( deck.getKeyword<ParserKeywords::EQUIL>(  ) );
+        if( !deck.hasKeyword( "EQUIL" ) ) return {};
+        return Equil( deck.getKeyword( "EQUIL" ) );
     }
 
     InitConfig::InitConfig(const Deck& deck) : equil(equils(deck)) {

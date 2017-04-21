@@ -55,17 +55,17 @@ namespace Opm {
     {
         if (Section::hasRUNSPEC(deck)) {
             const RUNSPECSection runspec(deck);
-            if (runspec.hasKeyword<ParserKeywords::CPR>()) {
-                const auto& cpr = runspec.getKeyword<ParserKeywords::CPR>();
+            if( runspec.hasKeyword( "CPR" ) ) {
+                const auto& cpr = runspec.getKeyword( "CPR" );
                 if (cpr.size() > 0)
                     throw std::invalid_argument("ERROR: In the RUNSPEC section the CPR keyword should EXACTLY one empty record.");
 
                 m_useCPR = true;
             }
-            if (runspec.hasKeyword<ParserKeywords::DISGAS>()) {
+            if( runspec.hasKeyword( "DISGAS" ) ) {
                 m_DISGAS = true;
             }
-            if (runspec.hasKeyword<ParserKeywords::VAPOIL>()) {
+            if( runspec.hasKeyword( "VAPOIL" ) ) {
                 m_VAPOIL = true;
             }
         }

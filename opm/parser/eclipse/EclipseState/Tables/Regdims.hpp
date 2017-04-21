@@ -32,11 +32,11 @@ namespace Opm {
     public:
 
         Regdims() :
-            m_NTFIP( ParserKeywords::REGDIMS::NTFIP::defaultValue ),
-            m_NMFIPR( ParserKeywords::REGDIMS::NMFIPR::defaultValue ),
-            m_NRFREG( ParserKeywords::REGDIMS::NRFREG::defaultValue ),
-            m_NTFREG( ParserKeywords::REGDIMS::NTFREG::defaultValue ),
-            m_NPLMIX( ParserKeywords::REGDIMS::NPLMIX::defaultValue )
+            m_NTFIP(  1 ),
+            m_NMFIPR( 1 ),
+            m_NRFREG( 0 ),
+            m_NTFREG( 0 ),
+            m_NPLMIX( 1 )
         { }
 
         Regdims(size_t ntfip , size_t nmfipr , size_t nrfregr , size_t ntfreg , size_t nplmix) :

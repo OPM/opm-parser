@@ -56,12 +56,8 @@ namespace Opm {
         const std::vector<std::string>& getStringData() const;
         size_t getDataSize() const;
 
-        template <class Keyword>
-        bool isKeyword() const {
-            if (Keyword::keywordName == m_keywordName)
-                return true;
-            else
-                return false;
+        bool isKeyword( const std::string& nm ) const {
+            return nm == this->m_keywordName;
         }
 
         const_iterator begin() const;

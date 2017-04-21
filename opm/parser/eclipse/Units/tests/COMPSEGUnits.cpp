@@ -46,9 +46,9 @@ inline Deck createCOMPSEGSDeck() {
 
 BOOST_AUTO_TEST_CASE(CreateDimension) {
     auto deck = createCOMPSEGSDeck();
-    const auto& keyword = deck.getKeyword<ParserKeywords::COMPSEGS>();
+    const auto& keyword = deck.getKeyword( "COMPSEGS" );
     const auto& record = keyword.getRecord(1);
-    BOOST_CHECK_NO_THROW( record.getItem<ParserKeywords::COMPSEGS::DISTANCE_START>().getSIDouble(0) );
+    BOOST_CHECK_NO_THROW( record.getItem( "DISTANCE_START" ).getSIDouble(0) );
 }
 
 

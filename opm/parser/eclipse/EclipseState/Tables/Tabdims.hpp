@@ -40,12 +40,12 @@ namespace Opm {
           internalize the most common items.
         */
         Tabdims() :
-            m_ntsfun( ParserKeywords::TABDIMS::NTSFUN::defaultValue ),
-            m_ntpvt( ParserKeywords::TABDIMS::NTPVT::defaultValue ),
-            m_nssfun( ParserKeywords::TABDIMS::NSSFUN::defaultValue ),
-            m_nppvt(  ParserKeywords::TABDIMS::NPPVT::defaultValue ),
-            m_ntfip(  ParserKeywords::TABDIMS::NTFIP::defaultValue ),
-            m_nrpvt(  ParserKeywords::TABDIMS::NRPVT::defaultValue )
+            m_ntsfun( 1 ),
+            m_ntpvt(  1 ),
+            m_nssfun( 20 ),
+            m_nppvt(  20 ),
+            m_ntfip(  1 ),
+            m_nrpvt(  20 )
         { }
 
 

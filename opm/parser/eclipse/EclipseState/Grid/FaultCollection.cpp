@@ -43,7 +43,7 @@ namespace Opm {
 
     FaultCollection::FaultCollection(const GRIDSection& gridSection,
                                      const GridDims& grid) {
-        const auto& faultKeywords = gridSection.getKeywordList<ParserKeywords::FAULTS>();
+        const auto& faultKeywords = gridSection.getKeywordList("FAULTS");
 
         for (auto keyword_iter = faultKeywords.begin(); keyword_iter != faultKeywords.end(); ++keyword_iter) {
             const auto& faultsKeyword = *keyword_iter;
