@@ -92,6 +92,7 @@ namespace Opm {
         const TableContainer& getPlymaxTables() const;
         const TableContainer& getPlyrockTables() const;
         const TableContainer& getPlyshlogTables() const;
+        const TableContainer& getStone1exTables() const;
 
         const TableContainer& getSorwmisTables() const;
         const TableContainer& getSgcwmisTables() const;
