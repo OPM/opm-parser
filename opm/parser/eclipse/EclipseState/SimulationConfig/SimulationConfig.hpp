@@ -20,12 +20,51 @@
 #ifndef OPM_SIMULATION_CONFIG_HPP
 #define OPM_SIMULATION_CONFIG_HPP
 
+#include <bitset>
+
 #include <opm/parser/eclipse/EclipseState/SimulationConfig/ThresholdPressure.hpp>
+#include <opm/parser/eclipse/EclipseState/SimulationConfig/HysteresisOptions.hpp>
 
 namespace Opm {
 
     class Deck;
     class Eclipse3DProperties;
+
+    class RelpermOptions {
+        public:
+            RelpermOptions() = default;
+            RelpermOptions( const Deck& );
+
+            bool directional() const noexcept;
+            bool nondirectional() const noexcept;
+            bool reversible() const noexcept;
+            bool irreversible() const noexcept;
+            bool hysteresis() const noexcept;
+            bool capillaryPressureCanVaryWithSurfaceTension() const noexcept;
+
+            enum Model {
+                DEFAULT,
+                STONE1,
+                STONE2,
+                // IKU3P and ODD3P are currently unsupported
+                // IKU3P,
+                // ODD3P,
+            };
+
+            Model model() const noexcept;
+
+        private:
+            enum class option {
+                direct,
+                irrevers,
+                hysteresis,
+                surface_tension,
+            };
+
+            using ue = std::underlying_type< option >::type;
+            std::bitset< 4 > options;
+            Model rp_model = Model::DEFAULT;
+    };
 
     class SimulationConfig {
 
@@ -39,12 +78,16 @@ namespace Opm {
         bool useCPR() const;
         bool hasDISGAS() const;
         bool hasVAPOIL() const;
+        const RelpermOptions& relperm() const noexcept;
+        const HysteresisOptions& hysteresis() const noexcept;
 
     private:
         ThresholdPressure m_ThresholdPressure;
         bool m_useCPR;
         bool m_DISGAS;
         bool m_VAPOIL;
+        RelpermOptions m_relperm_opts;
+        HysteresisOptions m_hysteresis_opts;
     };
 
 } //namespace Opm
