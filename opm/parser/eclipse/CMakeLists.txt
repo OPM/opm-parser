@@ -81,6 +81,7 @@ EclipseState/EclipseConfig.cpp
 EclipseState/Eclipse3DProperties.cpp
 EclipseState/Runspec.cpp
 EclipseState/EndpointScaling.cpp
+EclipseState/saturation.cpp
 #
 EclipseState/checkDeck.cpp
 #
