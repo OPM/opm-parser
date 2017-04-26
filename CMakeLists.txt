@@ -90,14 +90,11 @@ else()
   # overriden via -DCMAKE_FLAGS from the command line or ccmake
   SET( CMAKE_CXX_FLAGS "-pipe  ${CMAKE_CXX_FLAGS}")
   SET( CMAKE_CXX_FLAGS_DEBUG   "-pedantic -Wall -Wextra -Wformat-nonliteral -Wcast-align -Wpointer-arith -Wmissing-declarations -Wcast-qual -Wshadow -Wwrite-strings -Wchar-subscripts -Wredundant-decls ${CMAKE_CXX_FLAGS_DEBUG}")
-  SET( CMAKE_CXX_FLAGS_DEBUG   "-O0 -DDEBUG  -ggdb3        ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}  ")
-  SET( CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -mtune=native ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
 endif(MSVC)
 
 SET( CMAKE_C_FLAGS "-pipe -Wall -Wno-unknown-pragmas -std=c99 ${CMAKE_C_FLAGS}")
-SET( CMAKE_C_FLAGS_DEBUG   "-O0 -DDEBUG -ggdb3         ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}  ")
-SET( CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG -mtune=native ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
 
+include(UseOptimization)
 
 if (BOOST_ROOT AND NOT DEFINED Boost_NO_SYSTEM_PATHS)
    set (Boost_NO_SYSTEM_PATHS TRUE)
