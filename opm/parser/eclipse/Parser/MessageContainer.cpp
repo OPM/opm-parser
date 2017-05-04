@@ -127,13 +127,34 @@ namespace Opm {
             Message { Message::Note, msg, { filename, lineno } }
         );
     }
-
-
+    
     void MessageContainer::note( const std::string& msg ) {
         m_messages.emplace_back( Message { Message::Note, msg, {} } );
+    }    
+    
+    void MessageContainer::probleminfo( const std::string& msg,
+                                    const std::string& filename,
+                                    const size_t lineno ) {
+        m_messages.emplace_back(
+            Message { Message::Probleminfo, msg, { filename, lineno } }
+        );
+    }  
+    
+    void MessageContainer::probleminfo( const std::string& msg ) {
+        m_messages.emplace_back( Message { Message::Probleminfo, msg, {} } );
     }
 
-
+    void MessageContainer::warninginfo( const std::string& msg,
+                                 const std::string& filename,
+                                 const size_t lineno ) {
+        m_messages.emplace_back(
+            Message { Message::Warninginfo, msg, { filename, lineno } }
+        );
+    }
+    
+    void MessageContainer::warninginfo( const std::string& msg ) {
+        m_messages.emplace_back( Message { Message::Warninginfo, msg, {} } );
+    }
     void MessageContainer::add( const Message& msg ) {
         this->m_messages.push_back( msg );
     }

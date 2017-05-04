@@ -1208,12 +1208,16 @@ namespace Opm {
             {"PROBLEM_PRINT_LIMIT" , std::mem_fn( &MessageLimits::setProblemPrintLimit)},
             {"ERROR_PRINT_LIMIT"   , std::mem_fn( &MessageLimits::setErrorPrintLimit)},
             {"BUG_PRINT_LIMIT"     , std::mem_fn( &MessageLimits::setBugPrintLimit)},
+            {"PROBLEMINFO_PRINT_LIMIT" , std::mem_fn( &MessageLimits::setProbleminfoPrintLimit)},
+            {"WARNINGINFO_PRINT_LIMIT" , std::mem_fn( &MessageLimits::setWarninginfoPrintLimit)},
             {"MESSAGE_STOP_LIMIT"  , std::mem_fn( &MessageLimits::setMessageStopLimit)},
             {"COMMENT_STOP_LIMIT"  , std::mem_fn( &MessageLimits::setCommentStopLimit)},
             {"WARNING_STOP_LIMIT"  , std::mem_fn( &MessageLimits::setWarningStopLimit)},
             {"PROBLEM_STOP_LIMIT"  , std::mem_fn( &MessageLimits::setProblemStopLimit)},
             {"ERROR_STOP_LIMIT"    , std::mem_fn( &MessageLimits::setErrorStopLimit)},
-            {"BUG_STOP_LIMIT"      , std::mem_fn( &MessageLimits::setBugStopLimit)}};
+            {"BUG_STOP_LIMIT"      , std::mem_fn( &MessageLimits::setBugStopLimit)},
+            {"PROBLEMINFO_STOP_LIMIT" , std::mem_fn( &MessageLimits::setProbleminfoStopLimit)},
+            {"WARNINGINFO_STOP_LIMIT" , std::mem_fn( &MessageLimits::setWarninginfoStopLimit)}};
 
         for (const auto& pair : setters) {
             const auto& item = record.getItem( pair.first );
