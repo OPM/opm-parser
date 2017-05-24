@@ -282,3 +282,13 @@ BOOST_AUTO_TEST_CASE ( UnitConstants ) {
     const double flux_m3py = convert::to(flux_SI, cubic(meter)/year);
     BOOST_REQUIRE_CLOSE (flux_m3py, 1e4, 0.01);
 }
+
+
+BOOST_AUTO_TEST_CASE ( UnityCOnversionIdentity) {
+    const auto units = UnitSystem::newFIELD();
+    double value = 623462386.7235;
+
+    // This is *not* a CLOSE test, rather we expect bitwise equality
+    // when the identity conversion factor is used.
+    BOOST_CHECK_EQUAL( value , units.from_si(  UnitSystem::measure::identity, units.to_si( UnitSystem::measure::identity , value )));
+}
