@@ -46,7 +46,9 @@ namespace Opm {
             Warning   = 4,
             Error     = 5,
             Problem   = 6,
-            Bug       = 7
+            Bug       = 7,
+            Probleminfo = 8,
+            Warninginfo = 9
         };
 
         Message( type mt, const std::string& msg, Location&& loc ) :
@@ -85,6 +87,12 @@ namespace Opm {
 
         void problem(const std::string& msg, const std::string& filename, const size_t lineno);
         void problem(const std::string& msg);
+
+        void probleminfo(const std::string& msg, const std::string& filename, const size_t lineno);
+        void probleminfo(const std::string& msg);
+
+        void warninginfo(const std::string& msg, const std::string& filename, const size_t lineno);
+        void warninginfo(const std::string& msg);
 
         void note(const std::string& msg, const std::string& filename, const size_t lineno);
         void note(const std::string& msg);

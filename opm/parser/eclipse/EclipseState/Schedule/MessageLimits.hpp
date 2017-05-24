@@ -34,12 +34,16 @@ namespace Opm {
         int problem_print_limit = ParserKeywords::MESSAGES::PROBLEM_PRINT_LIMIT::defaultValue;
         int error_print_limit   = ParserKeywords::MESSAGES::ERROR_PRINT_LIMIT::defaultValue;
         int bug_print_limit     = ParserKeywords::MESSAGES::BUG_PRINT_LIMIT::defaultValue;
+        int probleminfo_print_limit = ParserKeywords::MESSAGES::PROBLEM_PRINT_LIMIT::defaultValue;
+        int warninginfo_print_limit = ParserKeywords::MESSAGES::WARNING_PRINT_LIMIT::defaultValue;
         int message_stop_limit  = ParserKeywords::MESSAGES::MESSAGE_STOP_LIMIT::defaultValue;
         int comment_stop_limit  = ParserKeywords::MESSAGES::COMMENT_STOP_LIMIT::defaultValue;
         int warning_stop_limit  = ParserKeywords::MESSAGES::WARNING_STOP_LIMIT::defaultValue;
         int problem_stop_limit  = ParserKeywords::MESSAGES::PROBLEM_STOP_LIMIT::defaultValue;
         int error_stop_limit    = ParserKeywords::MESSAGES::ERROR_STOP_LIMIT::defaultValue;
         int bug_stop_limit      = ParserKeywords::MESSAGES::BUG_STOP_LIMIT::defaultValue;
+        int probleminfo_stop_limit  = ParserKeywords::MESSAGES::PROBLEM_STOP_LIMIT::defaultValue;
+        int warninginfo_stop_limit  = ParserKeywords::MESSAGES::WARNING_STOP_LIMIT::defaultValue;
 
 
         bool operator==(const MLimits& other) const {
@@ -49,12 +53,16 @@ namespace Opm {
                      (this->problem_print_limit == other.problem_print_limit) &&
                      (this->error_print_limit   == other.error_print_limit  ) &&
                      (this->bug_print_limit     == other.bug_print_limit    ) &&
+                     (this->probleminfo_print_limit == other.probleminfo_print_limit  ) &&
+                     (this->warninginfo_print_limit == other.warninginfo_print_limit  ) &&
                      (this->message_stop_limit  == other.message_stop_limit ) &&
                      (this->comment_stop_limit  == other.comment_stop_limit ) &&
                      (this->warning_stop_limit  == other.warning_stop_limit ) &&
                      (this->problem_stop_limit  == other.problem_stop_limit ) &&
                      (this->error_stop_limit    == other.error_stop_limit   ) &&
-                     (this->bug_stop_limit      == other.bug_stop_limit     ));
+                     (this->bug_stop_limit      == other.bug_stop_limit     ) &&
+                     (this->probleminfo_stop_limit  == other.probleminfo_stop_limit ) &&
+                     (this->warninginfo_stop_limit    == other.warninginfo_stop_limit   ));
         }
 
         bool operator!=(const MLimits& other) const {
@@ -82,12 +90,16 @@ namespace Opm {
         int getProblemPrintLimit(size_t timestep) const;
         int getErrorPrintLimit(size_t timestep) const;
         int getBugPrintLimit(size_t timestep) const;
+        int getProbleminfoPrintLimit(size_t timestep) const;
+        int getWarninginfoPrintLimit(size_t timestep) const;
         void setMessagePrintLimit(size_t timestep, int value);
         void setCommentPrintLimit(size_t timestep, int value);
         void setWarningPrintLimit(size_t timestep, int value);
         void setProblemPrintLimit(size_t timestep, int value);
         void setErrorPrintLimit(size_t timestep, int value);
         void setBugPrintLimit(size_t timestep, int value);
+        void setProbleminfoPrintLimit(size_t timestep, int value);
+        void setWarninginfoPrintLimit(size_t timestep, int value);
 
         int getMessageStopLimit(size_t timestep) const;
         int getCommentStopLimit(size_t timestep) const;
@@ -95,12 +107,16 @@ namespace Opm {
         int getProblemStopLimit(size_t timestep) const;
         int getErrorStopLimit(size_t timestep) const;
         int getBugStopLimit(size_t timestep) const;
+        int getProbleminfoStopLimit(size_t timestep) const;
+        int getWarninginfoStopLimit(size_t timestep) const;
         void setMessageStopLimit(size_t timestep, int value);
         void setCommentStopLimit(size_t timestep, int value);
         void setWarningStopLimit(size_t timestep, int value);
         void setProblemStopLimit(size_t timestep, int value);
         void setErrorStopLimit(size_t timestep, int value);
         void setBugStopLimit(size_t timestep, int value);
+        void setProbleminfoStopLimit(size_t timestep, int value);
+        void setWarninginfoStopLimit(size_t timestep, int value);
 
     private:
         void update(size_t timestep, const MLimits& value);

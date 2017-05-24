@@ -68,6 +68,18 @@ namespace Opm {
         const auto& mlimit = limits.get( timestep );
         return mlimit.bug_print_limit;
     }
+    
+    int MessageLimits::getProbleminfoPrintLimit(size_t timestep) const
+    {
+        const auto& mlimit = limits.get( timestep );
+        return mlimit.probleminfo_print_limit;
+    }
+
+    int MessageLimits::getWarninginfoPrintLimit(size_t timestep) const
+    {
+        const auto& mlimit = limits.get( timestep );
+        return mlimit.warninginfo_print_limit;
+    }
 
     /*-----------------------------------------------------------------*/
 
@@ -105,6 +117,18 @@ namespace Opm {
     {
         const auto& mlimit = limits.get( timestep );
         return mlimit.bug_stop_limit;
+    }
+    
+    int MessageLimits::getProbleminfoStopLimit(size_t timestep) const
+    {
+        const auto& mlimit = limits.get( timestep );
+        return mlimit.probleminfo_stop_limit;
+    }
+
+    int MessageLimits::getWarninginfoStopLimit(size_t timestep) const
+    {
+        const auto& mlimit = limits.get( timestep );
+        return mlimit.warninginfo_stop_limit;
     }
 
     /*-----------------------------------------------------------------*/
@@ -157,6 +181,19 @@ namespace Opm {
         mlimit.bug_print_limit = value;
         this->update( timestep , mlimit );
     }
+    void MessageLimits::setWarninginfoPrintLimit(size_t timestep, int value)
+    {
+        auto mlimit = limits.get( timestep );
+        mlimit.warninginfo_print_limit = value;
+        this->update( timestep , mlimit );
+    }
+
+    void MessageLimits::setProbleminfoPrintLimit(size_t timestep, int value)
+    {
+        auto mlimit = limits.get( timestep );
+        mlimit.probleminfo_print_limit = value;
+        this->update( timestep , mlimit );
+    }
 
     /*-----------------------------------------------------------------*/
 
@@ -202,6 +239,19 @@ namespace Opm {
         this->update( timestep , mlimit );
     }
 
+    void MessageLimits::setProbleminfoStopLimit(size_t timestep, int value)
+    {
+        auto mlimit = limits.get( timestep );
+        mlimit.problem_stop_limit = value;
+        this->update( timestep , mlimit );
+    }
+
+    void MessageLimits::setWarninginfoStopLimit(size_t timestep, int value)
+    {
+        auto mlimit = limits.get( timestep );
+        mlimit.warning_stop_limit = value;
+        this->update( timestep , mlimit );
+    }
 
 
 }
