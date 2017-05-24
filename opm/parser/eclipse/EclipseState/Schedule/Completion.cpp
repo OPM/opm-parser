@@ -42,6 +42,7 @@ namespace Opm {
                            const Value<double>& diameter,
                            const Value<double>& skinFactor,
                            const int satTableId,
+                           const bool isSatTableDefault,
                            const WellCompletion::DirectionEnum direction)
         : m_i(i), m_j(j), m_k(k),
           m_complnum( compnum ),
@@ -50,6 +51,7 @@ namespace Opm {
           m_wellPi(1.0),
           m_skinFactor(skinFactor),
           m_satTableId(satTableId),
+          m_isSatTableIdDefault(isSatTableDefault),
           m_state(state),
           m_direction(direction),
           m_center_depth( depth )
@@ -167,6 +169,7 @@ namespace Opm {
                                       diameter,
                                       skinFactor,
                                       satTableId,
+                                      defaultSatTable,
                                       direction );
         }
 
@@ -270,6 +273,10 @@ namespace Opm {
         return m_satTableId;
     }
 
+    bool Completion::isSatTableIdDefault() const {
+        return m_isSatTableIdDefault;
+    }
+
     const Value<double>& Completion::getConnectionTransmissibilityFactorAsValueObject() const {
         return m_connectionTransmissibilityFactor;
     }
@@ -323,6 +330,7 @@ namespace Opm {
             && this->m_wellPi == rhs.m_wellPi
             && this->m_skinFactor == rhs.m_skinFactor
             && this->m_satTableId == rhs.m_satTableId
+            && this->m_isSatTableIdDefault == rhs.m_isSatTableIdDefault
             && this->m_state == rhs.m_state
             && this->m_direction == rhs.m_direction
             && this->m_segment_number == rhs.m_segment_number
