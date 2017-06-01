@@ -1039,9 +1039,8 @@ BOOST_AUTO_TEST_CASE(changeBhpLimitInHistoryModeWithWeltarg) {
     Schedule schedule(parseContext , grid, eclipseProperties, deck, Phases(true, true, true) );
     auto* well_p = schedule.getWell("P");
 
-    BOOST_CHECK_EQUAL(well_p->getProductionProperties(0).BHPLimit, 0); //start
+    BOOST_CHECK_EQUAL(well_p->getProductionProperties(0).BHPLimit, 0.); //start
     BOOST_CHECK_EQUAL(well_p->getProductionProperties(1).BHPLimit, 50 * 1e5); // 1
-    // The BHP limit should not be effected by WCONHIST
     BOOST_CHECK_EQUAL(well_p->getProductionProperties(2).BHPLimit, 50 * 1e5); // 2
 
     auto* well_i = schedule.getWell("I");

@@ -439,8 +439,8 @@ namespace Opm {
                     properties = WellProductionProperties::prediction( record, addGrupProductionControl );
                 } else {
                     const WellProductionProperties& prev_properties = well->getProductionProperties(currentStep);
-                    double BHPLimit = prev_properties.BHPLimit;
-                    properties = WellProductionProperties::history( BHPLimit , record, m_phases);
+                    const double BHPLimit = prev_properties.BHPLimit;
+                    properties = WellProductionProperties::history(BHPLimit, record);
                 }
 
                 if (status != WellCommon::SHUT) {
