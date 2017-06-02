@@ -123,6 +123,7 @@ set_target_properties(boost_regex PROPERTIES
 add_library(boost_test UNKNOWN IMPORTED)
 set_target_properties(boost_test PROPERTIES
     ${_msvc_boost_incl}
+    INTERFACE_LINK_LIBRARIES  "boost_system"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION_DEBUG   "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}"
