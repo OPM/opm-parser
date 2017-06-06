@@ -79,16 +79,10 @@ find_package(Boost 1.44.0
              COMPONENTS filesystem date_time system unit_test_framework regex
              REQUIRED)
 
-if (MSVC)
-    # on MSVC, INTERFACE_SYSTEM_INCLUDE_DIRECTORIES seems to not be understood
-    set(_msvc_boost_incl INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}")
-endif ()
-
-
 # make targets for boost
 add_library(boost_filesystem UNKNOWN IMPORTED)
 set_target_properties(boost_filesystem PROPERTIES
-    ${_msvc_boost_incl}
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_COMPILE_DEFINITIONS BOOST_FILESYSTEM_VERSION=3
     INTERFACE_LINK_LIBRARIES  "boost_system"
@@ -98,7 +92,7 @@ set_target_properties(boost_filesystem PROPERTIES
 
 add_library(boost_date_time UNKNOWN IMPORTED)
 set_target_properties(boost_date_time PROPERTIES
-    ${_msvc_boost_incl}
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION_DEBUG "${Boost_DATE_TIME_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_DATE_TIME_LIBRARY_RELEASE}"
@@ -106,7 +100,7 @@ set_target_properties(boost_date_time PROPERTIES
 
 add_library(boost_system UNKNOWN IMPORTED)
 set_target_properties(boost_system PROPERTIES
-    ${_msvc_boost_incl}
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION_DEBUG   "${Boost_SYSTEM_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_SYSTEM_LIBRARY_RELEASE}"
@@ -114,7 +108,7 @@ set_target_properties(boost_system PROPERTIES
 
 add_library(boost_regex UNKNOWN IMPORTED)
 set_target_properties(boost_regex PROPERTIES
-    ${_msvc_boost_incl}
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION_DEBUG   "${Boost_REGEX_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_REGEX_LIBRARY_RELEASE}"
@@ -123,8 +117,9 @@ set_target_properties(boost_regex PROPERTIES
 add_library(boost_test UNKNOWN IMPORTED)
 set_target_properties(boost_test PROPERTIES
     ${_msvc_boost_incl}
-    INTERFACE_LINK_LIBRARIES  "boost_system"
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES  "boost_system"
     IMPORTED_LOCATION_DEBUG   "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}"
 )
