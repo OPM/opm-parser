@@ -44,10 +44,10 @@ namespace Opm {
     */
 
     public:
-        Tuning(const TimeMap& timemap);
+        explicit Tuning(const TimeMap& timemap);
 
-        void setTuningInitialValue(const std::string tuningItem, double value,bool resetVector);
-        void setTuningInitialValue(const std::string tuningItem, int value, bool resetVector);
+        void setTuningInitialValue(const std::string& tuningItem, double value,bool resetVector);
+        void setTuningInitialValue(const std::string& tuningItem, int value, bool resetVector);
         
         void getTuningItemValue(const std::string& tuningItem, size_t timestep, double& value);
         void getTuningItemValue(const std::string& tuningItem, size_t timestep, int& value);
