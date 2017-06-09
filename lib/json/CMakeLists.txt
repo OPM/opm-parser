@@ -7,6 +7,10 @@ if (CJSON_LIBRARY)
     target_link_libraries(opmjson PUBLIC cjson)
 endif ()
 
+set(JSON_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/JsonObject.cpp)
+set(JSON_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_static_analysis_tests(JSON_SOURCES JSON_INCLUDES)
+
 target_include_directories(opmjson
     PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
