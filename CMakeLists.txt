@@ -148,6 +148,11 @@ else()
     message(WARNING "opm-data not found - skipping some integration tests.")
 endif ()
 
+# Setup static analysis
+include( cmake/Modules/UseStaticAnalysis.cmake )
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+setup_static_analysis_tools()
+
 add_subdirectory(lib/json)
 add_subdirectory(lib/eclipse)
 add_subdirectory(applications)
