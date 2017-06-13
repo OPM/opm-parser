@@ -81,11 +81,21 @@ find_package(Boost 1.44.0
 
 macro( boost_target LIBRARY target )
    list( LENGTH LIBRARY library_list_length )
-   if (library_list_length EQUAL 0) 
+   if (library_list_length EQUAL 0)
       set( _library ${LIBRARY} )
    else()
-      list( GET ${LIBRARY} 1 _library ) 
+       list(FIND DEBUG_CONFIGURATIONS "${CMAKE_BUILD_TYPE}" _is_debug)
+       if (NOT _is_debug EQUAL -1)
+           set(key debug)
+       else ()
+           set(key optimized)
+       endif ()
+
+       list(FIND ${key} LIBRARY _index)
+       math(EXPR _index "${_index} + 1")
+       list(GET LIBRARY ${_index} _library)
    endif()
+
    get_filename_component( lib_name ${_library} NAME_WE )
    string( SUBSTRING ${lib_name} 3 -1 ${target} )
 endmacro()
