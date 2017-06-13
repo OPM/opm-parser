@@ -79,29 +79,22 @@ find_package(Boost 1.44.0
              COMPONENTS filesystem date_time system unit_test_framework regex
              REQUIRED)
 
+macro( boost_target LIBRARY target )
+   list( LENGTH LIBRARY library_list_length )
+   if (library_list_length EQUAL 0) 
+      set( _library ${LIBRARY} )
+   else()
+      list( GET ${LIBRARY} 1 _library ) 
+   endif()
+   get_filename_component( lib_name ${_library} NAME_WE )
+   string( SUBSTRING ${lib_name} 3 -1 ${target} )
+endmacro()
+
+
 # make targets for boost
-add_library(boost_filesystem UNKNOWN IMPORTED)
-set_target_properties(boost_filesystem PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_COMPILE_DEFINITIONS BOOST_FILESYSTEM_VERSION=3
-    INTERFACE_LINK_LIBRARIES  "boost_system"
-    IMPORTED_LOCATION         "${Boost_FILESYSTEM_LIBRARY}"
-    IMPORTED_LOCATION_DEBUG   "${Boost_FILESYSTEM_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELEASE "${Boost_FILESYSTEM_LIBRARY_RELEASE}"
-)
-
-add_library(boost_date_time UNKNOWN IMPORTED)
-set_target_properties(boost_date_time PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    IMPORTED_LOCATION       "${Boost_DATE_TIME_LIBRARY}"
-    IMPORTED_LOCATION_DEBUG "${Boost_DATE_TIME_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELEASE "${Boost_DATE_TIME_LIBRARY_RELEASE}"
-)
-
-add_library(boost_system UNKNOWN IMPORTED)
-set_target_properties(boost_system PROPERTIES
+boost_target( ${Boost_SYSTEM_LIBRARY} boost_system_target )
+add_library(${boost_system_target} UNKNOWN IMPORTED)
+set_target_properties(${boost_system_target} PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION         "${Boost_SYSTEM_LIBRARY}"
@@ -109,10 +102,35 @@ set_target_properties(boost_system PROPERTIES
     IMPORTED_LOCATION_RELEASE "${Boost_SYSTEM_LIBRARY_RELEASE}"
 )
 
-add_library(boost_regex UNKNOWN IMPORTED)
-set_target_properties(boost_regex PROPERTIES
+boost_target( ${Boost_FILESYSTEM_LIBRARY} boost_filesystem_target )
+add_library(${boost_filesystem_target} UNKNOWN IMPORTED)
+set_target_properties(${boost_filesystem_target} PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_COMPILE_DEFINITIONS BOOST_FILESYSTEM_VERSION=3
+    INTERFACE_LINK_LIBRARIES  "${boost_system_target}"
+    IMPORTED_LOCATION         "${Boost_FILESYSTEM_LIBRARY}"
+    IMPORTED_LOCATION_DEBUG   "${Boost_FILESYSTEM_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION_RELEASE "${Boost_FILESYSTEM_LIBRARY_RELEASE}"
+)
+
+boost_target( ${Boost_DATE_TIME_LIBRARY} boost_date_time_target )
+add_library(${boost_date_time_target} UNKNOWN IMPORTED)
+set_target_properties(${boost_date_time_target} PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    IMPORTED_LOCATION       "${Boost_DATE_TIME_LIBRARY}"
+    IMPORTED_LOCATION_DEBUG "${Boost_DATE_TIME_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION_RELEASE "${Boost_DATE_TIME_LIBRARY_RELEASE}"
+)
+
+
+boost_target( ${Boost_REGEX_LIBRARY} boost_regex_target )
+add_library(${boost_regex_target} UNKNOWN IMPORTED)
+set_target_properties(${boost_regex_target} PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES  "${boost_system_target}"
     IMPORTED_LOCATION         "${Boost_REGEX_LIBRARY}"
     IMPORTED_LOCATION_DEBUG   "${Boost_REGEX_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_REGEX_LIBRARY_RELEASE}"
@@ -122,7 +140,7 @@ add_library(boost_test UNKNOWN IMPORTED)
 set_target_properties(boost_test PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_LINK_LIBRARIES  "boost_system"
+    INTERFACE_LINK_LIBRARIES  "${boost_system_target}"
     IMPORTED_LOCATION         "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}"
     IMPORTED_LOCATION_DEBUG   "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}"
