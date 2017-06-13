@@ -76,32 +76,80 @@ else ()
 endif ()
 
 find_package(Boost 1.44.0
-             COMPONENTS filesystem date_time system unit_test_framework regex
+             COMPONENTS filesystem
+                        date_time
+                        system
+                        unit_test_framework
+                        regex
              REQUIRED)
 
+# boost libraries are often named with -mt, -d, -g etc. when they're configured
+# in a particular way, and should be linked to precisely these libraries.
+# create a target name from a found boost lib, possibly adjusted to the build
+# type.
+function(boost_target target component)
+    function(libname var lib)
+        get_filename_component(name "${lib}" NAME_WE)
+        string(SUBSTRING ${name} 3 -1 name)
+        set(${var} ${name} PARENT_SCOPE)
+    endfunction()
+
+    unset(lib_name)
+    list(LENGTH ARGN library_list_length)
+    # list only contains one element (the library itself) - strip the lib
+    # prefix and return
+    if (library_list_length EQUAL 1)
+        libname(lib_name ${ARGN})
+        set(${target} ${lib_name} PARENT_SCOPE)
+        return()
+    endif()
+
+    # Build type is one of the standard (debug, release, relwithdebinfo,
+    # minsizerel and we choose build/release accordingly
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _build_type)
+    set(lib_name ${Boost_${component}_LIBRARY})
+
+    if ("${_build_type}" STREQUAL "DEBUG")
+        if (Boost_${component}_LIBRARY_DEBUG)
+            set(lib_name ${Boost_${component}_LIBRARY_DEBUG})
+        endif()
+
+        libname(lib_name ${lib_name})
+        set(${target} ${lib_name} PARENT_SCOPE)
+        return ()
+    endif()
+
+    if ("${_build_type}" MATCHES "(RELEASE)|(RELWITHDEBINFO)|(MINSIZEREL)")
+        if (Boost_${component}_LIBRARY_RELEASE)
+            set(lib_name ${Boost_${component}_LIBRARY_RELEASE})
+        endif()
+
+        libname(lib_name ${lib_name})
+        set(${target} ${lib_name} PARENT_SCOPE)
+        return ()
+    endif()
+
+    # check if it is some custom build type that's also a debug type
+    # if not, assume linking to optimized is what we want
+    list(FIND DEBUG_CONFIGURATIONS "${CMAKE_BUILD_TYPE}" _is_debug)
+    if (NOT _is_debug EQUAL -1)
+        set(key debug)
+    else()
+        set(key optimized)
+    endif ()
+
+    list(FIND ARGN ${key} _index)
+    math(EXPR _index "${_index} + 1")
+    list(GET ARGN ${_index} lib_name)
+
+    libname(lib_name ${lib_name})
+    set(${target} ${lib_name} PARENT_SCOPE)
+endfunction()
+
 # make targets for boost
-add_library(boost_filesystem UNKNOWN IMPORTED)
-set_target_properties(boost_filesystem PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_COMPILE_DEFINITIONS BOOST_FILESYSTEM_VERSION=3
-    INTERFACE_LINK_LIBRARIES  "boost_system"
-    IMPORTED_LOCATION         "${Boost_FILESYSTEM_LIBRARY}"
-    IMPORTED_LOCATION_DEBUG   "${Boost_FILESYSTEM_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELEASE "${Boost_FILESYSTEM_LIBRARY_RELEASE}"
-)
-
-add_library(boost_date_time UNKNOWN IMPORTED)
-set_target_properties(boost_date_time PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    IMPORTED_LOCATION       "${Boost_DATE_TIME_LIBRARY}"
-    IMPORTED_LOCATION_DEBUG "${Boost_DATE_TIME_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELEASE "${Boost_DATE_TIME_LIBRARY_RELEASE}"
-)
-
-add_library(boost_system UNKNOWN IMPORTED)
-set_target_properties(boost_system PROPERTIES
+boost_target(boost_system SYSTEM ${Boost_SYSTEM_LIBRARY})
+add_library(${boost_system} UNKNOWN IMPORTED)
+set_target_properties(${boost_system} PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     IMPORTED_LOCATION         "${Boost_SYSTEM_LIBRARY}"
@@ -109,10 +157,35 @@ set_target_properties(boost_system PROPERTIES
     IMPORTED_LOCATION_RELEASE "${Boost_SYSTEM_LIBRARY_RELEASE}"
 )
 
-add_library(boost_regex UNKNOWN IMPORTED)
-set_target_properties(boost_regex PROPERTIES
+boost_target( boost_filesystem FILESYSTEM ${Boost_FILESYSTEM_LIBRARY} )
+add_library(${boost_filesystem} UNKNOWN IMPORTED)
+set_target_properties(${boost_filesystem} PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_COMPILE_DEFINITIONS BOOST_FILESYSTEM_VERSION=3
+    INTERFACE_LINK_LIBRARIES  "${boost_system}"
+    IMPORTED_LOCATION         "${Boost_FILESYSTEM_LIBRARY}"
+    IMPORTED_LOCATION_DEBUG   "${Boost_FILESYSTEM_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION_RELEASE "${Boost_FILESYSTEM_LIBRARY_RELEASE}"
+)
+
+boost_target( boost_date_time DATE_TIME ${Boost_DATE_TIME_LIBRARY} )
+add_library(${boost_date_time} UNKNOWN IMPORTED)
+set_target_properties(${boost_date_time} PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    IMPORTED_LOCATION         "${Boost_DATE_TIME_LIBRARY}"
+    IMPORTED_LOCATION_DEBUG   "${Boost_DATE_TIME_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION_RELEASE "${Boost_DATE_TIME_LIBRARY_RELEASE}"
+)
+
+
+boost_target( boost_regex REGEX ${Boost_REGEX_LIBRARY} )
+add_library(${boost_regex} UNKNOWN IMPORTED)
+set_target_properties(${boost_regex} PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES  "${boost_system}"
     IMPORTED_LOCATION         "${Boost_REGEX_LIBRARY}"
     IMPORTED_LOCATION_DEBUG   "${Boost_REGEX_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_REGEX_LIBRARY_RELEASE}"
@@ -122,7 +195,7 @@ add_library(boost_test UNKNOWN IMPORTED)
 set_target_properties(boost_test PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
     INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-    INTERFACE_LINK_LIBRARIES  "boost_system"
+    INTERFACE_LINK_LIBRARIES  "${boost_system}"
     IMPORTED_LOCATION         "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}"
     IMPORTED_LOCATION_DEBUG   "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}"
     IMPORTED_LOCATION_RELEASE "${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}"
