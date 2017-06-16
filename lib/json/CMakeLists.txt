@@ -1,7 +1,7 @@
 project(opm-json CXX)
 
 add_library(opmjson JsonObject.cpp $<TARGET_OBJECTS:cjson>)
-target_link_libraries(opmjson PUBLIC boost_filesystem)
+target_link_libraries(opmjson PUBLIC ${boost_filesystem})
 
 if (CJSON_LIBRARY)
     target_link_libraries(opmjson PUBLIC cjson)
