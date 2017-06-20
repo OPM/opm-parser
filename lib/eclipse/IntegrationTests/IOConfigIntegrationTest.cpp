@@ -40,7 +40,7 @@ inline std::string prefix() {
     return boost::unit_test::framework::master_test_suite().argv[1];
 }
 
-inline void verifyRestartConfig( const RestartConfig& rst, std::vector<std::tuple<int , bool, boost::gregorian::date>>& rptConfig) {
+inline void verifyRestartConfig( const TimeMap& tm, const RestartConfig& rst, std::vector<std::tuple<int , bool, boost::gregorian::date>>& rptConfig) {
 
     for (auto rptrst : rptConfig) {
         int report_step                    = std::get<0>(rptrst);
@@ -49,7 +49,12 @@ inline void verifyRestartConfig( const RestartConfig& rst, std::vector<std::tupl
 
         BOOST_CHECK_EQUAL( save, rst.getWriteRestartFile( report_step ) );
         if (save) {
-            BOOST_CHECK_EQUAL( report_date, rst.getTimestepDate( report_step ));
+            std::time_t t = tm[report_step];
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            boost::posix_time::ptime report_date_ptime(report_date);
+            boost::posix_time::time_duration::sec_type duration = (report_date_ptime - epoch).total_seconds();
+
+            BOOST_CHECK_EQUAL( duration , t );
         }
     }
 }
@@ -301,7 +306,7 @@ BOOST_AUTO_TEST_CASE( NorneRestartConfig ) {
 
 
     auto state = Parser::parse(prefix() + "IOConfig/RPTRST_DECK.DATA");
-    verifyRestartConfig(state.cfg().restart(), rptConfig);
+    verifyRestartConfig(state.getSchedule().getTimeMap(), state.cfg().restart(), rptConfig);
 }
 
 
@@ -344,7 +349,7 @@ BOOST_AUTO_TEST_CASE( RestartConfig2 ) {
     auto deck = parser.parseFile(prefix() + "IOConfig/RPT_TEST2.DATA", parseContext);
     EclipseState state( deck , parseContext );
     const auto& rstConfig = state.cfg().restart();
-    verifyRestartConfig( rstConfig, rptConfig );
+    verifyRestartConfig(state.getSchedule().getTimeMap(), state.cfg().restart(), rptConfig);
 
     BOOST_CHECK_EQUAL( rstConfig.getFirstRestartStep() , 0 );
 }

@@ -22,6 +22,7 @@
 #define TIMEMAP_HPP_
 
 #include <vector>
+#include <ctime>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
@@ -44,10 +45,12 @@ namespace Opm {
         size_t last() const;
         size_t numTimesteps() const;
         double getTotalTime() const;
-        const boost::posix_time::ptime& operator[] (size_t index) const;
+
+        //boost::posix_time::ptime operator[] (size_t index) const;
+        std::time_t operator[] (size_t index) const;
         /// Return the date and time where a given time step starts.
-        boost::posix_time::ptime getStartTime(size_t tStepIdx) const;
-        boost::posix_time::ptime getEndTime() const;
+        std::time_t getStartTime(size_t tStepIdx) const;
+        std::time_t getEndTime() const;
         /// Return the period of time in seconds which passed between the start of the simulation and a given point in time.
         double getTimePassedUntil(size_t tLevelIdx) const;
         /// Return the length of a given time step in seconds.
@@ -61,6 +64,10 @@ namespace Opm {
         static boost::posix_time::ptime timeFromEclipse( const DeckRecord& dateRecord);
         static boost::posix_time::ptime timeFromEclipse(int day , const std::string& month, int year, const std::string& eclipseTimeString = "00:00:00.000");
         static boost::posix_time::time_duration dayTimeFromEclipse(const std::string& eclipseTimeString);
+
+        static std::time_t forward(std::time_t t0, int hours, int minutes, long seconds);
+        static std::time_t forward(std::time_t t0, long seconds);
+        static std::time_t mkdate(int year, int month, int day);
     private:
         static const std::map<std::string , boost::gregorian::greg_month>& eclipseMonthNames();
 

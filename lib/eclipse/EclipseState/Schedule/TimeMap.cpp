@@ -18,6 +18,9 @@
 */
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <ctime>
+
+#include <ert/util/util.h>
 
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
@@ -73,12 +76,12 @@ namespace Opm {
     }
 
 
-    boost::posix_time::ptime TimeMap::getStartTime(size_t tStepIdx) const {
-        return m_timeList[tStepIdx];
+    std::time_t TimeMap::getStartTime(size_t tStepIdx) const {
+        return this->operator[]( tStepIdx );
     }
 
-    boost::posix_time::ptime TimeMap::getEndTime() const {
-        return m_timeList.back();
+    std::time_t TimeMap::getEndTime() const {
+        return this->operator[]( this->size( ) - 1);
     }
 
     double TimeMap::getTotalTime() const
@@ -320,11 +323,42 @@ namespace Opm {
     }
 
 
-    const boost::posix_time::ptime& TimeMap::operator[] (size_t index) const {
-        if (index < m_timeList.size())
-            return m_timeList[index];
-        else
+    std::time_t TimeMap::operator[] (size_t index) const {
+        if (index < m_timeList.size()) {
+            boost::posix_time::ptime boost_time = m_timeList[index];
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            boost::posix_time::time_duration::sec_type duration = (boost_time - epoch).total_seconds();
+
+            return std::time_t( duration );
+        } else
             throw std::invalid_argument("Index out of range");
+    }
+
+
+
+    std::time_t TimeMap::mkdate(int in_year, int in_month, int in_day) {
+        std::time_t t = util_make_date_utc( in_day , in_month , in_year );
+        {
+            /*
+               The underlying mktime( ) function will happily wrap
+               around dates like January 33, this function will check
+               that no such wrap-around has taken place.
+            */
+            int out_year, out_day, out_month;
+            util_set_date_values_utc( t, &out_day , &out_month, &out_year);
+            if ((in_day != out_day) || (in_month != out_month) || (in_year != out_year))
+                throw std::invalid_argument("Invalid input arguments for date.");
+        }
+        return t;
+    }
+
+
+    std::time_t TimeMap::forward(std::time_t t, long seconds) {
+        return t + seconds;
+    }
+
+    std::time_t TimeMap::forward(std::time_t t, int hours, int minutes, long seconds) {
+        return t + seconds + minutes * 60 + hours * 3600;
     }
 
 
