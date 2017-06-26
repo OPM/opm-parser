@@ -32,6 +32,7 @@
 namespace Opm {
 
     class Box;
+    class Deck;
     class DeckItem;
     class DeckKeyword;
     class EclipseGrid;
@@ -188,10 +189,11 @@ private:
 
 // initialize the TEMPI grid property using the temperature vs depth
 // table (stemming from the TEMPVD or the RTEMPVD keyword)
-std::vector< double > temperature_lookup( size_t,
-                                          const TableManager*,
-                                          const EclipseGrid*,
-                                          const GridProperties<int>* );
+std::vector< double > temperatureLookup( size_t,
+                                         const Deck*,
+                                         const TableManager*,
+                                         const EclipseGrid*,
+                                         const GridProperties<int>* );
 }
 
 #endif
