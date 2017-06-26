@@ -456,21 +456,36 @@ std::vector<size_t> GridProperty<T>::cellsEqual(T value, const EclipseGrid& grid
         return indexEqual( value );
 }
 
-std::vector< double > temperature_lookup( size_t size,
-                                            const TableManager* tables,
-                                            const EclipseGrid* grid,
-                                            const GridProperties<int>* ig_props ) {
+std::vector< double > temperatureLookup(size_t size,
+                                        const Deck* deck,
+                                        const TableManager* tables,
+                                        const EclipseGrid* grid,
+                                        const GridProperties<int>* ig_props) {
+
+    // if there is no reservoir temperature vs. depth table, use the constant reservoir
+    // temperature which is specified via the RTEMP or RTEMPA kewords and which defaults
+    // to 60 degrees Fahrenheit.
+    if (!tables->hasTables("RTEMPVD")) {
+        // the default for the RTEMP keyword is inconsistent between E100 (60 degrees
+        // Fahrenheit) and E300 (100 degrees Celsius). We use the E100 default.
+        double rtemp = (60.0 - 32.0) * 5.0 / 9.0 + 273.15;
+        if (deck->hasKeyword("RTEMP"))
+            rtemp = deck->getKeyword("RTEMP").getRecord(0).getItem("TEMPERATURE").getSIDouble(0);
+        else if (deck->hasKeyword("RTEMPA"))
+            rtemp = deck->getKeyword("RTEMPA").getRecord(0).getItem("TEMPERATURE").getSIDouble(0);
+
+        return std::vector<double>(size, rtemp);
+    }
+
+    const auto& rtempvdTables = tables->getRtempvdTables();
 
     if( !tables->useEqlnum() ) {
-        /* if values are defaulted in the TEMPI keyword, but no
-            * EQLNUM is specified, you will get NaNs
-            */
+        // if the initial reservoir temperature is specified via RTEMPVD keyword, but no
+        // EQLNUM is specified, you will get NaNs.
         return std::vector< double >( size, std::numeric_limits< double >::quiet_NaN() );
     }
 
     std::vector< double > values( size, 0 );
-
-    const auto& rtempvdTables = tables->getRtempvdTables();
     const std::vector< int >& eqlNum = ig_props->getKeyword("EQLNUM").getData();
 
     for (size_t cellIdx = 0; cellIdx < eqlNum.size(); ++ cellIdx) {

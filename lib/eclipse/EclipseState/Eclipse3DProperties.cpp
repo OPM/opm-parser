@@ -214,7 +214,8 @@ namespace Opm {
 
 
     static std::vector< GridProperties< double >::SupportedKeywordInfo >
-    makeSupportedDoubleKeywords(const TableManager*        tableManager,
+    makeSupportedDoubleKeywords(const Deck& deck,
+                                const TableManager*        tableManager,
                                 const EclipseGrid*         eclipseGrid,
                                 GridProperties<int>* intGridProperties)
     {
@@ -256,7 +257,7 @@ namespace Opm {
         const auto KRGRLookup   = std::bind( KRGREndpoint,   _1, tableManager, eclipseGrid, intGridProperties );
         const auto IKRGRLookup  = std::bind( IKRGREndpoint,  _1, tableManager, eclipseGrid, intGridProperties );
 
-        const auto tempLookup = std::bind( temperature_lookup, _1, tableManager, eclipseGrid, intGridProperties );
+        const auto tempLookup = std::bind( temperatureLookup, _1, &deck, tableManager, eclipseGrid, intGridProperties );
 
         const auto distributeTopLayer = std::bind( &distTopLayer, _1, eclipseGrid );
 
@@ -429,7 +430,7 @@ namespace Opm {
           // register the grid properties
           m_intGridProperties(eclipseGrid, makeSupportedIntKeywords()),
           m_doubleGridProperties(eclipseGrid, &m_deckUnitSystem,
-                                 makeSupportedDoubleKeywords(&tableManager, &eclipseGrid, &m_intGridProperties))
+                                 makeSupportedDoubleKeywords(deck, &tableManager, &eclipseGrid, &m_intGridProperties))
     {
         /*
          * The EQUALREG, MULTREG, COPYREG, ... keywords are used to manipulate
