@@ -10,4 +10,3 @@ Label: 2017.10-pre
 Maintainer: joaho@statoil.com
 MaintainerName: Joakim Hove
 Url: http://opm-project.org
-Depends: opm-common
