@@ -1,7 +1,7 @@
 project(opm-json CXX)
 
 add_library(opmjson JsonObject.cpp $<TARGET_OBJECTS:cjson>)
-target_link_libraries(opmjson PUBLIC ${boost_filesystem})
+target_link_libraries(opmjson PUBLIC ${Boost_FILESYSTEM_LIBRARY})
 
 if (CJSON_LIBRARY)
     target_link_libraries(opmjson PUBLIC cjson)
@@ -14,6 +14,7 @@ add_static_analysis_tests(JSON_SOURCES JSON_INCLUDES)
 target_include_directories(opmjson
     PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
+            ${Boost_INCLUDE_DIRS}
     PRIVATE $<TARGET_PROPERTY:cjson,INTERFACE_INCLUDE_DIRECTORIES>
 )
 set_target_properties(opmjson PROPERTIES
