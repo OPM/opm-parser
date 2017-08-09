@@ -230,7 +230,32 @@ add_subdirectory(lib/json)
 add_subdirectory(lib/eclipse)
 add_subdirectory(applications)
 
-install(FILES dune.module DESTINATION lib/dunecontrol/opm-parser)
-install(EXPORT opm-parser-config DESTINATION share/cmake/opm-parser)
-export(TARGETS opmjson opmparser FILE opm-parserConfig.cmake)
+file(COPY "cmake/modules/OpmParserMacros.cmake" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake/modules")
+
+set(OPM_PARSER_PREFIX "${CMAKE_INSTALL_PREFIX}")
+set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/share/dune/cmake/modules")
+set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+set(OPM_PARSER_LIBDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+set(OPM_PARSER_INSTALLED ON)
+configure_file(opm-parser-config.cmake.in
+  "${PROJECT_BINARY_DIR}/install/opm-parser-config.cmake" @ONLY)
+
+set(OPM_PARSER_PREFIX "${CMAKE_SOURCE_DIR}")
+set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSER_PREFIX}/lib/json/include")
+set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/cmake/modules")
+set(OPM_PARSER_LIBDIRS "${CMAKE_BINARY_DIR}/lib/eclipse;${CMAKE_BINARY_DIR}/lib/json")
+set(OPM_PARSER_INSTALLED OFF)
+configure_file(opm-parser-config.cmake.in
+  "${PROJECT_BINARY_DIR}/opm-parser-config.cmake" @ONLY)
+
+configure_file(opm-parser.pc.in
+  "${PROJECT_BINARY_DIR}/opm-parser.pc" @ONLY)
+
+install(FILES "cmake/modules/OpmParserMacros.cmake" DESTINATION "share/dune/cmake/modules")
+install(FILES "dune.module" DESTINATION "lib/dunecontrol/opm-parser")
+install(FILES  "config.h.cmake" DESTINATION "share/opm-parser")
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/opm-parser.pc" DESTINATION "lib/pkgconfig")
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/install/opm-parser-config.cmake" DESTINATION "lib/cmake/opm-parser")
+export(TARGETS opmjson opmparser FILE opm-parser-targets.cmake)
+install(EXPORT opm-parser-targets DESTINATION "lib/cmake/opm-parser")
 export(PACKAGE opm-parser)
