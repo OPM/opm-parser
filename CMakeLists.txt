@@ -28,6 +28,7 @@ endif()
 option(BUILD_TESTING "Build test applications by default?"          ON)
 option(ENABLE_PYTHON "Enable simple python wappers"                 OFF)
 option(USE_RUNPATH   "Embed dependency paths in installed library"  ON)
+option(SIBLING_SEARCH "Search for other modules in sibling directories?" ON)
 
 if (ENABLE_PYTHON AND NOT BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ON)
@@ -55,6 +56,10 @@ else()
 endif()
 
 #-----------------------------------------------------------------
+
+if(SIBLING_SEARCH AND EXISTS ${PROJECT_SOURCE_DIR}/../libecl/build)
+  set(ecl_DIR ${PROJECT_SOURCE_DIR}/../libecl/build)
+endif()
 
 find_package(ecl REQUIRED)
 find_library(CJSON_LIBRARY NAMES cjson)
