@@ -24,7 +24,7 @@ set_target_properties(opmjson PROPERTIES
 
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS opmjson
-        EXPORT  opm-parser-config
+        EXPORT  opm-parser-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
