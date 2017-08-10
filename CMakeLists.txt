@@ -260,4 +260,3 @@ install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/opm-parser.pc" DESTINATION "lib/pkgc
 install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/install/opm-parser-config.cmake" DESTINATION "lib/cmake/opm-parser")
 export(TARGETS opmjson opmparser FILE opm-parser-targets.cmake)
 install(EXPORT opm-parser-targets DESTINATION "lib/cmake/opm-parser")
-export(PACKAGE opm-parser)
