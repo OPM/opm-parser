@@ -26,14 +26,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 option(BUILD_TESTING "Build test applications by default?"          ON)
-option(ENABLE_PYTHON "Enable simple python wappers"                 OFF)
 option(USE_RUNPATH   "Embed dependency paths in installed library"  ON)
 option(SIBLING_SEARCH "Search for other modules in sibling directories?" ON)
-
-if (ENABLE_PYTHON AND NOT BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS ON)
-    message(WARNING "Building python - forcing shared libraries.")
-endif()
 
 #-----------------------------------------------------------------
 
