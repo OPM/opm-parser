@@ -57,6 +57,7 @@ endif()
 #-----------------------------------------------------------------
 
 find_package(ecl REQUIRED)
+message(STATUS "Found ecl library: ${ecl_DIR}")
 find_library(CJSON_LIBRARY NAMES cjson)
 if (CJSON_LIBRARY)
     message(STATUS "Found CJSON library: ${CJSON_LIBRARY}")
