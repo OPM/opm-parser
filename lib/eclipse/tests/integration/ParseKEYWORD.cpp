@@ -109,23 +109,6 @@ BOOST_AUTO_TEST_CASE( ENDINC ) {
     BOOST_CHECK_EQUAL(false, deck.hasKeyword("ENDINC"));
 }
 
-BOOST_AUTO_TEST_CASE( EQUIL_MISSING_DIMS ) {
-    Parser parser;
-    ParseContext parseContext;
-    parseContext.update(ParseContext::PARSE_MISSING_DIMS_KEYWORD, InputError::IGNORE);
-    const std::string equil = "EQUIL\n"
-        "2469   382.4   1705.0  0.0    500    0.0     1     1      20 /";
-    auto deck = parser.parseString(equil, parseContext);
-    const auto& kw1 = deck.getKeyword("EQUIL" , 0);
-    BOOST_CHECK_EQUAL( 1U , kw1.size() );
-
-    const auto& rec1 = kw1.getRecord(0);
-    const auto& item1       = rec1.getItem("OWC");
-    const auto& item1_index = rec1.getItem(2);
-
-    BOOST_CHECK_EQUAL( &item1  , &item1_index );
-    BOOST_CHECK( fabs(item1.getSIDouble(0) - 1705) < 0.001);
-}
 
 
 BOOST_AUTO_TEST_CASE( EQUIL ) {

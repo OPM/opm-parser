@@ -137,20 +137,6 @@ namespace Opm {
 
 
         /*
-          For some keywords the number of records (i.e. size) is given
-          as an item in another keyword. A typical example is the
-          EQUIL keyword where the number of records is given by the
-          NTEQUL item of the EQLDIMS keyword. If the size defining
-          XXXDIMS keyword is not in the deck, we can use the default
-          values of the XXXDIMS keyword; this is regulated by the
-          'missingDIMskeyword' field.
-
-          Observe that a fully defaulted XXXDIMS keyword does not
-          trigger this behavior.
-        */
-        const static std::string PARSE_MISSING_DIMS_KEYWORD;
-
-        /*
           If the number of elements in the input record exceeds the
           number of items in the keyword configuration this error
           situation will be triggered. Many keywords end with several
