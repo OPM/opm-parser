@@ -435,33 +435,26 @@ std::shared_ptr< RawKeyword > createRawKeyword( const string_view& kw, ParserSta
 
     const auto& sizeKeyword = parserKeyword->getSizeDefinitionPair();
     const auto& deck = parserState.deck;
+    size_t targetSize;
 
     if( deck.hasKeyword(sizeKeyword.first ) ) {
         const auto& sizeDefinitionKeyword = deck.getKeyword(sizeKeyword.first);
         const auto& record = sizeDefinitionKeyword.getRecord(0);
-        const auto targetSize = record.getItem( sizeKeyword.second ).get< int >( 0 );
-        return std::make_shared< RawKeyword >( keywordString,
-                                                parserState.current_path().string(),
-                                                parserState.line(),
-                                                targetSize,
-                                                parserKeyword->isTableCollection() );
+
+        targetSize = record.getItem( sizeKeyword.second ).get< int >( 0 );
+    } else {
+        const auto* keyword = parser.getKeyword( sizeKeyword.first );
+        const auto& record = keyword->getRecord(0);
+        const auto& int_item = record.get( sizeKeyword.second );
+
+        targetSize = int_item.getDefault< int >( );
     }
 
-    std::string msg = "Expected the kewyord: " + sizeKeyword.first
-                    + " to infer the number of records in: " + keywordString;
-    auto& msgContainer = parserState.deck.getMessageContainer();
-    parserState.parseContext.handleError(ParseContext::PARSE_MISSING_DIMS_KEYWORD , msgContainer, msg );
-
-    const auto* keyword = parser.getKeyword( sizeKeyword.first );
-    const auto& record = keyword->getRecord(0);
-    const auto& int_item = record.get( sizeKeyword.second );
-
-    const auto targetSize = int_item.getDefault< int >( );
     return std::make_shared< RawKeyword >( keywordString,
-                                            parserState.current_path().string(),
-                                            parserState.line(),
-                                            targetSize,
-                                            parserKeyword->isTableCollection() );
+                                           parserState.current_path().string(),
+                                           parserState.line(),
+                                           targetSize,
+                                           parserKeyword->isTableCollection() );
 }
 
 bool tryParseKeyword( ParserState& parserState, const Parser& parser ) {

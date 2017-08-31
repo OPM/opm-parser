@@ -60,7 +60,6 @@ namespace Opm {
         addKey(PARSE_UNKNOWN_KEYWORD);
         addKey(PARSE_RANDOM_TEXT);
         addKey(PARSE_RANDOM_SLASH);
-        addKey(PARSE_MISSING_DIMS_KEYWORD);
         addKey(PARSE_EXTRA_DATA);
         addKey(PARSE_MISSING_INCLUDE);
 
@@ -235,7 +234,6 @@ namespace Opm {
     const std::string ParseContext::PARSE_UNKNOWN_KEYWORD = "PARSE_UNKNOWN_KEYWORD";
     const std::string ParseContext::PARSE_RANDOM_TEXT = "PARSE_RANDOM_TEXT";
     const std::string ParseContext::PARSE_RANDOM_SLASH = "PARSE_RANDOM_SLASH";
-    const std::string ParseContext::PARSE_MISSING_DIMS_KEYWORD = "PARSE_MISSING_DIMS_KEYWORD";
     const std::string ParseContext::PARSE_EXTRA_DATA = "PARSE_EXTRA_DATA";
     const std::string ParseContext::PARSE_MISSING_INCLUDE = "PARSE_MISSING_INCLUDE";
 

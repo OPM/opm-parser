@@ -173,27 +173,6 @@ BOOST_AUTO_TEST_CASE(TEST_UNKNOWN_OPERATE) {
 
 
 
-BOOST_AUTO_TEST_CASE( CheckMissingSizeKeyword) {
-    const char * deck =
-        "SOLUTION\n"
-        "EQUIL\n"
-        "  10 10 10 10 / \n"
-        "\n";
-
-
-    ParseContext parseContext;
-    Parser parser(false);
-
-    parser.addKeyword<ParserKeywords::EQUIL>();
-    parser.addKeyword<ParserKeywords::EQLDIMS>();
-    parser.addKeyword<ParserKeywords::SOLUTION>();
-
-    parseContext.update( ParseContext::PARSE_MISSING_DIMS_KEYWORD , InputError::THROW_EXCEPTION );
-    BOOST_CHECK_THROW( parser.parseString( deck , parseContext ) , std::invalid_argument);
-
-    parseContext.update( ParseContext::PARSE_MISSING_DIMS_KEYWORD , InputError::IGNORE );
-    BOOST_CHECK_NO_THROW( parser.parseString( deck , parseContext ) );
-}
 
 
 BOOST_AUTO_TEST_CASE( CheckUnsupportedInSCHEDULE ) {
