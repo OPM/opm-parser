@@ -19,8 +19,8 @@ include(GNUInstallDirs)
 include(TestCXXAcceptsFlag)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "No build type specified - defaulting to 'Debug'.")
-    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose build type." FORCE)
+    message(STATUS "No build type specified - defaulting to 'Release'.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type." FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY
                  STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 endif()
