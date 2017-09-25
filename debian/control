@@ -3,9 +3,10 @@ Priority: extra
 Maintainer: Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
 Build-Depends: build-essential, debhelper (>= 9), pkg-config, libopm-common-dev,
                cmake, libtinyxml-dev, bc, libboost-filesystem-dev, zlib1g-dev,
-               libert.ecl-dev, git, libtool, doxygen, libboost-date-time-dev,
+               libecl-dev, git, libtool, doxygen, libboost-date-time-dev,
                texlive-latex-extra, texlive-latex-recommended, ghostscript,
-               libboost-system-dev, libboost-test-dev, libboost-regex-dev
+               libboost-system-dev, libboost-test-dev, libboost-regex-dev,
+               libblas-dev, liblapack-dev
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://opm-project.org
