@@ -50,9 +50,30 @@ else()
 endif()
 
 #-----------------------------------------------------------------
-
-if(SIBLING_SEARCH AND EXISTS ${PROJECT_SOURCE_DIR}/../libecl/build)
-  set(ecl_DIR ${PROJECT_SOURCE_DIR}/../libecl/build)
+if(SIBLING_SEARCH AND NOT ecl_DIR)
+  # guess the sibling dir
+  get_filename_component(_leaf_dir_name ${PROJECT_BINARY_DIR} NAME)
+  get_filename_component(_parent_full_dir ${PROJECT_BINARY_DIR} DIRECTORY)
+  get_filename_component(_parent_dir_name ${_parent_full_dir} NAME)
+  #Try if <module-name>/<build-dir> is used
+  get_filename_component(_modules_dir ${_parent_full_dir} DIRECTORY)
+  if(IS_DIRECTORY ${_modules_dir}/ecl/${_leaf_dir_name})
+    set(ecl_DIR ${_modules_dir}/ecl/${_leaf_dir_name})
+  else()
+    string(REPLACE ${PROJECT_NAME} ecl _opm_common_leaf ${_leaf_dir_name})
+    if(NOT _leaf_dir_name STREQUAL _opm_common_leaf
+        AND IS_DIRECTORY ${_parent_full_dir}/${_opm_common_leaf})
+      # We are using build directories named <prefix><module-name><postfix>
+      set(ecl_DIR ${_parent_full_dir}/${_opm_common_leaf})
+    elseif(IS_DIRECTORY ${_parent_full_dir}/ecl)
+      # All modules are in a common build dir
+      set(ecl_DIR "${_parent_full_dir}/ecl}")
+    endif()
+  endif()
+endif()
+if(ecl_DIR AND NOT IS_DIRECTORY ${ecl_DIR})
+  message(WARNING "Value ${ecl_DIR} passed to variable"
+    " ecl_DIR is not a directory")
 endif()
 
 find_package(ecl REQUIRED)
