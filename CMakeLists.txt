@@ -78,7 +78,7 @@ endif()
 
 # Give us a chance to find ecl installed to CMAKE_INSTALL_PREFIX.
 # We need to deactivate the package registry for this.
-find_package(ecl NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+find_package(ecl NO_CMAKE_SYSTEM_PACKAGE_REGISTRY NO_CMAKE_PACKAGE_REGISTRY)
 # If everything else failed fall back to the registry
 find_package(ecl REQUIRED)
 message(STATUS "Found ecl library: ${ecl_DIR}")
