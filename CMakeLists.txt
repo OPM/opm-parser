@@ -57,17 +57,17 @@ if(SIBLING_SEARCH AND NOT ecl_DIR)
   get_filename_component(_parent_dir_name ${_parent_full_dir} NAME)
   #Try if <module-name>/<build-dir> is used
   get_filename_component(_modules_dir ${_parent_full_dir} DIRECTORY)
-  if(IS_DIRECTORY ${_modules_dir}/ecl/${_leaf_dir_name})
-    set(ecl_DIR ${_modules_dir}/ecl/${_leaf_dir_name})
+  if(IS_DIRECTORY ${_modules_dir}/libecl/${_leaf_dir_name})
+    set(ecl_DIR ${_modules_dir}/libecl/${_leaf_dir_name})
   else()
-    string(REPLACE ${PROJECT_NAME} ecl _opm_common_leaf ${_leaf_dir_name})
+    string(REPLACE ${PROJECT_NAME} libecl _opm_common_leaf ${_leaf_dir_name})
     if(NOT _leaf_dir_name STREQUAL _opm_common_leaf
         AND IS_DIRECTORY ${_parent_full_dir}/${_opm_common_leaf})
       # We are using build directories named <prefix><module-name><postfix>
       set(ecl_DIR ${_parent_full_dir}/${_opm_common_leaf})
-    elseif(IS_DIRECTORY ${_parent_full_dir}/ecl)
+    elseif(IS_DIRECTORY ${_parent_full_dir}/libecl)
       # All modules are in a common build dir
-      set(ecl_DIR "${_parent_full_dir}/ecl}")
+      set(ecl_DIR "${_parent_full_dir}/libecl}")
     endif()
   endif()
 endif()
