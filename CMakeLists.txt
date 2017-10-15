@@ -260,6 +260,7 @@ set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/share/dune/cmake/modules")
 set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(OPM_PARSER_LIBDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(OPM_PARSER_INSTALLED ON)
+set(ECL_DIR "${OPM_PARSER_PREFIX}/share/cmake/ecl")
 configure_file(opm-parser-config.cmake.in
   "${PROJECT_BINARY_DIR}/install/opm-parser-config.cmake" @ONLY)
 
@@ -268,6 +269,7 @@ set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSE
 set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/cmake/modules")
 set(OPM_PARSER_LIBDIRS "${CMAKE_BINARY_DIR}/lib/eclipse;${CMAKE_BINARY_DIR}/lib/json")
 set(OPM_PARSER_INSTALLED OFF)
+set(ECL_DIR "${ecl_DIR}")
 configure_file(opm-parser-config.cmake.in
   "${PROJECT_BINARY_DIR}/opm-parser-config.cmake" @ONLY)
 
