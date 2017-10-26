@@ -6,4 +6,4 @@
         {"name" : "ARRAY_PARAMETER"         , "value_type" : "STRING"},
         {"name" : "SCALAR_PARAMETER"        , "value_type" : "DOUBLE"},
         {"name" : "SCALAR_PARAMETER2"       , "value_type" : "DOUBLE"},
-        {"name" : "FIP_REGION_NUMBER"       , "value_type" : "INT"}]}
+        {"name" : "FIP_REGION_NAME"       , "value_type" : "STRING"}]}
