@@ -51,7 +51,8 @@ namespace Opm {
 
     class Eqldims;
     class Regdims;
-
+    class Aqudims;
+    
     class TableManager {
     public:
         explicit TableManager( const Deck& deck );
@@ -62,6 +63,7 @@ namespace Opm {
 
         const Tabdims& getTabdims() const;
         const Eqldims& getEqldims() const;
+        const Aqudims& getAqudims() const;
 
         /*
           WIll return max{ Tabdims::NTFIP , Regdims::NTFIP }.
@@ -99,6 +101,7 @@ namespace Opm {
         const TableContainer& getPlymaxTables() const;
         const TableContainer& getPlyrockTables() const;
         const TableContainer& getPlyshlogTables() const;
+        const TableContainer& getAqutabTables() const;
 
         const TableContainer& getSorwmisTables() const;
         const TableContainer& getSgcwmisTables() const;
@@ -106,6 +109,7 @@ namespace Opm {
         const TableContainer& getPmiscTables() const;
         const TableContainer& getMsfnTables() const;
         const TableContainer& getTlpmixpaTables() const;
+        const TableContainer& getAquanconTables() const;
 
         const JFunc& getJFunc() const;
 
@@ -301,10 +305,12 @@ namespace Opm {
         Tabdims m_tabdims;
         std::shared_ptr<Regdims> m_regdims;
         std::shared_ptr<Eqldims> m_eqldims;
+        std::shared_ptr<Aqudims> m_aqudims;
 
         const bool hasImptvd;// if deck has keyword IMPTVD
         const bool hasEnptvd;// if deck has keyword ENPTVD
         const bool hasEqlnum;// if deck has keyword EQLNUM
+
 
         const JFunc m_jfunc;
 

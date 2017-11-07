@@ -28,6 +28,7 @@
 #include <opm/parser/eclipse/Parser/ParserKeywords/P.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/T.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/V.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/A.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp> // Phase::PhaseEnum
 #include <opm/parser/eclipse/EclipseState/Tables/EnkrvdTable.hpp>
@@ -68,12 +69,14 @@
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
-
+#include <opm/parser/eclipse/EclipseState/Tables/AqutabTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/AquanconTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/JFunc.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Eqldims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Regdims.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/Aqudims.hpp>
 
 #include <opm/parser/eclipse/Units/Units.hpp>
 
@@ -149,6 +152,21 @@ namespace Opm {
             m_regdims = std::make_shared<Regdims>( ntfip , nmfipr , nrfreg , ntfreg , nplmix );
         } else
             m_regdims = std::make_shared<Regdims>();
+
+        if (deck.hasKeyword<AQUDIMS>()) {
+            const auto& keyword = deck.getKeyword<AQUDIMS>();
+            const auto& record = keyword.getRecord(0);
+            int mxnaqn  = record.getItem<AQUDIMS::MXNAQN>().get< int >(0);
+            int mxnaqc = record.getItem<AQUDIMS::MXNAQC>().get< int >(0);
+            int niftbl = record.getItem<AQUDIMS::NIFTBL>().get< int >(0);
+            int nriftb = record.getItem<AQUDIMS::NRIFTB>().get< int >(0);
+            int nanaqu = record.getItem<AQUDIMS::NANAQU>().get< int >(0);
+            int ncamax = record.getItem<AQUDIMS::NCAMAX>().get< int >(0);
+            int mxnali = record.getItem<AQUDIMS::MXNALI>().get< int >(0);
+            int mxaaql = record.getItem<AQUDIMS::MXAAQL>().get< int >(0);    
+            m_aqudims = std::make_shared<Aqudims>( mxnaqn , mxnaqc , niftbl , nriftb , nanaqu, ncamax, mxnali, mxaaql );
+        } else
+            m_aqudims = std::make_shared<Aqudims>();
     }
 
 
@@ -222,6 +240,8 @@ namespace Opm {
         addTables( "RSVD", m_eqldims->getNumEquilRegions());
         addTables( "RVVD", m_eqldims->getNumEquilRegions());
 
+        addTables( "AQUTAB", m_aqudims->getNumInfluenceTablesCT());
+        addTables( "AQUANCON", m_aqudims->getNumRowsAquancon());
         {
             size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
             if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
@@ -278,6 +298,8 @@ namespace Opm {
 
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
+        initSimpleTableContainer<AqutabTable>(deck, "AQUTAB" , m_aqudims->getNumInfluenceTablesCT());
+        initSimpleTableContainer<AquanconTable>(deck, "AQUANCON", m_aqudims->getNumRowsAquancon());
         {
             size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
 
@@ -549,6 +571,10 @@ namespace Opm {
     const Eqldims& TableManager::getEqldims() const {
         return *m_eqldims;
     }
+    
+    const Aqudims& TableManager::getAqudims() const {
+        return *m_aqudims;
+    }
 
     /*
       const std::vector<SwofTable>& TableManager::getSwofTables() const {
@@ -682,6 +708,14 @@ namespace Opm {
     const TableContainer& TableManager::getPlyshlogTables() const {
         return getTables("PLYSHLOG");
     }
+    
+    const TableContainer& TableManager::getAqutabTables() const {
+        return getTables("AQUTAB");
+    } 
+
+    const TableContainer& TableManager::getAquanconTables() const {
+        return getTables("AQUANCON");
+    } 
 
     const std::vector<PvtgTable>& TableManager::getPvtgTables() const {
         return m_pvtgTables;
