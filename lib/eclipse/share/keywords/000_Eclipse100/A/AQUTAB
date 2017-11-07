@@ -1,4 +1,5 @@
-{"name" : "AQUTAB" , "sections" : ["PROPS"],
- "items" : [
- {"name" : "TD" , "value_type" : "DOUBLE"},
- {"name" : "PD" , "value_type" : "DOUBLE"}]}
+{"name" : "AQUTAB" , "sections" : ["PROPS"], "size" : {"keyword" : "AQUDIMS" , "item" : "NIFTBL"},
+        "items" : [{"name" : "table" ,
+                   "value_type" : "DOUBLE" ,
+                   "size_type" : "ALL",
+                   "dimension" : ["1" , "1"]}]}
