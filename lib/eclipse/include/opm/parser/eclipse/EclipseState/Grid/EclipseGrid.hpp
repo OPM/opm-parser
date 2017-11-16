@@ -144,6 +144,27 @@ namespace Opm {
             }
         }
 
+        template<typename T>
+        std::vector<T> scatterVector(const std::vector<T>& input_vector, T def = -1) const {
+            if (input_vector.size() == this->getCartesianSize())
+                return input_vector;
+
+            if (input_vector.size() != this->getNumActive())
+                throw std::invalid_argument("Input vector must have full or active size");
+
+            std::vector<T> scatter_vector( this->getCartesianSize() );
+
+            for (size_t i = 0; i < this->getCartesianSize(); i++) {
+                int active_index = ecl_grid_get_active_index1( m_grid.get() , i );
+                if (active_index < 0)
+                    scatter_vector[i] = def;
+                else
+                    scatter_vector[i] = input_vector[ active_index  ];
+            }
+
+            return scatter_vector;
+        }
+
 
         /// Will return a vector a length num_active; where the value
         /// of each element is the corresponding global index.

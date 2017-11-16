@@ -39,6 +39,8 @@
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 
+#include <ert/util/test_util.hpp>
+
 
 BOOST_AUTO_TEST_CASE(CreateMissingDIMENS_throws) {
     Opm::Deck deck;
@@ -677,6 +679,26 @@ BOOST_AUTO_TEST_CASE(ResetACTNUM) {
         BOOST_CHECK_EQUAL( compressed[1] , 2 );
         BOOST_CHECK_EQUAL( compressed[2] , 4 );
         BOOST_CHECK_EQUAL( compressed[3] , 6 );
+
+        std::vector<double> u(1000);
+        std::vector<double> u_scatter = grid.scatterVector(u);
+        BOOST_CHECK_EQUAL( 1000U , grid.getCartesianSize());
+
+        std::vector<double> v(7);
+        test_assert_throw( grid.scatterVector(v) , std::invalid_argument);
+
+        std::vector<double> w(4);
+        w[0] = 12;
+        w[1] = 13;
+        w[2] = 14;
+        w[3] = 15;
+        std::vector<double> scatter_w = grid.scatterVector(w);
+        BOOST_CHECK_EQUAL( scatter_w.size() , 1000U );
+        BOOST_CHECK_EQUAL( scatter_w[0] , 12 );
+        BOOST_CHECK_EQUAL( scatter_w[1] , -1 );
+        BOOST_CHECK_EQUAL( scatter_w[2] , 13 );
+        BOOST_CHECK_EQUAL( scatter_w[4] , 14 );
+        BOOST_CHECK_EQUAL( scatter_w[6] , 15 );
     }
     {
         const auto& activeMap = grid.getActiveMap( );
