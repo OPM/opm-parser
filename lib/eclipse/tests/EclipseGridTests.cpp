@@ -39,8 +39,6 @@
 #include <opm/parser/eclipse/Parser/ParseContext.hpp>
 #include <opm/parser/eclipse/Parser/Parser.hpp>
 
-#include <ert/util/test_util.hpp>
-
 
 BOOST_AUTO_TEST_CASE(CreateMissingDIMENS_throws) {
     Opm::Deck deck;
@@ -685,7 +683,7 @@ BOOST_AUTO_TEST_CASE(ResetACTNUM) {
         BOOST_CHECK_EQUAL( 1000U , grid.getCartesianSize());
 
         std::vector<double> v(7);
-        test_assert_throw( grid.scatterVector(v) , std::invalid_argument);
+        BOOST_CHECK_THROW( grid.scatterVector(v) , std::invalid_argument);
 
         std::vector<double> w(4);
         w[0] = 12;
