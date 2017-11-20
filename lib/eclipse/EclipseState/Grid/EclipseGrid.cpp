@@ -898,6 +898,7 @@ namespace Opm {
         return this->activeMap;
     }
 
+
     void EclipseGrid::resetACTNUM( const int * actnum) {
         ecl_grid_reset_actnum( m_grid.get() , actnum );
         /* re-build the active map cache */
