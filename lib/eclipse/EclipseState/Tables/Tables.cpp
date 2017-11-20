@@ -71,7 +71,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/AqutabTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/AquanconTable.hpp>
 
 namespace Opm {
 
@@ -1078,64 +1077,6 @@ const TableColumn& TlpmixpaTable::getOilPhasePressureColumn() const {
 
 const TableColumn& TlpmixpaTable::getMiscibilityColumn() const {
     return SimpleTable::getColumn(1);
-}
-
-AquanconTable::AquanconTable( const DeckItem& item ) {
-    m_schema.addColumn( ColumnSchema( "AquiferId" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "I1" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "I2" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "J1" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "J2" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "K1" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "K2" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "Face" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "InfluxCoefficient" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "InfluxCoefficientMultiplier" , Table::RANDOM , Table::DEFAULT_NONE) );
-    m_schema.addColumn( ColumnSchema( "ConnectActiveCell" , Table::RANDOM , Table::DEFAULT_NONE) );
-    SimpleTable::init( item );
-}
-
-const TableColumn& AquanconTable::getAquiferId() const {
-    return SimpleTable::getColumn(0);
-}
-
-const TableColumn& AquanconTable::getI1() const {
-    return SimpleTable::getColumn(1);
-}
-
-const TableColumn& AquanconTable::getI2() const {
-    return SimpleTable::getColumn(2);
-}
-
-const TableColumn& AquanconTable::getJ1() const {
-    return SimpleTable::getColumn(3);
-}
-const TableColumn& AquanconTable::getJ2() const {
-    return SimpleTable::getColumn(4);
-}
-
-const TableColumn& AquanconTable::getK1() const {
-    return SimpleTable::getColumn(5);
-}
-
-const TableColumn& AquanconTable::getK2() const {
-    return SimpleTable::getColumn(6);
-}
-
-const TableColumn& AquanconTable::getFace() const {
-    return SimpleTable::getColumn(7);
-}
-
-const TableColumn& AquanconTable::getInfluxCoeff() const {
-    return SimpleTable::getColumn(8);
-}
-
-const TableColumn& AquanconTable::getInfluxCoeffMultiplier() const {
-    return SimpleTable::getColumn(9);
-}
-
-const TableColumn& AquanconTable::getAquiferConnectionActiveCell() const {
-    return SimpleTable::getColumn(10);
 }
 
 MsfnTable::MsfnTable( const DeckItem& item ) {

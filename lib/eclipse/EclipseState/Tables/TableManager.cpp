@@ -70,7 +70,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/TableContainer.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/AqutabTable.hpp>
-#include <opm/parser/eclipse/EclipseState/Tables/AquanconTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/JFunc.hpp>
 
 #include <opm/parser/eclipse/EclipseState/Tables/Tabdims.hpp>
@@ -241,7 +240,6 @@ namespace Opm {
         addTables( "RVVD", m_eqldims->getNumEquilRegions());
 
         addTables( "AQUTAB", m_aqudims->getNumInfluenceTablesCT());
-        addTables( "AQUANCON", m_aqudims->getNumRowsAquancon());
         {
             size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
             if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
@@ -299,7 +297,6 @@ namespace Opm {
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<AqutabTable>(deck, "AQUTAB" , m_aqudims->getNumInfluenceTablesCT());
-        initSimpleTableContainer<AquanconTable>(deck, "AQUANCON", m_aqudims->getNumRowsAquancon());
         {
             size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
 
@@ -711,10 +708,6 @@ namespace Opm {
     
     const TableContainer& TableManager::getAqutabTables() const {
         return getTables("AQUTAB");
-    } 
-
-    const TableContainer& TableManager::getAquanconTables() const {
-        return getTables("AQUANCON");
     } 
 
     const std::vector<PvtgTable>& TableManager::getPvtgTables() const {
