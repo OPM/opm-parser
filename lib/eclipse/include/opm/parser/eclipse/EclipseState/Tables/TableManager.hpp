@@ -107,7 +107,6 @@ namespace Opm {
         const TableContainer& getPmiscTables() const;
         const TableContainer& getMsfnTables() const;
         const TableContainer& getTlpmixpaTables() const;
-        const TableContainer& getAquanconTables() const;
 
         const JFunc& getJFunc() const;
 
