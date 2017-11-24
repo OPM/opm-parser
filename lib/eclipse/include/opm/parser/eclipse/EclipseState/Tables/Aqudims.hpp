@@ -45,20 +45,6 @@ namespace Opm {
             
         { }
 
-/*
-        Aqudims( size_t mxnaqn , size_t mxnaqc , size_t niftbl , size_t nriftb , size_t nanaqu, size_t ncamax , size_t mxnali , size_t mxaaql) :
-            m_mxnaqn( mxnaqn ),
-            m_mxnaqc( mxnaqc ),
-            m_niftbl( niftbl ),
-            m_nriftb( nriftb ),
-            m_nanaqu( nanaqu ),
-            m_ncamax( ncamax ),
-            m_mxnali( mxnali ),
-            m_mxaaql( mxaaql )
-    
-        { }
-*/
-
         explicit Aqudims(const Deck& deck) :
             Aqudims()
         {
