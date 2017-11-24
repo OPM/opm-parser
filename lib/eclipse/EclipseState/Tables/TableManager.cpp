@@ -84,6 +84,7 @@ namespace Opm {
     TableManager::TableManager( const Deck& deck )
         :
         m_tabdims( Tabdims(deck)),
+        m_aqudims( Aqudims(deck)),
         hasImptvd (deck.hasKeyword("IMPTVD")),
         hasEnptvd (deck.hasKeyword("ENPTVD")),
         hasEqlnum (deck.hasKeyword("EQLNUM")),
@@ -151,7 +152,7 @@ namespace Opm {
             m_regdims = std::make_shared<Regdims>( ntfip , nmfipr , nrfreg , ntfreg , nplmix );
         } else
             m_regdims = std::make_shared<Regdims>();
-
+/*
         if (deck.hasKeyword<AQUDIMS>()) {
             const auto& keyword = deck.getKeyword<AQUDIMS>();
             const auto& record = keyword.getRecord(0);
@@ -163,9 +164,10 @@ namespace Opm {
             int ncamax = record.getItem<AQUDIMS::NCAMAX>().get< int >(0);
             int mxnali = record.getItem<AQUDIMS::MXNALI>().get< int >(0);
             int mxaaql = record.getItem<AQUDIMS::MXAAQL>().get< int >(0);    
-            m_aqudims = std::make_shared<Aqudims>( mxnaqn , mxnaqc , niftbl , nriftb , nanaqu, ncamax, mxnali, mxaaql );
+            m_aqudims = Aqudims( mxnaqn , mxnaqc , niftbl , nriftb , nanaqu, ncamax, mxnali, mxaaql );
         } else
-            m_aqudims = std::make_shared<Aqudims>();
+            m_aqudims = Aqudims();
+	*/
     }
 
 
@@ -239,7 +241,7 @@ namespace Opm {
         addTables( "RSVD", m_eqldims->getNumEquilRegions());
         addTables( "RVVD", m_eqldims->getNumEquilRegions());
 
-        addTables( "AQUTAB", m_aqudims->getNumInfluenceTablesCT());
+        addTables( "AQUTAB", m_aqudims.getNumInfluenceTablesCT());
         {
             size_t numMiscibleTables = ParserKeywords::MISCIBLE::NTMISC::defaultValue;
             if (deck.hasKeyword<ParserKeywords::MISCIBLE>()) {
@@ -296,7 +298,7 @@ namespace Opm {
 
         initSimpleTableContainer<RsvdTable>(deck, "RSVD" , m_eqldims->getNumEquilRegions());
         initSimpleTableContainer<RvvdTable>(deck, "RVVD" , m_eqldims->getNumEquilRegions());
-        initSimpleTableContainer<AqutabTable>(deck, "AQUTAB" , m_aqudims->getNumInfluenceTablesCT());
+        initSimpleTableContainer<AqutabTable>(deck, "AQUTAB" , m_aqudims.getNumInfluenceTablesCT());
         {
             size_t numEndScaleTables = ParserKeywords::ENDSCALE::NUM_TABLES::defaultValue;
 
@@ -570,7 +572,7 @@ namespace Opm {
     }
     
     const Aqudims& TableManager::getAqudims() const {
-        return *m_aqudims;
+        return m_aqudims;
     }
 
     /*
