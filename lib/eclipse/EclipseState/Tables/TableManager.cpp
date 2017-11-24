@@ -152,22 +152,6 @@ namespace Opm {
             m_regdims = std::make_shared<Regdims>( ntfip , nmfipr , nrfreg , ntfreg , nplmix );
         } else
             m_regdims = std::make_shared<Regdims>();
-/*
-        if (deck.hasKeyword<AQUDIMS>()) {
-            const auto& keyword = deck.getKeyword<AQUDIMS>();
-            const auto& record = keyword.getRecord(0);
-            int mxnaqn  = record.getItem<AQUDIMS::MXNAQN>().get< int >(0);
-            int mxnaqc = record.getItem<AQUDIMS::MXNAQC>().get< int >(0);
-            int niftbl = record.getItem<AQUDIMS::NIFTBL>().get< int >(0);
-            int nriftb = record.getItem<AQUDIMS::NRIFTB>().get< int >(0);
-            int nanaqu = record.getItem<AQUDIMS::NANAQU>().get< int >(0);
-            int ncamax = record.getItem<AQUDIMS::NCAMAX>().get< int >(0);
-            int mxnali = record.getItem<AQUDIMS::MXNALI>().get< int >(0);
-            int mxaaql = record.getItem<AQUDIMS::MXAAQL>().get< int >(0);    
-            m_aqudims = Aqudims( mxnaqn , mxnaqc , niftbl , nriftb , nanaqu, ncamax, mxnali, mxaaql );
-        } else
-            m_aqudims = Aqudims();
-	*/
     }
 
 

@@ -51,7 +51,6 @@ namespace Opm {
 
     class Eqldims;
     class Regdims;
-    //class Aqudims;
     
     class TableManager {
     public:
