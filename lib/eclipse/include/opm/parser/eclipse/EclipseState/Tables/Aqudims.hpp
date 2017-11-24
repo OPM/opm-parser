@@ -26,7 +26,9 @@
 */
 
 #include <opm/parser/eclipse/Parser/ParserKeywords/A.hpp>
-
+#include <opm/parser/eclipse/Deck/Deck.hpp>
+#include <opm/parser/eclipse/Deck/DeckRecord.hpp>
+#include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
 namespace Opm {
     class Aqudims {
     public:
@@ -43,7 +45,7 @@ namespace Opm {
             
         { }
 
-
+/*
         Aqudims( size_t mxnaqn , size_t mxnaqc , size_t niftbl , size_t nriftb , size_t nanaqu, size_t ncamax , size_t mxnali , size_t mxaaql) :
             m_mxnaqn( mxnaqn ),
             m_mxnaqc( mxnaqc ),
@@ -55,6 +57,23 @@ namespace Opm {
             m_mxaaql( mxaaql )
     
         { }
+*/
+
+        explicit Aqudims(const Deck& deck) :
+            Aqudims()
+        {
+            if (deck.hasKeyword("AQUDIMS")) {
+                const auto& record = deck.getKeyword( "AQUDIMS" , 0 ).getRecord( 0 );
+                m_mxnaqn  = record.getItem("MXNAQN").get<int>(0);
+                m_mxnaqc  = record.getItem("MXNAQC").get<int>(0);
+                m_niftbl  = record.getItem("NIFTBL").get<int>(0);
+                m_nriftb  = record.getItem("NRIFTB").get<int>(0);
+                m_nanaqu  = record.getItem("NANAQU").get<int>(0);
+                m_ncamax  = record.getItem("NCAMAX").get<int>(0);
+                m_mxnali  = record.getItem("MXNALI").get<int>(0);
+                m_mxaaql  = record.getItem("MXAAQL").get<int>(0);
+            }
+        }
 
         size_t getNumAqunum() const
         {
@@ -95,6 +114,7 @@ namespace Opm {
         {
             return m_mxaaql;
         }        
+        
     private:
         size_t m_mxnaqn , m_mxnaqc , m_niftbl , m_nriftb , m_nanaqu , m_ncamax , m_mxnali , m_mxaaql;
 
