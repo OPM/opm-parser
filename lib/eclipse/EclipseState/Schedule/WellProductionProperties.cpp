@@ -78,7 +78,8 @@ namespace Opm {
                 p.addProductionControl( cmode );
                 p.controlMode = cmode;
             } else {
-                const std::string msg = "unsupported control mode " + cmode_string + " for WCONHIST";
+                const std::string well_name = record.getItem("WELL").getTrimmedString(0);
+                const std::string msg = "unsupported control mode " + cmode_string + " for WCONHIST of Well " + well_name;
                 throw std::invalid_argument(msg);
             }
 
