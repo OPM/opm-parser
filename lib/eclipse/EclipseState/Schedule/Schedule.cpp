@@ -452,8 +452,7 @@ namespace Opm {
                     properties = WellProductionProperties::prediction( record, addGrupProductionControl );
                 } else {
                     const WellProductionProperties& prev_properties = well->getProductionProperties(currentStep);
-                    double BHPLimit = prev_properties.BHPLimit;
-                    properties = WellProductionProperties::history( BHPLimit , record, m_phases);
+                    properties = WellProductionProperties::history(prev_properties, record);
                 }
 
                 if (status != WellCommon::SHUT) {
@@ -969,13 +968,7 @@ namespace Opm {
                     }
                     else if (cMode == "BHP"){
                         prop.BHPLimit = newValue * siFactorP;
-                        /* For wells controlled by WCONHIST the BHP value given by the
-                           WCHONHIST keyword can not be used to control the well - i.e BHP
-                           control is not natively available - however when BHP has been
-                           specified with WELTARG we can enable BHP control.
-                        */
-                        if (prop.predictionMode == false)
-                            prop.addProductionControl(WellProducer::BHP);
+                        prop.BHPLimitFromWelltag = true;
                     }
                     else if (cMode == "THP"){
                         prop.THPLimit = newValue * siFactorP;

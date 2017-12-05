@@ -32,17 +32,22 @@ namespace Opm {
 
     class WellProductionProperties {
     public:
+        // the rates serve as limits under prediction mode
+        // while they are observed rates under historical mode
         double  OilRate     = 0.0;
         double  WaterRate   = 0.0;
         double  GasRate     = 0.0;
         double  LiquidRate  = 0.0;
         double  ResVRate    = 0.0;
+        // BHP and THP limit
         double  BHPLimit    = 0.0;
         double  THPLimit    = 0.0;
+        // historical BHP and THP under historical mode
         double  BHPH        = 0.0;
         double  THPH        = 0.0;
         int     VFPTableNumber = 0;
         double  ALQValue    = 0.0;
+        bool BHPLimitFromWelltag = false;
         bool    predictionMode = false;
 
         WellProducer::ControlModeEnum controlMode = WellProducer::CMODE_UNDEFINED;
@@ -51,7 +56,7 @@ namespace Opm {
         bool operator!=(const WellProductionProperties& other) const;
         WellProductionProperties();
 
-        static WellProductionProperties history(double BHPLimit, const DeckRecord& record, const Phases &phases = Phases(true, true, true) );
+        static WellProductionProperties history(const WellProductionProperties& prevProperties, const DeckRecord& record);
         static WellProductionProperties prediction( const DeckRecord& record, bool addGroupProductionControl );
 
         bool hasProductionControl(WellProducer::ControlModeEnum controlModeArg) const {
