@@ -452,8 +452,7 @@ namespace Opm {
                     properties = WellProductionProperties::prediction( record, addGrupProductionControl );
                 } else {
                     const WellProductionProperties& prev_properties = well->getProductionProperties(currentStep);
-                    double BHPLimit = prev_properties.BHPLimit;
-                    properties = WellProductionProperties::history( BHPLimit , record, m_phases);
+                    properties = WellProductionProperties::history(prev_properties, record);
                 }
 
                 if (status != WellCommon::SHUT) {
@@ -749,28 +748,63 @@ namespace Opm {
 
     void Schedule::handleWCONINJH( const SCHEDULESection& section,  const DeckKeyword& keyword, size_t currentStep) {
         for( const auto& record : keyword ) {
+
             const std::string& wellName = record.getItem("WELL").getTrimmedString(0);
-
-            // convert injection rates to SI
-            WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record.getItem("TYPE").getTrimmedString(0));
-            double injectionRate = record.getItem("RATE").get< double >(0);
-            injectionRate = convertInjectionRateToSI(injectionRate, injectorType, section.unitSystem());
-
-            WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
-
             auto& well = this->m_wells.get( wellName );
+
+            const WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
             updateWellStatus( well, currentStep, status );
+
+            const WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record.getItem("TYPE").getTrimmedString(0));
+            // injection rate before unit conversion
+            const double injectionRateRaw = record.getItem("RATE").get< double >(0);
+            // convert injection rate to SI
+            const double injectionRate = convertInjectionRateToSI(injectionRateRaw, injectorType, section.unitSystem());
+
             WellInjectionProperties properties(well.getInjectionPropertiesCopy(currentStep));
 
             properties.injectorType = injectorType;
 
             const std::string& cmodeString = record.getItem("CMODE").getTrimmedString(0);
-            WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
-            if (!record.getItem("RATE").defaultApplied(0)) {
-                properties.surfaceInjectionRate = injectionRate;
+            const WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
+
+            properties.controlMode = controlMode;
+
+            // we should always updaate the injection rate without copying the old one
+            properties.surfaceInjectionRate = injectionRate;
+
+            if (controlMode == WellInjector::RATE)
                 properties.addInjectionControl(controlMode);
-                properties.controlMode = controlMode;
+
+            // It is recommended that a large BHP limit (need to test to find out the actual value) is used when swtiching to historical mode and
+            // not under `BHP` control mode. Currently, we set one big value based on the numeric limits, which means it should not be violated
+            // under non-problematic simulations. However, there will be a BHPLimit unconditionally here.
+            properties.addInjectionControl(WellInjector::BHP);
+
+            const WellInjectionProperties& prev_properties = well.getInjectionProperties(currentStep);
+            // when switching from prediction mode to historical mode
+            if ( prev_properties.predictionMode ) {
+                if ( controlMode != WellInjector::BHP )
+                    // This value can be set with keyword FBHPDEF
+                    properties.BHPLimit = std::numeric_limits<double>::max();
+                else
+                    properties.BHPLimit = record.getItem("BHP").getSIDouble(0);
+                // This BHPLimit value can be modified by WELTARG after WCONINJH
+
+                properties.BHPLimitFromWelltag = false;
+            } else if (controlMode == WellInjector::BHP && !prev_properties.BHPLimitFromWelltag ) {
+                properties.BHPLimit = record.getItem("BHP").getSIDouble(0);
+                properties.BHPLimitFromWelltag = false;
+            } else if ( prev_properties.BHPLimitFromWelltag )
+                properties.BHPLimitFromWelltag = true;
+
+            // other situations, we use the BHPLimit from the previous property, nothing needs to be done here
+
+            if ( !(controlMode == WellInjector::RATE || controlMode == WellInjector::BHP) ) {
+                const std::string msg = "unsupported control mode " + cmodeString + " for WCONINJH of Well " + wellName;
+                throw std::invalid_argument(msg);
             }
+
             properties.predictionMode = false;
 
             if ( record.getItem( "BHP" ).hasValue(0) )
@@ -969,13 +1003,7 @@ namespace Opm {
                     }
                     else if (cMode == "BHP"){
                         prop.BHPLimit = newValue * siFactorP;
-                        /* For wells controlled by WCONHIST the BHP value given by the
-                           WCHONHIST keyword can not be used to control the well - i.e BHP
-                           control is not natively available - however when BHP has been
-                           specified with WELTARG we can enable BHP control.
-                        */
-                        if (prop.predictionMode == false)
-                            prop.addProductionControl(WellProducer::BHP);
+                        prop.BHPLimitFromWelltag = true;
                     }
                     else if (cMode == "THP"){
                         prop.THPLimit = newValue * siFactorP;
@@ -995,13 +1023,6 @@ namespace Opm {
                     WellInjectionProperties prop = well->getInjectionPropertiesCopy(currentStep);
                     if (cMode == "BHP"){
                         prop.BHPLimit = newValue * siFactorP;
-                        /* For wells controlled by WCONINJH the BHP value given by the
-                           WCHONINJH keyword can not be used to control the well - i.e BHP
-                           control is not natively available - however when BHP has been
-                           specified with WELTARG we can enable BHP control.
-                        */
-                        if (prop.predictionMode == false)
-                            prop.addInjectionControl(WellInjector::BHP);
                     }
                     else if (cMode == "ORAT"){
                         if(prop.injectorType == WellInjector::TypeEnum::OIL){

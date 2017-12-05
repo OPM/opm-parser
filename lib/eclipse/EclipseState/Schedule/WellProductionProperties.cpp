@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include <opm/parser/eclipse/Units/Units.hpp>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/ScheduleEnums.hpp>
@@ -41,49 +42,67 @@ namespace Opm {
     {}
 
 
-    WellProductionProperties WellProductionProperties::history(double BHPLimit, const DeckRecord& record, const Phases &phases)
+    WellProductionProperties WellProductionProperties::history(const WellProductionProperties& prevProperties, const DeckRecord& record)
     {
-        // Modes supported in WCONHIST just from {O,W,G}RAT values
-        //
-        // Note: The default value of observed {O,W,G}RAT is zero
-        // (numerically) whence the following control modes are
-        // unconditionally supported.
         WellProductionProperties p(record);
         p.predictionMode = false;
 
-        namespace wp = WellProducer;
-        if(phases.active(Phase::OIL))
-            p.addProductionControl( wp::ORAT );
-
-        if(phases.active(Phase::WATER))
-            p.addProductionControl( wp::WRAT );
-
-        if(phases.active(Phase::GAS))
-            p.addProductionControl( wp::GRAT );
-
-        for( auto cmode : { wp::LRAT, wp::RESV, wp::GRUP } ) {
-            p.addProductionControl( cmode );
-        }
-
         /*
-          We do not update the BHPLIMIT based on the BHP value given
-          in WCONHIST, that is purely a historical value; instead we
-          copy the old value of the BHP limit from the previous
-          timestep.
+          There are a few ways to specify the BHPLimit in historical mode.
+          If the well is the under BHP control mode, then the observed BHP value will
+          serve as the BHP limit.
 
-          To actually set the BHPLIMIT in historical mode you must
-          use the WELTARG keyword.
+          If the control mode is not BHP, then by default the BHP limit is 1 atm. when declared
+          as history matching well for the first time with WCONHIST.
+
+          You can reset the BHP limit to a specific value with keyword WELTARG.
+
+          When the BHP limit is reset by WELTARG, the BHP limit will not be changed by the subsequent
+          WCONHIST keyword if not under BHP control.
+
+          FBHPDEF can be used to set the default BHP limit.
+
+          WHISTCTL can be used to stop the simulation if a history matching well switches to BHP control.
         */
-        p.BHPLimit = BHPLimit;
 
         const auto& cmodeItem = record.getItem("CMODE");
+        // to make the following work correctly, we need to make the correct limit value in place
         if (!cmodeItem.defaultApplied(0)) {
-            const auto cmode = WellProducer::ControlModeFromString( cmodeItem.getTrimmedString( 0 ) );
+            const std::string cmode_string = cmodeItem.getTrimmedString( 0 );
+            const auto cmode = WellProducer::ControlModeFromString(cmode_string);
 
-            if (p.hasProductionControl( cmode ))
+            namespace wp = WellProducer;
+
+            if (cmode == wp::LRAT || cmode == wp::RESV || cmode == wp::ORAT ||
+                cmode == wp::WRAT || cmode == wp::GRAT || cmode == wp::BHP) {
+                p.addProductionControl( cmode );
                 p.controlMode = cmode;
-            else
-                throw std::invalid_argument("Setting CMODE to unspecified control");
+            } else {
+                const std::string well_name = record.getItem("WELL").getTrimmedString(0);
+                const std::string msg = "unsupported control mode " + cmode_string + " for WCONHIST of Well " + well_name;
+                throw std::invalid_argument(msg);
+            }
+
+            // always have a BHP control/limit, while the limit value needs to be determined
+            p.addProductionControl( wp::BHP );
+
+            if (cmode == wp::BHP) {
+                // \Note, this value can be reset by WELTARG later.
+                p.BHPLimit = record.getItem( "BHP" ).getSIDouble( 0 );
+                p.BHPLimitFromWelltag = false;
+            } else {
+                // Not sure if a well switch to prediction mode and switch back to historical mode,
+                // how the WELTAG value works here, we treat the switching from prediction model to
+                // historical mode as the first time declaring WCONHIST here
+                if (!prevProperties.predictionMode && prevProperties.BHPLimitFromWelltag) {
+                    p.BHPLimit = prevProperties.BHPLimit;
+                    p.BHPLimitFromWelltag = true;
+                } else {
+                    // The 1 atm default value can be changed by keyword FBHPDEF
+                    p.BHPLimit = 1. * unit::atm;
+                    p.BHPLimitFromWelltag = false;
+                }
+            }
         }
 
         if ( record.getItem( "BHP" ).hasValue(0) )
