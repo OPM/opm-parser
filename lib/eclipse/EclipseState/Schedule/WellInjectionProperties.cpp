@@ -38,6 +38,7 @@ namespace Opm {
         THPH=0.0;
         VFPTableNumber=0;
         predictionMode=true;
+        BHPLimitFromWelltag = false;
         injectionControls=0;
         injectorType = WellInjector::WATER;
         controlMode = WellInjector::CMODE_UNDEFINED;

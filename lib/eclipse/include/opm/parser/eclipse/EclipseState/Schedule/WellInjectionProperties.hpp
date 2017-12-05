@@ -35,6 +35,7 @@ namespace Opm {
         double  BHPH;
         double  THPH;
         int     VFPTableNumber;
+        bool BHPLimitFromWelltag;
         bool    predictionMode;
         int     injectionControls;
         WellInjector::TypeEnum injectorType;
