@@ -1171,12 +1171,14 @@ BOOST_AUTO_TEST_CASE(changeBhpLimitInHistoryModeWithWeltarg) {
             " 18  OKT 2008 / \n"
             "/\n"
             "WCONHIST\n"
-            "   'P' 'OPEN' 'RESV' 6*  /\n/\n"
-            "DATES             -- 3\n"
+            "   'I' 'OPEN' 'RESV' 6*  /\n/\n"
+            "DATES             -- 4\n"
             " 20  OKT 2008 / \n"
             "/\n"
             "WCONINJH\n"
-            " 'I' 'WATER' 1* 100 250 / \n"
+            " 'I' 'WATER' 1* 100 250 /\n /\n"
+            "DATES             -- 5\n"
+            " 22  OKT 2008 / \n"
             "/\n"
             ;
 
@@ -1198,10 +1200,14 @@ BOOST_AUTO_TEST_CASE(changeBhpLimitInHistoryModeWithWeltarg) {
     BOOST_CHECK_EQUAL(well_i->getInjectionProperties(0).BHPLimit, 0); //start
     BOOST_CHECK_EQUAL(well_i->getInjectionProperties(1).BHPLimit, 600 * 1e5); // 1
     BOOST_CHECK_EQUAL(well_i->getInjectionProperties(2).BHPLimit, 600 * 1e5); // 2
-    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(3).BHPLimit, 600 * 1e5); // 3
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(3).BHPLimit, 0); // 3
+    const double large_default_bhp = std::numeric_limits<double>::max();
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(4).BHPLimit, large_default_bhp); // 5
+    BOOST_CHECK_EQUAL(well_i->getInjectionProperties(5).BHPLimit, large_default_bhp); // 5
 
     BOOST_CHECK_EQUAL( true , well_i->getInjectionProperties(2).hasInjectionControl(Opm::WellInjector::BHP) );
-    BOOST_CHECK_EQUAL( true , well_i->getInjectionProperties(3).hasInjectionControl(Opm::WellInjector::BHP) );
+    // there should be no any production control here
+    BOOST_CHECK_EQUAL( false , well_i->getInjectionProperties(3).hasInjectionControl(Opm::WellInjector::BHP) );
 }
 
 BOOST_AUTO_TEST_CASE(changeModeWithWHISTCTL) {
