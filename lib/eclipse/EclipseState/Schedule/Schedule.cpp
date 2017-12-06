@@ -749,52 +749,63 @@ namespace Opm {
             const WellCommon::StatusEnum status = WellCommon::StatusFromString( record.getItem("STATUS").getTrimmedString(0));
             updateWellStatus( well, currentStep, status );
 
+            WellInjectionProperties properties;
+
             const WellInjector::TypeEnum injectorType = WellInjector::TypeFromString( record.getItem("TYPE").getTrimmedString(0));
+            properties.injectorType = injectorType;
+
             // injection rate before unit conversion
+            // TODO: do we need to check whether there is a value set there or defaulted (0.0 here)?
             const double injectionRateRaw = record.getItem("RATE").get< double >(0);
             // convert injection rate to SI
             const double injectionRate = convertInjectionRateToSI(injectionRateRaw, injectorType, section.unitSystem());
-
-            WellInjectionProperties properties;
-
-            properties.injectorType = injectorType;
+            // we should always update the injection rate without copying the old one
+            properties.surfaceInjectionRate = injectionRate;
 
             const std::string& cmodeString = record.getItem("CMODE").getTrimmedString(0);
             const WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
 
             properties.controlMode = controlMode;
 
-            // we should always updaate the injection rate without copying the old one
-            properties.surfaceInjectionRate = injectionRate;
-
             if (controlMode == WellInjector::RATE)
                 properties.addInjectionControl(controlMode);
 
-            // It is recommended that a large BHP limit (need to test to find out the actual value) is used when swtiching to historical mode and
-            // not under `BHP` control mode. Currently, we set one big value based on the numeric limits, which means it should not be violated
-            // under non-problematic simulations. However, there will be a BHPLimit unconditionally here.
+            // It is recommended that a large BHP limit (without specific value) is used when swtiching to historical mode and
+            // not under `BHP` control mode. Currently, we set one big value based on the numeric limits, which means it should
+            // not be violated under non-problematic simulations. However, there will be a BHPLimit unconditionally here.
+            // In the future, it is possible to change this limit to be 8925 bar (same with prediction mode) with more evidence.
+            // The BHP limit determined here can be reset with WELTARG afterwards.
             properties.addInjectionControl(WellInjector::BHP);
 
+            // This value can be set with keyword FBHPDEF
+            const double large_default_bhp = std::numeric_limits<double>::max();
+            // Although defaulted zero BHP limit can be prolematic, while not seeing it is illegal now.
+            double BHPLimit_from_deck = 0.;
+            if ( record.getItem( "BHP" ).hasValue(0) )
+                BHPLimit_from_deck = record.getItem("BHP").getSIDouble(0);
+
             const WellInjectionProperties& prev_properties = well.getInjectionProperties(currentStep);
+            // the BHP limit from prev_properties, it can be used if it is set with WELTARG
+            const double BHPLimit_from_prev = prev_properties.BHPLimit;
+
             // when switching from prediction mode to historical mode
             if ( prev_properties.predictionMode ) {
                 if ( controlMode != WellInjector::BHP )
-                    // This value can be set with keyword FBHPDEF
-                    properties.BHPLimit = std::numeric_limits<double>::max();
+                    properties.BHPLimit = large_default_bhp;
                 else
-                    properties.BHPLimit = record.getItem("BHP").getSIDouble(0);
-                // This BHPLimit value can be modified by WELTARG after WCONINJH
+                    properties.BHPLimit = BHPLimit_from_deck;
 
                 properties.BHPLimitFromWelltag = false;
-            } else if (controlMode == WellInjector::BHP && !prev_properties.BHPLimitFromWelltag ) {
-                properties.BHPLimit = record.getItem("BHP").getSIDouble(0);
-                properties.BHPLimitFromWelltag = false;
             } else if ( prev_properties.BHPLimitFromWelltag ) {
-                properties.BHPLimit = prev_properties.BHPLimit;
+                // if the previous BHPLimit is set by WELTARG, we will ignore the one input with current
+                // WCONINJH keyword
+                properties.BHPLimit = BHPLimit_from_prev;
                 properties.BHPLimitFromWelltag = true;
+            } else if (controlMode == WellInjector::BHP ) {
+                properties.BHPLimit = BHPLimit_from_deck;
+                properties.BHPLimitFromWelltag = false;
             } else {
-                // This value can be set with keyword FBHPDEF
-                properties.BHPLimit = std::numeric_limits<double>::max();
+                properties.BHPLimit = large_default_bhp;
                 properties.BHPLimitFromWelltag = false;
             }
 

@@ -55,18 +55,16 @@ namespace Opm {
           If the control mode is not BHP, then by default the BHP limit is 1 atm. when declared
           as history matching well for the first time with WCONHIST.
 
-          You can reset the BHP limit to a specific value with keyword WELTARG.
+          You can reset the BHP limit to a specific value with keyword WELTARG after WCONHIST
+          for both of the above situations.
 
           When the BHP limit is reset by WELTARG, the BHP limit will not be changed by the subsequent
           WCONHIST keyword if not under BHP control.
 
-          FBHPDEF can be used to set the default BHP limit.
-
-          WHISTCTL can be used to stop the simulation if a history matching well switches to BHP control.
+          FBHPDEF can be used to set the default BHP limit, which is not implemented yet.
         */
 
         const auto& cmodeItem = record.getItem("CMODE");
-        // to make the following work correctly, we need to make the correct limit value in place
         if (!cmodeItem.defaultApplied(0)) {
             const std::string cmode_string = cmodeItem.getTrimmedString( 0 );
             const auto cmode = WellProducer::ControlModeFromString(cmode_string);
@@ -86,9 +84,11 @@ namespace Opm {
             // always have a BHP control/limit, while the limit value needs to be determined
             p.addProductionControl( wp::BHP );
 
+            // \Note, all the BHP limits set here can be reset by WELTARG after WCONHIST
             if (cmode == wp::BHP) {
-                // \Note, this value can be reset by WELTARG later.
-                p.BHPLimit = record.getItem( "BHP" ).getSIDouble( 0 );
+                if ( record.getItem("BHP").hasValue(0) )
+                    p.BHPLimit = record.getItem( "BHP" ).getSIDouble( 0 );
+
                 p.BHPLimitFromWelltag = false;
             } else {
                 // Not sure if a well switch to prediction mode and switch back to historical mode,
@@ -99,7 +99,8 @@ namespace Opm {
                     p.BHPLimitFromWelltag = true;
                 } else {
                     // The 1 atm default value can be changed by keyword FBHPDEF
-                    p.BHPLimit = 1. * unit::atm;
+                    const double one_atm = 1. * unit::atm;
+                    p.BHPLimit = one_atm;
                     p.BHPLimitFromWelltag = false;
                 }
             }
