@@ -446,39 +446,19 @@ namespace Opm {
             for( auto* well : getWells( wellNamePattern ) ) {
                 WellProductionProperties properties;
 
-
                 if (isPredictionMode) {
                     auto addGrupProductionControl = well->isAvailableForGroupControl(currentStep);
                     properties = WellProductionProperties::prediction( record, addGrupProductionControl );
                 } else {
                     const WellProductionProperties& prev_properties = well->getProductionProperties(currentStep);
-                    properties = WellProductionProperties::history(prev_properties, record);
+                    properties = WellProductionProperties::history(prev_properties, record, m_controlModeWHISTCTL, status);
                 }
 
-                if (status != WellCommon::SHUT) {
-                        std::string cmodeString =
-                        record.getItem("CMODE").getTrimmedString(0);
-
-                    WellProducer::ControlModeEnum control =
-                        WellProducer::ControlModeFromString(cmodeString);
-
-
-                    if ( m_controlModeWHISTCTL != WellProducer::CMODE_UNDEFINED &&
-                         m_controlModeWHISTCTL != WellProducer::NONE && !isPredictionMode){
-                        control = m_controlModeWHISTCTL; // overwrite given control
-                        cmodeString = WellProducer::ControlMode2String(control); // update the string
-                    }
-
-                    if ( !properties.hasProductionControl(control) )
-                        properties.addProductionControl(control);
-
-                    properties.controlMode = control;
-                }
                 updateWellStatus( *well , currentStep , status );
                 if (well->setProductionProperties(currentStep, properties))
                     m_events.addEvent( ScheduleEvents::PRODUCTION_UPDATE , currentStep);
 
-                if ( !well->getAllowCrossFlow() && !isPredictionMode && (properties.OilRate + properties.WaterRate + properties.GasRate) == 0 ) {
+                if ( !well->getAllowCrossFlow() && !isPredictionMode && (properties.OilRate + properties.WaterRate + properties.GasRate) == 0. ) {
 
                     std::string msg =
                             "Well " + well->name() + " is a history matched well with zero rate where crossflow is banned. " +
@@ -773,11 +753,9 @@ namespace Opm {
             // It is recommended that a large BHP limit (without specific value) is used when swtiching to historical mode and
             // not under `BHP` control mode. Currently, we set one big value based on the numeric limits, which means it should
             // not be violated under non-problematic simulations. However, there will be a BHPLimit unconditionally here.
-            // In the future, it is possible to change this limit to be 8925 bar (same with prediction mode) with more evidence.
             // The BHP limit determined here can be reset with WELTARG afterwards.
             properties.addInjectionControl(WellInjector::BHP);
 
-            // This value can be set with keyword FBHPDEF
             const double large_default_bhp = std::numeric_limits<double>::max();
             // Although defaulted zero BHP limit can be prolematic, while not seeing it is illegal now.
             double BHPLimit_from_deck = 0.;

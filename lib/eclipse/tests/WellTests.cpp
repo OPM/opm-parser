@@ -865,7 +865,8 @@ namespace {
             auto deck = parser.parseString(input, Opm::ParseContext());
             const auto& record = deck.getKeyword("WCONHIST").getRecord(0);
             const Opm::WellProductionProperties prev_properties;
-            Opm::WellProductionProperties hist = Opm::WellProductionProperties::history(prev_properties, record);;
+            Opm::WellProductionProperties hist = Opm::WellProductionProperties::history(prev_properties, record,
+                                                 WellProducer::CMODE_UNDEFINED, WellCommon::OPEN);;
 
             return hist;
         }
