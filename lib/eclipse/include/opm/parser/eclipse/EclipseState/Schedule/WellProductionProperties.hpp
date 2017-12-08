@@ -32,17 +32,23 @@ namespace Opm {
 
     class WellProductionProperties {
     public:
+        // the rates serve as limits under prediction mode
+        // while they are observed rates under historical mode
         double  OilRate     = 0.0;
         double  WaterRate   = 0.0;
         double  GasRate     = 0.0;
         double  LiquidRate  = 0.0;
         double  ResVRate    = 0.0;
+        // BHP and THP limit
         double  BHPLimit    = 0.0;
         double  THPLimit    = 0.0;
+        // historical BHP and THP under historical mode
         double  BHPH        = 0.0;
         double  THPH        = 0.0;
         int     VFPTableNumber = 0;
         double  ALQValue    = 0.0;
+        // whether the BHP limit is obtained through WELTARG
+        bool BHPLimitFromWelltag = false;
         bool    predictionMode = false;
 
         WellProducer::ControlModeEnum controlMode = WellProducer::CMODE_UNDEFINED;
@@ -51,7 +57,9 @@ namespace Opm {
         bool operator!=(const WellProductionProperties& other) const;
         WellProductionProperties();
 
-        static WellProductionProperties history(double BHPLimit, const DeckRecord& record, const Phases &phases = Phases(true, true, true) );
+        static WellProductionProperties history(const WellProductionProperties& prevProperties, const DeckRecord& record,
+                                                const WellProducer::ControlModeEnum controlModeWHISTCL,
+                                                const WellCommon::StatusEnum status);
         static WellProductionProperties prediction( const DeckRecord& record, bool addGroupProductionControl );
 
         bool hasProductionControl(WellProducer::ControlModeEnum controlModeArg) const {
@@ -66,6 +74,14 @@ namespace Opm {
         void addProductionControl(WellProducer::ControlModeEnum controlModeArg) {
             if (! hasProductionControl(controlModeArg))
                 m_productionControls += controlModeArg;
+        }
+
+        // this is used to check whether the specified control mode is an effective history matching production mode
+        static bool effectiveHistoryProductionControl(WellProducer::ControlModeEnum cmode) {
+            // Note, not handling CRAT for now
+            namespace wp = WellProducer;
+            return ( (cmode == wp::LRAT || cmode == wp::RESV || cmode == wp::ORAT ||
+                      cmode == wp::WRAT || cmode == wp::GRAT || cmode == wp::BHP) );
         }
 
     private:
