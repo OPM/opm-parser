@@ -35,6 +35,7 @@ namespace Opm {
         double  BHPH;
         double  THPH;
         int     VFPTableNumber;
+        // whether the BHP limit is obtained through WELTARG
         bool BHPLimitFromWelltag;
         bool    predictionMode;
         int     injectionControls;

@@ -47,6 +47,7 @@ namespace Opm {
         double  THPH        = 0.0;
         int     VFPTableNumber = 0;
         double  ALQValue    = 0.0;
+        // whether the BHP limit is obtained through WELTARG
         bool BHPLimitFromWelltag = false;
         bool    predictionMode = false;
 

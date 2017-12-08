@@ -743,12 +743,12 @@ namespace Opm {
             properties.surfaceInjectionRate = injectionRate;
 
             const std::string& cmodeString = record.getItem("CMODE").getTrimmedString(0);
-            const WellInjector::ControlModeEnum controlMode = WellInjector::ControlModeFromString( cmodeString );
+            const WellInjector::ControlModeEnum controlModeInput = WellInjector::ControlModeFromString( cmodeString );
 
-            properties.controlMode = controlMode;
+            properties.controlMode = controlModeInput;
 
-            if (controlMode == WellInjector::RATE)
-                properties.addInjectionControl(controlMode);
+            if (controlModeInput == WellInjector::RATE)
+                properties.addInjectionControl(controlModeInput);
 
             // It is recommended that a large BHP limit (without specific value) is used when swtiching to historical mode and
             // not under `BHP` control mode. Currently, we set one big value based on the numeric limits, which means it should
@@ -768,7 +768,7 @@ namespace Opm {
 
             // when switching from prediction mode to historical mode
             if ( prev_properties.predictionMode ) {
-                if ( controlMode != WellInjector::BHP )
+                if ( controlModeInput != WellInjector::BHP )
                     properties.BHPLimit = large_default_bhp;
                 else
                     properties.BHPLimit = BHPLimit_from_deck;
@@ -779,7 +779,7 @@ namespace Opm {
                 // WCONINJH keyword
                 properties.BHPLimit = BHPLimit_from_prev;
                 properties.BHPLimitFromWelltag = true;
-            } else if (controlMode == WellInjector::BHP ) {
+            } else if (controlModeInput == WellInjector::BHP ) {
                 properties.BHPLimit = BHPLimit_from_deck;
                 properties.BHPLimitFromWelltag = false;
             } else {
@@ -787,7 +787,7 @@ namespace Opm {
                 properties.BHPLimitFromWelltag = false;
             }
 
-            if ( !(controlMode == WellInjector::RATE || controlMode == WellInjector::BHP) ) {
+            if ( !(controlModeInput == WellInjector::RATE || controlModeInput == WellInjector::BHP) ) {
                 const std::string msg = "unsupported control mode " + cmodeString + " for WCONINJH of Well " + wellName;
                 throw std::invalid_argument(msg);
             }
