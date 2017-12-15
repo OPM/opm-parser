@@ -16,6 +16,8 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <opm/parser/eclipse/Units/Units.hpp>
+#include <opm/parser/eclipse/Parser/ParserKeywords/S.hpp>
 #include <opm/parser/eclipse/EclipseState/Schedule/WellInjectionProperties.hpp>
 
 #include <iostream>
@@ -27,8 +29,13 @@ namespace Opm {
     WellInjectionProperties::WellInjectionProperties() {
         surfaceInjectionRate=0.0;
         reservoirInjectionRate=0.0;
+        temperature=
+            Metric::TemperatureOffset
+            + ParserKeywords::STCOND::TEMPERATURE::defaultValue;
         BHPLimit=0.0;
         THPLimit=0.0;
+        BHPH=0.0;
+        THPH=0.0;
         VFPTableNumber=0;
         predictionMode=true;
         injectionControls=0;
@@ -40,8 +47,11 @@ namespace Opm {
     bool WellInjectionProperties::operator==(const WellInjectionProperties& other) const {
         if ((surfaceInjectionRate == other.surfaceInjectionRate) &&
             (reservoirInjectionRate == other.reservoirInjectionRate) &&
+            (temperature == other.temperature) &&
             (BHPLimit == other.BHPLimit) &&
             (THPLimit == other.THPLimit) &&
+            (BHPH == other.BHPH) &&
+            (THPH == other.THPH) &&
             (VFPTableNumber == other.VFPTableNumber) &&
             (predictionMode == other.predictionMode) &&
             (injectionControls == other.injectionControls) &&
@@ -62,8 +72,11 @@ namespace Opm {
             << "WellInjectionProperties { "
             << "surfacerate: "      << wp.surfaceInjectionRate << ", "
             << "reservoir rate "    << wp.reservoirInjectionRate << ", "
+            << "temperature: "      << wp.temperature << ", "
             << "BHP limit: "        << wp.BHPLimit << ", "
             << "THP limit: "        << wp.THPLimit << ", "
+            << "BHPH: "             << wp.BHPH << ", "
+            << "THPH: "             << wp.THPH << ", "
             << "VFP table: "        << wp.VFPTableNumber << ", "
             << "prediction mode: "  << wp.predictionMode << ", "
             << "injection ctrl: "   << wp.injectionControls << ", "

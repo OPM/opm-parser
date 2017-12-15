@@ -56,11 +56,11 @@
 
 namespace Opm {
 
-    Schedule::Schedule( const ParseContext& parseContext,
+    Schedule::Schedule( const Deck& deck,
                         const EclipseGrid& grid,
                         const Eclipse3DProperties& eclipseProperties,
-                        const Deck& deck,
-                        const Phases &phases ) :
+                        const Phases &phases,
+                        const ParseContext& parseContext) :
         m_timeMap( deck ),
         m_rootGroupTree( this->m_timeMap, GroupTree{} ),
         m_oilvaporizationproperties( this->m_timeMap, OilVaporizationProperties{} ),
@@ -91,6 +91,16 @@ namespace Opm {
             iterateScheduleSection( parseContext, SCHEDULESection( deck ), grid, eclipseProperties );
         }
     }
+
+
+    Schedule::Schedule(const Deck& deck, const EclipseState& es, const ParseContext& parse_context) :
+        Schedule(deck,
+                 es.getInputGrid(),
+                 es.get3DProperties(),
+                 es.runspec().phases(),
+                 parse_context)
+    {}
+
 
     std::time_t Schedule::getStartTime() const {
         return this->posixStartTime( );
@@ -167,6 +177,9 @@ namespace Opm {
             else if (keyword.name() == "WSOLVENT")
                 handleWSOLVENT(keyword, currentStep);
 
+            else if (keyword.name() == "WTEMP")
+                handleWTEMP(keyword, currentStep);
+
             else if (keyword.name() == "WCONINJH")
                 handleWCONINJH(section, keyword, currentStep);
 
@@ -190,6 +203,9 @@ namespace Opm {
 
             else if (keyword.name() == "GRUPTREE")
                 handleGRUPTREE(keyword, currentStep);
+
+            else if (keyword.name() == "GRUPNET")
+                handleGRUPNET(keyword, currentStep);
 
             else if (keyword.name() == "GCONINJE")
                 handleGCONINJE(section, keyword, currentStep);
@@ -232,6 +248,9 @@ namespace Opm {
 
             else if (keyword.name() == "MESSAGES")
                 handleMESSAGES(keyword, currentStep);
+
+            else if (keyword.name() == "WEFAC")
+                handleWEFAC(keyword, currentStep);
 
             else if (geoModifiers.find( keyword.name() ) != geoModifiers.end()) {
                 bool supported = geoModifiers.at( keyword.name() );
@@ -682,6 +701,17 @@ namespace Opm {
         }
     }
 
+    void Schedule::handleWEFAC( const DeckKeyword& keyword, size_t currentStep) {
+        for( const auto& record : keyword ) {
+            const std::string& wellNamePattern = record.getItem("WELLNAME").getTrimmedString(0);
+            const double& efficiencyFactor = record.getItem("EFFICIENCY_FACTOR").get< double >(0);
+
+            for( auto* well : getWells( wellNamePattern ) ) {
+                well->setEfficiencyFactor(currentStep, efficiencyFactor);
+            }
+        }
+    }
+
 
     void Schedule::handleWSOLVENT( const DeckKeyword& keyword, size_t currentStep) {
 
@@ -695,6 +725,26 @@ namespace Opm {
                     well->setSolventFraction(currentStep, fraction);
                 } else {
                     throw std::invalid_argument("WSOLVENT keyword can only be applied to Gas injectors");
+                }
+            }
+        }
+    }
+
+    void Schedule::handleWTEMP( const DeckKeyword& keyword, size_t currentStep) {
+        for( const auto& record : keyword ) {
+            const std::string& wellNamePattern = record.getItem("WELL").getTrimmedString(0);
+
+            for (auto* well : getWells(wellNamePattern)) {
+                // TODO: Can this be done like this? Setting the temperature only has an
+                // effect on injectors, but specifying this for producers won't hurt and
+                // wells can also switch their injector/producer status. Note that
+                // modifying the injector properties for producer wells currently leads
+                // to a very weird segmentation fault downstream. For now, let's take the
+                // water route.
+                if (well->isInjector(currentStep)) {
+                    WellInjectionProperties injectionProperties = well->getInjectionProperties(currentStep);
+                    injectionProperties.temperature = record.getItem("TEMP").getSIDouble(0);
+                    well->setInjectionProperties(currentStep, injectionProperties);
                 }
             }
         }
@@ -725,6 +775,11 @@ namespace Opm {
                 properties.controlMode = controlMode;
             }
             properties.predictionMode = false;
+
+            if ( record.getItem( "BHP" ).hasValue(0) )
+                properties.BHPH = record.getItem("BHP").getSIDouble(0);
+            if ( record.getItem( "THP" ).hasValue(0) )
+                properties.THPH = record.getItem("THP").getSIDouble(0);
 
             if (well.setInjectionProperties(currentStep, properties))
                 m_events.addEvent( ScheduleEvents::INJECTION_UPDATE , currentStep );
@@ -1188,6 +1243,8 @@ namespace Opm {
                 this->m_tuning.setXXXDPR(currentStep, XXXDPR);
             }
         }
+        m_events.addEvent( ScheduleEvents::TUNING_CHANGE , currentStep);
+
     }
 
 
@@ -1296,6 +1353,19 @@ namespace Opm {
                 addGroup( childName , currentStep );
         }
         m_rootGroupTree.update(currentStep, newTree);
+    }
+
+    void Schedule::handleGRUPNET( const DeckKeyword& keyword, size_t currentStep) {
+        for( const auto& record : keyword ) {
+            const auto& groupName = record.getItem("NAME").getTrimmedString(0);
+
+            if (!hasGroup(groupName))
+                addGroup(groupName , currentStep);
+
+            auto& group = this->m_groups.at( groupName );
+            int table = record.getItem("VFP_TABLE").get< int >(0);
+            group.setGroupNetVFPTable(currentStep, table);
+        }
     }
 
     void Schedule::handleWRFT( const DeckKeyword& keyword, size_t currentStep) {

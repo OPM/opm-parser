@@ -62,6 +62,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Sof2Table.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Sof3Table.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SorwmisTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SpecheatTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SpecrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SsfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
@@ -75,6 +77,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Regdims.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Aqudims.hpp>
 
+#include <opm/parser/eclipse/Units/Units.hpp>
+
 namespace Opm {
 
     TableManager::TableManager( const Deck& deck )
@@ -84,9 +88,12 @@ namespace Opm {
         hasImptvd (deck.hasKeyword("IMPTVD")),
         hasEnptvd (deck.hasKeyword("ENPTVD")),
         hasEqlnum (deck.hasKeyword("EQLNUM")),
-        m_jfunc( deck ),
-        m_rtemp( ParserKeywords::RTEMP::TEMP::defaultValue )
+        m_jfunc( deck )
     {
+        // determine the default resevoir temperature in Kelvin
+        m_rtemp = ParserKeywords::RTEMP::TEMP::defaultValue;
+        m_rtemp += Metric::TemperatureOffset; // <- default values always use METRIC as the unit system!
+
         initDims( deck );
         initSimpleTables( deck );
         initFullTables(deck, "PVTG", m_pvtgTables);
@@ -207,6 +214,9 @@ namespace Opm {
         addTables( "PVDO", m_tabdims.getNumPVTTables());
         addTables( "PVDS", m_tabdims.getNumPVTTables());
 
+        addTables( "SPECHEAT", m_tabdims.getNumPVTTables());
+        addTables( "SPECROCK", m_tabdims.getNumSatTables());
+
         addTables( "OILVISCT", m_tabdims.getNumPVTTables());
         addTables( "WATVISCT", m_tabdims.getNumPVTTables());
         addTables( "GASVISCT", m_tabdims.getNumPVTTables());
@@ -306,6 +316,8 @@ namespace Opm {
         initSimpleTableContainer<PvdgTable>(deck, "PVDG", m_tabdims.getNumPVTTables());
         initSimpleTableContainer<PvdoTable>(deck, "PVDO", m_tabdims.getNumPVTTables());
         initSimpleTableContainer<PvdsTable>(deck, "PVDS", m_tabdims.getNumPVTTables());
+        initSimpleTableContainer<SpecheatTable>(deck, "SPECHEAT", m_tabdims.getNumPVTTables());
+        initSimpleTableContainer<SpecrockTable>(deck, "SPECROCK", m_tabdims.getNumSatTables());
         initSimpleTableContainer<OilvisctTable>(deck, "OILVISCT", m_tabdims.getNumPVTTables());
         initSimpleTableContainer<WatvisctTable>(deck, "WATVISCT", m_tabdims.getNumPVTTables());
 
@@ -625,6 +637,14 @@ namespace Opm {
 
     const TableContainer& TableManager::getPvdsTables() const {
         return getTables("PVDS");
+    }
+
+    const TableContainer& TableManager::getSpecheatTables() const {
+        return getTables("SPECHEAT");
+    }
+
+    const TableContainer& TableManager::getSpecrockTables() const {
+        return getTables("SPECROCK");
     }
 
     const TableContainer& TableManager::getOilvisctTables() const {

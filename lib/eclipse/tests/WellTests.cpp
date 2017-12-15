@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestTRACK) {
     Opm::EclipseGrid grid(10,10,10);
     TableManager table ( deck );
     Eclipse3DProperties eclipseProperties ( deck , table, grid);
-    Opm::Schedule schedule(Opm::ParseContext() , grid , eclipseProperties, deck, Opm::Phases(true, true, true) );
+    Opm::Schedule schedule(deck, grid , eclipseProperties, Opm::Phases(true, true, true) , Opm::ParseContext());
     auto* op_1 = schedule.getWell("OP_1");
 
     size_t timestep = 2;
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestDefaultTRACK) {
     Opm::EclipseGrid grid(10,10,10);
     TableManager table ( deck );
     Eclipse3DProperties eclipseProperties ( deck , table, grid);
-    Opm::Schedule schedule(Opm::ParseContext() , grid , eclipseProperties, deck, Opm::Phases(true, true, true) );
+    Opm::Schedule schedule(deck, grid , eclipseProperties, Opm::Phases(true, true, true) , Opm::ParseContext());
     auto* op_1 = schedule.getWell("OP_1");
 
     size_t timestep = 2;
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(WellCOMPDATtestINPUT) {
     Opm::EclipseGrid grid(10,10,10);
     TableManager table ( deck );
     Eclipse3DProperties eclipseProperties ( deck , table, grid);
-    Opm::Schedule schedule(Opm::ParseContext() , grid , eclipseProperties, deck, Opm::Phases(true, true, true) );
+    Opm::Schedule schedule(deck, grid , eclipseProperties, Opm::Phases(true, true, true) , Opm::ParseContext());
     auto* op_1 = schedule.getWell("OP_1");
 
     size_t timestep = 2;
@@ -777,6 +777,14 @@ BOOST_AUTO_TEST_CASE(WellGuideRatePhase_GuideRatePhaseSet) {
     BOOST_CHECK_EQUAL(Opm::GuideRate::RAT, well.getGuideRatePhase(3));
 }
 
+BOOST_AUTO_TEST_CASE(WellEfficiencyFactorSet) {
+    auto timeMap = createXDaysTimeMap(20);
+    Opm::Well well("WELL1", 1, 2, 2334.32, Opm::Phase::WATER, timeMap, 0);
+    BOOST_CHECK_EQUAL(1.0, well.getEfficiencyFactor(0));
+    well.setEfficiencyFactor(3, 0.9);
+    BOOST_CHECK_EQUAL(1.0, well.getEfficiencyFactor(0));
+    BOOST_CHECK_EQUAL(0.9, well.getEfficiencyFactor(3));
+}
 
 BOOST_AUTO_TEST_CASE(WellSetScalingFactor_ScalingFactorSetSet) {
     auto timeMap = createXDaysTimeMap(20);

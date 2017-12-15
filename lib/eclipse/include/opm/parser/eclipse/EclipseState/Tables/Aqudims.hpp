@@ -29,6 +29,7 @@
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckRecord.hpp>
 #include <opm/parser/eclipse/Deck/DeckKeyword.hpp>
+
 namespace Opm {
     class Aqudims {
     public:
@@ -100,7 +101,7 @@ namespace Opm {
         {
             return m_mxaaql;
         }        
-        
+
     private:
         size_t m_mxnaqn , m_mxnaqc , m_niftbl , m_nriftb , m_nanaqu , m_ncamax , m_mxnali , m_mxaaql;
 

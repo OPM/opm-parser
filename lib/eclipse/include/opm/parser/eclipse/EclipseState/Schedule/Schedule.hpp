@@ -37,6 +37,7 @@
 #include <opm/parser/eclipse/EclipseState/Schedule/MessageLimits.hpp>
 #include <opm/parser/eclipse/EclipseState/Runspec.hpp>
 #include <opm/parser/eclipse/Parser/MessageContainer.hpp>
+#include <opm/parser/eclipse/Parser/ParseContext.hpp>
 
 namespace Opm
 {
@@ -45,17 +46,24 @@ namespace Opm
     class DeckKeyword;
     class DeckRecord;
     class EclipseGrid;
-    class ParseContext;
     class Eclipse3DProperties;
     class SCHEDULESection;
     class TimeMap;
     class UnitSystem;
+    class EclipseState;
 
     class Schedule {
     public:
-        Schedule(const ParseContext& parseContext, const EclipseGrid& grid,
-                 const Eclipse3DProperties& eclipseProperties ,const Deck& deck, const Phases &phases );
+        Schedule(const Deck& deck,
+                 const EclipseGrid& grid,
+                 const Eclipse3DProperties& eclipseProperties,
+                 const Phases &phases,
+                 const ParseContext& parseContext = ParseContext());
 
+        Schedule(const Deck& deck,
+                 const EclipseState& es,
+                 const ParseContext& parseContext = ParseContext());
+ 
         /*
          * If the input deck does not specify a start time, Eclipse's 1. Jan
          * 1983 is defaulted
@@ -140,14 +148,17 @@ namespace Opm
         void handleWCONINJE( const SCHEDULESection&,  const DeckKeyword& keyword, size_t currentStep);
         void handleWPOLYMER( const DeckKeyword& keyword, size_t currentStep);
         void handleWSOLVENT( const DeckKeyword& keyword, size_t currentStep);
+        void handleWTEMP( const DeckKeyword& keyword, size_t currentStep);
         void handleWCONINJH( const SCHEDULESection&,  const DeckKeyword& keyword, size_t currentStep);
         void handleWELOPEN( const DeckKeyword& keyword, size_t currentStep );
         void handleWELTARG( const SCHEDULESection&,  const DeckKeyword& keyword, size_t currentStep);
         void handleGCONINJE( const SCHEDULESection&,  const DeckKeyword& keyword, size_t currentStep);
         void handleGCONPROD( const DeckKeyword& keyword, size_t currentStep);
         void handleGEFAC( const DeckKeyword& keyword, size_t currentStep);
+        void handleWEFAC( const DeckKeyword& keyword, size_t currentStep);
         void handleTUNING( const DeckKeyword& keyword, size_t currentStep);
         void handleGRUPTREE( const DeckKeyword& keyword, size_t currentStep);
+        void handleGRUPNET( const DeckKeyword& keyword, size_t currentStep);
         void handleWRFT( const DeckKeyword& keyword, size_t currentStep);
         void handleWRFTPLT( const DeckKeyword& keyword, size_t currentStep);
         void handleWPIMULT( const DeckKeyword& keyword, size_t currentStep);

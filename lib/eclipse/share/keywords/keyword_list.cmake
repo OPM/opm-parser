@@ -2,6 +2,13 @@
 # explicitly. In the root CMakeLists.txt which includes this file
 # individual dependencies on all the Json files is established, in
 # addition to an explicit dependency on this file.
+#
+# When a keyword is added here the parser will recognize the keyword and
+# correctly internalize it as a DeckKeyword, but the simulator 'flow' in
+# opm-simulators will not automatically do anything sensible with the keyword,
+# you are therefore encouraged to go to the opm-simulators repository and update
+# the file: opm/autodiff/MissingFeatures.cpp
+
 
 set( keywords
      000_Eclipse100/A/ACTDIMS
@@ -23,6 +30,7 @@ set( keywords
      000_Eclipse100/A/AQUIFER_PROBE_NUMERIC
      000_Eclipse100/A/AQUNUM
      000_Eclipse100/A/AQUTAB
+     000_Eclipse100/B/BLACKOIL
      000_Eclipse100/B/BLOCK_PROBE
      000_Eclipse100/B/BOX
      000_Eclipse100/C/CECON
@@ -378,11 +386,15 @@ set( keywords
      001_Eclipse300/C/COMPS
      001_Eclipse300/C/CREF
      001_Eclipse300/C/CREFS
+     001_Eclipse300/D/DEADOIL
      001_Eclipse300/D/DREF
      001_Eclipse300/D/DREFS
      001_Eclipse300/D/DZV
      001_Eclipse300/G/GASVISCT
      001_Eclipse300/G/GCONPROD
+     001_Eclipse300/H/HEATCR
+     001_Eclipse300/H/HEATCRT
+     001_Eclipse300/L/LIVEOIL
      001_Eclipse300/M/MW
      001_Eclipse300/M/MWS
      001_Eclipse300/O/OILCOMPR
@@ -393,10 +405,16 @@ set( keywords
      001_Eclipse300/S/STCOND
      001_Eclipse300/T/TEMPI
      001_Eclipse300/T/TEMPVD
+     001_Eclipse300/T/THCGAS
+     001_Eclipse300/T/THCOIL
+     001_Eclipse300/T/THCONSF
+     001_Eclipse300/T/THCROCK
+     001_Eclipse300/T/THCWATER
      001_Eclipse300/T/THERMAL
      001_Eclipse300/T/THERMEX1
      001_Eclipse300/T/TREF
      001_Eclipse300/T/TREFS
+     001_Eclipse300/W/WINJTEMP
      001_Eclipse300/W/WATDENT
      001_Eclipse300/Z/ZFACT1
      001_Eclipse300/Z/ZFACT1S
@@ -406,7 +424,9 @@ set( keywords
 
      900_OPM/G/GCOMPIDX
      900_OPM/G/GRUPRIG
+     900_OPM/G/GASDENT
      900_OPM/M/MINPVFIL
      900_OPM/O/OCOMPIDX
+     900_OPM/O/OILDENT
      900_OPM/R/RHO
      900_OPM/T/TLPMIXPA)

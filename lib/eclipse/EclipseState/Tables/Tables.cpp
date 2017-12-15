@@ -63,6 +63,8 @@
 #include <opm/parser/eclipse/EclipseState/Tables/Sof2Table.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/Sof3Table.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SorwmisTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SpecheatTable.hpp>
+#include <opm/parser/eclipse/EclipseState/Tables/SpecrockTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SsfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwfnTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/SwofTable.hpp>
@@ -100,6 +102,42 @@ PvtoTable::PvtoTable( const DeckKeyword& keyword, size_t tableIdx) :
 
         PvtxTable::init(keyword , tableIdx);
     }
+
+SpecheatTable::SpecheatTable(const DeckItem& item)
+{
+    m_schema.addColumn(ColumnSchema("TEMPERATURE", Table::STRICTLY_INCREASING, Table::DEFAULT_NONE));
+    m_schema.addColumn(ColumnSchema("CP_OIL", Table::RANDOM, Table::DEFAULT_LINEAR));
+    m_schema.addColumn(ColumnSchema("CP_WATER", Table::RANDOM, Table::DEFAULT_LINEAR));
+    m_schema.addColumn(ColumnSchema("CP_GAS", Table::RANDOM, Table::DEFAULT_LINEAR));
+
+    SimpleTable::init(item);
+}
+
+const TableColumn& SpecheatTable::getTemperatureColumn() const
+{ return SimpleTable::getColumn(0); }
+
+const TableColumn& SpecheatTable::getCpOilColumn() const
+{ return SimpleTable::getColumn(1); }
+
+const TableColumn& SpecheatTable::getCpWaterColumn() const
+{ return SimpleTable::getColumn(2); }
+
+const TableColumn& SpecheatTable::getCpGasColumn() const
+{ return SimpleTable::getColumn(3); }
+
+SpecrockTable::SpecrockTable(const DeckItem& item)
+{
+    m_schema.addColumn(ColumnSchema("TEMPERATURE", Table::STRICTLY_INCREASING, Table::DEFAULT_NONE));
+    m_schema.addColumn(ColumnSchema("CP_ROCK", Table::RANDOM, Table::DEFAULT_LINEAR));
+
+    SimpleTable::init(item);
+}
+
+const TableColumn& SpecrockTable::getTemperatureColumn() const
+{ return SimpleTable::getColumn(0); }
+
+const TableColumn& SpecrockTable::getCpRockColumn() const
+{ return SimpleTable::getColumn(1); }
 
 SwofTable::SwofTable( const DeckItem& item , const bool jfunc) {
 
@@ -230,7 +268,7 @@ const TableColumn& SlgofTable::getJFuncColumn() const {
 
 Sof2Table::Sof2Table( const DeckItem& item ) {
     m_schema.addColumn( ColumnSchema( "SO"  , Table::STRICTLY_INCREASING , Table::DEFAULT_NONE ));
-    m_schema.addColumn( ColumnSchema( "KRO" , Table::INCREASING , Table::DEFAULT_NONE ));
+    m_schema.addColumn( ColumnSchema( "KRO" , Table::INCREASING , Table::DEFAULT_LINEAR));
 
     SimpleTable::init(item);
 }
