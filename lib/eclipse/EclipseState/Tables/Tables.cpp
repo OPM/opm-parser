@@ -72,7 +72,6 @@
 #include <opm/parser/eclipse/EclipseState/Tables/WatvisctTable.hpp>
 #include <opm/parser/eclipse/EclipseState/Tables/AqutabTable.hpp>
 
-
 namespace Opm {
 
 PvtgTable::PvtgTable( const DeckKeyword& keyword, size_t tableIdx ) :
