@@ -21,10 +21,12 @@
 #define OPM_AQUIFERCT_HPP
 
 /*
-  The Aqudims class is a small utility class designed to hold on to
-  the values from the AQUCT and AQUTAB keywords.
+  The AquiferCT which stands for AquiferCarterTracy is a data container object meant to hold the data for the aquifer carter tracy model.
+  This includes the logic for parsing as well as the associated tables. It is meant to be used by opm-grid and opm-simulators in order to
+  implement the Carter Tracy analytical aquifer model in OPM Flow.
 */
 
+#include <opm/parser/eclipse/EclipseState/EclipseState.hpp>
 #include <opm/parser/eclipse/Parser/ParserKeywords/A.hpp>
 #include <opm/parser/eclipse/Deck/Deck.hpp>
 #include <opm/parser/eclipse/Deck/DeckItem.hpp>
@@ -37,11 +39,30 @@
 #include <boost/concept_check.hpp>
 
 namespace Opm {
-    
-    // class Deck;
 
     class AquiferCT {
         public:
+
+            struct AQUCT_params{
+        
+                    // Aquifer ID
+                    int aquiferID;
+                    // Table IDs
+                    int inftableID, pvttableID;
+                    // Perforation cell id
+                    int cell_id;
+                    // Variables constants
+                    double  phi_aq , //aquifer porosity
+                            d0,   //aquifer datum depth
+                            C_t , //total compressibility
+                            r_o , //aquifer inner radius
+                            k_a , //aquifer permeability
+                            c1, // 0.008527 (METRIC, PVT-M); 0.006328 (FIELD); 3.6 (LAB)
+                            h , //aquifer thickness
+                            theta , //angle subtended by the aquifer boundary
+                            c2 ; //6.283 (METRIC, PVT-M); 1.1191 (FIELD); 6.283 (LAB).
+                    std::vector<double> td, pi;
+            };
 
             AquiferCT() : m_aquId(0),
                           m_datDepth(0.0),
@@ -62,106 +83,16 @@ namespace Opm {
             //: Aquifer() // I don't see why we should delegate the constructor? This is because deck_ is given deck!
             {
                 deck_ = deck;
-                if (deck.hasKeyword("AQUCT")) {
-                    const auto& record = deck.getKeyword( "AQUCT" , 0 ).getRecord( 0 );
-                    m_aquId  = record.getItem("AQUIFER_ID").get<int>(0);
-                    m_datDepth  = record.getItem("DAT_DEPTH").get<double>(0);
-                    m_aqPerm  = record.getItem("PERM_AQ").get<double>(0);
-                    m_aqPoro  = record.getItem("PORO_AQ").get<double>(0);
-                    m_aqCt  = record.getItem("C_T").get<double>(0);
-                    m_aqRad  = record.getItem("RAD").get<double>(0);
-                    m_aqThickness  = record.getItem("THICKNESS_AQ").get<double>(0);
-                    m_aqInfluenceAngle  = record.getItem("INFLUENCE_ANGLE").get<double>(0);
-                    m_waterPressTableNum  = record.getItem("TABLE_NUM_WATER_PRESS").get<int>(0);
-                    m_influenceFnTableNum  = record.getItem("TABLE_NUM_INFLUENCE_FN").get<int>(0);
-                }
-
-                int number_tables = m_aqudims.NIFTBL;
             }
 
-            size_t getAquId() const
+            AquiferCT(const EclipseState& eclState)
             {
-                return m_aquId;
+                init_object(eclState);
             }
-
-            size_t getAqDatumDepth() const
-            {
-                return m_datDepth;
-            }
-
-            size_t getAqPermeability() const
-            {
-                return m_aqPerm;
-            }
-
-            size_t getAqPorosity() const
-            {
-                return m_aqPoro;
-            }
-
-            size_t getAqTotalCompressibility() const
-            {
-                return m_aqCt;
-            }
-
-            size_t getAqRadius() const
-            {
-                return m_aqRad;
-            }
-            
-            size_t getAqThickness() const
-            {
-                return m_aqThickness;
-            }
-
-            size_t getAqInfluenceAngle() const
-            {
-                return m_aqInfluenceAngle;
-            }
-
-            size_t getAqWaterPressureTableNumber() const
-            {
-                return m_waterPressTableNum;
-            }        
-
-            size_t getAqInfluenceFunctionTableNumber() const
-            {
-                return m_influenceFnTableNum;
-            }        
       
-            std::vector<double> getTimeColumn() const
-            {
-                if (deck_.hasKeyword("AQUTAB")) 
-                {
-                    if (m_influenceFnTableNum == 1)
-                    {
-                        return default_time_;
-                    }
-                    else 
-                    {
-                        return Aqutab_tables_.at(m_influenceFnTableNum-1).getTimeColumn();
-                    }
-                }
-            }
-	  
-            std::vector<double> getPressureColumn() const
-            {
-                if (m_influenceFnTableNum == 1) 
-                {
-                    return default_pressure_;
-                }
-                else 
-                {
-                    return Aqutab_tables_.at(m_influenceFnTableNum-1).getPressureColumn();
-                }
-            }
-
     private:
-        size_t m_aquId , m_datDepth , m_aqPerm , m_aqPoro , m_aqCt , m_aqRad , m_aqThickness , m_aqInfluenceAngle, m_waterPressTableNum, m_influenceFnTableNum;
         
         Deck& deck_;
-        
-        std::vector<AqutabTable> Aqutab_tables_;
         
         std::vector<double> default_pressure_ = {0.112, 0.229, 0.315, 0.376, 0.424, 0.469, 0.503, 0.564, 0.616, 0.659, 0.702, 0.735, 0.772, 0.802, 0.927, 1.02,\
           1.101, 1.169, 1.275, 1.362, 1.436, 1.5, 1.556, 1.604, 1.651, 1.829, 1.96, 2.067, 2.147, 2.282, 2.388, 2.476, 2.55, 2.615, 2.672, 2.723, 2.921, 3.064,\
@@ -170,8 +101,55 @@ namespace Opm {
           20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000};
 
         // Initialize function
-        inline void init_object()
+        inline void init_object(const EclipseState& eclState)
         {
+
+            if (!deck.hasKeyword("AQUCT")){
+                std::cout << "Nothing is shown! Where is AQUCT!????" << std::endl;
+            }
+
+            const auto& aquctKeyword = deck.getKeyword("AQUCT");
+
+            std::vector<AQUCT_params> aquctParams;
+            // Resize the parameter vector container based on row entries in aquct
+            // We do the same for aquifers too because number of aquifers is assumed to be for each entry in aquct
+            aquctParams.resize(aquctKeyword.size());
+            const int tableID = 0;
+
+            std::cout << "Parsing AQUCT stuff" << std::endl;
+            for (size_t aquctRecordIdx = 0; aquctRecordIdx < aquctKeyword.size(); ++ aquctRecordIdx) 
+            {
+                const auto& aquctRecord = aquctKeyword.getRecord(aquctRecordIdx);
+
+                aquctParams.at(aquctRecordIdx).aquiferID = aquctRecord.getItem("AQUIFER_ID").template get<int>(0);
+                aquctParams.at(aquctRecordIdx).h = aquctRecord.getItem("THICKNESS_AQ").template get<double>(0);
+                aquctParams.at(aquctRecordIdx).phi_aq = aquctRecord.getItem("PORO_AQ").template get<double>(0);
+                aquctParams.at(aquctRecordIdx).d0 = aquctRecord.getItem("DAT_DEPTH").getSIDouble(0);
+                aquctParams.at(aquctRecordIdx).C_t = aquctRecord.getItem("C_T").template get<double>(0);
+                aquctParams.at(aquctRecordIdx).r_o = aquctRecord.getItem("RAD").getSIDouble(0);
+                aquctParams.at(aquctRecordIdx).k_a = aquctRecord.getItem("PERM_AQ").getSIDouble(0);
+                aquctParams.at(aquctRecordIdx).theta = aquctRecord.getItem("INFLUENCE_ANGLE").template get<double>(0);
+                aquctParams.at(aquctRecordIdx).c1 = 0.008527; // We are using SI
+                aquctParams.at(aquctRecordIdx).c2 = 6.283;
+                aquctParams.at(aquctRecordIdx).inftableID = aquctRecord.getItem("TABLE_NUM_INFLUENCE_FN").template get<int>(0) - 1;
+                aquctParams.at(aquctRecordIdx).pvttableID = aquctRecord.getItem("TABLE_NUM_WATER_PRESS").template get<int>(0) - 1;
+
+                std::cout << aquctParams.at(aquctRecordIdx).inftableID << std::endl;
+                // Get the correct influence table values
+                const auto& aqutabTable = eclState.getTableManager().getAqutabTables().getTable(aquctParams.at(aquctRecordIdx).inftableID);
+                const auto& aqutab_tdColumn = aqutabTable.getColumn(0);
+                const auto& aqutab_piColumn = aqutabTable.getColumn(1);
+                aquctParams.at(aquctRecordIdx).td = aqutab_tdColumn.vectorCopy();
+                aquctParams.at(aquctRecordIdx).pi = aqutab_piColumn.vectorCopy();
+
+                // We determine the cell perforation here.
+                int cellID = 10 + aquctRecordIdx;
+
+                aquctParams.at(aquctRecordIdx).cell_id = cellID;
+
+                // We do not have mu_w as it has to be calculated from pvttable
+                aquifers.push_back(Aquifer_object( aquctParams.at(aquctRecordIdx) ));
+            }
 
         }
 
