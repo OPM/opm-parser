@@ -65,6 +65,10 @@ namespace Opm {
             };
 
             AquiferCT(const EclipseState& eclState, const Deck& deck);
+
+            std::vector<AquiferCT::AQUCT_data> getAquifers();
+
+            const double getAqPorosity(size_t aquiferIndex);
       
     private:
         
@@ -72,10 +76,10 @@ namespace Opm {
         
         
 
-        std::vector<AQUCT_data> m_aquifers;
+        std::vector<AquiferCT::AQUCT_data> m_aquifers;
 
         // Initialize function
-        inline std::vector<AQUCT_data>
+        inline std::vector<AquiferCT::AQUCT_data>
         init_object(const EclipseState& eclState, const Deck& deck)
         {
             if (!deck.hasKeyword("AQUCT")){
@@ -84,7 +88,7 @@ namespace Opm {
 
             const auto& aquctKeyword = deck.getKeyword("AQUCT");
 
-            std::vector<AQUCT_data> aquctParams;
+            std::vector<AquiferCT::AQUCT_data> aquctParams;
             // Resize the parameter vector container based on row entries in aquct
             // We do the same for aquifers too because number of aquifers is assumed to be for each entry in aquct
             aquctParams.resize(aquctKeyword.size());
@@ -121,6 +125,12 @@ namespace Opm {
                 int cellID = 10 + aquctRecordIdx;
 
                 aquctParams.at(aquctRecordIdx).cell_id.push_back(cellID);
+
+                std::cout << "Aquifer CT #" << aquctParams.at(aquctRecordIdx).aquiferID << std::endl;
+                auto ita = aquctParams.at(aquctRecordIdx).td.cbegin();
+                auto f_lambda = [&ita] (double i) {std::cout << *ita++ << "    " << i << std::endl;};
+                std::for_each( aquctParams.at(aquctRecordIdx).pi.cbegin(), 
+                               aquctParams.at(aquctRecordIdx).pi.cend(), f_lambda );
             }
 
             return aquctParams;

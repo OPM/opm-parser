@@ -19,6 +19,8 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdexcept>
 #include <iostream>
+#include <string>
+#include <vector>
 #include <boost/filesystem.hpp>
 
 #define BOOST_TEST_MODULE AquiferCTTest
@@ -52,6 +54,19 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Opm;
 
+inline std::vector<AquiferCT::AQUCT_data> test_init(){
+    Parser parser;
+    std::string filename = "./SPE1CASE1.data";
+    EclipseState eclState = parser.parse(filename,ParseContext());
+    Deck deck = parser.parseFile(filename,ParseContext());
+    AquiferCT aquct = AquiferCT(eclState, deck);
+    std::cout << "Porosity = " << aquct.getAqPorosity(0) << std::endl;
+    std::vector<AquiferCT::AQUCT_data> aquifers = aquct.getAquifers();
+    return aquifers;
+}
+
 BOOST_AUTO_TEST_CASE(AquiferCTTest) {
+    test_init();
     BOOST_CHECK_EQUAL( 1 , 1);
 }
+

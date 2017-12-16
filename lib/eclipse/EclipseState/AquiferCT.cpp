@@ -8,4 +8,14 @@ namespace Opm {
         m_aquifers = init_object(eclState, deck);
     }
 
+    std::vector<AquiferCT::AQUCT_data> AquiferCT::getAquifers()
+    {
+        return m_aquifers;
+    }
+
+    const double AquiferCT::getAqPorosity(size_t aquiferIndex)
+    {
+        return m_aquifers.at(aquiferIndex).phi_aq;
+    }
+
 }
