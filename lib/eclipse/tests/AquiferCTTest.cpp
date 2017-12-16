@@ -21,7 +21,7 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-#define BOOST_TEST_MODULE EclipseStateTests
+#define BOOST_TEST_MODULE AquiferCTTest
 
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -53,5 +53,5 @@ along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Opm;
 
 BOOST_AUTO_TEST_CASE(AquiferCTTest) {
-    BOOST_CHECK(true);
+    BOOST_CHECK_EQUAL( 1 , 1);
 }
