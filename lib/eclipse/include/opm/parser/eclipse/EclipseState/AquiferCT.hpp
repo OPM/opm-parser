@@ -109,28 +109,29 @@ namespace Opm {
                 aquctParams.at(aquctRecordIdx).theta = aquctRecord.getItem("INFLUENCE_ANGLE").getSIDouble(0);
                 aquctParams.at(aquctRecordIdx).c1 = 0.008527; // We are using SI
                 aquctParams.at(aquctRecordIdx).c2 = 6.283;
-                aquctParams.at(aquctRecordIdx).inftableID = aquctRecord.getItem("TABLE_NUM_INFLUENCE_FN").template get<int>(0) - 1;
-                aquctParams.at(aquctRecordIdx).pvttableID = aquctRecord.getItem("TABLE_NUM_WATER_PRESS").template get<int>(0) - 1;
+                aquctParams.at(aquctRecordIdx).inftableID = aquctRecord.getItem("TABLE_NUM_INFLUENCE_FN").template get<int>(0);
+                aquctParams.at(aquctRecordIdx).pvttableID = aquctRecord.getItem("TABLE_NUM_WATER_PRESS").template get<int>(0);
 
-                std::cout << aquctParams.at(aquctRecordIdx).inftableID << std::endl;
+                // std::cout << aquctParams.at(aquctRecordIdx).inftableID << std::endl;
                 // Get the correct influence table values
-                const auto& aqutabTable = eclState.getTableManager().getAqutabTables().getTable(aquctParams.at(aquctRecordIdx).inftableID);
-                const auto& aqutab_tdColumn = aqutabTable.getColumn(0);
-                const auto& aqutab_piColumn = aqutabTable.getColumn(1);
-                aquctParams.at(aquctRecordIdx).td = aqutab_tdColumn.vectorCopy();
-                aquctParams.at(aquctRecordIdx).pi = aqutab_piColumn.vectorCopy();
+                if (aquctParams.at(aquctRecordIdx).inftableID > 1)
+                {
+                    const auto& aqutabTable = eclState.getTableManager().getAqutabTables().getTable(aquctParams.at(aquctRecordIdx).inftableID - 1);
+                    const auto& aqutab_tdColumn = aqutabTable.getColumn(0);
+                    const auto& aqutab_piColumn = aqutabTable.getColumn(1);
+                    aquctParams.at(aquctRecordIdx).td = aqutab_tdColumn.vectorCopy();
+                    aquctParams.at(aquctRecordIdx).pi = aqutab_piColumn.vectorCopy();
+                }
+                else
+                {
+                    set_default_tables(aquctParams.at(aquctRecordIdx).td,aquctParams.at(aquctRecordIdx).pi);
+                }
 
                 // We determine the cell perforation here. (We must provide OPM-grid and simulator 
                 // with the relevant information of the global cell id). This is a hack for now to test functionality
                 int cellID = 10 + aquctRecordIdx;
 
                 aquctParams.at(aquctRecordIdx).cell_id.push_back(cellID);
-
-                std::cout << "Aquifer CT #" << aquctParams.at(aquctRecordIdx).aquiferID << std::endl;
-                auto ita = aquctParams.at(aquctRecordIdx).td.cbegin();
-                auto f_lambda = [&ita] (double i) {std::cout << *ita++ << "    " << i << std::endl;};
-                std::for_each( aquctParams.at(aquctRecordIdx).pi.cbegin(), 
-                               aquctParams.at(aquctRecordIdx).pi.cend(), f_lambda );
             }
 
             return aquctParams;

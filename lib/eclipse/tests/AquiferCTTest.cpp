@@ -62,6 +62,16 @@ inline std::vector<AquiferCT::AQUCT_data> test_init(){
     AquiferCT aquct = AquiferCT(eclState, deck);
     std::cout << "Porosity = " << aquct.getAqPorosity(0) << std::endl;
     std::vector<AquiferCT::AQUCT_data> aquifers = aquct.getAquifers();
+
+    for (auto aq = aquifers.begin(); aq != aquifers.end(); ++aq)
+    {
+        std::cout << "Aquifer CT #" << aq->aquiferID << std::endl;
+        auto ita = aq->td.cbegin();
+        auto f_lambda = [&ita] (double i) {std::cout << *ita++ << "    " << i << std::endl;};
+        std::for_each( aq->pi.cbegin(), 
+                       aq->pi.cend(), f_lambda );
+    }
+
     return aquifers;
 }
 
