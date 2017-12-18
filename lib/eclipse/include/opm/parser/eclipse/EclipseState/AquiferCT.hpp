@@ -72,10 +72,6 @@ namespace Opm {
       
     private:
         
-        Deck m_deck;
-        
-        
-
         std::vector<AquiferCT::AQUCT_data> m_aquifers;
 
         // Initialize function

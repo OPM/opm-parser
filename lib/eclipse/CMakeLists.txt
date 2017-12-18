@@ -207,9 +207,6 @@ target_link_libraries(EclipseStateTests opmparser boost_test)
 add_test(NAME EclipseStateTests
          COMMAND EclipseStateTests ${_testdir}/integration_tests/)
 
-add_executable(AquiferCTTest tests/AquiferCTTest.cpp)
-target_link_libraries(AquiferCTTest opmparser boost_test)
-
 foreach(test ADDREGTests
              BoxTests
              ColumnSchemaTests
