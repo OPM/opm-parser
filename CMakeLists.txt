@@ -260,18 +260,33 @@ set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/share/dune/cmake/modules")
 set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
 set(OPM_PARSER_LIBDIRS "${OPM_PARSER_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set(OPM_PARSER_INSTALLED ON)
+get_target_property(ecl_lib ecl LOCATION)
+get_target_property(libtype opmparser TYPE)
+if("${libtype}" STREQUAL "STATIC_LIBRARY")
+  set(suffix ${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(prefix ${CMAKE_STATIC_LIBRARY_PREFIX})
+else()
+  set(suffix ${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(prefix ${CMAKE_SHARED_LIBRARY_PREFIX})
+endif()
+set(OPM_PARSER_LIBRARIES opmparser opmjson ${ecl_lib} ${Boost_FILESYSTEM_LIBRARY} ${Boost_REGEX_LIBRARY})
+set(OPM_PARSER_LIBRARY ${CMAKE_INSTALL_PREFIX}/lib/${prefix}opmparser${suffix})
 set(ECL_DIR "${OPM_PARSER_PREFIX}/share/cmake/ecl")
 configure_file(opm-parser-config.cmake.in
   "${PROJECT_BINARY_DIR}/install/opm-parser-config.cmake" @ONLY)
 
 set(OPM_PARSER_PREFIX "${CMAKE_SOURCE_DIR}")
-set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSER_PREFIX}/lib/json/include")
+set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSER_PREFIX}/lib/json/include;${CMAKE_BINARY_DIR}/lib/eclipse/include")
 set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/cmake/modules")
 set(OPM_PARSER_LIBDIRS "${CMAKE_BINARY_DIR}/lib/eclipse;${CMAKE_BINARY_DIR}/lib/json")
+set(OPM_PARSER_LIBRARY ${CMAKE_BINARY_DIR}/lib/eclipse/${prefix}opmparser${suffix})
 set(OPM_PARSER_INSTALLED OFF)
 set(ECL_DIR "${ecl_DIR}")
 configure_file(opm-parser-config.cmake.in
   "${PROJECT_BINARY_DIR}/opm-parser-config.cmake" @ONLY)
+
+configure_file(opm-parser-config-version.cmake.in
+  "${PROJECT_BINARY_DIR}/opm-parser-config-version.cmake" @ONLY)
 
 configure_file(opm-parser.pc.in
   "${PROJECT_BINARY_DIR}/opm-parser.pc" @ONLY)
@@ -279,6 +294,7 @@ configure_file(opm-parser.pc.in
 install(FILES "dune.module" DESTINATION "lib/dunecontrol/opm-parser")
 install(FILES  "config.h.cmake" DESTINATION "share/opm-parser")
 install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/opm-parser.pc" DESTINATION "lib/pkgconfig")
-install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/install/opm-parser-config.cmake" DESTINATION "lib/cmake/opm-parser")
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/install/opm-parser-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/opm-parser-config-version.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opm-parser")
 export(TARGETS opmjson opmparser FILE opm-parser-targets.cmake)
-install(EXPORT opm-parser-targets DESTINATION "lib/cmake/opm-parser")
+install(EXPORT opm-parser-targets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opm-parser")
