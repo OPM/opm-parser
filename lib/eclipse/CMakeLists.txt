@@ -208,6 +208,7 @@ add_test(NAME EclipseStateTests
          COMMAND EclipseStateTests ${_testdir}/integration_tests/)
 
 foreach(test ADDREGTests
+             AqudimsTests
              BoxTests
              ColumnSchemaTests
              CompletionTests
