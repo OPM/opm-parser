@@ -92,7 +92,7 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_libdir}/libopm*.so
 %{_prefix}/lib/dunecontrol/*
-%{_prefix}/lib/cmake/*
+%{_prefix}/lib64/cmake/*
 %{_prefix}/lib/pkgconfig/*
 %{_datadir}/opm-parser/*
 %{_includedir}/*
