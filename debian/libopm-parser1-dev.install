@@ -2,5 +2,5 @@ usr/include/*
 usr/share/opm-parser/*
 usr/lib/*/libopm*.so
 usr/lib/dunecontrol/*
-usr/lib/cmake/opm-parser/*
+usr/lib/*/cmake/opm-parser/*
 usr/lib/pkgconfig/*
