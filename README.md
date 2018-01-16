@@ -1,4 +1,4 @@
-# opm-parser [![Build Status](https://travis-ci.org/OPM/opm-parser.svg?branch=master "TravisCI Build Status")](https://travis-ci.com/OPM/opm-parser)
+# opm-parser 
 
 opm-parser is a small library for parsing ECLIPSE datafiles.
 
