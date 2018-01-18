@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
     // for WELSEGS keyword
     const auto& kw = deck.getKeyword("WELSEGS");
 
-    BOOST_CHECK_EQUAL( 6, kw.size() );
+    BOOST_CHECK_EQUAL( 7, kw.size() );
 
     // check the information for the top segment and the segment set
     {
@@ -475,7 +475,7 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         const std::string length_depth_type_string = WellSegment::LengthDepthEnumToString(length_depth_type);
         BOOST_CHECK_EQUAL( length_depth_type_string, "ABS" );
         const std::string comp_pressure_drop_string = WellSegment::CompPressureDropEnumToString(comp_pressure_drop);
-        BOOST_CHECK_EQUAL( comp_pressure_drop_string, "H--" );
+        BOOST_CHECK_EQUAL( comp_pressure_drop_string, "HF-" );
         const std::string multiphase_model_string = WellSegment::MultiPhaseModelEnumToString(multiphase_model);
         BOOST_CHECK_EQUAL( multiphase_model_string, "HO" );
     }
@@ -520,6 +520,26 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         BOOST_CHECK_EQUAL( 2539.5, depth_change );
         BOOST_CHECK_EQUAL( 0.2, diameter );
         BOOST_CHECK_EQUAL( 0.0001, roughness );
+    }
+
+    {
+        const auto& rec7 = kw.getRecord(6);
+        const int segment1 = rec7.getItem("SEGMENT2").get< int >(0);
+        const int segment2 = rec7.getItem("SEGMENT2").get< int >(0);
+        BOOST_CHECK_EQUAL( 8, segment1 );
+        BOOST_CHECK_EQUAL( 8, segment2 );
+        const int branch = rec7.getItem("BRANCH").get< int >(0);
+        const int outlet_segment = rec7.getItem("JOIN_SEGMENT").get< int >(0);
+        const double segment_length = rec7.getItem("SEGMENT_LENGTH").get< double >(0);
+        const double depth_change = rec7.getItem("DEPTH_CHANGE").get< double >(0);
+        const double diameter = rec7.getItem("DIAMETER").get< double >(0);
+        const double roughness = rec7.getItem("ROUGHNESS").get< double >(0);
+        BOOST_CHECK_EQUAL( 3, branch );
+        BOOST_CHECK_EQUAL( 7, outlet_segment );
+        BOOST_CHECK_EQUAL( 3337.6, segment_length );
+        BOOST_CHECK_EQUAL( 2534.5, depth_change );
+        BOOST_CHECK_EQUAL( 0.2, diameter );
+        BOOST_CHECK_EQUAL( 0.00015, roughness );
     }
 
     // for COMPSEG keyword
@@ -568,6 +588,23 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         BOOST_CHECK_EQUAL(  3237.5, distance_end );
     }
 
+    {
+        const auto& rec7 = kw1.getRecord(7);
+        const int i = rec7.getItem("I").get< int >(0);
+        const int j = rec7.getItem("J").get< int >(0);
+        const int k = rec7.getItem("K").get< int >(0);
+        const int branch = rec7.getItem("BRANCH").get< int >(0);
+        const double distance_start = rec7.getItem("DISTANCE_START").get< double >(0);
+        const double distance_end = rec7.getItem("DISTANCE_END").get< double >(0);
+
+        BOOST_CHECK_EQUAL( 16, i );
+        BOOST_CHECK_EQUAL(  1, j );
+        BOOST_CHECK_EQUAL(  2, k );
+        BOOST_CHECK_EQUAL(  3, branch );
+        BOOST_CHECK_EQUAL(  3237.5, distance_start );
+        BOOST_CHECK_EQUAL(  3437.5, distance_end );
+    }
+
     // checking the relation between segments and completions
     // and also the depth of completions
     {
@@ -599,6 +636,12 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         const double completion3_depth = completion3.getCenterDepth();
         BOOST_CHECK_EQUAL(seg_number_completion3, 3);
         BOOST_CHECK_EQUAL(completion3_depth, 2562.5);
+
+        const Completion& completion7 = completions.get(6);
+        const int seg_number_completion7 = completion7.getSegmentNumber();
+        const double completion7_depth = completion7.getCenterDepth();
+        BOOST_CHECK_EQUAL(seg_number_completion7, 8);
+        BOOST_CHECK_EQUAL(completion7_depth, 2534.5);
     }
 }
 

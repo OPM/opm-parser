@@ -55,12 +55,13 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
 
     const std::string compsegs_string =
         "WELSEGS \n"
-        "'PROD01' 2512.5 2512.5 1.0e-5 'ABS' 'H--' 'HO' /\n"
+        "'PROD01' 2512.5 2512.5 1.0e-5 'ABS' 'HF-' 'HO' /\n"
         "2         2      1      1    2537.5 2537.5  0.3   0.00010 /\n"
         "3         3      1      2    2562.5 2562.5  0.2  0.00010 /\n"
         "4         4      2      2    2737.5 2537.5  0.2  0.00010 /\n"
         "6         6      2      4    3037.5 2539.5  0.2  0.00010 /\n"
         "7         7      2      6    3337.5 2534.5  0.2  0.00010 /\n"
+        "8         8      3      7    3337.6 2534.5  0.2  0.00015 /\n"
         "/\n"
         "\n"
         "COMPSEGS\n"
@@ -71,7 +72,10 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
         "19    1     2     2   2637.5   2837.5 /\n"
         "18    1     2     2   2837.5   3037.5 /\n"
         "17    1     2     2   3037.5   3237.5 /\n"
-        "16    1     2     2   3237.5   3437.5 /\n"
+        "16    1     2     3   3237.5   3437.5 /\n"
+        "/\n"
+        "WSEGSICD\n"
+        "'PROD01'  8   8   0.002   -0.7  1* 1* 0.6 1* 1* 2* 'SHUT' /\n"
         "/\n";
 
     Opm::Parser parser;
@@ -84,9 +88,52 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
     const Opm::DeckKeyword welsegs = deck.getKeyword("WELSEGS");
     segment_set.segmentsFromWELSEGSKeyword(welsegs);
 
-    BOOST_CHECK_EQUAL(6U, segment_set.numberSegment());
+    BOOST_CHECK_EQUAL(7U, segment_set.numberSegment());
 
     const Opm::CompletionSet new_completion_set = Opm::updatingCompletionsWithSegments(compsegs, completion_set, segment_set);
+
+    // checking the ICD segment
+    const Opm::DeckKeyword wsegsicd = deck.getKeyword("WSEGSICD");
+    BOOST_CHECK_EQUAL(1U, wsegsicd.size());
+    const Opm::DeckRecord record = wsegsicd.getRecord(0);
+    const int start_segment = record.getItem("SEG1").get< int >(0);
+    const int end_segment = record.getItem("SEG2").get< int >(0);
+    BOOST_CHECK_EQUAL(8, start_segment);
+    BOOST_CHECK_EQUAL(8, end_segment);
+
+    const auto sicd_map = Opm::SpiralICD::fromWSEGSICD(wsegsicd);
+
+    BOOST_CHECK_EQUAL(1U, sicd_map.size());
+
+    const auto it = sicd_map.begin();
+    const std::string& well_name = it->first;
+    BOOST_CHECK_EQUAL(well_name, "PROD01");
+
+    const auto& sicd_vector = it->second;
+    BOOST_CHECK_EQUAL(1U, sicd_vector.size());
+    const int segment_number = sicd_vector[0].first;
+    const Opm::SpiralICD& sicd = sicd_vector[0].second;
+
+    BOOST_CHECK_EQUAL(8, segment_number);
+
+    Opm::Segment segment = segment_set.getFromSegmentNumber(segment_number);
+    segment.updateSpiralICD(sicd);
+
+    BOOST_CHECK_EQUAL(Opm::WellSegment::SPIRALICD, segment.segmentType());
+
+    const std::shared_ptr<const Opm::SpiralICD> sicd_ptr = segment.spiralICD();
+    BOOST_CHECK_LT(sicd_ptr->max_absolute_rate, -10.);
+    BOOST_CHECK_EQUAL(sicd_ptr->status, "SHUT");
+    // 0.002 bars*day*day/Volume^2
+    BOOST_CHECK_EQUAL(sicd_ptr->strength, 0.002*1.e5*86400.*86400.);
+    BOOST_CHECK_EQUAL(sicd_ptr->length, -0.7);
+    BOOST_CHECK_EQUAL(sicd_ptr->density_calibration, 1000.25);
+    // 1.45 cp
+    BOOST_CHECK_EQUAL(sicd_ptr->viscosity_calibration, 1.45 * 0.001);
+    BOOST_CHECK_EQUAL(sicd_ptr->critical_value, 0.6);
+    BOOST_CHECK_EQUAL(sicd_ptr->width_transition_region, 0.05);
+    BOOST_CHECK_EQUAL(sicd_ptr->max_viscosity_ratio, 5.0);
+    BOOST_CHECK_EQUAL(sicd_ptr->method_flow_scaling, -1);
 
     BOOST_CHECK_EQUAL(7U, new_completion_set.size());
 
@@ -117,7 +164,7 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
     const Opm::Completion& completion7 = new_completion_set.get(6);
     const int segment_number_completion7 = completion7.getSegmentNumber();
     const double center_depth_completion7 = completion7.getCenterDepth();
-    BOOST_CHECK_EQUAL(segment_number_completion7, 7);
+    BOOST_CHECK_EQUAL(segment_number_completion7, 8);
     BOOST_CHECK_EQUAL(center_depth_completion7, 2534.5);
 }
 
