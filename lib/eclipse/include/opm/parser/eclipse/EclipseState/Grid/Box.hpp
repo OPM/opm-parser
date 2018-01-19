@@ -31,6 +31,7 @@ namespace Opm {
         Box() = default;
         Box(int nx , int ny , int nz);
         Box(const Box& globalBox , int i1 , int i2 , int j1 , int j2 , int k1 , int k2); // Zero offset coordinates.
+        Box(int nx, int ny, int nz, int i1 , int i2 , int j1 , int j2 , int k1 , int k2);
         size_t size() const;
         bool   isGlobal() const;
         size_t getDim(size_t idim) const;
@@ -41,15 +42,25 @@ namespace Opm {
         std::vector<size_t>::const_iterator begin() const;
         std::vector<size_t>::const_iterator end() const;
 
+
+        int I1() const;
+        int I2() const;
+        int J1() const;
+        int J2() const;
+        int K1() const;
+        int K2() const;
+
     private:
         void initIndexList();
-        static void assertDims(const Box& globalBox, size_t idim , int l1 , int l2);
         size_t m_dims[3] = { 0, 0, 0 };
         size_t m_offset[3];
         size_t m_stride[3];
 
         bool   m_isGlobal;
         std::vector<size_t> m_indexList;
+
+        int lower(int dim) const;
+        int upper(int dim) const;
     };
 }
 
