@@ -275,8 +275,8 @@ set(ECL_DIR "${OPM_PARSER_PREFIX}/share/cmake/ecl")
 configure_file(opm-parser-config.cmake.in
   "${PROJECT_BINARY_DIR}/install/opm-parser-config.cmake" @ONLY)
 
-set(OPM_PARSER_PREFIX "${CMAKE_SOURCE_DIR}")
-set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSER_PREFIX}/lib/json/include;${CMAKE_BINARY_DIR}/lib/eclipse/include")
+set(OPM_PARSER_PREFIX "${PROJECT_SOURCE_DIR}")
+set(OPM_PARSER_INCLUDEDIRS "${OPM_PARSER_PREFIX}/lib/eclipse/include;${OPM_PARSER_PREFIX}/lib/json/include;${PROJECT_BINARY_DIR}/lib/eclipse/include")
 set(OPM_PARSER_MODULE_PATH "${OPM_PARSER_PREFIX}/cmake/modules")
 set(OPM_PARSER_LIBDIRS "${CMAKE_BINARY_DIR}/lib/eclipse;${CMAKE_BINARY_DIR}/lib/json")
 set(OPM_PARSER_LIBRARY ${CMAKE_BINARY_DIR}/lib/eclipse/${prefix}opmparser${suffix})
