@@ -45,6 +45,7 @@ list(APPEND MAIN_SOURCE_FILES
   lib/eclipse/EclipseState/Schedule/MSW/Segment.cpp
   lib/eclipse/EclipseState/Schedule/MSW/SegmentSet.cpp
   lib/eclipse/EclipseState/Schedule/MSW/updatingCompletionsWithSegments.cpp
+  lib/eclipse/EclipseState/Schedule/MSW/SpiralICD.cpp
   lib/eclipse/EclipseState/Schedule/OilVaporizationProperties.cpp
   lib/eclipse/EclipseState/Schedule/Schedule.cpp
   lib/eclipse/EclipseState/Schedule/ScheduleEnums.cpp

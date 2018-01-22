@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
     BOOST_CHECK_EQUAL(Opm::WellSegment::SPIRALICD, segment.segmentType());
 
     const std::shared_ptr<const Opm::SpiralICD> sicd_ptr = segment.spiralICD();
-    BOOST_CHECK_LT(sicd_ptr->max_absolute_rate, -10.);
+    BOOST_CHECK_GT(sicd_ptr->max_absolute_rate, 1.e99);
     BOOST_CHECK_EQUAL(sicd_ptr->status, "SHUT");
     // 0.002 bars*day*day/Volume^2
     BOOST_CHECK_EQUAL(sicd_ptr->strength, 0.002*1.e5*86400.*86400.);

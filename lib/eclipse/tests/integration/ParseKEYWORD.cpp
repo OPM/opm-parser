@@ -605,6 +605,60 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         BOOST_CHECK_EQUAL(  3437.5, distance_end );
     }
 
+    {
+        const auto& wsegsicd = deck.getKeyword("WSEGSICD");
+        const auto map_spiral_icd = SpiralICD::fromWSEGSICD(wsegsicd);
+
+        BOOST_CHECK_EQUAL(1U, map_spiral_icd.size() );
+        const std::string well_name("PROD01");
+        const auto it = map_spiral_icd.find(well_name);
+        BOOST_CHECK_EQUAL(false, it == map_spiral_icd.end() );
+
+        const auto& sicd_vector = it->second;
+        BOOST_CHECK_EQUAL(1U, sicd_vector.size() );
+
+        const int segment_number = sicd_vector[0].first;
+        const SpiralICD& sicd = sicd_vector[0].second;
+
+        BOOST_CHECK_EQUAL(8, segment_number);
+
+        BOOST_CHECK_GT(sicd.max_absolute_rate, 1.e99);
+        BOOST_CHECK_EQUAL(sicd.status, "SHUT");
+        // 0.002 bars*day*day/Volume^2
+        BOOST_CHECK_EQUAL(sicd.strength, 0.002*1.e5*86400.*86400.);
+        BOOST_CHECK_EQUAL(sicd.length, -0.7);
+        BOOST_CHECK_EQUAL(sicd.density_calibration, 1000.25);
+        // 1.45 cp
+        BOOST_CHECK_EQUAL(sicd.viscosity_calibration, 1.45 * 0.001);
+        BOOST_CHECK_EQUAL(sicd.critical_value, 0.6);
+        BOOST_CHECK_EQUAL(sicd.width_transition_region, 0.05);
+        BOOST_CHECK_EQUAL(sicd.max_viscosity_ratio, 5.0);
+        BOOST_CHECK_EQUAL(sicd.method_flow_scaling, -1);
+    }
+
+
+    {
+        const auto& wsegsicd = deck.getKeyword("WSEGSICD");
+        BOOST_CHECK_EQUAL(1U, wsegsicd.size() );
+
+        const auto& record_sicd = wsegsicd.getRecord(0);
+
+        const SpiralICD sicd(record_sicd);
+
+        BOOST_CHECK_GT(sicd.max_absolute_rate, 1.e99);
+        BOOST_CHECK_EQUAL(sicd.status, "SHUT");
+        // 0.002 bars*day*day/Volume^2
+        BOOST_CHECK_EQUAL(sicd.strength, 0.002*1.e5*86400.*86400.);
+        BOOST_CHECK_EQUAL(sicd.length, -0.7);
+        BOOST_CHECK_EQUAL(sicd.density_calibration, 1000.25);
+        // 1.45 cp
+        BOOST_CHECK_EQUAL(sicd.viscosity_calibration, 1.45 * 0.001);
+        BOOST_CHECK_EQUAL(sicd.critical_value, 0.6);
+        BOOST_CHECK_EQUAL(sicd.width_transition_region, 0.05);
+        BOOST_CHECK_EQUAL(sicd.max_viscosity_ratio, 5.0);
+        BOOST_CHECK_EQUAL(sicd.method_flow_scaling, -1);
+    }
+
     // checking the relation between segments and completions
     // and also the depth of completions
     {
