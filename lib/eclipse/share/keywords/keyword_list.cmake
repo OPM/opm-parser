@@ -280,6 +280,7 @@ set( keywords
      000_Eclipse100/S/SGU
      000_Eclipse100/S/SGWFN
      000_Eclipse100/S/SHRATE
+     000_Eclipse100/S/SKINPRES
      000_Eclipse100/S/SKIP
      000_Eclipse100/S/SKIP100
      000_Eclipse100/S/SKIP300
