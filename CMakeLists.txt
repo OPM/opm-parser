@@ -99,20 +99,6 @@ macro (prereqs_hook)
 endmacro (prereqs_hook)
 
 macro (sources_hook)
-  # Add json library
-  set(opmjson_SOURCES lib/json/JsonObject.cpp)
-  if(NOT cjson_FOUND)
-    list(APPEND opmjson_SOURCES ${PROJECT_SOURCE_DIR}/external/cjson/cJSON.c)
-  endif()
-  add_library(opmjson ${opmjson_SOURCES})
-  target_link_libraries(opmjson PUBLIC ${Boost_FILESYSTEM_LIBRARY})
-  if(cjson_FOUND)
-    target_link_libraries(opmjson PUBLIC ${CJSON_LIBRARIES})
-  else()
-    target_include_directories(opmjson PRIVATE ${PROJECT_SOURCE_DIR}/external/cjson)
-  endif()
-  list(APPEND opm-parser_LIBRARIES opmjson ecl)
-
   # Keyword generation
   include(GenerateKeywords.cmake)
 
@@ -137,7 +123,6 @@ macro (install_hook)
           PATTERN *.hpp
   )
   install(DIRECTORY lib/json/include/ DESTINATION include)
-  set(opm-parser_EXTRA_TARGETS opmjson)
 endmacro (install_hook)
 
 include (OpmLibMain)
