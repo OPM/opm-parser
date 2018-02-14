@@ -17,10 +17,14 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <config.h>
 #include <stdexcept>
 #include <iostream>
 #include <memory>
 
+#if HAVE_DYNAMIC_BOOST_TEST
+#define BOOST_TEST_DYN_LINK
+#endif
 #define BOOST_TEST_MODULE BoxManagereTests
 
 #include <boost/test/unit_test.hpp>

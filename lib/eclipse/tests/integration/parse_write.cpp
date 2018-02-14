@@ -17,6 +17,7 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <config.h>
 #include <sstream>
 
 #include <opm/parser/eclipse/Parser/Parser.hpp>

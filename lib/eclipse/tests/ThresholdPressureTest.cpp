@@ -19,8 +19,12 @@
 
 
 
+#include <config.h>
 #include <algorithm>
 
+#if HAVE_DYNAMIC_BOOST_TEST
+#define BOOST_TEST_DYN_LINK
+#endif
 #define BOOST_TEST_MODULE ThresholdPressureTests
 
 #include <boost/test/unit_test.hpp>

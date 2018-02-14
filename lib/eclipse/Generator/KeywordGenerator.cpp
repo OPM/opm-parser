@@ -35,6 +35,10 @@
 namespace {
 
 const std::string testHeader =
+    "#include <config.h>\n"
+    "#if HAVE_DYNAMIC_BOOST_TEST\n"
+    "#define BOOST_TEST_DYN_LINK\n"
+    "#endif\n"
     "#define BOOST_TEST_MODULE ParserRecordTests\n"
     "#include <boost/filesystem.hpp>\n"
     "#include <boost/test/unit_test.hpp>\n"
