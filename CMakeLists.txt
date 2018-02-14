@@ -89,6 +89,10 @@ macro (config_hook)
 
   # Configure boost targets for old cmake
   include(cmake/Modules/BoostTargets.cmake)
+
+  if (BUILD_SHARED_LIBS)
+    set_target_properties(Boost::unit_test_framework PROPERTIES INTERFACE_COMPILE_DEFINITIONS BOOST_TEST_DYN_LINK=1)
+  endif()
 endmacro (config_hook)
 
 macro (prereqs_hook)
