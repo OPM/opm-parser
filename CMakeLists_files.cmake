@@ -8,6 +8,7 @@ list(APPEND MAIN_SOURCE_FILES
   lib/eclipse/Deck/DeckRecord.cpp
   lib/eclipse/Deck/DeckOutput.cpp
   lib/eclipse/Deck/Section.cpp
+  lib/eclipse/EclipseState/AquiferCT.cpp
   lib/eclipse/EclipseState/Aquancon.cpp
   lib/eclipse/EclipseState/checkDeck.cpp
   lib/eclipse/EclipseState/Eclipse3DProperties.cpp
@@ -102,6 +103,7 @@ list (APPEND PROGRAM_SOURCE_FILES
 
 list (APPEND TEST_SOURCE_FILES
   lib/eclipse/tests/ADDREGTests.cpp
+  lib/eclipse/tests/AquiferCTTests.cpp
   lib/eclipse/tests/AqudimsTests.cpp
   lib/eclipse/tests/AquanconTests.cpp
   lib/eclipse/tests/BoxTests.cpp
