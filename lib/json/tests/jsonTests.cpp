@@ -16,10 +16,14 @@
   You should have received a copy of the GNU General Public License
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <config.h>
 #include <stdexcept>
 #include <math.h>
 #include <iostream>
 
+#if HAVE_DYNAMIC_BOOST_TEST
+#define BOOST_TEST_DYN_LINK
+#endif
 #define BOOST_TEST_MODULE jsonParserTests
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_tools.hpp>

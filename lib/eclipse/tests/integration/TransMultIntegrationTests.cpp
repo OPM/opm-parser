@@ -16,6 +16,10 @@
   along with OPM.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <config.h>
+#if HAVE_DYNAMIC_BOOST_TEST
+#define BOOST_TEST_DYN_LINK
+#endif
 #define BOOST_TEST_MODULE TransMultTests
 #include <boost/test/unit_test.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
