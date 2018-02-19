@@ -156,7 +156,7 @@ namespace Opm {
         m_spiral_icd = std::make_shared<SpiralICD>(spiral_icd);
     }
 
-    const std::shared_ptr<const SpiralICD>& Segment::spiralICD() const {
+    const std::shared_ptr<SpiralICD>& Segment::spiralICD() const {
         return m_spiral_icd;
     }
 

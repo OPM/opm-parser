@@ -622,18 +622,18 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
 
         BOOST_CHECK_EQUAL(8, segment_number);
 
-        BOOST_CHECK_GT(sicd.max_absolute_rate, 1.e99);
-        BOOST_CHECK_EQUAL(sicd.status, "SHUT");
+        BOOST_CHECK_GT(sicd.maxAbsoluteRate(), 1.e99);
+        BOOST_CHECK_EQUAL(sicd.status(), "SHUT");
         // 0.002 bars*day*day/Volume^2
-        BOOST_CHECK_EQUAL(sicd.strength, 0.002*1.e5*86400.*86400.);
-        BOOST_CHECK_EQUAL(sicd.length, -0.7);
-        BOOST_CHECK_EQUAL(sicd.density_calibration, 1000.25);
+        BOOST_CHECK_EQUAL(sicd.strength(), 0.002*1.e5*86400.*86400.);
+        BOOST_CHECK_EQUAL(sicd.length(), -0.7);
+        BOOST_CHECK_EQUAL(sicd.densityCalibration(), 1000.25);
         // 1.45 cp
-        BOOST_CHECK_EQUAL(sicd.viscosity_calibration, 1.45 * 0.001);
-        BOOST_CHECK_EQUAL(sicd.critical_value, 0.6);
-        BOOST_CHECK_EQUAL(sicd.width_transition_region, 0.05);
-        BOOST_CHECK_EQUAL(sicd.max_viscosity_ratio, 5.0);
-        BOOST_CHECK_EQUAL(sicd.method_flow_scaling, -1);
+        BOOST_CHECK_EQUAL(sicd.viscosityCalibration(), 1.45 * 0.001);
+        BOOST_CHECK_EQUAL(sicd.criticalValue(), 0.6);
+        BOOST_CHECK_EQUAL(sicd.widthTransitionRegion(), 0.05);
+        BOOST_CHECK_EQUAL(sicd.maxViscosityRatio(), 5.0);
+        BOOST_CHECK_EQUAL(sicd.methodFlowScaling(), -1);
     }
 
 
@@ -645,18 +645,18 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
 
         const SpiralICD sicd(record_sicd);
 
-        BOOST_CHECK_GT(sicd.max_absolute_rate, 1.e99);
-        BOOST_CHECK_EQUAL(sicd.status, "SHUT");
+        BOOST_CHECK_GT(sicd.maxAbsoluteRate(), 1.e99);
+        BOOST_CHECK_EQUAL(sicd.status(), "SHUT");
         // 0.002 bars*day*day/Volume^2
-        BOOST_CHECK_EQUAL(sicd.strength, 0.002*1.e5*86400.*86400.);
-        BOOST_CHECK_EQUAL(sicd.length, -0.7);
-        BOOST_CHECK_EQUAL(sicd.density_calibration, 1000.25);
+        BOOST_CHECK_EQUAL(sicd.strength(), 0.002*1.e5*86400.*86400.);
+        BOOST_CHECK_EQUAL(sicd.length(), -0.7);
+        BOOST_CHECK_EQUAL(sicd.densityCalibration(), 1000.25);
         // 1.45 cp
-        BOOST_CHECK_EQUAL(sicd.viscosity_calibration, 1.45 * 0.001);
-        BOOST_CHECK_EQUAL(sicd.critical_value, 0.6);
-        BOOST_CHECK_EQUAL(sicd.width_transition_region, 0.05);
-        BOOST_CHECK_EQUAL(sicd.max_viscosity_ratio, 5.0);
-        BOOST_CHECK_EQUAL(sicd.method_flow_scaling, -1);
+        BOOST_CHECK_EQUAL(sicd.viscosityCalibration(), 1.45 * 0.001);
+        BOOST_CHECK_EQUAL(sicd.criticalValue(), 0.6);
+        BOOST_CHECK_EQUAL(sicd.widthTransitionRegion(), 0.05);
+        BOOST_CHECK_EQUAL(sicd.maxViscosityRatio(), 5.0);
+        BOOST_CHECK_EQUAL(sicd.methodFlowScaling(), -1);
     }
 
     // checking the relation between segments and completions

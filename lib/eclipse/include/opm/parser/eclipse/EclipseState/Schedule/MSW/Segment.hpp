@@ -59,7 +59,7 @@ namespace Opm {
 
         void updateSpiralICD(const SpiralICD& spiral_icd);
 
-        const std::shared_ptr<const SpiralICD>& spiralICD() const;
+        const std::shared_ptr<SpiralICD>& spiralICD() const;
 
     private:
         // segment number
@@ -112,7 +112,7 @@ namespace Opm {
 
         // information related to SpiralICD. It is nullptr for segments are not
         // spiral ICD type
-        std::shared_ptr<const SpiralICD> m_spiral_icd;
+        std::shared_ptr<SpiralICD> m_spiral_icd;
 
         static constexpr double invalid_value = -1.e100;
         // We are not handling the length of segment projected onto the X-axis and Y-axis.

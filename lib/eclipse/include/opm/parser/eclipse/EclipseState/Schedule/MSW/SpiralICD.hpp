@@ -32,18 +32,6 @@ namespace Opm {
 
     class SpiralICD {
     public:
-        double strength;
-        double length;
-        double density_calibration;
-        double viscosity_calibration;
-        double critical_value;
-        double width_transition_region;
-        double max_viscosity_ratio;
-        int method_flow_scaling;
-        // negative value means no limit for max_absolute_rate
-        double max_absolute_rate;
-        std::string status;
-
         explicit SpiralICD(const DeckRecord& record);
 
         // the function will return a map
@@ -52,6 +40,35 @@ namespace Opm {
         //     ....
         static std::map<std::string, std::vector<std::pair<int, SpiralICD> > >
         fromWSEGSICD(const DeckKeyword& wsegsicd);
+
+        double maxAbsoluteRate() const;
+        const std::string& status() const;
+        double strength() const;
+        double length() const;
+        double densityCalibration() const;
+        double viscosityCalibration() const;
+        double criticalValue() const;
+        double widthTransitionRegion() const;
+        double maxViscosityRatio() const;
+        double methodFlowScaling() const;
+
+        void updateScalingFactor(const double segment_length, const double completion_length);
+        double scalingFactor() const;
+
+    private:
+        double m_strength;
+        double m_length;
+        double m_density_calibration;
+        double m_viscosity_calibration;
+        double m_critical_value;
+        double m_width_transition_region;
+        double m_max_viscosity_ratio;
+        int m_method_flow_scaling;
+        double m_max_absolute_rate;
+        std::string m_status;
+        // scaling factor is the only one can not be gotten from deck directly, needs to be
+        // updated afterwards
+        double m_scaling_fractor;
 };
 
 }

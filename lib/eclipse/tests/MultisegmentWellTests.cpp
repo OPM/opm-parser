@@ -43,13 +43,13 @@
 
 BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
     Opm::CompletionSet completion_set;
-    completion_set.add(Opm::Completion( 19, 0, 0, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.5), Opm::Value<double>("SKIN", 0.), 0) );
-    completion_set.add(Opm::Completion( 19, 0, 1, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.5), Opm::Value<double>("SKIN", 0.), 0) );
-    completion_set.add(Opm::Completion( 19, 0, 2, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0) );
-    completion_set.add(Opm::Completion( 18, 0, 1, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
-    completion_set.add(Opm::Completion( 17, 0, 1, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
-    completion_set.add(Opm::Completion( 16, 0, 1, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
-    completion_set.add(Opm::Completion( 15, 0, 1, 1, 0.0, 0.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
+    completion_set.add(Opm::Completion( 19, 0, 0, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.5), Opm::Value<double>("SKIN", 0.), 0) );
+    completion_set.add(Opm::Completion( 19, 0, 1, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.5), Opm::Value<double>("SKIN", 0.), 0) );
+    completion_set.add(Opm::Completion( 19, 0, 2, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0) );
+    completion_set.add(Opm::Completion( 18, 0, 1, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
+    completion_set.add(Opm::Completion( 17, 0, 1, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
+    completion_set.add(Opm::Completion( 16, 0, 1, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
+    completion_set.add(Opm::Completion( 15, 0, 1, 1, 0.0, 2.0, Opm::WellCompletion::OPEN , Opm::Value<double>("ConnectionTransmissibilityFactor", 200.), Opm::Value<double>("D", 0.4), Opm::Value<double>("SKIN", 0.), 0,  Opm::WellCompletion::DirectionEnum::X) );
 
     BOOST_CHECK_EQUAL( 7U , completion_set.size() );
 
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
     // checking the ICD segment
     const Opm::DeckKeyword wsegsicd = deck.getKeyword("WSEGSICD");
     BOOST_CHECK_EQUAL(1U, wsegsicd.size());
-    const Opm::DeckRecord record = wsegsicd.getRecord(0);
+    const Opm::DeckRecord& record = wsegsicd.getRecord(0);
     const int start_segment = record.getItem("SEG1").get< int >(0);
     const int end_segment = record.getItem("SEG2").get< int >(0);
     BOOST_CHECK_EQUAL(8, start_segment);
@@ -121,19 +121,32 @@ BOOST_AUTO_TEST_CASE(MultisegmentWellTest) {
 
     BOOST_CHECK_EQUAL(Opm::WellSegment::SPIRALICD, segment.segmentType());
 
-    const std::shared_ptr<const Opm::SpiralICD> sicd_ptr = segment.spiralICD();
-    BOOST_CHECK_GT(sicd_ptr->max_absolute_rate, 1.e99);
-    BOOST_CHECK_EQUAL(sicd_ptr->status, "SHUT");
+    const std::shared_ptr<Opm::SpiralICD> sicd_ptr = segment.spiralICD();
+    BOOST_CHECK_GT(sicd_ptr->maxAbsoluteRate(), 1.e99);
+    BOOST_CHECK_EQUAL(sicd_ptr->status(), "SHUT");
     // 0.002 bars*day*day/Volume^2
-    BOOST_CHECK_EQUAL(sicd_ptr->strength, 0.002*1.e5*86400.*86400.);
-    BOOST_CHECK_EQUAL(sicd_ptr->length, -0.7);
-    BOOST_CHECK_EQUAL(sicd_ptr->density_calibration, 1000.25);
+    BOOST_CHECK_EQUAL(sicd_ptr->strength(), 0.002*1.e5*86400.*86400.);
+    BOOST_CHECK_EQUAL(sicd_ptr->length(), -0.7);
+    BOOST_CHECK_EQUAL(sicd_ptr->densityCalibration(), 1000.25);
     // 1.45 cp
-    BOOST_CHECK_EQUAL(sicd_ptr->viscosity_calibration, 1.45 * 0.001);
-    BOOST_CHECK_EQUAL(sicd_ptr->critical_value, 0.6);
-    BOOST_CHECK_EQUAL(sicd_ptr->width_transition_region, 0.05);
-    BOOST_CHECK_EQUAL(sicd_ptr->max_viscosity_ratio, 5.0);
-    BOOST_CHECK_EQUAL(sicd_ptr->method_flow_scaling, -1);
+    BOOST_CHECK_EQUAL(sicd_ptr->viscosityCalibration(), 1.45 * 0.001);
+    BOOST_CHECK_EQUAL(sicd_ptr->criticalValue(), 0.6);
+    BOOST_CHECK_EQUAL(sicd_ptr->widthTransitionRegion(), 0.05);
+    BOOST_CHECK_EQUAL(sicd_ptr->maxViscosityRatio(), 5.0);
+    BOOST_CHECK_EQUAL(sicd_ptr->methodFlowScaling(), -1);
+    // the scaling factor has not been updated properly, so it will throw
+    BOOST_CHECK_THROW(sicd_ptr->scalingFactor(), std::runtime_error);
+
+    const int outlet_segment_number = segment.outletSegment();
+    const double outlet_segment_length = segment_set.segmentLength(outlet_segment_number);
+    // only one completion attached to the outlet segment in this case
+    const Opm::Completion& completion = completion_set.getFromIJK(15, 0, 1);
+    const double completion_length = completion.getLength();
+    sicd_ptr->updateScalingFactor(outlet_segment_length, completion_length);
+
+    // updated, so it should not throw
+    BOOST_CHECK_NO_THROW(sicd_ptr->scalingFactor());
+    BOOST_CHECK_EQUAL(0.7, sicd_ptr->scalingFactor());
 
     BOOST_CHECK_EQUAL(7U, new_completion_set.size());
 
