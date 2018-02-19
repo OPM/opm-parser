@@ -670,32 +670,42 @@ BOOST_AUTO_TEST_CASE( MULTISEGMENT_ABS ) {
         const Completion& completion5 = completions.get(4);
         const int seg_number_completion5 = completion5.getSegmentNumber();
         const double completion5_depth = completion5.getCenterDepth();
+        const double completion5_length = completion5.getLength();
         BOOST_CHECK_EQUAL(seg_number_completion5, 6);
         BOOST_CHECK_CLOSE(completion5_depth, 2538.83, 0.001);
+        BOOST_CHECK_CLOSE(completion5_length, 200.0, 0.001);
 
         const Completion& completion6 = completions.get(5);
         const int seg_number_completion6 = completion6.getSegmentNumber();
         const double completion6_depth = completion6.getCenterDepth();
+        const double completion6_length = completion6.getLength();
         BOOST_CHECK_EQUAL(seg_number_completion6, 6);
         BOOST_CHECK_CLOSE(completion6_depth, 2537.83, 0.001);
+        BOOST_CHECK_CLOSE(completion6_length, 200.0, 0.001);
 
         const Completion& completion1 = completions.get(0);
         const int seg_number_completion1 = completion1.getSegmentNumber();
         const double completion1_depth = completion1.getCenterDepth();
+        const double completion1_length = completion1.getLength();
         BOOST_CHECK_EQUAL(seg_number_completion1, 1);
         BOOST_CHECK_EQUAL(completion1_depth, 2512.5);
+        BOOST_CHECK_EQUAL(completion1_length, 12.5);
 
         const Completion& completion3 = completions.get(2);
         const int seg_number_completion3 = completion3.getSegmentNumber();
         const double completion3_depth = completion3.getCenterDepth();
+        const double completion3_length = completion3.getLength();
         BOOST_CHECK_EQUAL(seg_number_completion3, 3);
         BOOST_CHECK_EQUAL(completion3_depth, 2562.5);
+        BOOST_CHECK_EQUAL(completion3_length, 25.0);
 
         const Completion& completion7 = completions.get(6);
         const int seg_number_completion7 = completion7.getSegmentNumber();
         const double completion7_depth = completion7.getCenterDepth();
+        const double completion7_length = completion7.getLength();
         BOOST_CHECK_EQUAL(seg_number_completion7, 8);
         BOOST_CHECK_EQUAL(completion7_depth, 2534.5);
+        BOOST_CHECK_EQUAL(completion7_length, 200.);
     }
 }
 
