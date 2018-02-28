@@ -2,6 +2,7 @@
 # vim: set filetype=cmake autoindent tabstop=2 shiftwidth=2 noexpandtab softtabstop=2 nowrap:
 
 list(APPEND MAIN_SOURCE_FILES
+  lib/json/JsonObject.cpp
   lib/eclipse/Deck/Deck.cpp
   lib/eclipse/Deck/DeckItem.cpp
   lib/eclipse/Deck/DeckKeyword.cpp
@@ -86,6 +87,10 @@ list(APPEND MAIN_SOURCE_FILES
   lib/eclipse/Utility/Functional.cpp
   lib/eclipse/Utility/Stringview.cpp
 )
+
+if(NOT cjson_FOUND)
+  list(APPEND MAIN_SOURCE_FILES external/cjson/cJSON.c)
+endif()
 
 # For now, we use full directory installs from install_hook
 list (APPEND PUBLIC_HEADER_FILES
