@@ -6,7 +6,7 @@ Build-Depends: build-essential, debhelper (>= 9), pkg-config, libopm-common-dev,
                libecl-dev, git, libtool, doxygen, libboost-date-time-dev,
                texlive-latex-extra, texlive-latex-recommended, ghostscript,
                libboost-system-dev, libboost-test-dev, libboost-regex-dev,
-               libblas-dev, liblapack-dev
+               libblas-dev, liblapack-dev, libopm-common-dev
 Standards-Version: 3.9.2
 Section: libs
 Homepage: http://opm-project.org
