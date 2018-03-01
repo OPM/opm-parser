@@ -1,0 +1,11 @@
+{"name" : "SKPRPOLY" , "sections" : ["PROPS"], "num_tables" : {"keyword":"PINTDIMS" , "item":"NTSKPOLY"},
+"records" : [
+    [
+       {"name" : "REF_CONC", "value_type" : "DOUBLE", "dimension" : "PolymerDensity"}
+    ],
+    [
+       {"name":"THROUGHPUT", "value_type" : "DOUBLE", "dimension" : "Length" },
+       {"name":"DATA", "size_type" : "ALL" , "value_type":"DOUBLE" , "dimension" : ["Length/Time","Pressure"]}
+    ]
+  ]
+}
