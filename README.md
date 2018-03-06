@@ -1,5 +1,8 @@
 # opm-parser 
 
+THIS MODULE IS DEPRECATED.
+The code is now integrated in the opm-common module.
+
 opm-parser is a small library for parsing ECLIPSE datafiles.
 
 
