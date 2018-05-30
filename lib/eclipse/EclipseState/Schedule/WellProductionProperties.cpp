@@ -103,8 +103,14 @@ namespace Opm {
         };
 
         for( const auto& cmode : modes ) {
-            if( !record.getItem( cmode.first ).defaultApplied( 0 ) )
-                 p.addProductionControl( cmode.second );
+            if( !record.getItem( cmode.first ).defaultApplied( 0 ) ) {
+
+                // a zero value THP limit will not be handled as a THP limit
+                if (cmode.first == "THP" && p.THPLimit == 0.)
+                    continue;
+
+                p.addProductionControl( cmode.second );
+            }
         }
 
         // There is always a BHP constraint, when not specified, will use the default value
